@@ -1,180 +1,87 @@
-<footer class="bg-dark text-light pt-5 pb-3">
+<footer class="modern-footer" data-controller="scroll">
     <div class="container">
         <div class="row">
-            <!-- Company Info -->
+            <!-- Newsletter Section -->
             <div class="col-lg-4 col-md-6 mb-4">
-                <div class="d-flex align-items-center mb-3">
-                    <img src="{{ asset('images/logo/eprofos-logo-white.png') }}" alt="EPROFOS" height="40" class="me-2">
-                    <div>
-                        <h5 class="text-white mb-0">EPROFOS</h5>
-                        <small class="text-muted">École professionnelle de formation</small>
+                <div class="footer-section">
+                    <div class="footer-logo mb-3">
+                        <img src="{{ asset('images/logo/eprofos-logo.png') }}" alt="EPROFOS" height="40" class="mb-2">
+                        <div class="footer-tagline">EDUCATION & ONLINE COURSES</div>
                     </div>
-                </div>
-                <p class="text-muted">
-                    Votre partenaire de confiance pour le développement des compétences professionnelles. 
-                    Formations de qualité, accompagnement personnalisé et expertise reconnue.
-                </p>
-                <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-outline-light btn-sm" aria-label="LinkedIn">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light btn-sm" aria-label="Facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light btn-sm" aria-label="Twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light btn-sm" aria-label="YouTube">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="col-lg-2 col-md-6 mb-4">
-                <h6 class="text-white mb-3">Navigation</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <a href="{{ path('app_home') }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-home me-2"></i>Accueil
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_about') }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-info-circle me-2"></i>À propos
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_formations_index') }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-graduation-cap me-2"></i>Formations
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_services_index') }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-handshake me-2"></i>Services
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_contact_index') }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-envelope me-2"></i>Contact
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Formations -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <h6 class="text-white mb-3">Nos formations</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <a href="{{ path('app_formations_by_category', {slug: 'techniques'}) }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-laptop-code me-2"></i>Formations techniques
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_formations_by_category', {slug: 'transversales'}) }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-users me-2"></i>Formations transversales
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_services_by_category', {slug: 'sur-mesure'}) }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-cog me-2"></i>Formations sur mesure
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ path('app_services_by_category', {slug: 'certifications'}) }}" class="text-muted text-decoration-none">
-                            <i class="fas fa-certificate me-2"></i>Certifications
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Contact Info -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <h6 class="text-white mb-3">Contact</h6>
-                <div class="mb-3">
-                    <div class="d-flex align-items-start mb-2">
-                        <i class="fas fa-map-marker-alt me-2 mt-1 text-primary"></i>
-                        <div class="text-muted">
-                            123 Avenue de la Formation<br>
-                            75001 Paris, France
+                    
+                    <!-- Newsletter Form -->
+                    <form class="newsletter-form mb-4" action="#" method="post">
+                        <div class="input-group">
+                            <input type="email" class="form-control newsletter-input" placeholder="Enter your email" required>
+                            <button class="btn btn-newsletter" type="submit">Get Newsletter</button>
                         </div>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-phone me-2 text-primary"></i>
-                        <a href="tel:+33123456789" class="text-muted text-decoration-none">
-                            +33 1 23 45 67 89
+                    </form>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="social-icons">
+                        <a href="#" class="social-icon" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
                         </a>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-envelope me-2 text-primary"></i>
-                        <a href="mailto:contact@eprofos.fr" class="text-muted text-decoration-none">
-                            contact@eprofos.fr
+                        <a href="#" class="social-icon" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
                         </a>
                     </div>
                 </div>
-                
-                <!-- Certifications -->
-                <div class="mb-3">
-                    <h6 class="text-white mb-2">Certifications</h6>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <span class="badge bg-primary">Qualiopi</span>
-                        <span class="badge bg-primary">Datadock</span>
-                        <span class="badge bg-primary">OPCO</span>
-                    </div>
+            </div>
+
+            <!-- Quick Links Section -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="footer-section">
+                    <h6 class="footer-title">Quick Link</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ path('app_about') }}">About Eduhive</a></li>
+                        <li><a href="{{ path('app_formations_index') }}">Our Courses</a></li>
+                        <li><a href="#">Instructors</a></li>
+                        <li><a href="#">Instructor Details</a></li>
+                        <li><a href="{{ path('app_contact_index') }}">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Courses Section -->
+            <div class="col-lg-4 col-md-12 mb-4">
+                <div class="footer-section">
+                    <h6 class="footer-title">Courses</h6>
+                    <ul class="footer-links">
+                        <li><a href="#">Apps Development</a></li>
+                        <li><a href="#">Digital Marketing</a></li>
+                        <li><a href="#">Graphics Design</a></li>
+                        <li><a href="#">UI/UX Design</a></li>
+                        <li><a href="#">Data Science</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
+    </div>
 
-        <hr class="my-4 border-secondary">
-
-        <!-- Bottom Footer -->
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <p class="text-muted mb-0">
-                    &copy; {{ 'now'|date('Y') }} EPROFOS. Tous droits réservés.
-                </p>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <ul class="list-inline mb-0">
-                    <li class="list-inline-item">
-                        <a href="{{ path('app_legal_notices') }}" class="text-muted text-decoration-none">
-                            Mentions légales
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <span class="text-muted">|</span>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="{{ path('app_legal_privacy') }}" class="text-muted text-decoration-none">
-                            Confidentialité
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <span class="text-muted">|</span>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="{{ path('app_legal_terms') }}" class="text-muted text-decoration-none">
-                            CGV
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <span class="text-muted">|</span>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="{{ path('app_legal_cookies') }}" class="text-muted text-decoration-none">
-                            Cookies
-                        </a>
-                    </li>
-                </ul>
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="copyright-text mb-0">
+                        © Copyright 2025 by Eduhive HTML Template.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button type="button" class="btn-back-to-top" id="btn-back-to-top" 
+                            data-controller="scroll" data-action="click->scroll#scrollToTop">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>BACK TO TOP</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </footer>
-
-<!-- Back to top button -->
-<button type="button" class="btn btn-primary btn-floating btn-lg" id="btn-back-to-top" 
-        data-controller="scroll" data-action="click->scroll#scrollToTop"
-        style="position: fixed; bottom: 20px; right: 20px; display: none; z-index: 1000;">
-    <i class="fas fa-arrow-up"></i>
-</button>

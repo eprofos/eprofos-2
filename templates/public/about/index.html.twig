@@ -5,53 +5,90 @@
 {% block meta_description %}Découvrez EPROFOS, École professionnelle de formation spécialisée. Notre mission, nos valeurs et notre expertise au service de votre développement professionnel.{% endblock %}
 
 {% block body %}
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-6">
+                    <span class="section-badge mb-3">ÉCOLE PROFESSIONNELLE</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        À propos d'<span class="text-warning">EPROFOS</span>
+                    </h1>
+                    <p class="lead mb-4">
+                        École professionnelle de formation spécialisée, EPROFOS accompagne depuis plus de 10 ans 
+                        les professionnels et les entreprises dans leur développement de compétences.
+                    </p>
+                    <p class="mb-4 opacity-90" style="line-height: 1.7; font-size: 1.1rem;">
+                        Notre mission est de proposer des formations de qualité, adaptées aux besoins du marché 
+                        et aux évolutions technologiques, pour permettre à chacun de réussir sa transformation professionnelle.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{{ path('app_about_approach') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-route me-2"></i>Découvrir notre approche
+                        </a>
+                        <a href="{{ path('app_formations_index') }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-graduation-cap me-2"></i>Nos formations
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center shadow-lg" style="width: 300px; height: 300px;">
+                            <div class="text-center">
+                                <i class="fas fa-graduation-cap fa-5x mb-3"></i>
+                                <h4 class="fw-bold">EPROFOS</h4>
+                                <p class="mb-0 opacity-90">Excellence en formation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="container py-5">
-        {# Hero Section #}
+        {# Modern Mission Section #}
         <div class="row mb-5">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">À propos d'EPROFOS</h1>
-                <p class="lead text-muted mb-4">
-                    École professionnelle de formation spécialisée, EPROFOS accompagne depuis plus de 10 ans 
-                    les professionnels et les entreprises dans leur développement de compétences.
-                </p>
-                <p class="text-muted mb-4">
-                    Notre mission est de proposer des formations de qualité, adaptées aux besoins du marché 
-                    et aux évolutions technologiques, pour permettre à chacun de réussir sa transformation professionnelle.
-                </p>
-                <a href="{{ path('app_about_approach') }}" class="btn btn-primary">
-                    <i class="fas fa-arrow-right me-2"></i>Découvrir notre approche
-                </a>
-            </div>
-            <div class="col-lg-6 text-center">
-                <img src="{{ asset('images/about-hero.svg') }}" 
-                     alt="À propos d'EPROFOS" 
-                     class="img-fluid"
-                     style="max-height: 400px;">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                    <div class="card-body p-5 text-center">
+                        <div class="d-flex align-items-center justify-content-center mb-4">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <h2 class="h3 fw-bold mb-0">Notre mission</h2>
+                        </div>
+                        <p class="lead text-muted mb-0" style="line-height: 1.7; font-size: 1.2rem;">
+                            Démocratiser l'accès à la formation professionnelle de qualité et accompagner 
+                            chaque apprenant dans sa réussite professionnelle.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {# Our Mission #}
-        <div class="row mb-5">
-            <div class="col-lg-8 mx-auto text-center">
-                <h2 class="display-5 fw-bold mb-4">Notre mission</h2>
-                <p class="lead text-muted">
-                    Démocratiser l'accès à la formation professionnelle de qualité et accompagner 
-                    chaque apprenant dans sa réussite professionnelle.
-                </p>
-            </div>
-        </div>
-
-        {# Our Values #}
+        {# Modern Values Section #}
         <div class="row mb-5">
             <div class="col-12">
-                <h2 class="h3 fw-bold text-center mb-5">Nos valeurs</h2>
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Nos valeurs</h2>
+                    </div>
+                    <p class="text-muted">Les principes qui guident notre action au quotidien</p>
+                </div>
+                
                 <div class="row">
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-heart fa-3x text-primary mb-3"></i>
-                                <h5 class="card-title">Excellence</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-award fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Excellence</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Nous nous engageons à fournir des formations de la plus haute qualité 
                                     avec des formateurs experts.
                                 </p>
@@ -60,11 +97,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-users fa-3x text-success mb-3"></i>
-                                <h5 class="card-title">Proximité</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-users fa-2x text-success"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Proximité</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Un accompagnement personnalisé et un suivi individualisé 
                                     pour chaque apprenant.
                                 </p>
@@ -73,11 +112,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
-                                <h5 class="card-title">Innovation</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Innovation</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Des méthodes pédagogiques modernes et des contenus 
                                     toujours à la pointe de l'actualité.
                                 </p>
@@ -86,11 +127,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-handshake fa-3x text-info mb-3"></i>
-                                <h5 class="card-title">Engagement</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-handshake fa-2x text-info"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Engagement</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Un engagement total dans la réussite de nos apprenants 
                                     et de nos partenaires.
                                 </p>
@@ -101,39 +144,48 @@
             </div>
         </div>
 
-        {# Key Numbers #}
+        {# Modern Key Numbers Section #}
         <div class="row mb-5">
             <div class="col-12">
-                <div class="card bg-primary text-white border-0">
-                    <div class="card-body py-5">
-                        <h2 class="h3 fw-bold text-center mb-5">EPROFOS en chiffres</h2>
+                <div class="card border-0 shadow-lg" style="border-radius: 25px; background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%);">
+                    <div class="card-body py-5 px-4 text-white">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">EPROFOS en chiffres</h2>
+                            </div>
+                            <p class="opacity-90">Des résultats qui témoignent de notre expertise</p>
+                        </div>
+                        
                         <div class="row text-center">
                             <div class="col-lg-3 col-md-6 mb-4">
-                                <div class="mb-2">
-                                    <i class="fas fa-calendar fa-2x mb-3"></i>
-                                    <div class="display-6 fw-bold">10+</div>
-                                    <p class="mb-0">Années d'expérience</p>
+                                <div class="p-4 bg-white bg-opacity-10 rounded-3">
+                                    <i class="fas fa-calendar fa-3x mb-3"></i>
+                                    <div class="display-4 fw-bold mb-2">10+</div>
+                                    <p class="mb-0 fw-semibold">Années d'expérience</p>
                                 </div>
                             </div>
                             <div class="col-lg-3 col-md-6 mb-4">
-                                <div class="mb-2">
-                                    <i class="fas fa-users fa-2x mb-3"></i>
-                                    <div class="display-6 fw-bold">500+</div>
-                                    <p class="mb-0">Apprenants formés</p>
+                                <div class="p-4 bg-white bg-opacity-10 rounded-3">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <div class="display-4 fw-bold mb-2">500+</div>
+                                    <p class="mb-0 fw-semibold">Apprenants formés</p>
                                 </div>
                             </div>
                             <div class="col-lg-3 col-md-6 mb-4">
-                                <div class="mb-2">
-                                    <i class="fas fa-graduation-cap fa-2x mb-3"></i>
-                                    <div class="display-6 fw-bold">25+</div>
-                                    <p class="mb-0">Formations disponibles</p>
+                                <div class="p-4 bg-white bg-opacity-10 rounded-3">
+                                    <i class="fas fa-graduation-cap fa-3x mb-3"></i>
+                                    <div class="display-4 fw-bold mb-2">25+</div>
+                                    <p class="mb-0 fw-semibold">Formations disponibles</p>
                                 </div>
                             </div>
                             <div class="col-lg-3 col-md-6 mb-4">
-                                <div class="mb-2">
-                                    <i class="fas fa-award fa-2x mb-3"></i>
-                                    <div class="display-6 fw-bold">95%</div>
-                                    <p class="mb-0">Taux de satisfaction</p>
+                                <div class="p-4 bg-white bg-opacity-10 rounded-3">
+                                    <i class="fas fa-award fa-3x mb-3"></i>
+                                    <div class="display-4 fw-bold mb-2">95%</div>
+                                    <p class="mb-0 fw-semibold">Taux de satisfaction</p>
                                 </div>
                             </div>
                         </div>
@@ -142,21 +194,29 @@
             </div>
         </div>
 
-        {# Our Team #}
+        {# Modern Team Section #}
         <div class="row mb-5">
             <div class="col-12">
-                <h2 class="h3 fw-bold text-center mb-5">Notre équipe</h2>
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Notre équipe</h2>
+                    </div>
+                    <p class="text-muted">Des experts passionnés à votre service</p>
+                </div>
+                
                 <div class="row">
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <img src="{{ asset('images/team/director.jpg') }}" 
-                                     alt="Directeur EPROFOS" 
-                                     class="rounded-circle mb-3"
-                                     style="width: 100px; height: 100px; object-fit: cover;">
-                                <h5 class="card-title">Marie Dubois</h5>
-                                <p class="text-muted mb-2">Directrice</p>
-                                <p class="card-text text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                    <i class="fas fa-user-tie fa-3x text-primary"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Marie Dubois</h5>
+                                <div class="badge bg-primary mb-3" style="border-radius: 15px;">Directrice</div>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     15 ans d'expérience dans la formation professionnelle. 
                                     Experte en ingénierie pédagogique.
                                 </p>
@@ -165,15 +225,14 @@
                     </div>
                     
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <img src="{{ asset('images/team/pedagogy.jpg') }}" 
-                                     alt="Responsable pédagogique" 
-                                     class="rounded-circle mb-3"
-                                     style="width: 100px; height: 100px; object-fit: cover;">
-                                <h5 class="card-title">Jean Martin</h5>
-                                <p class="text-muted mb-2">Responsable pédagogique</p>
-                                <p class="card-text text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                    <i class="fas fa-chalkboard-teacher fa-3x text-success"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Jean Martin</h5>
+                                <div class="badge bg-success mb-3" style="border-radius: 15px;">Responsable pédagogique</div>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Expert en technologies numériques et méthodes d'apprentissage innovantes.
                                 </p>
                             </div>
@@ -181,15 +240,14 @@
                     </div>
                     
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <img src="{{ asset('images/team/commercial.jpg') }}" 
-                                     alt="Responsable commercial" 
-                                     class="rounded-circle mb-3"
-                                     style="width: 100px; height: 100px; object-fit: cover;">
-                                <h5 class="card-title">Sophie Leroy</h5>
-                                <p class="text-muted mb-2">Responsable commerciale</p>
-                                <p class="card-text text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                    <i class="fas fa-handshake fa-3x text-warning"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Sophie Leroy</h5>
+                                <div class="badge bg-warning mb-3" style="border-radius: 15px;">Responsable commerciale</div>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Spécialisée dans l'accompagnement des entreprises et le conseil en formation.
                                 </p>
                             </div>
@@ -199,17 +257,28 @@
             </div>
         </div>
 
-        {# Our Certifications #}
+        {# Modern Certifications Section #}
         <div class="row mb-5">
-            <div class="col-lg-8 mx-auto">
-                <h2 class="h3 fw-bold text-center mb-4">Nos certifications et agréments</h2>
-                <div class="row text-center">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Nos certifications et agréments</h2>
+                    </div>
+                    <p class="text-muted">Des garanties de qualité reconnues</p>
+                </div>
+                
+                <div class="row">
                     <div class="col-md-4 mb-4">
-                        <div class="card border-0 bg-light h-100">
-                            <div class="card-body">
-                                <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
-                                <h5>Qualiopi</h5>
-                                <p class="text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-certificate fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="fw-bold">Qualiopi</h5>
+                                <p class="text-muted mb-0" style="line-height: 1.6;">
                                     Certification qualité des organismes de formation
                                 </p>
                             </div>
@@ -217,11 +286,13 @@
                     </div>
                     
                     <div class="col-md-4 mb-4">
-                        <div class="card border-0 bg-light h-100">
-                            <div class="card-body">
-                                <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
-                                <h5>OPCO</h5>
-                                <p class="text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-graduation-cap fa-2x text-success"></i>
+                                </div>
+                                <h5 class="fw-bold">OPCO</h5>
+                                <p class="text-muted mb-0" style="line-height: 1.6;">
                                     Référencé auprès des principaux OPCO
                                 </p>
                             </div>
@@ -229,11 +300,13 @@
                     </div>
                     
                     <div class="col-md-4 mb-4">
-                        <div class="card border-0 bg-light h-100">
-                            <div class="card-body">
-                                <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
-                                <h5>CPF</h5>
-                                <p class="text-muted small">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-shield-alt fa-2x text-warning"></i>
+                                </div>
+                                <h5 class="fw-bold">CPF</h5>
+                                <p class="text-muted mb-0" style="line-height: 1.6;">
                                     Formations éligibles au Compte Personnel de Formation
                                 </p>
                             </div>
@@ -243,81 +316,168 @@
             </div>
         </div>
 
-        {# Our History #}
+        {# Modern History Section #}
         <div class="row mb-5">
-            <div class="col-lg-8 mx-auto">
-                <h2 class="h3 fw-bold text-center mb-4">Notre histoire</h2>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-year">2014</div>
-                        <div class="timeline-content">
-                            <h5>Création d'EPROFOS</h5>
-                            <p class="text-muted">
-                                Fondation de l'école avec une vision : démocratiser l'accès à la formation professionnelle de qualité.
-                            </p>
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-history"></i>
                         </div>
+                        <h2 class="h3 fw-bold mb-0">Notre histoire</h2>
                     </div>
-                    
-                    <div class="timeline-item">
-                        <div class="timeline-year">2017</div>
-                        <div class="timeline-content">
-                            <h5>Expansion de l'offre</h5>
-                            <p class="text-muted">
-                                Développement de nouvelles formations techniques et lancement des services de conseil.
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-item">
-                        <div class="timeline-year">2020</div>
-                        <div class="timeline-content">
-                            <h5>Transformation digitale</h5>
-                            <p class="text-muted">
-                                Adaptation aux nouveaux modes d'apprentissage avec le développement de formations en distanciel.
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-item">
-                        <div class="timeline-year">2024</div>
-                        <div class="timeline-content">
-                            <h5>Nouvelle plateforme</h5>
-                            <p class="text-muted">
-                                Lancement de notre nouvelle plateforme e-learning pour une expérience utilisateur optimisée.
-                            </p>
-                        </div>
-                    </div>
+                    <p class="text-muted">Une décennie d'innovation et d'excellence</p>
                 </div>
-            </div>
-        </div>
-
-        {# Call to Action #}
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <div class="card bg-light border-0">
-                    <div class="card-body py-5">
-                        <h3 class="fw-bold mb-3">Rejoignez l'aventure EPROFOS</h3>
-                        <p class="text-muted mb-4">
-                            Découvrez comment nous pouvons vous accompagner dans votre développement professionnel.
-                        </p>
-                        <div class="d-flex flex-wrap gap-3 justify-content-center">
-                            <a href="{{ path('app_formations_index') }}" class="btn btn-primary">
-                                <i class="fas fa-graduation-cap me-2"></i>Nos formations
-                            </a>
-                            <a href="{{ path('app_contact_information') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-envelope me-2"></i>Nous contacter
-                            </a>
+                
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-body p-4">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-year">2014</div>
+                                <div class="timeline-content">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-rocket"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-primary">Création d'EPROFOS</h5>
+                                            <p class="text-muted mb-0" style="line-height: 1.6;">
+                                                Fondation de l'école avec une vision : démocratiser l'accès à la formation professionnelle de qualité.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-year">2017</div>
+                                <div class="timeline-content">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-expand-arrows-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-success">Expansion de l'offre</h5>
+                                            <p class="text-muted mb-0" style="line-height: 1.6;">
+                                                Développement de nouvelles formations techniques et lancement des services de conseil.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-year">2020</div>
+                                <div class="timeline-content">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-laptop"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-warning">Transformation digitale</h5>
+                                            <p class="text-muted mb-0" style="line-height: 1.6;">
+                                                Adaptation aux nouveaux modes d'apprentissage avec le développement de formations en distanciel.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-year">2024</div>
+                                <div class="timeline-content">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-globe"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-info">Nouvelle plateforme</h5>
+                                            <p class="text-muted mb-0" style="line-height: 1.6;">
+                                                Lancement de notre nouvelle plateforme e-learning pour une expérience utilisateur optimisée.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    {# Modern Call to Action Section #}
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);">
+                        <div class="card-body p-5 text-center">
+                            <div class="mb-4">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-rocket fa-2x"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-3">Rejoignez l'aventure EPROFOS</h3>
+                            <p class="text-muted mb-4" style="line-height: 1.7; font-size: 1.1rem;">
+                                Découvrez comment nous pouvons vous accompagner dans votre développement professionnel.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a href="{{ path('app_formations_index') }}" class="btn btn-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-graduation-cap me-2"></i>Nos formations
+                                </a>
+                                <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-envelope me-2"></i>Nous contacter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
+        /* Modern Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 50%, #e91e63 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Modern Timeline */
         .timeline {
             position: relative;
             padding-left: 2rem;
@@ -329,44 +489,113 @@
             left: 1rem;
             top: 0;
             bottom: 0;
-            width: 2px;
-            background: var(--bs-primary);
+            width: 3px;
+            background: linear-gradient(to bottom, var(--bs-primary), var(--bs-success), var(--bs-warning), var(--bs-info));
+            border-radius: 2px;
         }
         
         .timeline-item {
             position: relative;
-            margin-bottom: 2rem;
-            padding-left: 2rem;
+            margin-bottom: 3rem;
+            padding-left: 3rem;
         }
         
         .timeline-year {
             position: absolute;
-            left: -3rem;
+            left: -3.5rem;
             top: 0;
             background: var(--bs-primary);
             color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             font-weight: 600;
             font-size: 0.875rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline-item:nth-child(2) .timeline-year {
+            background: var(--bs-success);
+        }
+        
+        .timeline-item:nth-child(3) .timeline-year {
+            background: var(--bs-warning);
+        }
+        
+        .timeline-item:nth-child(4) .timeline-year {
+            background: var(--bs-info);
         }
         
         .timeline-item::before {
             content: '';
             position: absolute;
-            left: -0.5rem;
+            left: -0.75rem;
             top: 0.5rem;
-            width: 1rem;
-            height: 1rem;
-            background: var(--bs-primary);
+            width: 1.5rem;
+            height: 1.5rem;
+            background: white;
+            border: 3px solid var(--bs-primary);
             border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 3px var(--bs-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         
-        .timeline-content h5 {
-            color: var(--bs-primary);
+        .timeline-item:nth-child(2)::before {
+            border-color: var(--bs-success);
+        }
+        
+        .timeline-item:nth-child(3)::before {
+            border-color: var(--bs-warning);
+        }
+        
+        .timeline-item:nth-child(4)::before {
+            border-color: var(--bs-info);
+        }
+        
+        /* Card Hover Effects */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Modern Button Styles */
+        .btn {
             font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .hero-section {
+                text-align: center;
+            }
+            
+            .timeline {
+                padding-left: 1rem;
+            }
+            
+            .timeline::before {
+                left: 0.5rem;
+            }
+            
+            .timeline-item {
+                padding-left: 2rem;
+            }
+            
+            .timeline-year {
+                left: -2.5rem;
+                font-size: 0.75rem;
+                padding: 0.25rem 0.75rem;
+            }
+            
+            .timeline-item::before {
+                left: -0.25rem;
+                width: 1rem;
+                height: 1rem;
+            }
         }
     </style>
 {% endblock %}

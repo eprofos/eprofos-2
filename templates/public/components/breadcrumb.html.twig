@@ -1,81 +1,262 @@
 {% set route_name = app.request.get('_route') %}
 {% set route_params = app.request.get('_route_params') %}
 
-<nav aria-label="breadcrumb" class="bg-light py-2">
+<nav aria-label="breadcrumb" class="modern-breadcrumb py-3">
     <div class="container">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item">
-                <a href="{{ path('app_home') }}" class="text-decoration-none">
-                    <i class="fas fa-home me-1"></i>Accueil
-                </a>
-            </li>
-
-            {% if route_name starts with 'app_about' %}
-                <li class="breadcrumb-item">
-                    <a href="{{ path('app_about') }}" class="text-decoration-none">À propos</a>
-                </li>
-                {% if route_name == 'app_about_approach' %}
-                    <li class="breadcrumb-item active" aria-current="page">Notre approche</li>
-                {% endif %}
-
-            {% elseif route_name starts with 'app_formation' %}
-                <li class="breadcrumb-item">
-                    <a href="{{ path('app_formations_index') }}" class="text-decoration-none">Formations</a>
-                </li>
-                {% if route_name == 'app_formation_show' %}
-                    <li class="breadcrumb-item active" aria-current="page">{{ formation.title ?? 'Formation' }}</li>
-                {% elseif route_name == 'app_formations_by_category' %}
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {% if route_params.slug == 'techniques' %}
-                            Formations techniques
-                        {% elseif route_params.slug == 'transversales' %}
-                            Formations transversales
-                        {% else %}
-                            Catégorie
-                        {% endif %}
+        <div class="card border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+            <div class="card-body py-3 px-4">
+                <ol class="breadcrumb mb-0 d-flex align-items-center">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('app_home') }}" class="breadcrumb-link d-flex align-items-center">
+                            <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-home" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <span class="fw-semibold">Accueil</span>
+                        </a>
                     </li>
-                {% endif %}
 
-            {% elseif route_name starts with 'app_service' %}
-                <li class="breadcrumb-item">
-                    <a href="{{ path('app_services_index') }}" class="text-decoration-none">Services</a>
-                </li>
-                {% if route_name == 'app_service_show' %}
-                    <li class="breadcrumb-item active" aria-current="page">{{ service.title ?? 'Service' }}</li>
-                {% elseif route_name == 'app_services_by_category' %}
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {% if route_params.slug == 'conseil' %}
-                            Conseil & Audit
-                        {% elseif route_params.slug == 'accompagnement' %}
-                            Accompagnement
-                        {% elseif route_params.slug == 'certifications' %}
-                            Certifications
-                        {% elseif route_params.slug == 'sur-mesure' %}
-                            Formations sur mesure
-                        {% else %}
-                            Catégorie
+                    {% if route_name starts with 'app_about' %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_about') }}" class="breadcrumb-link d-flex align-items-center">
+                                <div class="breadcrumb-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-info-circle" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-semibold">À propos</span>
+                            </a>
+                        </li>
+                        {% if route_name == 'app_about_approach' %}
+                            <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                                <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-route" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-bold text-success">Notre approche</span>
+                            </li>
                         {% endif %}
-                    </li>
-                {% endif %}
 
-            {% elseif route_name starts with 'app_contact' %}
-                <li class="breadcrumb-item active" aria-current="page">Contact</li>
+                    {% elseif route_name starts with 'app_formation' %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_formations_index') }}" class="breadcrumb-link d-flex align-items-center">
+                                <div class="breadcrumb-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-graduation-cap" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-semibold">Formations</span>
+                            </a>
+                        </li>
+                        {% if route_name == 'app_formation_show' %}
+                            <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                                <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-book" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-bold text-primary">{{ formation.title ?? 'Formation' }}</span>
+                            </li>
+                        {% elseif route_name == 'app_formations_by_category' %}
+                            <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                                <div class="breadcrumb-icon bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-tag" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-bold text-secondary">
+                                    {% if route_params.slug == 'techniques' %}
+                                        Formations techniques
+                                    {% elseif route_params.slug == 'transversales' %}
+                                        Formations transversales
+                                    {% else %}
+                                        Catégorie
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endif %}
 
-            {% elseif route_name starts with 'app_legal' %}
-                <li class="breadcrumb-item active" aria-current="page">
-                    {% if route_name == 'app_legal_notices' %}
-                        Mentions légales
-                    {% elseif route_name == 'app_legal_privacy' %}
-                        Politique de confidentialité
-                    {% elseif route_name == 'app_legal_terms' %}
-                        Conditions générales
-                    {% elseif route_name == 'app_legal_cookies' %}
-                        Politique des cookies
-                    {% else %}
-                        Informations légales
+                    {% elseif route_name starts with 'app_service' %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_services_index') }}" class="breadcrumb-link d-flex align-items-center">
+                                <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-cogs" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-semibold">Services</span>
+                            </a>
+                        </li>
+                        {% if route_name == 'app_service_show' %}
+                            <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                                <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-wrench" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-bold text-success">{{ service.title ?? 'Service' }}</span>
+                            </li>
+                        {% elseif route_name == 'app_services_by_category' %}
+                            <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                                <div class="breadcrumb-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    <i class="fas fa-layer-group" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span class="fw-bold text-info">
+                                    {% if route_params.slug == 'conseil' %}
+                                        Conseil & Audit
+                                    {% elseif route_params.slug == 'accompagnement' %}
+                                        Accompagnement
+                                    {% elseif route_params.slug == 'certifications' %}
+                                        Certifications
+                                    {% elseif route_params.slug == 'sur-mesure' %}
+                                        Formations sur mesure
+                                    {% else %}
+                                        Catégorie
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endif %}
+
+                    {% elseif route_name starts with 'app_contact' %}
+                        <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                            <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-envelope" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <span class="fw-bold text-primary">Contact</span>
+                        </li>
+
+                    {% elseif route_name starts with 'app_legal' %}
+                        <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
+                            <div class="breadcrumb-icon bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-gavel" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <span class="fw-bold text-secondary">
+                                {% if route_name == 'app_legal_notices' %}
+                                    Mentions légales
+                                {% elseif route_name == 'app_legal_privacy' %}
+                                    Politique de confidentialité
+                                {% elseif route_name == 'app_legal_terms' %}
+                                    Conditions générales
+                                {% elseif route_name == 'app_legal_cookies' %}
+                                    Politique des cookies
+                                {% else %}
+                                    Informations légales
+                                {% endif %}
+                            </span>
+                        </li>
                     {% endif %}
-                </li>
-            {% endif %}
-        </ol>
+                </ol>
+            </div>
+        </div>
     </div>
 </nav>
+
+<style>
+    /* Modern Breadcrumb Styles */
+    .modern-breadcrumb {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-left: 8px solid #6c757d;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        margin: 0 0.75rem;
+        opacity: 0.6;
+    }
+    
+    .breadcrumb-link {
+        text-decoration: none;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        padding: 0.5rem 0.75rem;
+        border-radius: 10px;
+        background: transparent;
+    }
+    
+    .breadcrumb-link:hover {
+        color: #495057;
+        background: rgba(0, 123, 255, 0.1);
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+    
+    .breadcrumb-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .breadcrumb-link:hover .breadcrumb-icon {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .breadcrumb-item.active {
+        color: inherit;
+    }
+    
+    .breadcrumb-item.active .breadcrumb-icon {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .breadcrumb {
+            font-size: 0.8rem;
+        }
+        
+        .breadcrumb-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            border-left-width: 6px;
+            border-top-width: 4px;
+            border-bottom-width: 4px;
+            margin: 0 0.5rem;
+        }
+        
+        .breadcrumb-link {
+            padding: 0.25rem 0.5rem;
+        }
+        
+        /* Hide text on very small screens, keep only icons */
+        @media (max-width: 576px) {
+            .breadcrumb-link span,
+            .breadcrumb-item.active span {
+                display: none;
+            }
+            
+            .breadcrumb-link {
+                padding: 0.5rem;
+            }
+        }
+    }
+    
+    /* Animation on load */
+    .breadcrumb-item {
+        opacity: 0;
+        transform: translateX(-20px);
+        animation: slideInBreadcrumb 0.5s ease forwards;
+    }
+    
+    .breadcrumb-item:nth-child(1) { animation-delay: 0.1s; }
+    .breadcrumb-item:nth-child(2) { animation-delay: 0.2s; }
+    .breadcrumb-item:nth-child(3) { animation-delay: 0.3s; }
+    .breadcrumb-item:nth-child(4) { animation-delay: 0.4s; }
+    
+    @keyframes slideInBreadcrumb {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>

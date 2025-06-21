@@ -1,0 +1,51 @@
+<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#20c997;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fd7e14;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6f42c1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d6efd;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background elements -->
+  <circle cx="400" cy="100" r="60" fill="rgba(32,201,151,0.1)"/>
+  <circle cx="100" cy="400" r="80" fill="rgba(253,126,20,0.1)"/>
+  <rect x="350" y="350" width="100" height="100" rx="50" fill="rgba(111,66,193,0.1)"/>
+  
+  <!-- Main figure -->
+  <circle cx="250" cy="150" r="40" fill="#ffc107"/>
+  <rect x="220" y="190" width="60" height="80" rx="10" fill="url(#grad2)"/>
+  <rect x="210" y="270" width="80" height="100" rx="5" fill="#2c3e50"/>
+  
+  <!-- Arms -->
+  <rect x="180" y="200" width="40" height="15" rx="7" fill="#ffc107"/>
+  <rect x="280" y="200" width="40" height="15" rx="7" fill="#ffc107"/>
+  
+  <!-- Laptop -->
+  <rect x="320" y="220" width="80" height="50" rx="5" fill="#34495e"/>
+  <rect x="325" y="225" width="70" height="40" rx="3" fill="url(#grad1)"/>
+  
+  <!-- Books -->
+  <rect x="150" y="300" width="40" height="6" rx="2" fill="#fd7e14"/>
+  <rect x="155" y="290" width="40" height="6" rx="2" fill="#20c997"/>
+  <rect x="160" y="280" width="40" height="6" rx="2" fill="#6f42c1"/>
+  
+  <!-- Certificate -->
+  <rect x="80" y="180" width="60" height="80" rx="5" fill="white" stroke="#0d6efd" stroke-width="2"/>
+  <rect x="90" y="200" width="40" height="3" rx="1" fill="#0d6efd"/>
+  <rect x="90" y="210" width="30" height="3" rx="1" fill="#6c757d"/>
+  <rect x="90" y="220" width="35" height="3" rx="1" fill="#6c757d"/>
+  <circle cx="110" cy="240" r="8" fill="#ffc107"/>
+  
+  <!-- Success indicators -->
+  <circle cx="350" cy="150" r="20" fill="#198754"/>
+  <polygon points="340,150 348,158 365,140" fill="white" stroke="white" stroke-width="2"/>
+  
+  <!-- Growth chart -->
+  <rect x="50" y="350" width="100" height="60" rx="5" fill="white" stroke="#dee2e6" stroke-width="1"/>
+  <polyline points="60,390 75,380 90,370 105,360 120,350 135,340" fill="none" stroke="url(#grad1)" stroke-width="3"/>
+  <circle cx="135" cy="340" r="3" fill="#20c997"/>
+</svg>

@@ -5,25 +5,50 @@
 {% block meta_description %}Découvrez la méthodologie EPROFOS : analyse des besoins, conception sur mesure, mise en œuvre et suivi personnalisé pour des formations efficaces et adaptées.{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        {# Hero Section #}
-        <div class="row mb-5">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-4 fw-bold mb-4">Notre Approche</h1>
-                <p class="lead text-muted mb-4">
-                    Chez EPROFOS, nous avons développé une méthodologie éprouvée en 4 étapes pour garantir 
-                    l'efficacité et la pertinence de nos formations professionnelles.
-                </p>
-                <p class="text-muted">
-                    De l'analyse de vos besoins au suivi post-formation, chaque étape est pensée 
-                    pour maximiser votre montée en compétences et assurer votre réussite professionnelle.
-                </p>
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">MÉTHODOLOGIE EPROFOS</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Notre <span class="text-warning">Approche</span> Méthodologique
+                    </h1>
+                    <p class="lead mb-4">
+                        Chez EPROFOS, nous avons développé une méthodologie éprouvée en 4 étapes pour garantir 
+                        l'efficacité et la pertinence de nos formations professionnelles.
+                    </p>
+                    <p class="text-muted mb-4">
+                        De l'analyse de vos besoins au suivi post-formation, chaque étape est pensée 
+                        pour maximiser votre montée en compétences et assurer votre réussite professionnelle.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                        <a href="#methodology-steps" class="btn btn-primary btn-lg">
+                            <i class="fas fa-arrow-down me-2"></i>Découvrir notre méthode
+                        </a>
+                        <a href="{{ path('app_contact_quote') }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-calculator me-2"></i>Demander un devis
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        {# Methodology Steps #}
-        <div class="row mb-5">
+    <div class="container py-5">
+        {# Modern Methodology Steps #}
+        <div class="row mb-5" id="methodology-steps">
             <div class="col-12">
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Notre méthodologie en 4 étapes</h2>
+                    </div>
+                    <p class="text-muted">Un processus structuré pour des formations sur mesure et efficaces</p>
+                </div>
+                
                 <div class="methodology-timeline">
                     {% set step_colors = ['primary', 'success', 'warning', 'info'] %}
                     {% set step_icons = ['fas fa-search', 'fas fa-drafting-compass', 'fas fa-rocket', 'fas fa-chart-line'] %}
@@ -37,31 +62,39 @@
                         <div class="methodology-step mb-5">
                             <div class="row align-items-center {{ loop.index is odd ? '' : 'flex-row-reverse' }}">
                                 <div class="col-lg-6 mb-4">
-                                    <div class="step-content {{ loop.index is odd ? 'text-lg-start' : 'text-lg-end' }}">
-                                        <div class="step-number-badge bg-{{ color }} text-white mb-3">
-                                            <span class="step-number">{{ step_counter }}</span>
-                                        </div>
-                                        <h3 class="fw-bold mb-3 text-{{ color }}">
-                                            <i class="{{ icon }} me-2"></i>{{ step.title }}
-                                        </h3>
-                                        <p class="text-muted mb-4">{{ step.description }}</p>
-                                        
-                                        <div class="step-details">
-                                            <h5 class="fw-bold mb-3">Étapes clés :</h5>
-                                            <ul class="list-unstyled">
-                                                {% for detail in step.steps %}
-                                                    <li class="mb-2">
-                                                        <i class="fas fa-check-circle text-{{ color }} me-2"></i>
-                                                        {{ detail }}
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
+                                    <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; {{ loop.index is even ? 'background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);' : '' }}">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="step-number-badge bg-{{ color }} text-white me-3">
+                                                    <span class="step-number">{{ step_counter }}</span>
+                                                </div>
+                                                <h3 class="fw-bold mb-0 text-{{ color }}">
+                                                    <i class="{{ icon }} me-2"></i>{{ step.title }}
+                                                </h3>
+                                            </div>
+                                            <p class="text-muted mb-4" style="line-height: 1.7;">{{ step.description }}</p>
+                                            
+                                            <div class="step-details">
+                                                <h5 class="fw-bold mb-3">Étapes clés :</h5>
+                                                <div class="row">
+                                                    {% for detail in step.steps %}
+                                                        <div class="col-12 mb-2">
+                                                            <div class="d-flex align-items-start">
+                                                                <div class="bg-{{ color }} text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 25px; height: 25px;">
+                                                                    <i class="fas fa-check" style="font-size: 0.7rem;"></i>
+                                                                </div>
+                                                                <span style="line-height: 1.6;">{{ detail }}</span>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-lg-6 mb-4">
-                                    <div class="step-visual text-center">
+                                    <div class="text-center">
                                         <div class="step-icon-container bg-{{ color }} bg-opacity-10 rounded-circle mx-auto mb-3">
                                             <i class="{{ icon }} fa-4x text-{{ color }}"></i>
                                         </div>
@@ -70,8 +103,10 @@
                             </div>
                             
                             {% if not loop.last %}
-                                <div class="step-connector text-center my-4">
-                                    <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                                <div class="step-connector text-center my-5">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-arrow-down fa-2x text-{{ step_colors[loop.index] }}"></i>
+                                    </div>
                                 </div>
                             {% endif %}
                         </div>
@@ -80,46 +115,48 @@
             </div>
         </div>
 
-        {# Our Commitment Section #}
+        {# Modern Commitment Section #}
         <div class="row mb-5">
             <div class="col-lg-10 mx-auto">
-                <div class="card bg-primary text-white border-0">
-                    <div class="card-body py-5">
+                <div class="card border-0 shadow-lg" style="border-radius: 25px; background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%);">
+                    <div class="card-body py-5 px-4 text-white">
                         <div class="row align-items-center">
                             <div class="col-lg-8">
-                                <h3 class="fw-bold mb-3">
-                                    <i class="fas fa-handshake me-2"></i>Notre engagement qualité
-                                </h3>
-                                <p class="mb-4">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-handshake fa-lg"></i>
+                                    </div>
+                                    <h3 class="fw-bold mb-0">Notre engagement qualité</h3>
+                                </div>
+                                <p class="mb-4 opacity-90" style="line-height: 1.7; font-size: 1.1rem;">
                                     Cette approche méthodologique nous permet de garantir des formations 
                                     sur mesure, efficaces et parfaitement adaptées à vos objectifs professionnels.
                                 </p>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center p-3 bg-white bg-opacity-10 rounded-3">
                                             <i class="fas fa-award fa-2x me-3"></i>
                                             <div>
-                                                <strong>95% de satisfaction</strong><br>
-                                                <small>Taux de satisfaction client</small>
+                                                <div class="h4 fw-bold mb-1">95%</div>
+                                                <small class="opacity-90">Taux de satisfaction client</small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center p-3 bg-white bg-opacity-10 rounded-3">
                                             <i class="fas fa-clock fa-2x me-3"></i>
                                             <div>
-                                                <strong>Suivi 6 mois</strong><br>
-                                                <small>Accompagnement post-formation</small>
+                                                <div class="h4 fw-bold mb-1">6 mois</div>
+                                                <small class="opacity-90">Accompagnement post-formation</small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-4 text-center">
-                                <img src="{{ asset('images/quality-commitment.svg') }}" 
-                                     alt="Engagement qualité" 
-                                     class="img-fluid"
-                                     style="max-height: 200px;">
+                                <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                                    <i class="fas fa-certificate fa-4x"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -127,17 +164,28 @@
             </div>
         </div>
 
-        {# Benefits Section #}
+        {# Modern Benefits Section #}
         <div class="row mb-5">
             <div class="col-12">
-                <h2 class="h3 fw-bold text-center mb-5">Les bénéfices de notre approche</h2>
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Les bénéfices de notre approche</h2>
+                    </div>
+                    <p class="text-muted">Des résultats concrets et mesurables pour votre développement professionnel</p>
+                </div>
+                
                 <div class="row">
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-bullseye fa-3x text-primary mb-3"></i>
-                                <h5 class="card-title">Formations ciblées</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-bullseye fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Formations ciblées</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Programmes parfaitement adaptés à vos besoins spécifiques et objectifs professionnels.
                                 </p>
                             </div>
@@ -145,11 +193,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-user-friends fa-3x text-success mb-3"></i>
-                                <h5 class="card-title">Accompagnement personnalisé</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user-friends fa-2x text-success"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Accompagnement personnalisé</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Suivi individualisé tout au long du parcours de formation et au-delà.
                                 </p>
                             </div>
@@ -157,11 +207,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
-                                <h5 class="card-title">Résultats mesurables</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-chart-line fa-2x text-warning"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Résultats mesurables</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Évaluation continue et mesure de l'efficacité pour garantir l'atteinte des objectifs.
                                 </p>
                             </div>
@@ -169,11 +221,13 @@
                     </div>
                     
                     <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card h-100 text-center border-0 shadow-sm">
-                            <div class="card-body">
-                                <i class="fas fa-sync-alt fa-3x text-info mb-3"></i>
-                                <h5 class="card-title">Amélioration continue</h5>
-                                <p class="card-text text-muted">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-sync-alt fa-2x text-info"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Amélioration continue</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
                                     Ajustements en temps réel et optimisation constante des méthodes pédagogiques.
                                 </p>
                             </div>
@@ -182,38 +236,84 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        {# Call to Action #}
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <div class="card bg-light border-0">
-                    <div class="card-body py-5">
-                        <h3 class="fw-bold mb-3">Découvrez notre approche en action</h3>
-                        <p class="text-muted mb-4">
-                            Prêt à bénéficier de notre méthodologie éprouvée ? Contactez-nous pour discuter 
-                            de vos besoins et découvrir comment nous pouvons vous accompagner.
-                        </p>
-                        <div class="d-flex flex-wrap gap-3 justify-content-center">
-                            <a href="{{ path('app_formations_index') }}" class="btn btn-primary">
-                                <i class="fas fa-graduation-cap me-2"></i>Nos formations
-                            </a>
-                            <a href="{{ path('app_contact_quote') }}" class="btn btn-success">
-                                <i class="fas fa-calculator me-2"></i>Demander un devis
-                            </a>
-                            <a href="{{ path('app_about') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-info-circle me-2"></i>En savoir plus sur EPROFOS
-                            </a>
+    {# Modern Call to Action Section #}
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);">
+                        <div class="card-body p-5 text-center">
+                            <div class="mb-4">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-rocket fa-2x"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-3">Découvrez notre approche en action</h3>
+                            <p class="text-muted mb-4" style="line-height: 1.7; font-size: 1.1rem;">
+                                Prêt à bénéficier de notre méthodologie éprouvée ? Contactez-nous pour discuter 
+                                de vos besoins et découvrir comment nous pouvons vous accompagner.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a href="{{ path('app_formations_index') }}" class="btn btn-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-graduation-cap me-2"></i>Nos formations
+                                </a>
+                                <a href="{{ path('app_contact_quote') }}" class="btn btn-warning btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-calculator me-2"></i>Demander un devis
+                                </a>
+                                <a href="{{ path('app_about') }}" class="btn btn-outline-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-info-circle me-2"></i>En savoir plus sur EPROFOS
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
+        /* Modern Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 50%, #e91e63 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Modern Methodology Timeline */
         .methodology-timeline {
             position: relative;
         }
@@ -222,12 +322,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         
         .step-icon-container {
@@ -237,35 +337,25 @@
             align-items: center;
             justify-content: center;
             border: 3px solid rgba(var(--bs-primary-rgb), 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
         .step-connector {
-            opacity: 0.6;
+            opacity: 0.8;
         }
         
         .methodology-step {
             position: relative;
         }
         
-        .step-content {
-            padding: 2rem;
+        /* Card Hover Effects */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
         }
         
-        .step-details ul li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .step-details ul li:last-child {
-            border-bottom: none;
-        }
-        
+        /* Responsive Design */
         @media (max-width: 991.98px) {
-            .step-content {
-                text-align: center !important;
-                padding: 1rem;
-            }
-            
             .methodology-step .row {
                 flex-direction: column !important;
             }
@@ -273,6 +363,10 @@
             .step-connector {
                 transform: rotate(90deg);
                 margin: 2rem 0;
+            }
+            
+            .hero-section {
+                text-align: center;
             }
         }
         
@@ -286,6 +380,17 @@
         .methodology-step.animate {
             opacity: 1;
             transform: translateY(0);
+        }
+        
+        /* Modern Button Styles */
+        .btn {
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
     </style>
 {% endblock %}
@@ -312,6 +417,20 @@
             
             steps.forEach(step => {
                 observer.observe(step);
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
             });
         });
     </script>

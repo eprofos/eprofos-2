@@ -35,4 +35,19 @@ return [
         'version' => '5.3.7',
         'type' => 'css',
     ],
+    '@fortawesome/fontawesome-free' => [
+        'version' => '6.7.2',
+    ],
+    '@fortawesome/fontawesome-free/css/fontawesome.min.css' => [
+        'version' => '6.7.2',
+        'type' => 'css',
+    ],
+    '@fortawesome/fontawesome-free/css/solid.min.css' => [
+        'version' => '6.7.2',
+        'type' => 'css',
+    ],
+    '@fortawesome/fontawesome-free/css/brands.min.css' => [
+        'version' => '6.7.2',
+        'type' => 'css',
+    ],
 ];

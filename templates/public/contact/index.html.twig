@@ -5,140 +5,199 @@
 {% block meta_description %}Contactez EPROFOS pour vos besoins en formation professionnelle. Demandez un devis, un conseil ou des informations sur nos formations et services.{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        {# Page Header #}
-        <div class="row mb-5">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-4 fw-bold mb-3">Contactez-nous</h1>
-                <p class="lead text-muted">
-                    Notre équipe est à votre disposition pour répondre à vos questions 
-                    et vous accompagner dans vos projets de formation.
-                </p>
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">CONTACTEZ-NOUS</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Parlons de votre <span class="text-warning">projet</span> de formation
+                    </h1>
+                    <p class="lead mb-4">
+                        Notre équipe d'experts est à votre disposition pour répondre à vos questions
+                        et vous accompagner dans vos projets de développement professionnel.
+                    </p>
+                    <p class="mb-4 opacity-90" style="line-height: 1.7; font-size: 1.1rem;">
+                        Que ce soit pour un devis personnalisé, un conseil ou une inscription,
+                        nous sommes là pour vous guider vers la formation qui vous correspond.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                        <a href="#contact-options" class="btn btn-primary btn-lg">
+                            <i class="fas fa-arrow-down me-2"></i>Découvrir nos services
+                        </a>
+                        <a href="tel:+33123456789" class="btn btn-warning btn-lg">
+                            <i class="fas fa-phone me-2"></i>01 23 45 67 89
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        {# Contact Options #}
-        <div class="row mb-5">
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <i class="fas fa-calculator fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">Demander un devis</h5>
-                        <p class="card-text text-muted">
-                            Obtenez un devis personnalisé pour vos besoins en formation.
-                        </p>
-                        <a href="{{ path('app_contact_quote') }}" class="btn btn-primary">
-                            Devis gratuit
-                        </a>
+    <div class="container py-5">
+        {# Modern Contact Options #}
+        <div class="row mb-5" id="contact-options">
+            <div class="col-12">
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Comment pouvons-nous vous aider ?</h2>
                     </div>
+                    <p class="text-muted">Choisissez le service qui correspond le mieux à vos besoins</p>
                 </div>
-            </div>
 
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <i class="fas fa-comments fa-3x text-success mb-3"></i>
-                        <h5 class="card-title">Demander conseil</h5>
-                        <p class="card-text text-muted">
-                            Nos experts vous conseillent sur le choix de vos formations.
-                        </p>
-                        <a href="{{ path('app_contact_consultation') }}" class="btn btn-success">
-                            Conseil gratuit
-                        </a>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-calculator fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Demander un devis</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
+                                    Obtenez un devis personnalisé et gratuit pour vos besoins en formation.
+                                </p>
+                                <a href="{{ path('app_contact_quote') }}" class="btn btn-primary" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-calculator me-2"></i>Devis gratuit
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <i class="fas fa-user-plus fa-3x text-warning mb-3"></i>
-                        <h5 class="card-title">Inscription rapide</h5>
-                        <p class="card-text text-muted">
-                            Inscrivez-vous rapidement à une formation qui vous intéresse.
-                        </p>
-                        <a href="{{ path('app_contact_quick_registration') }}" class="btn btn-warning">
-                            S'inscrire
-                        </a>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-comments fa-2x text-success"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Demander conseil</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
+                                    Nos experts vous conseillent sur le choix de vos formations.
+                                </p>
+                                <a href="{{ path('app_contact_consultation') }}" class="btn btn-success" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-lightbulb me-2"></i>Conseil gratuit
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body">
-                        <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
-                        <h5 class="card-title">Informations</h5>
-                        <p class="card-text text-muted">
-                            Posez-nous toutes vos questions sur nos formations et services.
-                        </p>
-                        <a href="{{ path('app_contact_information') }}" class="btn btn-info">
-                            Nous écrire
-                        </a>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user-plus fa-2x text-warning"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Inscription rapide</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
+                                    Inscrivez-vous rapidement à une formation qui vous intéresse.
+                                </p>
+                                <a href="{{ path('app_contact_quick_registration') }}" class="btn btn-warning" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-rocket me-2"></i>S'inscrire
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4">
+                                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-info-circle fa-2x text-info"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Informations</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
+                                    Posez-nous toutes vos questions sur nos formations et services.
+                                </p>
+                                <a href="{{ path('app_contact_information') }}" class="btn btn-info" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-envelope me-2"></i>Nous écrire
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="row">
-            {# Contact Information #}
+            {# Modern Contact Information #}
             <div class="col-lg-4 mb-4">
-                <div class="card h-100 border-0 bg-light">
-                    <div class="card-body">
-                        <h3 class="h4 fw-bold mb-4">
-                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                            Nos coordonnées
-                        </h3>
-
-                        <div class="mb-4">
-                            <h5 class="fw-bold">Adresse</h5>
-                            <p class="text-muted mb-0">
-                                123 Avenue de la Formation<br>
-                                75001 Paris, France
-                            </p>
+                <div class="card h-100 border-0 shadow-lg" style="border-radius: 25px; background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%);">
+                    <div class="card-body p-4 text-white">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h3 class="h4 fw-bold mb-0">Nos coordonnées</h3>
                         </div>
 
                         <div class="mb-4">
-                            <h5 class="fw-bold">Téléphone</h5>
-                            <p class="mb-0">
-                                <a href="tel:+33123456789" class="text-decoration-none">
-                                    <i class="fas fa-phone me-2"></i>01 23 45 67 89
-                                </a>
-                            </p>
+                            <div class="d-flex align-items-start p-3 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-building text-white me-3 mt-1"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Adresse</h5>
+                                    <p class="mb-0 opacity-90">
+                                        123 Avenue de la Formation<br>
+                                        75001 Paris, France
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-4">
-                            <h5 class="fw-bold">Email</h5>
-                            <p class="mb-0">
-                                <a href="mailto:contact@eprofos.fr" class="text-decoration-none">
-                                    <i class="fas fa-envelope me-2"></i>contact@eprofos.fr
-                                </a>
-                            </p>
+                            <div class="d-flex align-items-center p-3 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-phone text-white me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Téléphone</h5>
+                                    <a href="tel:+33123456789" class="text-white text-decoration-none opacity-90">
+                                        01 23 45 67 89
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-4">
-                            <h5 class="fw-bold">Horaires d'ouverture</h5>
-                            <p class="text-muted mb-0">
-                                Lundi - Vendredi : 9h00 - 18h00<br>
-                                Samedi : 9h00 - 12h00<br>
-                                Dimanche : Fermé
-                            </p>
+                            <div class="d-flex align-items-center p-3 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-envelope text-white me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Email</h5>
+                                    <a href="mailto:contact@eprofos.fr" class="text-white text-decoration-none opacity-90">
+                                        contact@eprofos.fr
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex align-items-start p-3 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-clock text-white me-3 mt-1"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Horaires d'ouverture</h5>
+                                    <p class="mb-0 opacity-90">
+                                        Lundi - Vendredi : 9h00 - 18h00<br>
+                                        Samedi : 9h00 - 12h00<br>
+                                        Dimanche : Fermé
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
-                            <h5 class="fw-bold">Suivez-nous</h5>
-                            <div class="social-links">
-                                <a href="#" class="text-decoration-none me-3">
-                                    <i class="fab fa-linkedin fa-lg"></i>
+                            <h5 class="fw-bold mb-3">Suivez-nous</h5>
+                            <div class="d-flex gap-3">
+                                <a href="#" class="text-white text-decoration-none bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fab fa-linkedin"></i>
                                 </a>
-                                <a href="#" class="text-decoration-none me-3">
-                                    <i class="fab fa-twitter fa-lg"></i>
+                                <a href="#" class="text-white text-decoration-none bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fab fa-twitter"></i>
                                 </a>
-                                <a href="#" class="text-decoration-none me-3">
-                                    <i class="fab fa-facebook fa-lg"></i>
+                                <a href="#" class="text-white text-decoration-none bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fab fa-facebook"></i>
                                 </a>
-                                <a href="#" class="text-decoration-none">
-                                    <i class="fab fa-youtube fa-lg"></i>
+                                <a href="#" class="text-white text-decoration-none bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fab fa-youtube"></i>
                                 </a>
                             </div>
                         </div>
@@ -146,64 +205,75 @@
                 </div>
             </div>
 
-            {# Quick Contact Form #}
+            {# Modern Contact Form #}
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="h4 fw-bold mb-4">
-                            <i class="fas fa-envelope text-primary me-2"></i>
-                            Envoyez-nous un message
-                        </h3>
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h3 class="h4 fw-bold mb-0">Envoyez-nous un message</h3>
+                        </div>
 
                         <form action="{{ path('app_contact_information') }}" method="POST">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="firstName" class="form-label">Prénom *</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           id="firstName" 
+                                    <label for="firstName" class="form-label fw-semibold">Prénom *</label>
+                                    <input type="text"
+                                           class="form-control border-0 shadow-sm"
+                                           id="firstName"
                                            name="first_name"
+                                           style="border-radius: 15px; padding: 0.75rem 1rem;"
                                            required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="lastName" class="form-label">Nom *</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           id="lastName" 
+                                    <label for="lastName" class="form-label fw-semibold">Nom *</label>
+                                    <input type="text"
+                                           class="form-control border-0 shadow-sm"
+                                           id="lastName"
                                            name="last_name"
+                                           style="border-radius: 15px; padding: 0.75rem 1rem;"
                                            required>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">Email *</label>
-                                    <input type="email" 
-                                           class="form-control" 
-                                           id="email" 
-                                           name="email" 
+                                    <label for="email" class="form-label fw-semibold">Email *</label>
+                                    <input type="email"
+                                           class="form-control border-0 shadow-sm"
+                                           id="email"
+                                           name="email"
+                                           style="border-radius: 15px; padding: 0.75rem 1rem;"
                                            required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="phone" class="form-label">Téléphone</label>
-                                    <input type="tel" 
-                                           class="form-control" 
-                                           id="phone" 
-                                           name="phone">
+                                    <label for="phone" class="form-label fw-semibold">Téléphone</label>
+                                    <input type="tel"
+                                           class="form-control border-0 shadow-sm"
+                                           id="phone"
+                                           name="phone"
+                                           style="border-radius: 15px; padding: 0.75rem 1rem;">
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="company" class="form-label">Entreprise</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="company" 
-                                       name="company">
+                                <label for="company" class="form-label fw-semibold">Entreprise</label>
+                                <input type="text"
+                                       class="form-control border-0 shadow-sm"
+                                       id="company"
+                                       name="company"
+                                       style="border-radius: 15px; padding: 0.75rem 1rem;">
                             </div>
 
                             <div class="mb-3">
-                                <label for="subject" class="form-label">Sujet *</label>
-                                <select class="form-select" id="subject" name="subject" required>
+                                <label for="subject" class="form-label fw-semibold">Sujet *</label>
+                                <select class="form-select border-0 shadow-sm"
+                                        id="subject"
+                                        name="subject"
+                                        style="border-radius: 15px; padding: 0.75rem 1rem;"
+                                        required>
                                     <option value="">Choisissez un sujet</option>
                                     <option value="formation">Question sur une formation</option>
                                     <option value="service">Question sur un service</option>
@@ -215,25 +285,26 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="message" class="form-label">Message *</label>
-                                <textarea class="form-control" 
-                                          id="message" 
-                                          name="message" 
-                                          rows="5" 
+                                <label for="message" class="form-label fw-semibold">Message *</label>
+                                <textarea class="form-control border-0 shadow-sm"
+                                          id="message"
+                                          name="message"
+                                          rows="5"
                                           placeholder="Décrivez votre demande..."
+                                          style="border-radius: 15px; padding: 0.75rem 1rem;"
                                           required></textarea>
                             </div>
 
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           id="consent" 
-                                           name="consent" 
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="consent"
+                                           name="consent"
                                            required>
                                     <label class="form-check-label" for="consent">
-                                        J'accepte que mes données soient utilisées pour traiter ma demande. 
-                                        <a href="{{ path('app_legal_privacy') }}" target="_blank">
+                                        J'accepte que mes données soient utilisées pour traiter ma demande.
+                                        <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-primary">
                                             Voir notre politique de confidentialité
                                         </a>
                                     </label>
@@ -241,7 +312,7 @@
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 20px; font-weight: 600;">
                                     <i class="fas fa-paper-plane me-2"></i>
                                     Envoyer le message
                                 </button>
@@ -252,22 +323,24 @@
             </div>
         </div>
 
-        {# Map Section #}
+        {# Modern Map Section #}
         <div class="row mt-5">
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header">
-                        <h3 class="h4 fw-bold mb-0">
-                            <i class="fas fa-map text-primary me-2"></i>
-                            Nous trouver
-                        </h3>
+                <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+                    <div class="card-header border-0 bg-transparent p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-map"></i>
+                            </div>
+                            <h3 class="h4 fw-bold mb-0">Nous trouver</h3>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="ratio ratio-21x9">
                             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256937595!2d2.292292615509614!3d48.85837007928746!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e2964e34e2d%3A0x8ddca9ee380ef7e0!2sEiffel%20Tower!5e0!3m2!1sen!2sfr!4v1234567890123"
-                                    style="border:0;" 
-                                    allowfullscreen="" 
-                                    loading="lazy" 
+                                    style="border:0;"
+                                    allowfullscreen=""
+                                    loading="lazy"
                                     referrerpolicy="no-referrer-when-downgrade"
                                     title="Localisation EPROFOS">
                             </iframe>
@@ -277,66 +350,76 @@
             </div>
         </div>
 
-        {# FAQ Section #}
+        {# Modern FAQ Section #}
         <div class="row mt-5">
             <div class="col-lg-8 mx-auto">
-                <div class="text-center mb-4">
-                    <h2 class="h3 fw-bold">Questions fréquentes</h2>
-                    <p class="text-muted">Trouvez rapidement les réponses à vos questions</p>
+                <div class="text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-0">Questions fréquentes</h2>
+                    </div>
+                    <p class="text-muted">Trouvez rapidement les réponses à vos questions les plus courantes</p>
                 </div>
 
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item">
+                <div class="accordion modern-accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 15px; overflow: hidden;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="border-radius: 15px;">
+                                <i class="fas fa-user-plus text-primary me-3"></i>
                                 Comment puis-je m'inscrire à une formation ?
                             </button>
                         </h2>
                         <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Vous pouvez vous inscrire directement en ligne via notre formulaire d'inscription rapide, 
-                                ou nous contacter pour un accompagnement personnalisé.
+                            <div class="accordion-body" style="line-height: 1.7;">
+                                Vous pouvez vous inscrire directement en ligne via notre formulaire d'inscription rapide,
+                                ou nous contacter pour un accompagnement personnalisé. Notre équipe vous guidera dans toutes les étapes.
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
+                    <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 15px; overflow: hidden;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="border-radius: 15px;">
+                                <i class="fas fa-laptop text-success me-3"></i>
                                 Proposez-vous des formations en distanciel ?
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Oui, nous proposons des formations en présentiel, en distanciel et en format mixte 
-                                selon vos préférences et contraintes.
+                            <div class="accordion-body" style="line-height: 1.7;">
+                                Oui, nous proposons des formations en présentiel, en distanciel et en format mixte
+                                selon vos préférences et contraintes. Nos outils pédagogiques s'adaptent à tous les formats.
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
+                    <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 15px; overflow: hidden;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="border-radius: 15px;">
+                                <i class="fas fa-clock text-warning me-3"></i>
                                 Quels sont vos délais de réponse ?
                             </button>
                         </h2>
                         <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
+                            <div class="accordion-body" style="line-height: 1.7;">
                                 Nous nous engageons à répondre à toutes vos demandes dans un délai de 24h ouvrées maximum.
+                                Pour les urgences, n'hésitez pas à nous appeler directement.
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
+                    <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 15px; overflow: hidden;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" style="border-radius: 15px;">
+                                <i class="fas fa-cog text-info me-3"></i>
                                 Proposez-vous des formations sur mesure ?
                             </button>
                         </h2>
                         <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Absolument ! Nous concevons des formations sur mesure adaptées à vos besoins spécifiques 
-                                et aux objectifs de votre organisation.
+                            <div class="accordion-body" style="line-height: 1.7;">
+                                Absolument ! Nous concevons des formations sur mesure adaptées à vos besoins spécifiques
+                                et aux objectifs de votre organisation. Contactez-nous pour en discuter.
                             </div>
                         </div>
                     </div>

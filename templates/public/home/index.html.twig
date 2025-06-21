@@ -6,7 +6,7 @@
 
 {% block body %}
     {# Hero Section #}
-    <section class="hero-section bg-primary text-white py-5">
+    <section class="hero-section py-5">
         <div class="container">
             <div class="row align-items-center min-vh-50">
                 <div class="col-lg-6">
@@ -14,21 +14,21 @@
                         Développez vos compétences avec <span class="text-warning">EPROFOS</span>
                     </h1>
                     <p class="lead mb-4">
-                        École professionnelle de formation spécialisée, nous vous accompagnons dans votre montée en compétences 
+                        École professionnelle de formation spécialisée, nous vous accompagnons dans votre montée en compétences
                         avec des formations techniques et transversales adaptées à vos besoins.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="{{ path('app_formations_index') }}" class="btn btn-warning btn-lg">
+                        <a href="{{ path('app_formations_index') }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-graduation-cap me-2"></i>Nos formations
                         </a>
-                        <a href="{{ path('app_contact_quote') }}" class="btn btn-outline-light btn-lg">
+                        <a href="{{ path('app_contact_index') }}" class="btn btn-warning btn-lg">
                             <i class="fas fa-calculator me-2"></i>Devis gratuit
                         </a>
                     </div>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <img src="{{ asset('images/hero-illustration.svg') }}" 
-                         alt="Formation professionnelle" 
+                    <img src="{{ asset('images/hero-illustration.svg') }}"
+                         alt="Formation professionnelle"
                          class="img-fluid"
                          style="max-height: 400px;">
                 </div>
@@ -36,43 +36,102 @@
         </div>
     </section>
 
-    {# Key Numbers Section #}
-    <section class="py-5 bg-light">
+    {# Modern Statistics Section #}
+    <section class="modern-stats-section py-5">
         <div class="container">
-            <div class="row text-center">
-                <div class="col-md-3 mb-4">
-                    <div class="card border-0 bg-transparent">
-                        <div class="card-body">
-                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                            <h3 class="fw-bold text-primary">{{ stats.totalStudents ?? '500+' }}</h3>
-                            <p class="text-muted">Apprenants formés</p>
+            <div class="stats-grid">
+                <div class="stat-item" data-controller="counter" data-counter-target-value="30000" data-counter-suffix="+" data-counter-duration-value="2500">
+                    <div class="stat-icon turquoise">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-counter-target="number">0</h3>
+                        <p class="stat-label">Satisfied Students</p>
+                    </div>
+                </div>
+                
+                <div class="stat-item" data-controller="counter" data-counter-target-value="6500" data-counter-suffix="+" data-counter-duration-value="2000">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-counter-target="number">0</h3>
+                        <p class="stat-label">Class Completed</p>
+                    </div>
+                </div>
+                
+                <div class="stat-item" data-controller="counter" data-counter-target-value="6561" data-counter-suffix="+" data-counter-duration-value="2200">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-counter-target="number">0</h3>
+                        <p class="stat-label">Active Students</p>
+                    </div>
+                </div>
+                
+                <div class="stat-item" data-controller="counter" data-counter-target-value="400" data-counter-suffix="+" data-counter-duration-value="1800">
+                    <div class="stat-icon turquoise">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-counter-target="number">0</h3>
+                        <p class="stat-label">Expert Instructors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Online Learning Video Section #}
+    <section class="online-learning-section py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="learning-content">
+                        <span class="section-badge">ONLINE CLASS</span>
+                        <h2 class="learning-title">Lockdown Can't Stop Your Learning</h2>
+                        <p class="learning-description">
+                            Découvrez notre plateforme d'apprentissage en ligne innovante qui vous permet de continuer
+                            votre formation professionnelle où que vous soyez. Avec EPROFOS, l'apprentissage n'a plus de limites.
+                        </p>
+                        <div class="learning-badges">
+                            <span class="learning-badge audio">
+                                <i class="fas fa-volume-up"></i>
+                                Audio Classes
+                            </span>
+                            <span class="learning-badge live">
+                                <i class="fas fa-video"></i>
+                                Live Classes
+                            </span>
+                            <span class="learning-badge recorded">
+                                <i class="fas fa-play-circle"></i>
+                                Recorded Classes
+                            </span>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card border-0 bg-transparent">
-                        <div class="card-body">
-                            <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
-                            <h3 class="fw-bold text-primary">{{ stats.totalFormations ?? '25+' }}</h3>
-                            <p class="text-muted">Formations disponibles</p>
+                <div class="col-lg-6">
+                    <div class="video-container">
+                        <div class="main-video">
+                            <div class="video-placeholder">
+                                <div class="placeholder-content">
+                                    <i class="fas fa-laptop fa-4x mb-3"></i>
+                                    <h5>Formation en ligne</h5>
+                                    <p>Apprentissage interactif avec EPROFOS</p>
+                                </div>
+                            </div>
+                            <div class="video-overlay">
+                                <button class="play-button" type="button">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card border-0 bg-transparent">
-                        <div class="card-body">
-                            <i class="fas fa-award fa-3x text-primary mb-3"></i>
-                            <h3 class="fw-bold text-primary">{{ stats.satisfactionRate ?? '95%' }}</h3>
-                            <p class="text-muted">Taux de satisfaction</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card border-0 bg-transparent">
-                        <div class="card-body">
-                            <i class="fas fa-clock fa-3x text-primary mb-3"></i>
-                            <h3 class="fw-bold text-primary">{{ stats.totalHours ?? '10000+' }}</h3>
-                            <p class="text-muted">Heures de formation</p>
+                        <div class="secondary-video">
+                            <div class="secondary-placeholder">
+                                <i class="fas fa-users fa-2x"></i>
+                                <span>Classe interactive</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,6 +176,264 @@
                 <a href="{{ path('app_formations_index') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-eye me-2"></i>Voir toutes les formations
                 </a>
+            </div>
+        </div>
+    </section>
+
+    {# Course Categories Section #}
+    <section class="course-categories-section py-5 bg-light"
+             data-controller="categories"
+             data-categories-auto-play-value="true"
+             data-categories-auto-play-delay-value="5000">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="categories-title">Our Top Courses</h2>
+                    <p class="categories-subtitle">
+                        Explore our most popular course categories designed to enhance your professional skills
+                    </p>
+                </div>
+            </div>
+
+            <div class="categories-container">
+                <div class="categories-grid" data-categories-target="grid">
+                    <!-- Personal Development -->
+                    <div class="category-card" data-category="personal-development" data-categories-target="card">
+                        <div class="category-icon turquoise">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="category-content">
+                            <h4 class="category-title">Personal Development</h4>
+                            <p class="category-description">
+                                Enhance your personal skills and unlock your potential with our comprehensive development courses.
+                            </p>
+                            <div class="category-stats">
+                                <span class="course-count">12+ Courses</span>
+                                <span class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.8</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="category-overlay">
+                            <a href="{{ path('app_formations_index') }}" class="btn btn-category">
+                                Explore Courses
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- IT & Software -->
+                    <div class="category-card" data-category="it-software" data-categories-target="card">
+                        <div class="category-icon orange">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div class="category-content">
+                            <h4 class="category-title">IT & Software</h4>
+                            <p class="category-description">
+                                Master the latest technologies and programming languages with our expert-led IT courses.
+                            </p>
+                            <div class="category-stats">
+                                <span class="course-count">25+ Courses</span>
+                                <span class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.9</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="category-overlay">
+                            <a href="{{ path('app_formations_index') }}" class="btn btn-category">
+                                Explore Courses
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Health & Fitness -->
+                    <div class="category-card" data-category="health-fitness" data-categories-target="card">
+                        <div class="category-icon purple">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="category-content">
+                            <h4 class="category-title">Health & Fitness</h4>
+                            <p class="category-description">
+                                Improve your well-being and learn healthy lifestyle practices with our wellness programs.
+                            </p>
+                            <div class="category-stats">
+                                <span class="course-count">8+ Courses</span>
+                                <span class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.7</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="category-overlay">
+                            <a href="{{ path('app_formations_index') }}" class="btn btn-category">
+                                Explore Courses
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Computer Science -->
+                    <div class="category-card" data-category="computer-science" data-categories-target="card">
+                        <div class="category-icon orange">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="category-content">
+                            <h4 class="category-title">Computer Science</h4>
+                            <p class="category-description">
+                                Dive deep into computer science fundamentals and advanced algorithms with our comprehensive courses.
+                            </p>
+                            <div class="category-stats">
+                                <span class="course-count">18+ Courses</span>
+                                <span class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.8</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="category-overlay">
+                            <a href="{{ path('app_formations_index') }}" class="btn btn-category">
+                                Explore Courses
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <div class="categories-navigation">
+                    <button class="nav-arrow nav-prev" type="button">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="nav-arrow nav-next" type="button">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Trusted Brands Section #}
+    <section class="trusted-brands-section py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center mb-4">
+                    <h3 class="brands-title">2K+ Brands Trust Us</h3>
+                    <p class="brands-subtitle">Join thousands of companies that have chosen EPROFOS for their training needs</p>
+                </div>
+            </div>
+            <div class="brands-grid">
+                <div class="brand-item">
+                    <div class="brand-logo">
+                        <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="100" height="20" rx="10" fill="currentColor"/>
+                            <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">TechCorp</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="brand-item">
+                    <div class="brand-logo">
+                        <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="60" cy="30" r="25" fill="currentColor"/>
+                            <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">InnovateLab</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="brand-item">
+                    <div class="brand-logo">
+                        <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="60,10 90,50 30,50" fill="currentColor"/>
+                            <text x="60" y="45" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">FutureTech</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="brand-item">
+                    <div class="brand-logo">
+                        <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="20" y="15" width="80" height="30" rx="15" fill="currentColor"/>
+                            <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">GlobalEdu</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="brand-item">
+                    <div class="brand-logo">
+                        <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="60" cy="30" rx="40" ry="20" fill="currentColor"/>
+                            <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="9" font-weight="bold">SkillMaster</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# FAQ Section #}
+    <section class="faq-section py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center mb-5">
+                    <span class="section-badge">FAQ'S</span>
+                    <h2 class="faq-title">We Are Always Ensure Best Course For Your Learning</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion modern-accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapse1"
+                                        aria-expanded="false" aria-controls="collapse1">
+                                    How Long Should A Business Plan Be?
+                                </button>
+                            </h3>
+                            <div id="collapse1" class="accordion-collapse collapse"
+                                 aria-labelledby="faq1" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Un plan de formation efficace dépend de vos objectifs spécifiques. Chez EPROFOS,
+                                    nous proposons des formations courtes de quelques jours à des parcours complets
+                                    de plusieurs mois, adaptés à votre rythme et vos contraintes professionnelles.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="faq2">
+                                <button class="accordion-button" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapse2"
+                                        aria-expanded="true" aria-controls="collapse2">
+                                    What Is Included In Your Services?
+                                </button>
+                            </h3>
+                            <div id="collapse2" class="accordion-collapse collapse show"
+                                 aria-labelledby="faq2" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Nos services incluent des formations techniques et transversales, un accompagnement
+                                    personnalisé, des certifications reconnues, du conseil et audit, ainsi que des
+                                    formations sur mesure adaptées à vos besoins spécifiques. Nous proposons également
+                                    un suivi post-formation pour garantir la mise en pratique de vos nouvelles compétences.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapse3"
+                                        aria-expanded="false" aria-controls="collapse3">
+                                    What Type Of Company Is Measured?
+                                </button>
+                            </h3>
+                            <div id="collapse3" class="accordion-collapse collapse"
+                                 aria-labelledby="faq3" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    EPROFOS accompagne tous types d'entreprises : PME, grandes entreprises, startups,
+                                    associations et organismes publics. Nos formations s'adaptent à tous les secteurs
+                                    d'activité et à toutes les tailles d'organisation, avec des solutions modulaires
+                                    et personnalisables.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -265,21 +582,21 @@
     </section>
 
     {# CTA Section #}
-    <section class="py-5 bg-primary text-white">
+    <section class="py-5 cta-section text-white">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-8">
                     <h3 class="fw-bold mb-2">Prêt à développer vos compétences ?</h3>
                     <p class="mb-0">
-                        Contactez-nous dès aujourd'hui pour discuter de vos besoins en formation 
+                        Contactez-nous dès aujourd'hui pour discuter de vos besoins en formation
                         et obtenir un devis personnalisé.
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <a href="{{ path('app_contact_quote') }}" class="btn btn-warning btn-lg me-2">
+                    <a href="{{ path('app_contact_index') }}" class="btn btn-warning btn-lg me-2">
                         <i class="fas fa-calculator me-2"></i>Devis gratuit
                     </a>
-                    <a href="{{ path('app_contact_information') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ path('app_contact_index') }}" class="btn btn-outline-light btn-lg">
                         <i class="fas fa-phone me-2"></i>Nous contacter
                     </a>
                 </div>

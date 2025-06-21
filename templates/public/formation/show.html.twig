@@ -5,128 +5,202 @@
 {% block meta_description %}{{ formation.description|slice(0, 160) }}{% endblock %}
 
 {% block body %}
+    {# Modern Hero Section for Formation #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    {# Modern Category Badge #}
+                    {% if formation.category %}
+                        <div class="mb-3">
+                            <span class="section-badge">{{ formation.category.name|upper }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h1 class="display-4 fw-bold mb-4">{{ formation.title }}</h1>
+                    
+                    {# Modern Badges Row #}
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        {% if formation.level %}
+                            <div class="badge-expert">
+                                <i class="fas fa-signal me-2"></i>
+                                {% if formation.level == 'beginner' %}
+                                    Niveau Débutant
+                                {% elseif formation.level == 'intermediate' %}
+                                    Niveau Intermédiaire
+                                {% elseif formation.level == 'advanced' %}
+                                    Niveau Avancé
+                                {% else %}
+                                    {{ formation.level|title }}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if formation.durationHours %}
+                            <div class="badge-duration">
+                                <i class="fas fa-clock me-2"></i>{{ formation.formattedDuration }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if formation.isActive %}
+                            <span class="badge bg-success" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                                <i class="fas fa-check me-2"></i>Formation disponible
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                                <i class="fas fa-pause me-2"></i>Temporairement indisponible
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {# Quick Action Buttons #}
+                    <div class="d-flex flex-wrap gap-3">
+                        {% if formation.isActive %}
+                            <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=inscription"
+                               class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
+                            </a>
+                        {% endif %}
+                        <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=information"
+                           class="btn btn-warning btn-lg">
+                            <i class="fas fa-info-circle me-2"></i>Plus d'informations
+                        </a>
+                    </div>
+                </div>
+                
+                {# Formation Image in Hero #}
+                <div class="col-lg-4">
+                    {% if formation.image %}
+                        <div class="text-center">
+                            <img src="{{ asset('uploads/formations/' ~ formation.image) }}"
+                                 class="img-fluid shadow-lg"
+                                 alt="{{ formation.title }}"
+                                 style="border-radius: 20px; max-height: 300px; object-fit: cover;">
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <div class="bg-light d-flex align-items-center justify-content-center shadow-lg"
+                                 style="border-radius: 20px; height: 300px;">
+                                <div class="text-center">
+                                    <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Formation EPROFOS</h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="container py-5">
         <div class="row">
             {# Main Content #}
             <div class="col-lg-8">
-                {# Formation Header #}
-                <div class="mb-4">
-                    {% if formation.category %}
-                        <span class="badge bg-primary mb-2">{{ formation.category.name }}</span>
-                    {% endif %}
-                    
-                    <h1 class="display-5 fw-bold mb-3">{{ formation.title }}</h1>
-                    
-                    <div class="d-flex flex-wrap gap-3 mb-3">
-                        {% if formation.level %}
-                            <span class="badge bg-secondary">
-                                <i class="fas fa-signal me-1"></i>
-                                {% if formation.level == 'beginner' %}
-                                    Débutant
-                                {% elseif formation.level == 'intermediate' %}
-                                    Intermédiaire
-                                {% elseif formation.level == 'advanced' %}
-                                    Avancé
-                                {% else %}
-                                    {{ formation.level|title }}
-                                {% endif %}
-                            </span>
-                        {% endif %}
-                        
-                        {% if formation.durationHours %}
-                            <span class="badge bg-info">
-                                <i class="fas fa-clock me-1"></i>{{ formation.formattedDuration }}
-                            </span>
-                        {% endif %}
-                        
-                        {% if formation.isActive %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-check me-1"></i>Disponible
-                            </span>
-                        {% else %}
-                            <span class="badge bg-warning">
-                                <i class="fas fa-pause me-1"></i>Indisponible
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                {# Formation Image #}
-                {% if formation.image %}
-                    <div class="mb-4">
-                        <img src="{{ asset('uploads/formations/' ~ formation.image) }}" 
-                             class="img-fluid rounded shadow-sm" 
-                             alt="{{ formation.title }}"
-                             style="width: 100%; height: 300px; object-fit: cover;">
-                    </div>
-                {% endif %}
-
-                {# Description #}
+                {# Modern Description Section #}
                 <div class="mb-5">
-                    <h2 class="h3 fw-bold mb-3">Description</h2>
-                    <div class="text-muted">
-                        {{ formation.description|nl2br }}
+                    <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Description de la formation</h2>
+                            </div>
+                            <div class="text-muted" style="line-height: 1.7; font-size: 1.1rem;">
+                                {{ formation.description|nl2br }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {# Objectives #}
+                {# Modern Objectives Section #}
                 {% if formation.objectives %}
                     <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Objectifs pédagogiques</h2>
-                        <div class="card border-0 bg-light">
-                            <div class="card-body">
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <h2 class="h3 fw-bold mb-0">Objectifs pédagogiques</h2>
+                                </div>
                                 {% set objectives_array = formation.objectives|split('\n') %}
-                                <ul class="list-unstyled mb-0">
+                                <div class="row">
                                     {% for objective in objectives_array %}
                                         {% if objective|trim %}
-                                            <li class="mb-2">
-                                                <i class="fas fa-check-circle text-success me-2"></i>
-                                                {{ objective|trim }}
-                                            </li>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="d-flex align-items-start">
+                                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 30px; height: 30px;">
+                                                        <i class="fas fa-check" style="font-size: 0.8rem;"></i>
+                                                    </div>
+                                                    <span style="line-height: 1.6;">{{ objective|trim }}</span>
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     {% endfor %}
-                                </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
 
-                {# Prerequisites #}
+                {# Modern Prerequisites Section #}
                 {% if formation.prerequisites %}
                     <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Prérequis</h2>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            {{ formation.prerequisites|nl2br }}
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px; border-left: 5px solid #0dcaf0;">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <h2 class="h3 fw-bold mb-0">Prérequis</h2>
+                                </div>
+                                <div class="text-muted" style="line-height: 1.7; font-size: 1.05rem;">
+                                    {{ formation.prerequisites|nl2br }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 {% endif %}
 
-                {# Program #}
+                {# Modern Program Section #}
                 {% if formation.program %}
                     <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Programme</h2>
-                        <div class="card">
-                            <div class="card-body">
-                                {{ formation.program|nl2br }}
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-list-alt"></i>
+                                    </div>
+                                    <h2 class="h3 fw-bold mb-0">Programme détaillé</h2>
+                                </div>
+                                <div class="program-content" style="line-height: 1.7; font-size: 1.05rem;">
+                                    {{ formation.program|nl2br }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
 
 
-                {# Related Formations #}
+                {# Modern Related Formations Section #}
                 {% if related_formations is defined and related_formations is not empty %}
                     <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Formations similaires</h2>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h2 class="h3 fw-bold mb-0">Formations similaires</h2>
+                        </div>
                         <div class="row">
                             {% for related_formation in related_formations %}
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-4">
                                     {% include 'public/components/formation_card.html.twig' with {
                                         'formation': related_formation,
                                         'show_category': false,
                                         'show_excerpt': false,
-                                        'card_class': 'border-0 bg-light'
+                                        'card_class': 'border-0 shadow-sm'
                                     } %}
                                 </div>
                             {% endfor %}
@@ -135,106 +209,142 @@
                 {% endif %}
             </div>
 
-            {# Sidebar #}
+            {# Modern Sidebar #}
             <div class="col-lg-4">
                 <div class="sticky-top" style="top: 2rem;">
-                    {# Price and Registration Card #}
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
+                    {# Modern Price and Registration Card #}
+                    <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px; background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);">
+                        <div class="card-body p-4 text-center">
+                            <div class="mb-4">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-euro-sign fa-lg"></i>
+                                </div>
                                 {% if formation.price %}
-                                    <div class="display-6 fw-bold text-primary">{{ formation.formattedPrice }}</div>
-                                    <small class="text-muted">Prix par participant</small>
+                                    <div class="display-5 fw-bold text-primary mb-1">{{ formation.formattedPrice }}</div>
+                                    <small class="text-muted fw-semibold">Prix par participant</small>
                                 {% else %}
-                                    <div class="h4 text-muted">Prix sur devis</div>
-                                    <small class="text-muted">Contactez-nous pour un tarif personnalisé</small>
+                                    <div class="h3 text-primary fw-bold mb-1">Prix sur devis</div>
+                                    <small class="text-muted fw-semibold">Contactez-nous pour un tarif personnalisé</small>
                                 {% endif %}
                             </div>
 
                             {% if formation.isActive %}
-                                <div class="d-grid gap-2">
+                                <div class="d-grid gap-3">
                                     <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=inscription"
-                                       class="btn btn-primary btn-lg">
-                                        <i class="fas fa-user-plus me-2"></i>S'inscrire
+                                       class="btn btn-primary btn-lg" style="border-radius: 20px; font-weight: 600;">
+                                        <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
                                     </a>
                                     <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=information"
-                                       class="btn btn-outline-primary">
+                                       class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
                                         <i class="fas fa-info-circle me-2"></i>Plus d'informations
                                     </a>
                                 </div>
                             {% else %}
-                                <div class="alert alert-warning mb-0">
+                                <div class="alert alert-warning border-0" style="border-radius: 15px;">
                                     <i class="fas fa-exclamation-triangle me-2"></i>
-                                    Formation actuellement indisponible
+                                    <strong>Formation temporairement indisponible</strong>
                                 </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    {# Formation Details #}
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-info-circle me-2"></i>Détails de la formation
-                            </h5>
+                    {# Modern Formation Details Card #}
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+                        <div class="card-header border-0 bg-transparent pb-0">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h5 class="card-title mb-0 fw-bold">Détails de la formation</h5>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled mb-0">
+                        <div class="card-body pt-3">
+                            <div class="row g-3">
                                 {% if formation.durationHours %}
-                                    <li class="mb-2">
-                                        <strong>Durée :</strong> {{ formation.formattedDuration }}
-                                    </li>
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                            <i class="fas fa-clock text-primary me-3"></i>
+                                            <div>
+                                                <strong class="d-block">Durée</strong>
+                                                <span class="text-muted">{{ formation.formattedDuration }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 {% endif %}
                                 
                                 {% if formation.level %}
-                                    <li class="mb-2">
-                                        <strong>Niveau :</strong>
-                                        {% if formation.level == 'beginner' %}
-                                            Débutant
-                                        {% elseif formation.level == 'intermediate' %}
-                                            Intermédiaire
-                                        {% elseif formation.level == 'advanced' %}
-                                            Avancé
-                                        {% else %}
-                                            {{ formation.level|title }}
-                                        {% endif %}
-                                    </li>
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                            <i class="fas fa-signal text-success me-3"></i>
+                                            <div>
+                                                <strong class="d-block">Niveau</strong>
+                                                <span class="text-muted">
+                                                    {% if formation.level == 'beginner' %}
+                                                        Débutant
+                                                    {% elseif formation.level == 'intermediate' %}
+                                                        Intermédiaire
+                                                    {% elseif formation.level == 'advanced' %}
+                                                        Avancé
+                                                    {% else %}
+                                                        {{ formation.level|title }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 {% endif %}
                                 
                                 {% if formation.category %}
-                                    <li class="mb-2">
-                                        <strong>Catégorie :</strong> {{ formation.category.name }}
-                                    </li>
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                            <i class="fas fa-tag text-warning me-3"></i>
+                                            <div>
+                                                <strong class="d-block">Catégorie</strong>
+                                                <span class="text-muted">{{ formation.category.name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 {% endif %}
                                 
-                                <li class="mb-2">
-                                    <strong>Format :</strong> Présentiel / Distanciel
-                                </li>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                        <i class="fas fa-laptop text-info me-3"></i>
+                                        <div>
+                                            <strong class="d-block">Format</strong>
+                                            <span class="text-muted">Présentiel / Distanciel</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 
-                                <li class="mb-0">
-                                    <strong>Certificat :</strong> Attestation de formation
-                                </li>
-                            </ul>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                        <i class="fas fa-certificate text-success me-3"></i>
+                                        <div>
+                                            <strong class="d-block">Certificat</strong>
+                                            <span class="text-muted">Attestation de formation</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {# Contact Card #}
-                    <div class="card shadow-sm">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-headset me-2"></i>Besoin d'aide ?
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text text-muted mb-3">
-                                Notre équipe est là pour vous accompagner dans votre choix de formation.
+                    {# Modern Contact Card #}
+                    <div class="card border-0 shadow-sm" style="border-radius: 20px; background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%);">
+                        <div class="card-body p-4 text-white text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-headset fa-2x mb-3"></i>
+                                <h5 class="card-title mb-0 fw-bold">Besoin d'aide ?</h5>
+                            </div>
+                            <p class="card-text mb-4 opacity-90">
+                                Notre équipe d'experts est là pour vous accompagner dans votre parcours de formation.
                             </p>
-                            <div class="d-grid gap-2">
+                            <div class="d-grid gap-3">
                                 <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=conseil"
-                                   class="btn btn-outline-secondary">
+                                   class="btn btn-light fw-semibold" style="border-radius: 20px;">
                                     <i class="fas fa-comments me-2"></i>Demander conseil
                                 </a>
-                                <a href="tel:+33123456789" class="btn btn-outline-secondary">
+                                <a href="tel:+33123456789" class="btn btn-outline-light fw-semibold" style="border-radius: 20px;">
                                     <i class="fas fa-phone me-2"></i>01 23 45 67 89
                                 </a>
                             </div>

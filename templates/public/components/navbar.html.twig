@@ -1,119 +1,137 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm" data-controller="navbar">
+<nav class="modern-navbar navbar navbar-expand-lg navbar-light bg-white shadow-sm" data-controller="navbar">
     <div class="container">
-        <!-- Brand/Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
-            <img src="{{ asset('images/logo/eprofos-logo.png') }}" alt="EPROFOS" height="40" class="me-2">
-            <div class="d-none d-md-block">
-                <div class="fw-bold text-primary">EPROFOS</div>
-                <small class="text-muted">École professionnelle de formation</small>
+        <!-- Modern Brand/Logo -->
+        <a class="modern-navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
+            <div class="logo-container">
+                <div class="logo-text">
+                    <span class="brand-name">EPROFOS</span>
+                    <span class="brand-tagline">EDUCATION & ONLINE COURSES</span>
+                </div>
             </div>
         </a>
 
+        <!-- Search and Cart Icons (Desktop) -->
+        <div class="navbar-actions d-none d-lg-flex align-items-center me-3">
+            <button class="action-btn search-btn" type="button" data-bs-toggle="collapse" data-bs-target="#search-bar" aria-expanded="false">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="action-btn cart-btn" type="button">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge">0</span>
+            </button>
+        </div>
+
         <!-- Mobile menu toggle -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+        <button class="navbar-toggler modern-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
 
         <!-- Navigation menu -->
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav mx-auto">
                 <!-- Home -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}" 
+                    <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}"
                        href="{{ path('app_home') }}">
-                        <i class="fas fa-home me-1"></i>Accueil
+                        Home
                     </a>
                 </li>
 
-                <!-- About -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_about' ? 'active' : '' }}" 
-                       href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-info-circle me-1"></i>À propos
+                <!-- About Us -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'app_about' ? 'active' : '' }}"
+                       href="{{ path('app_about') }}">
+                        About Us
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="aboutDropdown">
+                </li>
+
+                <!-- Pages -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Pages
+                    </a>
+                    <ul class="dropdown-menu modern-dropdown" aria-labelledby="pagesDropdown">
                         <li><a class="dropdown-item" href="{{ path('app_about') }}">
                             <i class="fas fa-building me-2"></i>Notre organisme
                         </a></li>
                         <li><a class="dropdown-item" href="{{ path('app_about_approach') }}">
                             <i class="fas fa-cogs me-2"></i>Notre approche
                         </a></li>
+                        <li><a class="dropdown-item" href="{{ path('app_services_index') }}">
+                            <i class="fas fa-handshake me-2"></i>Nos services
+                        </a></li>
                     </ul>
                 </li>
 
-                <!-- Formations -->
+                <!-- Our Courses -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_formation' ? 'active' : '' }}" 
-                       href="#" id="formationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-graduation-cap me-1"></i>Formations
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_formation' ? 'active' : '' }}"
+                       href="#" id="coursesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Our Courses
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="formationsDropdown">
+                    <ul class="dropdown-menu modern-dropdown" aria-labelledby="coursesDropdown">
                         <li><a class="dropdown-item" href="{{ path('app_formations_index') }}">
-                            <i class="fas fa-list me-2"></i>Toutes les formations
+                            <i class="fas fa-list me-2"></i>All Courses
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><h6 class="dropdown-header">Par catégorie</h6></li>
+                        <li><h6 class="dropdown-header">By Category</h6></li>
                         <li><a class="dropdown-item" href="{{ path('app_formations_by_category', {slug: 'techniques'}) }}">
-                            <i class="fas fa-laptop-code me-2"></i>Formations techniques
+                            <i class="fas fa-laptop-code me-2"></i>Technical Training
                         </a></li>
                         <li><a class="dropdown-item" href="{{ path('app_formations_by_category', {slug: 'transversales'}) }}">
-                            <i class="fas fa-users me-2"></i>Formations transversales
+                            <i class="fas fa-users me-2"></i>Soft Skills
                         </a></li>
                     </ul>
                 </li>
 
-                <!-- Services -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_service' ? 'active' : '' }}" 
-                       href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-handshake me-1"></i>Services
+                <!-- Shop -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_formations_index') }}">
+                        Shop
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
-                        <li><a class="dropdown-item" href="{{ path('app_services_index') }}">
-                            <i class="fas fa-list me-2"></i>Tous nos services
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{{ path('app_services_by_category', {slug: 'conseil'}) }}">
-                            <i class="fas fa-lightbulb me-2"></i>Conseil & Audit
-                        </a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_services_by_category', {slug: 'accompagnement'}) }}">
-                            <i class="fas fa-user-friends me-2"></i>Accompagnement
-                        </a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_services_by_category', {slug: 'certifications'}) }}">
-                            <i class="fas fa-certificate me-2"></i>Certifications
-                        </a></li>
-                    </ul>
+                </li>
+
+                <!-- Blog -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#blog">
+                        Blog
+                    </a>
                 </li>
 
                 <!-- Contact -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') starts with 'app_contact' ? 'active' : '' }}" 
+                    <a class="nav-link {{ app.request.get('_route') starts with 'app_contact' ? 'active' : '' }}"
                        href="{{ path('app_contact_index') }}">
-                        <i class="fas fa-envelope me-1"></i>Contact
-                    </a>
-                </li>
-
-                <!-- CTA Button -->
-                <li class="nav-item ms-2">
-                    <a class="btn btn-primary btn-sm" href="{{ path('app_contact_index') }}#quote-form">
-                        <i class="fas fa-paper-plane me-1"></i>Demander un devis
+                        Contact
                     </a>
                 </li>
             </ul>
+
+            <!-- Join For Free Button -->
+            <div class="navbar-cta d-flex align-items-center">
+                <a class="btn btn-join-free" href="{{ path('app_contact_index') }}#quote-form">
+                    <i class="fas fa-user-plus me-2"></i>Join For Free
+                </a>
+            </div>
         </div>
     </div>
 </nav>
 
-<!-- Search bar (optional, can be toggled) -->
-<div class="bg-light border-bottom d-none" id="search-bar">
-    <div class="container py-2">
-        <form class="d-flex" role="search" action="{{ path('app_formations_index') }}" method="GET">
-            <input class="form-control me-2" type="search" name="search" placeholder="Rechercher une formation..." 
-                   aria-label="Search" value="{{ app.request.query.get('search', '') }}">
-            <button class="btn btn-outline-primary" type="submit">
-                <i class="fas fa-search"></i>
-            </button>
+<!-- Modern Search bar -->
+<div class="modern-search-bar bg-light border-bottom collapse" id="search-bar">
+    <div class="container py-3">
+        <form class="search-form" role="search" action="{{ path('app_formations_index') }}" method="GET">
+            <div class="search-input-group">
+                <input class="form-control search-input" type="search" name="search"
+                       placeholder="Search for courses, topics, or instructors..."
+                       aria-label="Search" value="{{ app.request.query.get('search', '') }}">
+                <button class="btn search-submit-btn" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
         </form>
     </div>
 </div>

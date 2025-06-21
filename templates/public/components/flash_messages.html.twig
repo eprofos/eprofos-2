@@ -1,23 +1,335 @@
 {% for type, messages in app.flashes %}
     {% set alert_class = 'alert-info' %}
+    {% set alert_bg = 'bg-info' %}
     {% set icon = 'fas fa-info-circle' %}
+    {% set border_color = 'border-info' %}
     
     {% if type == 'success' %}
         {% set alert_class = 'alert-success' %}
+        {% set alert_bg = 'bg-success' %}
         {% set icon = 'fas fa-check-circle' %}
+        {% set border_color = 'border-success' %}
     {% elseif type == 'error' or type == 'danger' %}
         {% set alert_class = 'alert-danger' %}
+        {% set alert_bg = 'bg-danger' %}
         {% set icon = 'fas fa-exclamation-triangle' %}
+        {% set border_color = 'border-danger' %}
     {% elseif type == 'warning' %}
         {% set alert_class = 'alert-warning' %}
+        {% set alert_bg = 'bg-warning' %}
         {% set icon = 'fas fa-exclamation-circle' %}
+        {% set border_color = 'border-warning' %}
     {% endif %}
 
     {% for message in messages %}
-        <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
-            <i class="{{ icon }} me-2"></i>
-            {{ message|raw }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        <div class="modern-flash-message mb-3" data-flash-type="{{ type }}">
+            <div class="alert {{ alert_class }} border-0 shadow-sm alert-dismissible fade show" 
+                 style="border-radius: 15px; border-left: 4px solid var(--bs-{{ type == 'error' or type == 'danger' ? 'danger' : type }});">
+                <div class="d-flex align-items-start">
+                    <div class="{{ alert_bg }} text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
+                         style="width: 40px; height: 40px;">
+                        <i class="{{ icon }}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold mb-1">
+                            {% if type == 'success' %}
+                                Succès !
+                            {% elseif type == 'error' or type == 'danger' %}
+                                Erreur !
+                            {% elseif type == 'warning' %}
+                                Attention !
+                            {% else %}
+                                Information
+                            {% endif %}
+                        </div>
+                        <div class="message-content">
+                            {{ message|raw }}
+                        </div>
+                    </div>
+                    <button type="button" 
+                            class="btn-close btn-close-modern" 
+                            data-bs-dismiss="alert" 
+                            aria-label="Fermer"
+                            style="background: none; border: none; font-size: 1.2rem; opacity: 0.6; transition: all 0.3s ease;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     {% endfor %}
 {% endfor %}
+
+<style>
+    /* Modern Flash Messages Styles */
+    .modern-flash-message {
+        animation: slideInFlash 0.5s ease-out;
+    }
+    
+    .modern-flash-message .alert {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-flash-message .alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, 
+            var(--bs-primary) 0%, 
+            var(--bs-success) 25%, 
+            var(--bs-warning) 50%, 
+            var(--bs-danger) 75%, 
+            var(--bs-info) 100%);
+        opacity: 0.3;
+    }
+    
+    /* Success Messages */
+    .modern-flash-message[data-flash-type="success"] .alert {
+        background: linear-gradient(135deg, rgba(212, 237, 218, 0.3) 0%, rgba(255, 255, 255, 0.95) 100%);
+        color: #0f5132;
+    }
+    
+    .modern-flash-message[data-flash-type="success"] .alert::before {
+        background: var(--bs-success);
+        opacity: 0.6;
+    }
+    
+    /* Error/Danger Messages */
+    .modern-flash-message[data-flash-type="error"] .alert,
+    .modern-flash-message[data-flash-type="danger"] .alert {
+        background: linear-gradient(135deg, rgba(248, 215, 218, 0.3) 0%, rgba(255, 255, 255, 0.95) 100%);
+        color: #721c24;
+    }
+    
+    .modern-flash-message[data-flash-type="error"] .alert::before,
+    .modern-flash-message[data-flash-type="danger"] .alert::before {
+        background: var(--bs-danger);
+        opacity: 0.6;
+    }
+    
+    /* Warning Messages */
+    .modern-flash-message[data-flash-type="warning"] .alert {
+        background: linear-gradient(135deg, rgba(255, 243, 205, 0.3) 0%, rgba(255, 255, 255, 0.95) 100%);
+        color: #664d03;
+    }
+    
+    .modern-flash-message[data-flash-type="warning"] .alert::before {
+        background: var(--bs-warning);
+        opacity: 0.6;
+    }
+    
+    /* Info Messages */
+    .modern-flash-message[data-flash-type="info"] .alert {
+        background: linear-gradient(135deg, rgba(207, 244, 252, 0.3) 0%, rgba(255, 255, 255, 0.95) 100%);
+        color: #055160;
+    }
+    
+    .modern-flash-message[data-flash-type="info"] .alert::before {
+        background: var(--bs-info);
+        opacity: 0.6;
+    }
+    
+    /* Modern Close Button */
+    .btn-close-modern {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-close-modern:hover {
+        background: rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .btn-close-modern:focus {
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+    
+    /* Message Content Styling */
+    .message-content {
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+    
+    .message-content a {
+        color: inherit;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    
+    .message-content a:hover {
+        text-decoration: none;
+        opacity: 0.8;
+    }
+    
+    /* Icon Styling */
+    .modern-flash-message .alert .rounded-circle {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Hover Effects */
+    .modern-flash-message .alert:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Animations */
+    @keyframes slideInFlash {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Auto-dismiss animation */
+    .modern-flash-message.auto-dismiss {
+        animation: slideOutFlash 0.5s ease-in forwards;
+        animation-delay: 4.5s;
+    }
+    
+    @keyframes slideOutFlash {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+            max-height: 200px;
+            margin-bottom: 1rem;
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+            max-height: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+    }
+    
+    /* Progress bar for auto-dismiss */
+    .modern-flash-message.auto-dismiss .alert::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.2);
+        animation: progressBar 5s linear;
+    }
+    
+    @keyframes progressBar {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .modern-flash-message .alert {
+            padding: 1rem;
+        }
+        
+        .modern-flash-message .alert .rounded-circle {
+            width: 35px;
+            height: 35px;
+        }
+        
+        .message-content {
+            font-size: 0.9rem;
+        }
+        
+        .btn-close-modern {
+            width: 28px;
+            height: 28px;
+        }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .modern-flash-message .alert {
+            background: linear-gradient(135deg, rgba(33, 37, 41, 0.95) 0%, rgba(52, 58, 64, 0.95) 100%);
+            color: #f8f9fa;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-close-modern:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+</style>
+
+<script>
+    // Enhanced Flash Messages JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss success messages after 5 seconds
+        const successMessages = document.querySelectorAll('.modern-flash-message[data-flash-type="success"]');
+        successMessages.forEach(function(message) {
+            message.classList.add('auto-dismiss');
+            setTimeout(function() {
+                const alert = message.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        });
+        
+        // Add click-to-dismiss functionality
+        const flashMessages = document.querySelectorAll('.modern-flash-message .alert');
+        flashMessages.forEach(function(alert) {
+            alert.addEventListener('click', function(e) {
+                // Don't dismiss if clicking on links or close button
+                if (e.target.tagName === 'A' || e.target.closest('.btn-close-modern')) {
+                    return;
+                }
+                
+                // Add a small delay to allow for accidental clicks
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 300);
+            });
+        });
+        
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const visibleAlerts = document.querySelectorAll('.modern-flash-message .alert.show');
+                if (visibleAlerts.length > 0) {
+                    const bsAlert = new bootstrap.Alert(visibleAlerts[visibleAlerts.length - 1]);
+                    bsAlert.close();
+                }
+            }
+        });
+        
+        // Accessibility improvements
+        const alerts = document.querySelectorAll('.modern-flash-message .alert');
+        alerts.forEach(function(alert) {
+            alert.setAttribute('role', 'alert');
+            alert.setAttribute('aria-live', 'polite');
+            
+            // Focus management for screen readers
+            if (alert.classList.contains('alert-danger') || alert.classList.contains('alert-warning')) {
+                alert.setAttribute('aria-live', 'assertive');
+                alert.focus();
+            }
+        });
+    });
+</script>
