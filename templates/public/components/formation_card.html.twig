@@ -1,0 +1,111 @@
+{#
+    Formation card component
+    
+    Parameters:
+    - formation: Formation entity
+    - show_category: boolean (default: true) - Show category badge
+    - show_excerpt: boolean (default: true) - Show description excerpt
+    - card_class: string (default: '') - Additional CSS classes for the card
+#}
+
+{% set show_category = show_category is defined ? show_category : true %}
+{% set show_excerpt = show_excerpt is defined ? show_excerpt : true %}
+{% set card_class = card_class is defined ? card_class : '' %}
+
+<div class="card h-100 shadow-sm formation-card {{ card_class }}">
+    {% if formation.image %}
+        <img src="{{ asset('uploads/formations/' ~ formation.image) }}" 
+             class="card-img-top" 
+             alt="{{ formation.title }}"
+             style="height: 200px; object-fit: cover;">
+    {% else %}
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+             style="height: 200px;">
+            <i class="fas fa-graduation-cap fa-3x text-muted"></i>
+        </div>
+    {% endif %}
+
+    <div class="card-body d-flex flex-column">
+        {% if show_category and formation.category %}
+            <div class="mb-2">
+                <span class="badge bg-primary">{{ formation.category.name }}</span>
+            </div>
+        {% endif %}
+
+        <h5 class="card-title">
+            <a href="{{ path('app_formation_show', {slug: formation.slug}) }}" 
+               class="text-decoration-none text-dark stretched-link">
+                {{ formation.title }}
+            </a>
+        </h5>
+
+        {% if show_excerpt and formation.description %}
+            <p class="card-text text-muted flex-grow-1">
+                {{ formation.description|length > 120 ? formation.description|slice(0, 120) ~ '...' : formation.description }}
+            </p>
+        {% endif %}
+
+        <div class="mt-auto">
+            <div class="row align-items-center">
+                <div class="col">
+                    {% if formation.duration %}
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ formation.duration }}
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="col-auto">
+                    {% if formation.price %}
+                        <span class="fw-bold text-primary">{{ formation.price }}€</span>
+                    {% else %}
+                        <span class="text-muted">Sur devis</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if formation.level %}
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-signal me-1"></i>
+                        {% if formation.level == 'beginner' %}
+                            Débutant
+                        {% elseif formation.level == 'intermediate' %}
+                            Intermédiaire
+                        {% elseif formation.level == 'advanced' %}
+                            Avancé
+                        {% else %}
+                            {{ formation.level|title }}
+                        {% endif %}
+                    </small>
+                </div>
+            {% endif %}
+
+            {% if formation.isActive %}
+                <div class="mt-2">
+                    <span class="badge bg-success">
+                        <i class="fas fa-check me-1"></i>Disponible
+                    </span>
+                </div>
+            {% else %}
+                <div class="mt-2">
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-pause me-1"></i>Indisponible
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-footer bg-transparent border-top-0">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{{ path('app_formation_show', {slug: formation.slug}) }}" 
+               class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-eye me-1"></i>Voir détails
+            </a>
+            <a href="{{ path('app_contact_quick_registration') }}?formation={{ formation.id }}" 
+               class="btn btn-primary btn-sm">
+                <i class="fas fa-user-plus me-1"></i>S'inscrire
+            </a>
+        </div>
+    </div>
+</div>

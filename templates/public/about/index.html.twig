@@ -1,0 +1,374 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}À propos - EPROFOS{% endblock %}
+
+{% block meta_description %}Découvrez EPROFOS, École professionnelle de formation spécialisée. Notre mission, nos valeurs et notre expertise au service de votre développement professionnel.{% endblock %}
+
+{% block body %}
+    {% include 'public/components/breadcrumb.html.twig' %}
+
+    <div class="container py-5">
+        {# Hero Section #}
+        <div class="row mb-5">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">À propos d'EPROFOS</h1>
+                <p class="lead text-muted mb-4">
+                    École professionnelle de formation spécialisée, EPROFOS accompagne depuis plus de 10 ans 
+                    les professionnels et les entreprises dans leur développement de compétences.
+                </p>
+                <p class="text-muted mb-4">
+                    Notre mission est de proposer des formations de qualité, adaptées aux besoins du marché 
+                    et aux évolutions technologiques, pour permettre à chacun de réussir sa transformation professionnelle.
+                </p>
+                <a href="{{ path('app_about_approach') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Découvrir notre approche
+                </a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ asset('images/about-hero.svg') }}" 
+                     alt="À propos d'EPROFOS" 
+                     class="img-fluid"
+                     style="max-height: 400px;">
+            </div>
+        </div>
+
+        {# Our Mission #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4">Notre mission</h2>
+                <p class="lead text-muted">
+                    Démocratiser l'accès à la formation professionnelle de qualité et accompagner 
+                    chaque apprenant dans sa réussite professionnelle.
+                </p>
+            </div>
+        </div>
+
+        {# Our Values #}
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 fw-bold text-center mb-5">Nos valeurs</h2>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-heart fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Excellence</h5>
+                                <p class="card-text text-muted">
+                                    Nous nous engageons à fournir des formations de la plus haute qualité 
+                                    avec des formateurs experts.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h5 class="card-title">Proximité</h5>
+                                <p class="card-text text-muted">
+                                    Un accompagnement personnalisé et un suivi individualisé 
+                                    pour chaque apprenant.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                                <h5 class="card-title">Innovation</h5>
+                                <p class="card-text text-muted">
+                                    Des méthodes pédagogiques modernes et des contenus 
+                                    toujours à la pointe de l'actualité.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-handshake fa-3x text-info mb-3"></i>
+                                <h5 class="card-title">Engagement</h5>
+                                <p class="card-text text-muted">
+                                    Un engagement total dans la réussite de nos apprenants 
+                                    et de nos partenaires.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Key Numbers #}
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card bg-primary text-white border-0">
+                    <div class="card-body py-5">
+                        <h2 class="h3 fw-bold text-center mb-5">EPROFOS en chiffres</h2>
+                        <div class="row text-center">
+                            <div class="col-lg-3 col-md-6 mb-4">
+                                <div class="mb-2">
+                                    <i class="fas fa-calendar fa-2x mb-3"></i>
+                                    <div class="display-6 fw-bold">10+</div>
+                                    <p class="mb-0">Années d'expérience</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-4">
+                                <div class="mb-2">
+                                    <i class="fas fa-users fa-2x mb-3"></i>
+                                    <div class="display-6 fw-bold">500+</div>
+                                    <p class="mb-0">Apprenants formés</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-4">
+                                <div class="mb-2">
+                                    <i class="fas fa-graduation-cap fa-2x mb-3"></i>
+                                    <div class="display-6 fw-bold">25+</div>
+                                    <p class="mb-0">Formations disponibles</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-4">
+                                <div class="mb-2">
+                                    <i class="fas fa-award fa-2x mb-3"></i>
+                                    <div class="display-6 fw-bold">95%</div>
+                                    <p class="mb-0">Taux de satisfaction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Our Team #}
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 fw-bold text-center mb-5">Notre équipe</h2>
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <img src="{{ asset('images/team/director.jpg') }}" 
+                                     alt="Directeur EPROFOS" 
+                                     class="rounded-circle mb-3"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                <h5 class="card-title">Marie Dubois</h5>
+                                <p class="text-muted mb-2">Directrice</p>
+                                <p class="card-text text-muted small">
+                                    15 ans d'expérience dans la formation professionnelle. 
+                                    Experte en ingénierie pédagogique.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <img src="{{ asset('images/team/pedagogy.jpg') }}" 
+                                     alt="Responsable pédagogique" 
+                                     class="rounded-circle mb-3"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                <h5 class="card-title">Jean Martin</h5>
+                                <p class="text-muted mb-2">Responsable pédagogique</p>
+                                <p class="card-text text-muted small">
+                                    Expert en technologies numériques et méthodes d'apprentissage innovantes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <img src="{{ asset('images/team/commercial.jpg') }}" 
+                                     alt="Responsable commercial" 
+                                     class="rounded-circle mb-3"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                <h5 class="card-title">Sophie Leroy</h5>
+                                <p class="text-muted mb-2">Responsable commerciale</p>
+                                <p class="card-text text-muted small">
+                                    Spécialisée dans l'accompagnement des entreprises et le conseil en formation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Our Certifications #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="h3 fw-bold text-center mb-4">Nos certifications et agréments</h2>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
+                                <h5>Qualiopi</h5>
+                                <p class="text-muted small">
+                                    Certification qualité des organismes de formation
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                                <h5>OPCO</h5>
+                                <p class="text-muted small">
+                                    Référencé auprès des principaux OPCO
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                                <h5>CPF</h5>
+                                <p class="text-muted small">
+                                    Formations éligibles au Compte Personnel de Formation
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Our History #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="h3 fw-bold text-center mb-4">Notre histoire</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">2014</div>
+                        <div class="timeline-content">
+                            <h5>Création d'EPROFOS</h5>
+                            <p class="text-muted">
+                                Fondation de l'école avec une vision : démocratiser l'accès à la formation professionnelle de qualité.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">2017</div>
+                        <div class="timeline-content">
+                            <h5>Expansion de l'offre</h5>
+                            <p class="text-muted">
+                                Développement de nouvelles formations techniques et lancement des services de conseil.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">2020</div>
+                        <div class="timeline-content">
+                            <h5>Transformation digitale</h5>
+                            <p class="text-muted">
+                                Adaptation aux nouveaux modes d'apprentissage avec le développement de formations en distanciel.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-year">2024</div>
+                        <div class="timeline-content">
+                            <h5>Nouvelle plateforme</h5>
+                            <p class="text-muted">
+                                Lancement de notre nouvelle plateforme e-learning pour une expérience utilisateur optimisée.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Call to Action #}
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="card bg-light border-0">
+                    <div class="card-body py-5">
+                        <h3 class="fw-bold mb-3">Rejoignez l'aventure EPROFOS</h3>
+                        <p class="text-muted mb-4">
+                            Découvrez comment nous pouvons vous accompagner dans votre développement professionnel.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ path('app_formations_index') }}" class="btn btn-primary">
+                                <i class="fas fa-graduation-cap me-2"></i>Nos formations
+                            </a>
+                            <a href="{{ path('app_contact_information') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-envelope me-2"></i>Nous contacter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--bs-primary);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+        
+        .timeline-year {
+            position: absolute;
+            left: -3rem;
+            top: 0;
+            background: var(--bs-primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: var(--bs-primary);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--bs-primary);
+        }
+        
+        .timeline-content h5 {
+            color: var(--bs-primary);
+            font-weight: 600;
+        }
+    </style>
+{% endblock %}

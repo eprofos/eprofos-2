@@ -1,0 +1,223 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formations - EPROFOS{% endblock %}
+
+{% block meta_description %}Découvrez toutes nos formations professionnelles techniques et transversales. Développez vos compétences avec EPROFOS, école professionnelle de formation spécialisée.{% endblock %}
+
+{% block body %}
+    {% include 'public/components/breadcrumb.html.twig' %}
+
+    <div class="container py-5">
+        {# Page Header #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">Nos formations</h1>
+                <p class="lead text-muted">
+                    Développez vos compétences avec nos formations professionnelles adaptées aux besoins du marché. 
+                    Formations techniques et transversales dispensées par des experts.
+                </p>
+            </div>
+        </div>
+
+        {# Filters and Search #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form method="GET" action="{{ path('app_formations_index') }}" 
+                              data-controller="formation-filter" 
+                              data-formation-filter-url-value="{{ path('app_formations_ajax_filter') }}">
+                            
+                            <div class="row g-3 align-items-end">
+                                {# Search #}
+                                <div class="col-md-4">
+                                    <label for="search" class="form-label">Rechercher</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="search" 
+                                               name="search" 
+                                               value="{{ app.request.query.get('search') }}"
+                                               placeholder="Titre, description..."
+                                               data-formation-filter-target="search">
+                                    </div>
+                                </div>
+
+                                {# Category Filter #}
+                                <div class="col-md-3">
+                                    <label for="category" class="form-label">Catégorie</label>
+                                    <select class="form-select" 
+                                            id="category" 
+                                            name="category"
+                                            data-formation-filter-target="category">
+                                        <option value="">Toutes les catégories</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.slug }}" 
+                                                    {% if app.request.query.get('category') == category.slug %}selected{% endif %}>
+                                                {{ category.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {# Level Filter #}
+                                <div class="col-md-2">
+                                    <label for="level" class="form-label">Niveau</label>
+                                    <select class="form-select" 
+                                            id="level" 
+                                            name="level"
+                                            data-formation-filter-target="level">
+                                        <option value="">Tous niveaux</option>
+                                        <option value="beginner" {% if app.request.query.get('level') == 'beginner' %}selected{% endif %}>
+                                            Débutant
+                                        </option>
+                                        <option value="intermediate" {% if app.request.query.get('level') == 'intermediate' %}selected{% endif %}>
+                                            Intermédiaire
+                                        </option>
+                                        <option value="advanced" {% if app.request.query.get('level') == 'advanced' %}selected{% endif %}>
+                                            Avancé
+                                        </option>
+                                    </select>
+                                </div>
+
+                                {# Sort #}
+                                <div class="col-md-2">
+                                    <label for="sort" class="form-label">Trier par</label>
+                                    <select class="form-select" 
+                                            id="sort" 
+                                            name="sort"
+                                            data-formation-filter-target="sort">
+                                        <option value="title" {% if app.request.query.get('sort') == 'title' %}selected{% endif %}>
+                                            Titre A-Z
+                                        </option>
+                                        <option value="price" {% if app.request.query.get('sort') == 'price' %}selected{% endif %}>
+                                            Prix croissant
+                                        </option>
+                                        <option value="duration" {% if app.request.query.get('sort') == 'duration' %}selected{% endif %}>
+                                            Durée
+                                        </option>
+                                        <option value="created" {% if app.request.query.get('sort') == 'created' %}selected{% endif %}>
+                                            Plus récentes
+                                        </option>
+                                    </select>
+                                </div>
+
+                                {# Actions #}
+                                <div class="col-md-1">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Quick Category Links #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <a href="{{ path('app_formations_index') }}" 
+                       class="btn btn-outline-primary {% if not app.request.query.get('category') %}active{% endif %}">
+                        <i class="fas fa-th me-1"></i>Toutes
+                    </a>
+                    {% for category in categories %}
+                        <a href="{{ path('app_formations_by_category', {slug: category.slug}) }}" 
+                           class="btn btn-outline-primary {% if app.request.query.get('category') == category.slug %}active{% endif %}">
+                            <i class="fas fa-{{ category.slug == 'techniques' ? 'code' : 'users' }} me-1"></i>
+                            {{ category.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# Results Info #}
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="text-muted mb-0">
+                        <span data-formation-filter-target="resultsCount">{{ formations|length }}</span> 
+                        formation(s) trouvée(s)
+                        {% if app.request.query.get('search') %}
+                            pour "<strong>{{ app.request.query.get('search') }}</strong>"
+                        {% endif %}
+                    </p>
+                    
+                    {% if app.request.query.all %}
+                        <a href="{{ path('app_formations_index') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Effacer les filtres
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Formations Grid #}
+        <div class="row" data-formation-filter-target="results">
+            {% if formations is not empty %}
+                {% for formation in formations %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        {% include 'public/components/formation_card.html.twig' with {
+                            'formation': formation,
+                            'show_category': true,
+                            'show_excerpt': true
+                        } %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">Aucune formation trouvée</h4>
+                        <p class="text-muted">
+                            Essayez de modifier vos critères de recherche ou 
+                            <a href="{{ path('app_formations_index') }}">voir toutes les formations</a>.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Loading Indicator for Ajax #}
+        <div class="text-center py-4 d-none" data-formation-filter-target="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+        </div>
+
+        {# Call to Action #}
+        {% if formations is not empty %}
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <div class="card bg-light border-0">
+                        <div class="card-body py-4">
+                            <h3 class="fw-bold mb-3">Vous ne trouvez pas la formation qui vous convient ?</h3>
+                            <p class="text-muted mb-4">
+                                Nous proposons également des formations sur mesure adaptées à vos besoins spécifiques.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a href="{{ path('app_contact_quote') }}" class="btn btn-primary">
+                                    <i class="fas fa-calculator me-2"></i>Demander un devis
+                                </a>
+                                <a href="{{ path('app_contact_advice') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-comments me-2"></i>Demander conseil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# Formation filter controller will be loaded via Stimulus #}
+{% endblock %}

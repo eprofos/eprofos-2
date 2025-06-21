@@ -1,0 +1,81 @@
+{% set route_name = app.request.get('_route') %}
+{% set route_params = app.request.get('_route_params') %}
+
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Accueil
+                </a>
+            </li>
+
+            {% if route_name starts with 'app_about' %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('app_about') }}" class="text-decoration-none">À propos</a>
+                </li>
+                {% if route_name == 'app_about_approach' %}
+                    <li class="breadcrumb-item active" aria-current="page">Notre approche</li>
+                {% endif %}
+
+            {% elseif route_name starts with 'app_formation' %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('app_formations_index') }}" class="text-decoration-none">Formations</a>
+                </li>
+                {% if route_name == 'app_formation_show' %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ formation.title ?? 'Formation' }}</li>
+                {% elseif route_name == 'app_formations_by_category' %}
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if route_params.slug == 'techniques' %}
+                            Formations techniques
+                        {% elseif route_params.slug == 'transversales' %}
+                            Formations transversales
+                        {% else %}
+                            Catégorie
+                        {% endif %}
+                    </li>
+                {% endif %}
+
+            {% elseif route_name starts with 'app_service' %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('app_services_index') }}" class="text-decoration-none">Services</a>
+                </li>
+                {% if route_name == 'app_service_show' %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ service.title ?? 'Service' }}</li>
+                {% elseif route_name == 'app_services_by_category' %}
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if route_params.slug == 'conseil' %}
+                            Conseil & Audit
+                        {% elseif route_params.slug == 'accompagnement' %}
+                            Accompagnement
+                        {% elseif route_params.slug == 'certifications' %}
+                            Certifications
+                        {% elseif route_params.slug == 'sur-mesure' %}
+                            Formations sur mesure
+                        {% else %}
+                            Catégorie
+                        {% endif %}
+                    </li>
+                {% endif %}
+
+            {% elseif route_name starts with 'app_contact' %}
+                <li class="breadcrumb-item active" aria-current="page">Contact</li>
+
+            {% elseif route_name starts with 'app_legal' %}
+                <li class="breadcrumb-item active" aria-current="page">
+                    {% if route_name == 'app_legal_notices' %}
+                        Mentions légales
+                    {% elseif route_name == 'app_legal_privacy' %}
+                        Politique de confidentialité
+                    {% elseif route_name == 'app_legal_terms' %}
+                        Conditions générales
+                    {% elseif route_name == 'app_legal_cookies' %}
+                        Politique des cookies
+                    {% else %}
+                        Informations légales
+                    {% endif %}
+                </li>
+            {% endif %}
+        </ol>
+    </div>
+</nav>

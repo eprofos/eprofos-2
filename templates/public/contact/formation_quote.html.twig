@@ -1,0 +1,224 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de devis - {{ formation.title }} - EPROFOS{% endblock %}
+
+{% block meta_description %}Demandez un devis personnalisé pour la formation {{ formation.title }} chez EPROFOS. Obtenez rapidement une proposition adaptée à vos besoins.{% endblock %}
+
+{% block body %}
+    {% include 'public/components/breadcrumb.html.twig' %}
+
+    <div class="container py-5">
+        {# Page Header #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-3">Demande de devis</h1>
+                <p class="lead text-muted">
+                    Obtenez un devis personnalisé pour la formation
+                    <strong class="text-primary">{{ formation.title }}</strong>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            {# Formation Information #}
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5 fw-bold mb-3">
+                            <i class="fas fa-graduation-cap text-primary me-2"></i>
+                            Formation sélectionnée
+                        </h3>
+                        
+                        <div class="mb-3">
+                            <h4 class="h6 fw-bold">{{ formation.title }}</h4>
+                            <p class="text-muted small mb-2">{{ formation.category.name }}</p>
+                        </div>
+
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <div class="fw-bold text-primary">{{ formation.formattedDuration }}</div>
+                                    <small class="text-muted">Durée</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-bold text-success">{{ formation.formattedPrice }}</div>
+                                <small class="text-muted">Prix</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">{{ formation.level }}</span>
+                            <span class="badge bg-info ms-1">{{ formation.format }}</span>
+                        </div>
+
+                        <p class="text-muted small">{{ formation.description|slice(0, 150) }}...</p>
+                        
+                        <a href="{{ path('app_formation_show', {slug: formation.slug}) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>
+                            Voir la formation
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {# Quote Form #}
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h4 fw-bold mb-4">
+                            <i class="fas fa-calculator text-primary me-2"></i>
+                            Demande de devis personnalisé
+                        </h3>
+
+                        <form action="{{ path('app_contact_formation_quote_submit', {slug: formation.slug}) }}" method="POST">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">Prénom *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="first_name" 
+                                           name="first_name" 
+                                           required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Nom *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="last_name" 
+                                           name="last_name" 
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email" 
+                                           required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Téléphone</label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           id="phone" 
+                                           name="phone">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="company" class="form-label">Entreprise</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="company" 
+                                       name="company">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="participants" class="form-label">Nombre de participants</label>
+                                    <select class="form-select" id="participants" name="participants">
+                                        <option value="1">1 participant</option>
+                                        <option value="2-5">2 à 5 participants</option>
+                                        <option value="6-10">6 à 10 participants</option>
+                                        <option value="11-20">11 à 20 participants</option>
+                                        <option value="20+">Plus de 20 participants</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="preferred_format" class="form-label">Format préféré</label>
+                                    <select class="form-select" id="preferred_format" name="preferred_format">
+                                        <option value="">Choisir un format</option>
+                                        <option value="presentiel">Présentiel</option>
+                                        <option value="distanciel">Distanciel</option>
+                                        <option value="mixte">Mixte</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="preferred_dates" class="form-label">Dates souhaitées</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="preferred_dates" 
+                                           name="preferred_dates"
+                                           placeholder="Ex: Semaine du 15 janvier">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="budget" class="form-label">Budget approximatif</label>
+                                    <select class="form-select" id="budget" name="budget">
+                                        <option value="">Non défini</option>
+                                        <option value="0-1000">Moins de 1 000 €</option>
+                                        <option value="1000-5000">1 000 € - 5 000 €</option>
+                                        <option value="5000-10000">5 000 € - 10 000 €</option>
+                                        <option value="10000+">Plus de 10 000 €</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="message" class="form-label">Besoins spécifiques et commentaires *</label>
+                                <textarea class="form-control" 
+                                          id="message" 
+                                          name="message" 
+                                          rows="4" 
+                                          placeholder="Décrivez vos besoins spécifiques, objectifs, contraintes..."
+                                          required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="consent" 
+                                           name="consent" 
+                                           required>
+                                    <label class="form-check-label" for="consent">
+                                        J'accepte que mes données soient utilisées pour traiter ma demande de devis. 
+                                        <a href="{{ path('app_legal_privacy') }}" target="_blank">
+                                            Voir notre politique de confidentialité
+                                        </a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Demander un devis gratuit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Additional Information #}
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>
+                        À propos de votre devis
+                    </h5>
+                    <p class="mb-2">
+                        Nous vous enverrons un devis personnalisé dans les 24h ouvrées. 
+                        Notre équipe pourra vous contacter pour préciser vos besoins si nécessaire.
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        <strong>Besoin d'aide ?</strong> 
+                        Contactez-nous au <a href="tel:+33123456789">01 23 45 67 89</a> 
+                        ou par email à <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

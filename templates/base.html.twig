@@ -1,17 +1,93 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EPROFOS - École professionnelle de formation spécialisée{% endblock %}</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="{% block meta_description %}EPROFOS propose des formations professionnelles de qualité en informatique, management et langues. Conseil, audit et formations sur mesure.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}formation professionnelle, EPROFOS, informatique, management, langues, conseil, audit{% endblock %}">
+    <meta name="author" content="EPROFOS">
+    
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
+    <meta property="og:description" content="{{ block('meta_description') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ app.request.uri }}">
+    <meta property="og:site_name" content="EPROFOS">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+    
+    {% block stylesheets %}
+        {{ importmap('app') }}
+    {% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="visually-hidden-focusable">Aller au contenu principal</a>
+    
+    <!-- Header with navigation -->
+    <header>
+        {% include 'public/components/navbar.html.twig' %}
+    </header>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
+    <!-- Breadcrumb navigation -->
+    {% block breadcrumb %}
+        {% if app.request.get('_route') != 'app_home' %}
+            {% include 'public/components/breadcrumb.html.twig' %}
+        {% endif %}
+    {% endblock %}
+
+    <!-- Flash messages -->
+    {% include 'public/components/flash_messages.html.twig' %}
+
+    <!-- Main content -->
+    <main id="main-content" role="main">
         {% block body %}{% endblock %}
-    </body>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        {% include 'public/components/footer.html.twig' %}
+    </footer>
+
+    {% block javascripts %}
+        {{ importmap('app') }}
+    {% endblock %}
+
+    <!-- Structured data for SEO -->
+    {% block structured_data %}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "name": "EPROFOS",
+            "alternateName": "École professionnelle de formation spécialisée",
+            "url": "{{ app.request.schemeAndHttpHost }}",
+            "logo": "{{ app.request.schemeAndHttpHost }}{{ asset('images/logo.png') }}",
+            "description": "École professionnelle de formation spécialisée proposant des formations en informatique, management et langues",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "123 Avenue de la Formation",
+                "addressLocality": "Paris",
+                "postalCode": "75001",
+                "addressCountry": "FR"
+            },
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+33-1-23-45-67-89",
+                "contactType": "customer service",
+                "email": "contact@eprofos.fr"
+            },
+            "sameAs": [
+                "https://www.linkedin.com/company/eprofos",
+                "https://www.facebook.com/eprofos"
+            ]
+        }
+        </script>
+    {% endblock %}
+</body>
 </html>

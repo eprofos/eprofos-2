@@ -1,0 +1,298 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ formation.title }} - Formation - EPROFOS{% endblock %}
+
+{% block meta_description %}{{ formation.description|slice(0, 160) }}{% endblock %}
+
+{% block body %}
+    {% include 'public/components/breadcrumb.html.twig' %}
+
+    <div class="container py-5">
+        <div class="row">
+            {# Main Content #}
+            <div class="col-lg-8">
+                {# Formation Header #}
+                <div class="mb-4">
+                    {% if formation.category %}
+                        <span class="badge bg-primary mb-2">{{ formation.category.name }}</span>
+                    {% endif %}
+                    
+                    <h1 class="display-5 fw-bold mb-3">{{ formation.title }}</h1>
+                    
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                        {% if formation.level %}
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-signal me-1"></i>
+                                {% if formation.level == 'beginner' %}
+                                    Débutant
+                                {% elseif formation.level == 'intermediate' %}
+                                    Intermédiaire
+                                {% elseif formation.level == 'advanced' %}
+                                    Avancé
+                                {% else %}
+                                    {{ formation.level|title }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                        
+                        {% if formation.duration %}
+                            <span class="badge bg-info">
+                                <i class="fas fa-clock me-1"></i>{{ formation.duration }}
+                            </span>
+                        {% endif %}
+                        
+                        {% if formation.isActive %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Disponible
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-pause me-1"></i>Indisponible
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Formation Image #}
+                {% if formation.image %}
+                    <div class="mb-4">
+                        <img src="{{ asset('uploads/formations/' ~ formation.image) }}" 
+                             class="img-fluid rounded shadow-sm" 
+                             alt="{{ formation.title }}"
+                             style="width: 100%; height: 300px; object-fit: cover;">
+                    </div>
+                {% endif %}
+
+                {# Description #}
+                <div class="mb-5">
+                    <h2 class="h3 fw-bold mb-3">Description</h2>
+                    <div class="text-muted">
+                        {{ formation.description|nl2br }}
+                    </div>
+                </div>
+
+                {# Objectives #}
+                {% if formation.objectives %}
+                    <div class="mb-5">
+                        <h2 class="h3 fw-bold mb-3">Objectifs pédagogiques</h2>
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                {% set objectives_array = formation.objectives|split('\n') %}
+                                <ul class="list-unstyled mb-0">
+                                    {% for objective in objectives_array %}
+                                        {% if objective|trim %}
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                {{ objective|trim }}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Prerequisites #}
+                {% if formation.prerequisites %}
+                    <div class="mb-5">
+                        <h2 class="h3 fw-bold mb-3">Prérequis</h2>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ formation.prerequisites|nl2br }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Program #}
+                {% if formation.program %}
+                    <div class="mb-5">
+                        <h2 class="h3 fw-bold mb-3">Programme</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                {{ formation.program|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Methods #}
+                {% if formation.methods %}
+                    <div class="mb-5">
+                        <h2 class="h3 fw-bold mb-3">Méthodes pédagogiques</h2>
+                        <div class="row">
+                            {% set methods_array = formation.methods|split(',') %}
+                            {% for method in methods_array %}
+                                {% if method|trim %}
+                                    <div class="col-md-6 mb-2">
+                                        <i class="fas fa-arrow-right text-primary me-2"></i>
+                                        {{ method|trim }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Related Formations #}
+                {% if related_formations is defined and related_formations is not empty %}
+                    <div class="mb-5">
+                        <h2 class="h3 fw-bold mb-3">Formations similaires</h2>
+                        <div class="row">
+                            {% for related_formation in related_formations %}
+                                <div class="col-md-6 mb-3">
+                                    {% include 'public/components/formation_card.html.twig' with {
+                                        'formation': related_formation,
+                                        'show_category': false,
+                                        'show_excerpt': false,
+                                        'card_class': 'border-0 bg-light'
+                                    } %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Sidebar #}
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 2rem;">
+                    {# Price and Registration Card #}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                {% if formation.price %}
+                                    <div class="display-6 fw-bold text-primary">{{ formation.price }}€</div>
+                                    <small class="text-muted">Prix par participant</small>
+                                {% else %}
+                                    <div class="h4 text-muted">Prix sur devis</div>
+                                    <small class="text-muted">Contactez-nous pour un tarif personnalisé</small>
+                                {% endif %}
+                            </div>
+
+                            {% if formation.isActive %}
+                                <div class="d-grid gap-2">
+                                    <a href="{{ path('app_contact_quick_registration') }}?formation={{ formation.id }}" 
+                                       class="btn btn-primary btn-lg">
+                                        <i class="fas fa-user-plus me-2"></i>S'inscrire
+                                    </a>
+                                    <a href="{{ path('app_contact_information') }}?formation={{ formation.id }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-info-circle me-2"></i>Plus d'informations
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Formation actuellement indisponible
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Formation Details #}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Détails de la formation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                {% if formation.duration %}
+                                    <li class="mb-2">
+                                        <strong>Durée :</strong> {{ formation.duration }}
+                                    </li>
+                                {% endif %}
+                                
+                                {% if formation.level %}
+                                    <li class="mb-2">
+                                        <strong>Niveau :</strong>
+                                        {% if formation.level == 'beginner' %}
+                                            Débutant
+                                        {% elseif formation.level == 'intermediate' %}
+                                            Intermédiaire
+                                        {% elseif formation.level == 'advanced' %}
+                                            Avancé
+                                        {% else %}
+                                            {{ formation.level|title }}
+                                        {% endif %}
+                                    </li>
+                                {% endif %}
+                                
+                                {% if formation.category %}
+                                    <li class="mb-2">
+                                        <strong>Catégorie :</strong> {{ formation.category.name }}
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="mb-2">
+                                    <strong>Format :</strong> Présentiel / Distanciel
+                                </li>
+                                
+                                <li class="mb-0">
+                                    <strong>Certificat :</strong> Attestation de formation
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {# Contact Card #}
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-headset me-2"></i>Besoin d'aide ?
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-3">
+                                Notre équipe est là pour vous accompagner dans votre choix de formation.
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('app_contact_advice') }}?formation={{ formation.id }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-comments me-2"></i>Demander conseil
+                                </a>
+                                <a href="tel:+33123456789" class="btn btn-outline-secondary">
+                                    <i class="fas fa-phone me-2"></i>01 23 45 67 89
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block structured_data %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "{{ formation.title }}",
+        "description": "{{ formation.description|escape('js') }}",
+        {% if formation.image %}
+        "image": "{{ absolute_url(asset('uploads/formations/' ~ formation.image)) }}",
+        {% endif %}
+        "provider": {
+            "@type": "Organization",
+            "name": "EPROFOS",
+            "url": "{{ absolute_url(path('app_home')) }}"
+        },
+        {% if formation.price %}
+        "offers": {
+            "@type": "Offer",
+            "price": "{{ formation.price }}",
+            "priceCurrency": "EUR"
+        },
+        {% endif %}
+        "courseMode": "blended",
+        "educationalLevel": "{{ formation.level ?? 'all' }}",
+        {% if formation.duration %}
+        "timeRequired": "{{ formation.duration }}",
+        {% endif %}
+        "url": "{{ absolute_url(path('app_formation_show', {slug: formation.slug})) }}"
+    }
+    </script>
+{% endblock %}
