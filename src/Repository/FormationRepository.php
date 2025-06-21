@@ -272,7 +272,64 @@ class FormationRepository extends ServiceEntityRepository
      */
     public function countByFilters(array $filters = []): int
     {
-        $qb = $this->createCatalogQueryBuilder($filters);
+        $qb = $this->createQueryBuilder('f')
+            ->leftJoin('f.category', 'c')
+            ->where('f.isActive = :active')
+            ->setParameter('active', true);
+
+        // Apply the same filters as createCatalogQueryBuilder but without ordering
+        
+        // Filter by category
+        if (!empty($filters['category'])) {
+            if ($filters['category'] instanceof Category) {
+                $qb->andWhere('f.category = :category')
+                   ->setParameter('category', $filters['category']);
+            } elseif (is_string($filters['category'])) {
+                $qb->andWhere('c.slug = :categorySlug')
+                   ->setParameter('categorySlug', $filters['category']);
+            }
+        }
+
+        // Filter by level
+        if (!empty($filters['level'])) {
+            $qb->andWhere('f.level = :level')
+               ->setParameter('level', $filters['level']);
+        }
+
+        // Filter by format
+        if (!empty($filters['format'])) {
+            $qb->andWhere('f.format = :format')
+               ->setParameter('format', $filters['format']);
+        }
+
+        // Filter by price range
+        if (!empty($filters['minPrice'])) {
+            $qb->andWhere('f.price >= :minPrice')
+               ->setParameter('minPrice', $filters['minPrice']);
+        }
+
+        if (!empty($filters['maxPrice'])) {
+            $qb->andWhere('f.price <= :maxPrice')
+               ->setParameter('maxPrice', $filters['maxPrice']);
+        }
+
+        // Filter by duration range
+        if (!empty($filters['minDuration'])) {
+            $qb->andWhere('f.durationHours >= :minDuration')
+               ->setParameter('minDuration', $filters['minDuration']);
+        }
+
+        if (!empty($filters['maxDuration'])) {
+            $qb->andWhere('f.durationHours <= :maxDuration')
+               ->setParameter('maxDuration', $filters['maxDuration']);
+        }
+
+        // Search in title and description
+        if (!empty($filters['search'])) {
+            $qb->andWhere('f.title LIKE :search OR f.description LIKE :search')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
         $qb->select('COUNT(f.id)');
 
         return (int) $qb->getQuery()->getSingleScalarResult();

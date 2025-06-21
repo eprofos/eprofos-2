@@ -62,6 +62,9 @@ class Formation
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -230,6 +233,23 @@ class Formation
     public function setImagePath(?string $imagePath): static
     {
         $this->imagePath = $imagePath;
+        return $this;
+    }
+
+    /**
+     * Get the image filename for the formation
+     */
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * Set the image filename for the formation
+     */
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
         return $this;
     }
 

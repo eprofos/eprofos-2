@@ -5,8 +5,6 @@
 {% block meta_description %}Découvrez nos services professionnels : conseil & audit, accompagnement, certifications et formations sur mesure. EPROFOS vous accompagne dans votre développement.{% endblock %}
 
 {% block body %}
-    {% include 'public/components/breadcrumb.html.twig' %}
-
     <div class="container py-5">
         {# Page Header #}
         <div class="row mb-5">
@@ -50,7 +48,7 @@
 
         {# Services by Category #}
         {% for category in service_categories %}
-            {% set category_services = services|filter(service => service.category and service.category.id == category.id) %}
+            {% set category_services = services|filter(service => service.serviceCategory and service.serviceCategory.id == category.id) %}
             {% if category_services is not empty %}
                 <div class="mb-5">
                     <div class="row mb-4">
@@ -106,7 +104,7 @@
         {% endfor %}
 
         {# Services without category #}
-        {% set uncategorized_services = services|filter(service => service.category is null) %}
+        {% set uncategorized_services = services|filter(service => service.serviceCategory is null) %}
         {% if uncategorized_services is not empty %}
             <div class="mb-5">
                 <div class="row mb-4">
@@ -153,10 +151,10 @@
                                 et trouvons ensemble la solution qui vous convient.
                             </p>
                             <div class="d-flex flex-wrap gap-3 justify-content-center">
-                                <a href="{{ path('app_contact_advice') }}" class="btn btn-warning btn-lg">
+                                <a href="{{ path('app_contact_index') }}" class="btn btn-warning btn-lg">
                                     <i class="fas fa-comments me-2"></i>Demander conseil
                                 </a>
-                                <a href="{{ path('app_contact_quote') }}" class="btn btn-outline-light btn-lg">
+                                <a href="{{ path('app_contact_index') }}" class="btn btn-outline-light btn-lg">
                                     <i class="fas fa-calculator me-2"></i>Devis gratuit
                                 </a>
                             </div>

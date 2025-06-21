@@ -42,6 +42,9 @@ class ServiceController extends AbstractController
             'services_grouped' => $servicesGrouped,
             'categories_with_count' => $categoriesWithCount,
             'all_services' => $allServices,
+            // Additional variables for template compatibility
+            'service_categories' => $this->serviceCategoryRepository->findCategoriesWithActiveServices(),
+            'services' => $allServices, // Alias for template compatibility
         ]);
     }
 

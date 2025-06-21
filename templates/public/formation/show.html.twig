@@ -5,8 +5,6 @@
 {% block meta_description %}{{ formation.description|slice(0, 160) }}{% endblock %}
 
 {% block body %}
-    {% include 'public/components/breadcrumb.html.twig' %}
-
     <div class="container py-5">
         <div class="row">
             {# Main Content #}
@@ -35,9 +33,9 @@
                             </span>
                         {% endif %}
                         
-                        {% if formation.duration %}
+                        {% if formation.durationHours %}
                             <span class="badge bg-info">
-                                <i class="fas fa-clock me-1"></i>{{ formation.duration }}
+                                <i class="fas fa-clock me-1"></i>{{ formation.formattedDuration }}
                             </span>
                         {% endif %}
                         
@@ -116,23 +114,6 @@
                     </div>
                 {% endif %}
 
-                {# Methods #}
-                {% if formation.methods %}
-                    <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Méthodes pédagogiques</h2>
-                        <div class="row">
-                            {% set methods_array = formation.methods|split(',') %}
-                            {% for method in methods_array %}
-                                {% if method|trim %}
-                                    <div class="col-md-6 mb-2">
-                                        <i class="fas fa-arrow-right text-primary me-2"></i>
-                                        {{ method|trim }}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
 
                 {# Related Formations #}
                 {% if related_formations is defined and related_formations is not empty %}
@@ -162,7 +143,7 @@
                         <div class="card-body text-center">
                             <div class="mb-3">
                                 {% if formation.price %}
-                                    <div class="display-6 fw-bold text-primary">{{ formation.price }}€</div>
+                                    <div class="display-6 fw-bold text-primary">{{ formation.formattedPrice }}</div>
                                     <small class="text-muted">Prix par participant</small>
                                 {% else %}
                                     <div class="h4 text-muted">Prix sur devis</div>
@@ -172,11 +153,11 @@
 
                             {% if formation.isActive %}
                                 <div class="d-grid gap-2">
-                                    <a href="{{ path('app_contact_quick_registration') }}?formation={{ formation.id }}" 
+                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=inscription"
                                        class="btn btn-primary btn-lg">
                                         <i class="fas fa-user-plus me-2"></i>S'inscrire
                                     </a>
-                                    <a href="{{ path('app_contact_information') }}?formation={{ formation.id }}" 
+                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=information"
                                        class="btn btn-outline-primary">
                                         <i class="fas fa-info-circle me-2"></i>Plus d'informations
                                     </a>
@@ -199,9 +180,9 @@
                         </div>
                         <div class="card-body">
                             <ul class="list-unstyled mb-0">
-                                {% if formation.duration %}
+                                {% if formation.durationHours %}
                                     <li class="mb-2">
-                                        <strong>Durée :</strong> {{ formation.duration }}
+                                        <strong>Durée :</strong> {{ formation.formattedDuration }}
                                     </li>
                                 {% endif %}
                                 
@@ -249,7 +230,7 @@
                                 Notre équipe est là pour vous accompagner dans votre choix de formation.
                             </p>
                             <div class="d-grid gap-2">
-                                <a href="{{ path('app_contact_advice') }}?formation={{ formation.id }}" 
+                                <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=conseil"
                                    class="btn btn-outline-secondary">
                                     <i class="fas fa-comments me-2"></i>Demander conseil
                                 </a>
@@ -289,8 +270,8 @@
         {% endif %}
         "courseMode": "blended",
         "educationalLevel": "{{ formation.level ?? 'all' }}",
-        {% if formation.duration %}
-        "timeRequired": "{{ formation.duration }}",
+        {% if formation.durationHours %}
+        "timeRequired": "{{ formation.formattedDuration }}",
         {% endif %}
         "url": "{{ absolute_url(path('app_formation_show', {slug: formation.slug})) }}"
     }

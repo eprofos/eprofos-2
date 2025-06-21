@@ -164,6 +164,41 @@ class FormationController extends AbstractController
     }
 
     /**
+     * Ajax endpoint for formation filtering
+     */
+    #[Route('/api/filter', name: 'app_formations_ajax_filter', methods: ['GET'])]
+    public function ajaxFilter(Request $request): Response
+    {
+        // Get filter parameters from request
+        $filters = $this->extractFilters($request);
+        
+        // Get formations based on filters
+        $queryBuilder = $this->formationRepository->createCatalogQueryBuilder($filters);
+        
+        // Handle pagination
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 12; // Formations per page
+        $offset = ($page - 1) * $limit;
+        
+        $formations = $queryBuilder
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+        
+        // Get total count for pagination
+        $totalFormations = $this->formationRepository->countByFilters($filters);
+        $totalPages = ceil($totalFormations / $limit);
+
+        return $this->render('public/formation/_formations_list.html.twig', [
+            'formations' => $formations,
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_formations' => $totalFormations,
+        ]);
+    }
+
+    /**
      * Extract filters from request parameters
      * 
      * @return array<string, mixed>

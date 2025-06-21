@@ -5,27 +5,19 @@
 {% block meta_description %}{{ service.description|slice(0, 160) }}{% endblock %}
 
 {% block body %}
-    {% include 'public/components/breadcrumb.html.twig' %}
-
     <div class="container py-5">
         <div class="row">
             {# Main Content #}
             <div class="col-lg-8">
                 {# Service Header #}
                 <div class="mb-4">
-                    {% if service.category %}
-                        <span class="badge bg-secondary mb-2">{{ service.category.name }}</span>
+                    {% if service.serviceCategory %}
+                        <span class="badge bg-secondary mb-2">{{ service.serviceCategory.name }}</span>
                     {% endif %}
                     
                     <h1 class="display-5 fw-bold mb-3">{{ service.title }}</h1>
                     
                     <div class="d-flex flex-wrap gap-3 mb-3">
-                        {% if service.duration %}
-                            <span class="badge bg-info">
-                                <i class="fas fa-clock me-1"></i>{{ service.duration }}
-                            </span>
-                        {% endif %}
-                        
                         {% if service.isActive %}
                             <span class="badge bg-success">
                                 <i class="fas fa-check me-1"></i>Disponible
@@ -56,28 +48,6 @@
                     </div>
                 </div>
 
-                {# Features #}
-                {% if service.features %}
-                    <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Ce qui est inclus</h2>
-                        <div class="card border-0 bg-light">
-                            <div class="card-body">
-                                {% set features_array = service.features|split(',') %}
-                                <div class="row">
-                                    {% for feature in features_array %}
-                                        {% if feature|trim %}
-                                            <div class="col-md-6 mb-2">
-                                                <i class="fas fa-check-circle text-success me-2"></i>
-                                                {{ feature|trim }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-
                 {# Benefits #}
                 {% if service.benefits %}
                     <div class="mb-5">
@@ -85,29 +55,6 @@
                         <div class="card">
                             <div class="card-body">
                                 {{ service.benefits|nl2br }}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-
-                {# Target Audience #}
-                {% if service.targetAudience %}
-                    <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">À qui s'adresse ce service ?</h2>
-                        <div class="alert alert-info">
-                            <i class="fas fa-users me-2"></i>
-                            {{ service.targetAudience|nl2br }}
-                        </div>
-                    </div>
-                {% endif %}
-
-                {# Process/Methodology #}
-                {% if service.methodology %}
-                    <div class="mb-5">
-                        <h2 class="h3 fw-bold mb-3">Notre méthodologie</h2>
-                        <div class="card">
-                            <div class="card-body">
-                                {{ service.methodology|nl2br }}
                             </div>
                         </div>
                     </div>
@@ -145,7 +92,7 @@
                             
                             {% if service.isActive %}
                                 <div class="d-grid gap-2">
-                                    {% if service.category and service.category.slug == 'conseil' %}
+                                    {% if service.serviceCategory and service.serviceCategory.slug == 'conseil' %}
                                         <a href="{{ path('app_contact_advice') }}?service={{ service.id }}" 
                                            class="btn btn-primary btn-lg">
                                             <i class="fas fa-comments me-2"></i>Demander conseil
@@ -180,15 +127,9 @@
                         </div>
                         <div class="card-body">
                             <ul class="list-unstyled mb-0">
-                                {% if service.duration %}
+                                {% if service.serviceCategory %}
                                     <li class="mb-2">
-                                        <strong>Durée :</strong> {{ service.duration }}
-                                    </li>
-                                {% endif %}
-                                
-                                {% if service.category %}
-                                    <li class="mb-2">
-                                        <strong>Catégorie :</strong> {{ service.category.name }}
+                                        <strong>Catégorie :</strong> {{ service.serviceCategory.name }}
                                     </li>
                                 {% endif %}
                                 
@@ -334,7 +275,7 @@
             "name": "EPROFOS",
             "url": "{{ absolute_url(path('app_home')) }}"
         },
-        "serviceType": "{{ service.category ? service.category.name : 'Service professionnel' }}",
+        "serviceType": "{{ service.serviceCategory ? service.serviceCategory.name : 'Service professionnel' }}",
         "url": "{{ absolute_url(path('app_service_show', {slug: service.slug})) }}"
     }
     </script>

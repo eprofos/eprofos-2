@@ -26,9 +26,9 @@
     {% endif %}
 
     <div class="card-body d-flex flex-column">
-        {% if show_category and service.category %}
+        {% if show_category and service.serviceCategory %}
             <div class="mb-2">
-                <span class="badge bg-secondary">{{ service.category.name }}</span>
+                <span class="badge bg-secondary">{{ service.serviceCategory.name }}</span>
             </div>
         {% endif %}
 
@@ -46,13 +46,6 @@
         {% endif %}
 
         <div class="mt-auto">
-            {% if service.duration %}
-                <div class="mb-2">
-                    <small class="text-muted">
-                        <i class="fas fa-clock me-1"></i>{{ service.duration }}
-                    </small>
-                </div>
-            {% endif %}
 
             {% if service.isActive %}
                 <div class="mb-2">
@@ -68,18 +61,6 @@
                 </div>
             {% endif %}
 
-            {% if service.features %}
-                <div class="mb-2">
-                    <small class="text-muted">
-                        <i class="fas fa-list me-1"></i>
-                        {% set features_array = service.features|split(',') %}
-                        {% for feature in features_array|slice(0, 2) %}
-                            {{ feature|trim }}{% if not loop.last %}, {% endif %}
-                        {% endfor %}
-                        {% if features_array|length > 2 %}...{% endif %}
-                    </small>
-                </div>
-            {% endif %}
         </div>
     </div>
 
@@ -90,7 +71,7 @@
                 <i class="fas fa-eye me-1"></i>Voir détails
             </a>
             
-            {% if service.category and service.category.slug == 'conseil' %}
+            {% if service.serviceCategory and service.serviceCategory.slug == 'conseil' %}
                 <a href="{{ path('app_contact_advice') }}?service={{ service.id }}" 
                    class="btn btn-secondary btn-sm">
                     <i class="fas fa-comments me-1"></i>Demander conseil
