@@ -21,8 +21,8 @@
     <link rel="icon" href="{{ asset('images/favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
     
-    {% block stylesheets %}
-        {{ importmap('app') }}
+    {% block javascripts %}
+        {{ importmap('public') }}
     {% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -54,9 +54,6 @@
         {% include 'public/components/footer.html.twig' %}
     </footer>
 
-    {% block javascripts %}
-        {{ importmap('app') }}
-    {% endblock %}
 
     <!-- Structured data for SEO -->
     {% block structured_data %}
