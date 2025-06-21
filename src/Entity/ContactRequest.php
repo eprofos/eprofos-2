@@ -116,7 +116,7 @@ class ContactRequest
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $processedAt = null;
 
-    #[ORM\ManyToOne(targetEntity: Formation::class)]
+    #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'contactRequests')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Formation $formation = null;
 
