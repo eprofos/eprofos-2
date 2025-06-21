@@ -77,18 +77,18 @@
             <div class="formation-info">
                 <div class="info-item">
                     <i class="fas fa-book-open"></i>
-                    <span>{{ lessonCount }} Lessons</span>
+                    <span>{{ lessonCount }} Leçons</span>
                 </div>
                 <div class="info-item">
                     <i class="fas fa-users"></i>
-                    <span>{{ studentCount }} Students</span>
+                    <span>{{ studentCount }} Étudiants</span>
                 </div>
             </div>
             <div class="formation-price">
                 {% if formation.price %}
                     <span class="price-amount">${{ (formation.price * 0.012)|number_format(2) }}</span>
                 {% else %}
-                    <span class="price-quote">Quote</span>
+                    <span class="price-quote">Devis</span>
                 {% endif %}
             </div>
         </div>

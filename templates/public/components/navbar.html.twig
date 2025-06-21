@@ -10,14 +10,9 @@
             </div>
         </a>
 
-        <!-- Search and Cart Icons (Desktop) -->
         <div class="navbar-actions d-none d-lg-flex align-items-center me-3">
             <button class="action-btn search-btn" type="button" data-bs-toggle="collapse" data-bs-target="#search-bar" aria-expanded="false">
                 <i class="fas fa-search"></i>
-            </button>
-            <button class="action-btn cart-btn" type="button">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-badge">0</span>
             </button>
         </div>
 
@@ -36,7 +31,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}"
                        href="{{ path('app_home') }}">
-                        Home
+                        Accueil
                     </a>
                 </li>
 
@@ -44,7 +39,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ app.request.get('_route') starts with 'app_about' ? 'active' : '' }}"
                        href="{{ path('app_about') }}">
-                        About Us
+                        À propos de nous
                     </a>
                 </li>
 
@@ -70,7 +65,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_formation' ? 'active' : '' }}"
                        href="#" id="coursesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Our Courses
+                        Nos formations
                     </a>
                     <ul class="dropdown-menu modern-dropdown" aria-labelledby="coursesDropdown">
                         <li><a class="dropdown-item" href="{{ path('app_formations_index') }}">
@@ -87,20 +82,6 @@
                     </ul>
                 </li>
 
-                <!-- Shop -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_formations_index') }}">
-                        Shop
-                    </a>
-                </li>
-
-                <!-- Blog -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#blog">
-                        Blog
-                    </a>
-                </li>
-
                 <!-- Contact -->
                 <li class="nav-item">
                     <a class="nav-link {{ app.request.get('_route') starts with 'app_contact' ? 'active' : '' }}"
@@ -113,7 +94,7 @@
             <!-- Join For Free Button -->
             <div class="navbar-cta d-flex align-items-center">
                 <a class="btn btn-join-free" href="{{ path('app_contact_index') }}#quote-form">
-                    <i class="fas fa-user-plus me-2"></i>Join For Free
+                    <i class="fas fa-user-plus me-2"></i>Rejoindre gratuitement
                 </a>
             </div>
         </div>
@@ -126,7 +107,7 @@
         <form class="search-form" role="search" action="{{ path('app_formations_index') }}" method="GET">
             <div class="search-input-group">
                 <input class="form-control search-input" type="search" name="search"
-                       placeholder="Search for courses, topics, or instructors..."
+                       placeholder="Recherchez des cours, sujets ou formateurs..."
                        aria-label="Search" value="{{ app.request.query.get('search', '') }}">
                 <button class="btn search-submit-btn" type="submit">
                     <i class="fas fa-search"></i>
