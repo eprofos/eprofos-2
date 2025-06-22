@@ -157,7 +157,7 @@
                                     <th>Titre</th>
                                     <th>Slug</th>
                                     <th>Statut</th>
-                                    <th>Prix</th>
+                                    <th>Créé le</th>
                                     <th class="w-1">Actions</th>
                                 </tr>
                             </thead>
@@ -168,9 +168,9 @@
                                             <div class="d-flex py-1 align-items-center">
                                                 <div class="flex-fill">
                                                     <div class="font-weight-medium">{{ service.title }}</div>
-                                                    {% if service.shortDescription %}
+                                                    {% if service.description %}
                                                         <div class="text-muted">
-                                                            {{ service.shortDescription|length > 80 ? service.shortDescription|slice(0, 80) ~ '...' : service.shortDescription }}
+                                                            {{ service.description|length > 80 ? service.description|slice(0, 80) ~ '...' : service.description }}
                                                         </div>
                                                     {% endif %}
                                                 </div>
@@ -187,11 +187,7 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if service.price %}
-                                                <span class="text-success">{{ service.price|number_format(2, ',', ' ') }} €</span>
-                                            {% else %}
-                                                <span class="text-muted">Sur devis</span>
-                                            {% endif %}
+                                            <span class="text-muted">{{ service.createdAt|date('d/m/Y') }}</span>
                                         </td>
                                         <td>
                                             <div class="btn-list flex-nowrap">
