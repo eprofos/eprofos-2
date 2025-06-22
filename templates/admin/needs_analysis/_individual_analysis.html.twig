@@ -1,0 +1,373 @@
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-user me-2"></i>
+            Analyse des besoins - Particulier
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if analysis %}
+            <!-- Personal Information -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-id-card me-2"></i>
+                        Informations personnelles
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-5">Nom complet :</dt>
+                        <dd class="col-sm-7">{{ analysis.fullName|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-5">Âge :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.age %}
+                                <span class="badge bg-info">{{ analysis.age }} ans</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Téléphone :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.phone %}
+                                <a href="tel:{{ analysis.phone }}" class="text-decoration-none">
+                                    {{ analysis.phone }}
+                                </a>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Localisation :</dt>
+                        <dd class="col-sm-7">{{ analysis.location|default('Non renseigné') }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Situation professionnelle
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-5">Statut :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.professionalStatus %}
+                                <span class="badge bg-primary">{{ analysis.professionalStatus }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Secteur d'activité :</dt>
+                        <dd class="col-sm-7">{{ analysis.activitySector|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-5">Poste actuel :</dt>
+                        <dd class="col-sm-7">{{ analysis.currentPosition|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-5">Expérience :</dt>
+                        <dd class="col-sm-7">{{ analysis.workExperience|default('Non renseigné') }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Education and Skills -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Formation et compétences
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-5">Niveau d'études :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.educationLevel %}
+                                <span class="badge bg-info">{{ analysis.educationLevel }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Diplômes :</dt>
+                        <dd class="col-sm-7">{{ analysis.qualifications|default('Non renseigné') }}</dd>
+                    </dl>
+                    
+                    {% if analysis.currentSkills %}
+                        <dt class="col-12">Compétences actuelles :</dt>
+                        <dd class="col-12">
+                            <div class="bg-light p-3 rounded">
+                                {{ analysis.currentSkills|nl2br }}
+                            </div>
+                        </dd>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-bullseye me-2"></i>
+                        Projet professionnel
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-5">Objectif :</dt>
+                        <dd class="col-sm-7">{{ analysis.careerGoal|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-5">Secteur visé :</dt>
+                        <dd class="col-sm-7">{{ analysis.targetSector|default('Non renseigné') }}</dd>
+                    </dl>
+                    
+                    {% if analysis.motivation %}
+                        <dt class="col-12">Motivation :</dt>
+                        <dd class="col-12">
+                            <div class="bg-light p-3 rounded">
+                                {{ analysis.motivation|nl2br }}
+                            </div>
+                        </dd>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Training Needs -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-target me-2"></i>
+                        Besoins de formation
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-3">Domaine souhaité :</dt>
+                        <dd class="col-sm-9">{{ analysis.desiredTrainingDomain|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-3">Compétences à acquérir :</dt>
+                        <dd class="col-sm-9">
+                            {% if analysis.skillsToAcquire %}
+                                <div class="bg-light p-3 rounded">
+                                    {{ analysis.skillsToAcquire|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Résultats attendus :</dt>
+                        <dd class="col-sm-9">
+                            {% if analysis.expectedOutcomes %}
+                                <div class="bg-light p-3 rounded">
+                                    {{ analysis.expectedOutcomes|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Learning Preferences -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-cogs me-2"></i>
+                        Préférences d'apprentissage
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-6">Modalité :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.preferredLearningMode %}
+                                <span class="badge bg-secondary">{{ analysis.preferredLearningMode }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-6">Rythme :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.preferredPace %}
+                                <span class="badge bg-secondary">{{ analysis.preferredPace }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-6">Durée souhaitée :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredDuration|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-6">Planning :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredSchedule|default('Non renseigné') }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-calendar-times me-2"></i>
+                        Contraintes
+                    </h6>
+                    {% if analysis.constraints %}
+                        <div class="bg-light p-3 rounded">
+                            {{ analysis.constraints|nl2br }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune contrainte particulière</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Financing -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-euro-sign me-2"></i>
+                        Financement
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-6">Budget disponible :</dt>
+                        <dd class="col-sm-6">{{ analysis.availableBudget|default('Non renseigné') }}</dd>
+                        
+                        <dt class="col-sm-6">Source de financement :</dt>
+                        <dd class="col-sm-6">{{ analysis.fundingSource|default('Non renseigné') }}</dd>
+                    </dl>
+                    
+                    {% if analysis.hasCpf is not null %}
+                        <dl class="row">
+                            <dt class="col-sm-6">CPF :</dt>
+                            <dd class="col-sm-6">
+                                {% if analysis.hasCpf %}
+                                    <span class="badge bg-success">Disponible</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Non disponible</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-clock me-2"></i>
+                        Disponibilité
+                    </h6>
+                    <dl class="row">
+                        <dt class="col-sm-6">Début souhaité :</dt>
+                        <dd class="col-sm-6">{{ analysis.desiredStartDate ? analysis.desiredStartDate|date('d/m/Y') : 'Non renseigné' }}</dd>
+                        
+                        <dt class="col-sm-6">Urgence :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.urgencyLevel %}
+                                {% set urgencyClass = analysis.urgencyLevel == 'high' ? 'danger' : (analysis.urgencyLevel == 'medium' ? 'warning' : 'success') %}
+                                <span class="badge bg-{{ urgencyClass }}">{{ analysis.urgencyLevel|title }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if analysis.additionalInfo %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-success border-bottom pb-2">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Informations complémentaires
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ analysis.additionalInfo|nl2br }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Previous Training Experience -->
+            {% if analysis.previousTrainingExperience %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-success border-bottom pb-2">
+                            <i class="fas fa-history me-2"></i>
+                            Expérience de formation antérieure
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ analysis.previousTrainingExperience|nl2br }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Metadata -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">
+                                <i class="fas fa-info me-2"></i>
+                                Informations de soumission
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <small class="text-muted">
+                                        <strong>Date de soumission :</strong><br>
+                                        {{ analysis.submittedAt ? analysis.submittedAt|date('d/m/Y à H:i') : 'Non soumis' }}
+                                    </small>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">
+                                        <strong>Dernière modification :</strong><br>
+                                        {{ analysis.updatedAt ? analysis.updatedAt|date('d/m/Y à H:i') : 'Jamais' }}
+                                    </small>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">
+                                        <strong>Statut :</strong><br>
+                                        {% if analysis.submittedAt %}
+                                            <span class="badge bg-success">Complété</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">En cours</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-file-alt text-muted mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted">Analyse non disponible</h5>
+                <p class="text-muted">L'analyse des besoins n'a pas encore été remplie.</p>
+                
+                {% if request.status == 'sent' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-clock me-2"></i>
+                        Le formulaire a été envoyé et est en attente de completion.
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 0.75rem;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+dt {
+    font-weight: 600;
+    color: #495057;
+}
+
+dd {
+    margin-bottom: 0.5rem;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.border-bottom {
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+</style>

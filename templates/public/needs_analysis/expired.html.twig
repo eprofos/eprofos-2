@@ -1,0 +1,211 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lien expiré{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <img src="{{ asset('images/eprofos-logo.png') }}" alt="EPROFOS" class="img-fluid" style="max-height: 80px;">
+                </div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clock text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h1 class="h2 text-warning mb-4">Lien expiré</h1>
+                    
+                    <p class="lead mb-4">
+                        Le lien d'accès à ce formulaire d'analyse des besoins a expiré.
+                    </p>
+                    
+                    <div class="alert alert-warning border-0 mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Pourquoi ce lien a-t-il expiré ?
+                        </h5>
+                        <hr>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li class="mb-2">
+                                <i class="fas fa-calendar-times text-warning me-2"></i>
+                                Les liens d'accès sont valides pendant 30 jours pour des raisons de sécurité
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-shield-alt text-warning me-2"></i>
+                                Cette mesure protège vos données personnelles
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-sync-alt text-warning me-2"></i>
+                                Un nouveau lien peut être généré à votre demande
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-redo text-primary me-2"></i>
+                                Comment obtenir un nouveau lien ?
+                            </h5>
+                            <p class="card-text">
+                                Contactez-nous pour recevoir un nouveau lien d'accès au formulaire d'analyse des besoins.
+                                Notre équipe vous enverra un nouveau lien valide dans les plus brefs délais.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-envelope text-primary mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Par email</h6>
+                                    <p class="card-text small">Envoyez-nous un message</p>
+                                    <a href="mailto:contact@eprofos.fr?subject=Demande de nouveau lien - Analyse des besoins" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-envelope me-1"></i>
+                                        contact@eprofos.fr
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-phone text-primary mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Par téléphone</h6>
+                                    <p class="card-text small">Appelez-nous directement</p>
+                                    <a href="tel:+33123456789" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-phone me-1"></i>
+                                        01 23 45 67 89
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info border-0">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <i class="fas fa-lightbulb text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="col">
+                                <h6 class="alert-heading mb-1">Conseil</h6>
+                                <small class="mb-0">
+                                    Pour éviter l'expiration, nous recommandons de remplir le formulaire 
+                                    dans les 7 jours suivant la réception du lien.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-building me-1"></i>
+                            EPROFOS - École professionnelle de formation spécialisée
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle text-primary me-2"></i>
+                        Questions fréquentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0">
+                            <h6 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Combien de temps faut-il pour recevoir un nouveau lien ?
+                                </button>
+                            </h6>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Un nouveau lien vous sera envoyé dans les 2 heures ouvrées suivant votre demande.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0">
+                            <h6 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Mes données précédentes sont-elles conservées ?
+                                </button>
+                            </h6>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Si vous aviez commencé à remplir le formulaire, vos données sont conservées 
+                                    et vous pourrez les retrouver avec le nouveau lien.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0">
+                            <h6 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Puis-je demander une extension de délai ?
+                                </button>
+                            </h6>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Oui, contactez-nous pour discuter d'une extension si vous avez besoin 
+                                    de plus de temps pour rassembler les informations nécessaires.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 1rem;
+}
+
+.alert {
+    border-radius: 0.75rem;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.text-info {
+    color: #0dcaf0 !important;
+}
+
+.accordion-button {
+    border-radius: 0.5rem !important;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

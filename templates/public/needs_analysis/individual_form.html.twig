@@ -1,0 +1,284 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Analyse des besoins - {{ request.recipientName }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <img src="{{ asset('images/eprofos-logo.png') }}" alt="EPROFOS" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <h1 class="h2 mb-3">Analyse des besoins de formation</h1>
+                <p class="lead text-muted">
+                    Bonjour <strong>{{ request.recipientName }}</strong>
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Ce formulaire nous permet d'adapter notre formation à vos besoins et objectifs personnels.
+                    Toutes les informations sont confidentielles et utilisées uniquement dans le cadre de votre projet de formation.
+                </div>
+            </div>
+
+            {% if existing_analysis %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Formulaire déjà complété</strong><br>
+                    Vous avez déjà rempli ce formulaire le {{ existing_analysis.createdAt|date('d/m/Y à H:i') }}.
+                    Vous pouvez le modifier en remplissant à nouveau les champs ci-dessous.
+                </div>
+            {% endif %}
+
+            <!-- Form -->
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'class': 'individual-needs-form', 'novalidate': 'novalidate'}}) }}
+                    
+                    <!-- Personal Information Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-user me-2"></i>
+                            Informations personnelles
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.first_name) }}
+                                    {{ form_widget(form.first_name) }}
+                                    {{ form_help(form.first_name) }}
+                                    {{ form_errors(form.first_name) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.last_name) }}
+                                    {{ form_widget(form.last_name) }}
+                                    {{ form_help(form.last_name) }}
+                                    {{ form_errors(form.last_name) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.email) }}
+                                    {{ form_widget(form.email) }}
+                                    {{ form_help(form.email) }}
+                                    {{ form_errors(form.email) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.phone) }}
+                                    {{ form_widget(form.phone) }}
+                                    {{ form_help(form.phone) }}
+                                    {{ form_errors(form.phone) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.address) }}
+                            {{ form_widget(form.address) }}
+                            {{ form_help(form.address) }}
+                            {{ form_errors(form.address) }}
+                        </div>
+                    </div>
+
+                    <!-- Professional Status Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-briefcase me-2"></i>
+                            Statut professionnel
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.status) }}
+                                    {{ form_widget(form.status) }}
+                                    {{ form_help(form.status) }}
+                                    {{ form_errors(form.status) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.status_other_details) }}
+                                    {{ form_widget(form.status_other_details) }}
+                                    {{ form_help(form.status_other_details) }}
+                                    {{ form_errors(form.status_other_details) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Funding Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-euro-sign me-2"></i>
+                            Financement de la formation
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.funding_type) }}
+                                    {{ form_widget(form.funding_type) }}
+                                    {{ form_help(form.funding_type) }}
+                                    {{ form_errors(form.funding_type) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.funding_other_details) }}
+                                    {{ form_widget(form.funding_other_details) }}
+                                    {{ form_help(form.funding_other_details) }}
+                                    {{ form_errors(form.funding_other_details) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Objectives Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Objectifs de formation
+                        </h3>
+                        <div class="mb-3">
+                            {{ form_label(form.desired_training_title) }}
+                            {{ form_widget(form.desired_training_title) }}
+                            {{ form_help(form.desired_training_title) }}
+                            {{ form_errors(form.desired_training_title) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.professional_objective) }}
+                            {{ form_widget(form.professional_objective) }}
+                            {{ form_help(form.professional_objective) }}
+                            {{ form_errors(form.professional_objective) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.current_level) }}
+                            {{ form_widget(form.current_level) }}
+                            {{ form_help(form.current_level) }}
+                            {{ form_errors(form.current_level) }}
+                        </div>
+                    </div>
+
+                    <!-- Training Preferences Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Préférences de formation
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.desired_duration_hours) }}
+                                    {{ form_widget(form.desired_duration_hours) }}
+                                    {{ form_help(form.desired_duration_hours) }}
+                                    {{ form_errors(form.desired_duration_hours) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.preferred_start_date) }}
+                                    {{ form_widget(form.preferred_start_date) }}
+                                    {{ form_help(form.preferred_start_date) }}
+                                    {{ form_errors(form.preferred_start_date) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.preferred_end_date) }}
+                                    {{ form_widget(form.preferred_end_date) }}
+                                    {{ form_help(form.preferred_end_date) }}
+                                    {{ form_errors(form.preferred_end_date) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.training_location_preference) }}
+                            {{ form_widget(form.training_location_preference) }}
+                            {{ form_help(form.training_location_preference) }}
+                            {{ form_errors(form.training_location_preference) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.disability_accommodations) }}
+                            {{ form_widget(form.disability_accommodations) }}
+                            {{ form_help(form.disability_accommodations) }}
+                            {{ form_errors(form.disability_accommodations) }}
+                        </div>
+                    </div>
+
+                    <!-- Training Expectations Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-target me-2"></i>
+                            Attentes et besoins spécifiques
+                        </h3>
+                        <div class="mb-3">
+                            {{ form_label(form.training_expectations) }}
+                            {{ form_widget(form.training_expectations) }}
+                            {{ form_help(form.training_expectations) }}
+                            {{ form_errors(form.training_expectations) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.specific_needs) }}
+                            {{ form_widget(form.specific_needs) }}
+                            {{ form_help(form.specific_needs) }}
+                            {{ form_errors(form.specific_needs) }}
+                        </div>
+                    </div>
+
+                    <!-- Submit Section -->
+                    <div class="text-center">
+                        <div class="alert alert-light border">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <small class="text-muted">
+                                En soumettant ce formulaire, vous acceptez que vos données soient utilisées 
+                                par EPROFOS dans le cadre de votre projet de formation. 
+                                Vos informations restent confidentielles.
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Envoyer l'analyse des besoins
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-lock me-1"></i>
+                    Formulaire sécurisé - EPROFOS (École professionnelle de formation spécialisée)
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.individual-needs-form .form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.individual-needs-form .form-control:focus,
+.individual-needs-form .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.individual-needs-form .text-primary {
+    color: #0d6efd !important;
+}
+
+.individual-needs-form .alert {
+    border-radius: 0.5rem;
+}
+</style>
+{% endblock %}

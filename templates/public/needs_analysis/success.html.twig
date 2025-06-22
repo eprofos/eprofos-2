@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formulaire envoyé avec succès{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <img src="{{ asset('images/eprofos-logo.png') }}" alt="EPROFOS" class="img-fluid" style="max-height: 80px;">
+                </div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h1 class="h2 text-success mb-4">Formulaire envoyé avec succès !</h1>
+                    
+                    <p class="lead mb-4">
+                        Merci d'avoir pris le temps de remplir notre analyse des besoins.
+                    </p>
+                    
+                    <div class="alert alert-success border-0 mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Prochaines étapes
+                        </h5>
+                        <hr>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li class="mb-2">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                Vous recevrez un accusé de réception par email
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-user-tie text-primary me-2"></i>
+                                Notre équipe pédagogique analysera vos besoins
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                Nous vous contacterons sous 48h pour discuter de votre projet
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-file-alt text-primary me-2"></i>
+                                Une proposition de formation personnalisée vous sera envoyée
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        Délai de traitement
+                                    </h6>
+                                    <p class="card-text small mb-0">
+                                        Votre demande sera traitée dans les 48 heures ouvrées.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                                        Confidentialité
+                                    </h6>
+                                    <p class="card-text small mb-0">
+                                        Vos données sont protégées et utilisées uniquement pour votre formation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="mb-4">
+                        <h6 class="text-muted">Besoin d'aide ou d'informations complémentaires ?</h6>
+                        <div class="row justify-content-center">
+                            <div class="col-auto">
+                                <a href="mailto:contact@eprofos.fr" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    contact@eprofos.fr
+                                </a>
+                            </div>
+                            <div class="col-auto">
+                                <a href="tel:+33123456789" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-phone me-1"></i>
+                                    01 23 45 67 89
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-building me-1"></i>
+                            EPROFOS - École professionnelle de formation spécialisée
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-certificate text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6>Certification Qualiopi</h6>
+                        <small class="text-muted">Formation de qualité certifiée</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-users text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6>Accompagnement personnalisé</h6>
+                        <small class="text-muted">Suivi individuel de votre projet</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-graduation-cap text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6>Expertise reconnue</h6>
+                        <small class="text-muted">Formateurs experts métier</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 1rem;
+}
+
+.alert {
+    border-radius: 0.75rem;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+}
+</style>
+{% endblock %}
