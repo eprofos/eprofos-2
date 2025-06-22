@@ -31,14 +31,22 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     {
         parent::setUp();
         
-        $container = static::getContainer();
-        $this->entityManager = $container->get(EntityManagerInterface::class);
-        $this->requestRepository = $container->get(NeedsAnalysisRequestRepository::class);
-        $this->needsAnalysisService = $container->get(NeedsAnalysisService::class);
-        $this->tokenGenerator = $container->get(TokenGeneratorService::class);
-        
         // Clean database before each test
         $this->cleanDatabase();
+    }
+    
+    /**
+     * Get container services for testing
+     */
+    private function getServices(): void
+    {
+        if (!$this->entityManager) {
+            $container = static::getContainer();
+            $this->entityManager = $container->get(EntityManagerInterface::class);
+            $this->requestRepository = $container->get(NeedsAnalysisRequestRepository::class);
+            $this->needsAnalysisService = $container->get(NeedsAnalysisService::class);
+            $this->tokenGenerator = $container->get(TokenGeneratorService::class);
+        }
     }
 
     /**
@@ -47,6 +55,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     public function testCompanyNeedsAnalysisWorkflow(): void
     {
         $client = static::createClient();
+        $this->getServices();
 
         // Step 1: Create a company needs analysis request
         $request = $this->createCompanyRequest();
@@ -87,6 +96,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     public function testIndividualNeedsAnalysisWorkflow(): void
     {
         $client = static::createClient();
+        $this->getServices();
 
         // Step 1: Create an individual needs analysis request
         $request = $this->createIndividualRequest();
@@ -118,6 +128,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     public function testExpiredTokenHandling(): void
     {
         $client = static::createClient();
+        $this->getServices();
 
         // Create an expired request
         $request = $this->createExpiredRequest();
@@ -147,6 +158,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     public function testAdminViewCompletedAnalysis(): void
     {
         $client = static::createClient();
+        $this->getServices();
 
         // Create and complete a company analysis
         $request = $this->createCompanyRequest();
@@ -167,6 +179,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     public function testFormValidationErrors(): void
     {
         $client = static::createClient();
+        $this->getServices();
 
         $request = $this->createCompanyRequest();
         $token = $request->getToken();
@@ -326,6 +339,10 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function cleanDatabase(): void
     {
+        if (!$this->entityManager) {
+            return; // Skip cleaning if no entity manager yet
+        }
+        
         // Remove all test data
         $this->entityManager->createQuery('DELETE FROM App\Entity\CompanyNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\IndividualNeedsAnalysis')->execute();
