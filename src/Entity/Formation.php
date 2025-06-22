@@ -71,6 +71,78 @@ class Formation
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * Target audience for the formation (required by Qualiopi)
+     *
+     * Description of the target audience concerned by the training
+     * (e.g., employees, job seekers, students, professionals, etc.)
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $targetAudience = null;
+
+    /**
+     * Access modalities and deadlines for the formation (required by Qualiopi)
+     *
+     * Information about how and when participants can access the training,
+     * including registration deadlines, prerequisites validation, etc.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $accessModalities = null;
+
+    /**
+     * Accessibility for people with disabilities (required by Qualiopi)
+     *
+     * Description of accommodations and accessibility measures available
+     * for participants with disabilities or special needs.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $handicapAccessibility = null;
+
+    /**
+     * Teaching methods used in the formation (required by Qualiopi)
+     *
+     * Description of pedagogical approaches, methodologies, and techniques
+     * employed during the training (e.g., lectures, workshops, case studies, etc.)
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $teachingMethods = null;
+
+    /**
+     * Evaluation methods for learning outcomes (required by Qualiopi)
+     *
+     * Description of how participant knowledge and skills are assessed
+     * throughout and at the end of the training program.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $evaluationMethods = null;
+
+    /**
+     * Contact information for pedagogical and administrative support (required by Qualiopi)
+     *
+     * Contact details of the pedagogical coordinator or administrative
+     * reference person for the training program.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contactInfo = null;
+
+    /**
+     * Training location(s) information (required by Qualiopi)
+     *
+     * Description of where the training takes place, including physical
+     * addresses, online platforms, or hybrid arrangements.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $trainingLocation = null;
+
+    /**
+     * Available funding modalities for the formation (required by Qualiopi)
+     *
+     * Information about possible funding options such as CPF, OPCO,
+     * company funding, personal payment, etc.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $fundingModalities = null;
+
     #[ORM\ManyToOne(inversedBy: 'formations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
@@ -313,6 +385,94 @@ class Formation
             }
         }
 
+        return $this;
+    }
+
+    public function getTargetAudience(): ?string
+    {
+        return $this->targetAudience;
+    }
+
+    public function setTargetAudience(?string $targetAudience): static
+    {
+        $this->targetAudience = $targetAudience;
+        return $this;
+    }
+
+    public function getAccessModalities(): ?string
+    {
+        return $this->accessModalities;
+    }
+
+    public function setAccessModalities(?string $accessModalities): static
+    {
+        $this->accessModalities = $accessModalities;
+        return $this;
+    }
+
+    public function getHandicapAccessibility(): ?string
+    {
+        return $this->handicapAccessibility;
+    }
+
+    public function setHandicapAccessibility(?string $handicapAccessibility): static
+    {
+        $this->handicapAccessibility = $handicapAccessibility;
+        return $this;
+    }
+
+    public function getTeachingMethods(): ?string
+    {
+        return $this->teachingMethods;
+    }
+
+    public function setTeachingMethods(?string $teachingMethods): static
+    {
+        $this->teachingMethods = $teachingMethods;
+        return $this;
+    }
+
+    public function getEvaluationMethods(): ?string
+    {
+        return $this->evaluationMethods;
+    }
+
+    public function setEvaluationMethods(?string $evaluationMethods): static
+    {
+        $this->evaluationMethods = $evaluationMethods;
+        return $this;
+    }
+
+    public function getContactInfo(): ?string
+    {
+        return $this->contactInfo;
+    }
+
+    public function setContactInfo(?string $contactInfo): static
+    {
+        $this->contactInfo = $contactInfo;
+        return $this;
+    }
+
+    public function getTrainingLocation(): ?string
+    {
+        return $this->trainingLocation;
+    }
+
+    public function setTrainingLocation(?string $trainingLocation): static
+    {
+        $this->trainingLocation = $trainingLocation;
+        return $this;
+    }
+
+    public function getFundingModalities(): ?string
+    {
+        return $this->fundingModalities;
+    }
+
+    public function setFundingModalities(?string $fundingModalities): static
+    {
+        $this->fundingModalities = $fundingModalities;
         return $this;
     }
 
