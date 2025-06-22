@@ -50,7 +50,26 @@ class ContactController extends AbstractController
     /**
      * Handle quote request form submission
      */
-    #[Route('/devis', name: 'app_contact_quote', methods: ['POST'])]
+    /**
+     * Display quote request form (GET)
+     */
+    #[Route('/devis', name: 'app_contact_quote', methods: ['GET'])]
+    public function quoteForm(Request $request): Response
+    {
+        $this->logger->info('Quote form accessed via GET', [
+            'service_id' => $request->query->get('service'),
+            'referer' => $request->headers->get('referer'),
+            'user_agent' => $request->headers->get('user-agent')
+        ]);
+
+        // Redirect to contact page with quote section
+        return $this->redirectToRoute('app_contact_index', [], Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    /**
+     * Handle quote request form submission (POST)
+     */
+    #[Route('/devis', name: 'app_contact_quote_submit', methods: ['POST'])]
     public function quote(Request $request): Response
     {
         $contactRequest = new ContactRequest();

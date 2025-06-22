@@ -1,0 +1,498 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Conditions générales - EPROFOS{% endblock %}
+
+{% block meta_description %}Conditions générales d'utilisation et de vente d'EPROFOS. Modalités d'inscription, de paiement et d'accès aux formations professionnelles.{% endblock %}
+
+{% block body %}
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">CONDITIONS D'UTILISATION</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Conditions <span class="text-warning">générales</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        Modalités d'utilisation de nos services et d'accès à nos formations professionnelles
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        {# Introduction Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-handshake"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Préambule</h2>
+                            </div>
+                        </div>
+                        <p class="text-center mb-0" style="line-height: 1.7; font-size: 1.1rem;">
+                            Les présentes conditions générales régissent l'utilisation des services proposés par EPROFOS 
+                            et l'accès à notre plateforme de formation en ligne. En utilisant nos services, vous acceptez 
+                            ces conditions dans leur intégralité.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Services Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Nos services</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="service-card p-4 bg-light rounded-3 h-100 text-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-laptop fa-2x text-primary"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Formations en ligne</h5>
+                                    <p class="text-muted mb-0" style="line-height: 1.6;">
+                                        Accès à notre plateforme e-learning avec contenus interactifs et suivi personnalisé
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="service-card p-4 bg-light rounded-3 h-100 text-center">
+                                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-users fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Formations présentielles</h5>
+                                    <p class="text-muted mb-0" style="line-height: 1.6;">
+                                        Sessions de formation en présentiel dans nos locaux ou chez nos partenaires
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="service-card p-4 bg-light rounded-3 h-100 text-center">
+                                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-chart-line fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Conseil et audit</h5>
+                                    <p class="text-muted mb-0" style="line-height: 1.6;">
+                                        Services de conseil personnalisé et audit de compétences pour les entreprises
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Registration Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Inscription et accès</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="registration-item p-4 bg-white rounded-3 h-100">
+                                    <h5 class="fw-bold mb-3 text-warning">
+                                        <i class="fas fa-clipboard-check me-2"></i>Conditions d'inscription
+                                    </h5>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Être âgé de 16 ans minimum</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Fournir des informations exactes</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Accepter les présentes conditions</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Respecter les prérequis de formation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="registration-item p-4 bg-white rounded-3 h-100">
+                                    <h5 class="fw-bold mb-3 text-warning">
+                                        <i class="fas fa-key me-2"></i>Accès aux services
+                                    </h5>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Identifiants personnels et confidentiels</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Accès 24h/24 à la plateforme</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support technique inclus</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivi pédagogique personnalisé</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Payment Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Modalités de paiement</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="payment-method p-4 border rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-calendar text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-2">Échéances de paiement</h5>
+                                            <ul class="list-unstyled text-muted mb-0">
+                                                <li class="mb-1">• Paiement comptant à l'inscription</li>
+                                                <li class="mb-1">• Paiement en 3 fois sans frais</li>
+                                                <li class="mb-1">• Financement CPF accepté</li>
+                                                <li class="mb-1">• Prise en charge OPCO possible</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="payment-method p-4 border rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-shield-alt text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-2">Moyens de paiement</h5>
+                                            <ul class="list-unstyled text-muted mb-0">
+                                                <li class="mb-1">• Carte bancaire (sécurisée)</li>
+                                                <li class="mb-1">• Virement bancaire</li>
+                                                <li class="mb-1">• Chèque (sur demande)</li>
+                                                <li class="mb-1">• Paiement en ligne sécurisé</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Obligations Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-purple text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; background-color: #9c27b0;">
+                                    <i class="fas fa-balance-scale"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Obligations des parties</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="obligation-card p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <h5 class="fw-bold mb-3 text-purple" style="color: #9c27b0;">
+                                        <i class="fas fa-user me-2"></i>Obligations de l'apprenant
+                                    </h5>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Respecter les conditions d'utilisation</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Participer activement aux formations</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Respecter les autres participants</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Protéger ses identifiants d'accès</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Signaler tout dysfonctionnement</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="obligation-card p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <h5 class="fw-bold mb-3 text-purple" style="color: #9c27b0;">
+                                        <i class="fas fa-building me-2"></i>Obligations d'EPROFOS
+                                    </h5>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Fournir un accès aux formations</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Assurer la qualité pédagogique</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Maintenir la plateforme technique</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Respecter la confidentialité</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-muted me-2"></i>Délivrer les certificats</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Cancellation Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Annulation et remboursement</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="cancellation-policy text-center p-4 bg-light rounded-3 h-100">
+                                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-check fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Avant 14 jours</h5>
+                                    <p class="text-muted mb-0">Remboursement intégral sans justification (droit de rétractation)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="cancellation-policy text-center p-4 bg-light rounded-3 h-100">
+                                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-exclamation fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Entre 14 et 7 jours</h5>
+                                    <p class="text-muted mb-0">Remboursement partiel (50%) avec justification valable</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="cancellation-policy text-center p-4 bg-light rounded-3 h-100">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-times fa-2x text-danger"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Moins de 7 jours</h5>
+                                    <p class="text-muted mb-0">Aucun remboursement sauf cas de force majeure</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Liability Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Limitation de responsabilité</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="mb-4" style="line-height: 1.7; font-size: 1.1rem;">
+                                EPROFOS ne saurait être tenue responsable des dommages indirects, pertes de données, 
+                                interruptions d'activité ou tout autre préjudice résultant de l'utilisation ou de 
+                                l'impossibilité d'utiliser nos services, sauf en cas de faute lourde ou intentionnelle.
+                            </p>
+                            
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Important :</strong> Notre responsabilité est limitée au montant des sommes versées par l'utilisateur.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Contact Section #}
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                        <div class="card-body p-5 text-center">
+                            <div class="mb-4">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-gavel fa-2x"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-3">Questions juridiques ?</h3>
+                            <p class="text-muted mb-4" style="line-height: 1.7;">
+                                Pour toute question concernant ces conditions générales ou nos services, 
+                                notre équipe juridique est à votre disposition.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a href="{{ path('app_contact_index') }}" class="btn btn-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-envelope me-2"></i>Nous contacter
+                                </a>
+                                <a href="mailto:juridique@eprofos.fr" class="btn btn-outline-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-gavel me-2"></i>Service juridique
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Modern Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 50%, #e91e63 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Service Cards */
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            background: rgba(108, 117, 125, 0.1) !important;
+            transform: translateY(-5px);
+        }
+        
+        /* Registration Items */
+        .registration-item {
+            transition: all 0.3s ease;
+        }
+        
+        .registration-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Payment Methods */
+        .payment-method {
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method:hover {
+            border-color: var(--bs-info) !important;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Obligation Cards */
+        .obligation-card {
+            transition: all 0.3s ease;
+        }
+        
+        .obligation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Cancellation Policy */
+        .cancellation-policy {
+            transition: all 0.3s ease;
+        }
+        
+        .cancellation-policy:hover {
+            background: rgba(108, 117, 125, 0.1) !important;
+            transform: translateY(-5px);
+        }
+        
+        /* Card Hover Effects */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Modern Button Styles */
+        .btn {
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .hero-section {
+                text-align: center;
+            }
+            
+            .service-card,
+            .registration-item,
+            .payment-method,
+            .obligation-card,
+            .cancellation-policy {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+{% endblock %}

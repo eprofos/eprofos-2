@@ -1,0 +1,536 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Politique des cookies - EPROFOS{% endblock %}
+
+{% block meta_description %}Politique des cookies d'EPROFOS. Gestion des cookies, traceurs et technologies similaires sur notre plateforme e-learning.{% endblock %}
+
+{% block body %}
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">GESTION DES COOKIES</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Politique des <span class="text-warning">cookies</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        Comprendre l'utilisation des cookies et traceurs sur notre plateforme de formation
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        {# Introduction Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-cookie-bite"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Qu'est-ce qu'un cookie ?</h2>
+                            </div>
+                        </div>
+                        <p class="text-center mb-0" style="line-height: 1.7; font-size: 1.1rem;">
+                            Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, tablette, smartphone) 
+                            lors de la visite d'un site web. Il permet de reconnaître votre navigateur et d'améliorer votre 
+                            expérience de navigation sur notre plateforme EPROFOS.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Cookie Types Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Types de cookies utilisés</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="cookie-type-card p-4 bg-light rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-cog fa-2x text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-3 text-success">Cookies techniques</h5>
+                                            <p class="text-muted mb-3" style="line-height: 1.6;">
+                                                Indispensables au fonctionnement du site et à la sécurité de votre navigation.
+                                            </p>
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Authentification</li>
+                                                <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Panier de formation</li>
+                                                <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Préférences de langue</li>
+                                                <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Sécurité CSRF</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="cookie-type-card p-4 bg-light rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-chart-bar fa-2x text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-3 text-info">Cookies analytiques</h5>
+                                            <p class="text-muted mb-3" style="line-height: 1.6;">
+                                                Nous aident à comprendre comment vous utilisez notre site pour l'améliorer.
+                                            </p>
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-1"><i class="fas fa-check text-info me-2"></i>Google Analytics</li>
+                                                <li class="mb-1"><i class="fas fa-check text-info me-2"></i>Statistiques de visite</li>
+                                                <li class="mb-1"><i class="fas fa-check text-info me-2"></i>Parcours utilisateur</li>
+                                                <li class="mb-1"><i class="fas fa-check text-info me-2"></i>Performance du site</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="cookie-type-card p-4 bg-light rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-bullhorn fa-2x text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-3 text-warning">Cookies publicitaires</h5>
+                                            <p class="text-muted mb-3" style="line-height: 1.6;">
+                                                Permettent de vous proposer des contenus personnalisés et pertinents.
+                                            </p>
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-1"><i class="fas fa-check text-warning me-2"></i>Publicités ciblées</li>
+                                                <li class="mb-1"><i class="fas fa-check text-warning me-2"></i>Réseaux sociaux</li>
+                                                <li class="mb-1"><i class="fas fa-check text-warning me-2"></i>Remarketing</li>
+                                                <li class="mb-1"><i class="fas fa-check text-warning me-2"></i>Mesure d'efficacité</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="cookie-type-card p-4 bg-light rounded-3 h-100">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-purple bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 60px; height: 60px; background-color: rgba(156, 39, 176, 0.1);">
+                                            <i class="fas fa-user-cog fa-2x" style="color: #9c27b0;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-3" style="color: #9c27b0;">Cookies de personnalisation</h5>
+                                            <p class="text-muted mb-3" style="line-height: 1.6;">
+                                                Mémorisent vos préférences pour personnaliser votre expérience.
+                                            </p>
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-1"><i class="fas fa-check me-2" style="color: #9c27b0;"></i>Thème d'affichage</li>
+                                                <li class="mb-1"><i class="fas fa-check me-2" style="color: #9c27b0;"></i>Préférences utilisateur</li>
+                                                <li class="mb-1"><i class="fas fa-check me-2" style="color: #9c27b0;"></i>Historique de navigation</li>
+                                                <li class="mb-1"><i class="fas fa-check me-2" style="color: #9c27b0;"></i>Formations favorites</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Cookie Management Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-sliders-h"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Gestion de vos cookies</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="management-option text-center p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-toggle-on fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Accepter tous</h5>
+                                    <p class="text-muted mb-3" style="line-height: 1.6;">
+                                        Autorise tous les cookies pour une expérience optimale
+                                    </p>
+                                    <button class="btn btn-success btn-sm" onclick="acceptAllCookies()">
+                                        <i class="fas fa-check me-2"></i>Accepter
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="management-option text-center p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-cog fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Personnaliser</h5>
+                                    <p class="text-muted mb-3" style="line-height: 1.6;">
+                                        Choisissez quels cookies vous souhaitez autoriser
+                                    </p>
+                                    <button class="btn btn-warning btn-sm" onclick="customizeCookies()">
+                                        <i class="fas fa-sliders-h me-2"></i>Personnaliser
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="management-option text-center p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-toggle-off fa-2x text-danger"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Refuser</h5>
+                                    <p class="text-muted mb-3" style="line-height: 1.6;">
+                                        Refuse les cookies non essentiels (fonctionnalités limitées)
+                                    </p>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectCookies()">
+                                        <i class="fas fa-times me-2"></i>Refuser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Browser Settings Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-browser"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Paramétrage de votre navigateur</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-4">
+                                <div class="browser-guide text-center p-4 border rounded-3 h-100">
+                                    <div class="mb-3">
+                                        <i class="fab fa-chrome fa-3x text-primary"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Chrome</h5>
+                                    <p class="text-muted small mb-3">
+                                        Paramètres → Confidentialité et sécurité → Cookies
+                                    </p>
+                                    <a href="https://support.google.com/chrome/answer/95647" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>Guide
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <div class="browser-guide text-center p-4 border rounded-3 h-100">
+                                    <div class="mb-3">
+                                        <i class="fab fa-firefox fa-3x text-warning"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Firefox</h5>
+                                    <p class="text-muted small mb-3">
+                                        Préférences → Vie privée et sécurité → Cookies
+                                    </p>
+                                    <a href="https://support.mozilla.org/fr/kb/activer-desactiver-cookies" target="_blank" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>Guide
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <div class="browser-guide text-center p-4 border rounded-3 h-100">
+                                    <div class="mb-3">
+                                        <i class="fab fa-safari fa-3x text-info"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Safari</h5>
+                                    <p class="text-muted small mb-3">
+                                        Préférences → Confidentialité → Cookies
+                                    </p>
+                                    <a href="https://support.apple.com/fr-fr/guide/safari/sfri11471/mac" target="_blank" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>Guide
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <div class="browser-guide text-center p-4 border rounded-3 h-100">
+                                    <div class="mb-3">
+                                        <i class="fab fa-edge fa-3x text-success"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">Edge</h5>
+                                    <p class="text-muted small mb-3">
+                                        Paramètres → Cookies et autorisations de site
+                                    </p>
+                                    <a href="https://support.microsoft.com/fr-fr/microsoft-edge/supprimer-les-cookies-dans-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>Guide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Third Party Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-purple text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; background-color: #9c27b0;">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Services tiers</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="third-party-service p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="text-center mb-3">
+                                        <i class="fab fa-google fa-3x text-danger"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-center mb-3">Google Analytics</h5>
+                                    <p class="text-muted text-center mb-3" style="line-height: 1.6;">
+                                        Analyse du trafic et du comportement des utilisateurs
+                                    </p>
+                                    <div class="text-center">
+                                        <a href="https://policies.google.com/privacy" target="_blank" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-shield-alt me-1"></i>Politique de confidentialité
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="third-party-service p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="text-center mb-3">
+                                        <i class="fab fa-youtube fa-3x text-danger"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-center mb-3">YouTube</h5>
+                                    <p class="text-muted text-center mb-3" style="line-height: 1.6;">
+                                        Intégration de vidéos pédagogiques dans nos formations
+                                    </p>
+                                    <div class="text-center">
+                                        <a href="https://policies.google.com/privacy" target="_blank" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-shield-alt me-1"></i>Politique de confidentialité
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="third-party-service p-4 bg-white rounded-3 shadow-sm h-100">
+                                    <div class="text-center mb-3">
+                                        <i class="fab fa-facebook fa-3x text-primary"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-center mb-3">Facebook Pixel</h5>
+                                    <p class="text-muted text-center mb-3" style="line-height: 1.6;">
+                                        Mesure de l'efficacité de nos campagnes publicitaires
+                                    </p>
+                                    <div class="text-center">
+                                        <a href="https://www.facebook.com/privacy/explanation" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-shield-alt me-1"></i>Politique de confidentialité
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Contact Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135d, #fff3cd 0%, #ffeaa7 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Mise à jour de cette politique</h2>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="mb-4" style="line-height: 1.7; font-size: 1.1rem;">
+                                Cette politique des cookies peut être mise à jour périodiquement pour refléter 
+                                les changements dans nos pratiques ou pour d'autres raisons opérationnelles, 
+                                légales ou réglementaires. Nous vous encourageons à consulter régulièrement cette page.
+                            </p>
+                            
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Contact Section #}
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                        <div class="card-body p-5 text-center">
+                            <div class="mb-4">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-question-circle fa-2x"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-3">Questions sur les cookies ?</h3>
+                            <p class="text-muted mb-4" style="line-height: 1.7;">
+                                Pour toute question concernant notre utilisation des cookies ou pour exercer vos droits, 
+                                n'hésitez pas à nous contacter.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a href="{{ path('app_contact_index') }}" class="btn btn-primary btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-envelope me-2"></i>Nous contacter
+                                </a>
+                                <button class="btn btn-outline-primary btn-lg" style="border-radius: 25px;" onclick="openCookieSettings()">
+                                    <i class="fas fa-cog me-2"></i>Gérer mes cookies
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        /**
+         * Cookie management functions
+         * These functions would typically integrate with a cookie consent management platform
+         */
+        
+        function acceptAllCookies() {
+            // Set cookie consent for all categories
+            setCookieConsent('all', true);
+            showNotification('Tous les cookies ont été acceptés', 'success');
+        }
+        
+        function rejectCookies() {
+            // Set cookie consent to essential only
+            setCookieConsent('essential', true);
+            setCookieConsent('analytics', false);
+            setCookieConsent('advertising', false);
+            setCookieConsent('personalization', false);
+            showNotification('Seuls les cookies essentiels sont autorisés', 'info');
+        }
+        
+        function customizeCookies() {
+            // Open cookie customization modal/panel
+            showNotification('Fonctionnalité de personnalisation à implémenter', 'info');
+        }
+        
+        function openCookieSettings() {
+            // Open cookie settings panel
+            showNotification('Panneau de gestion des cookies à implémenter', 'info');
+        }
+        
+        function setCookieConsent(category, consent) {
+            // Store cookie consent preferences
+            localStorage.setItem(`cookie_consent_${category}`, consent);
+            
+            // Here you would typically integrate with your cookie consent management system
+            console.log(`Cookie consent for ${category}: ${consent}`);
+        }
+        
+        function showNotification(message, type) {
+            // Simple notification system
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+            
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Modern Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 50%, #e91e63 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
