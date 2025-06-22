@@ -1,0 +1,118 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_service_category_index') }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M5 12l14 0"/>
+                <path d="M5 12l6 6"/>
+                <path d="M5 12l6 -6"/>
+            </svg>
+            Retour à la liste
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Nouvelle catégorie de service</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form_label(form.name, null, {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.name) }}
+                                {{ form_errors(form.name) }}
+                                <small class="form-hint">
+                                    Le nom de la catégorie tel qu'il apparaîtra sur le site.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.description) }}
+                                {{ form_errors(form.description) }}
+                                <small class="form-hint">
+                                    Description optionnelle de la catégorie pour aider les visiteurs à comprendre les services proposés.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="card-footer bg-transparent mt-auto">
+                                <div class="btn-list justify-content-end">
+                                    <a href="{{ path('admin_service_category_index') }}" class="btn btn-outline-secondary">
+                                        Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Créer la catégorie
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help card -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                            <path d="M12 9h.01"/>
+                            <path d="M11 12h1v4h1"/>
+                        </svg>
+                        Aide
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Qu'est-ce qu'une catégorie de service ?</h4>
+                            <p class="text-muted">
+                                Les catégories de services permettent d'organiser et de regrouper vos différents services par thématique. 
+                                Par exemple : "Conseil", "Formation", "Audit", etc.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Bonnes pratiques</h4>
+                            <ul class="text-muted">
+                                <li>Utilisez des noms clairs et explicites</li>
+                                <li>Évitez les catégories trop spécifiques</li>
+                                <li>Pensez à l'expérience utilisateur sur le site public</li>
+                                <li>Une description aide les visiteurs à comprendre vos services</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Auto-focus on the name field
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameField = document.getElementById('service_category_type_name');
+            if (nameField) {
+                nameField.focus();
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_service_category_new') }}" class="btn btn-primary d-none d-sm-inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 5l0 14"/>
+                <path d="M5 12l14 0"/>
+            </svg>
+            Nouvelle catégorie
+        </a>
+        <a href="{{ path('admin_service_category_new') }}" class="btn btn-primary d-sm-none btn-icon" aria-label="Nouvelle catégorie">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 5l0 14"/>
+                <path d="M5 12l14 0"/>
+            </svg>
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Catégories de services</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-blue">{{ service_categories|length }} catégorie{{ service_categories|length > 1 ? 's' : '' }}</span>
+                    </div>
+                </div>
+                
+                {% if service_categories is empty %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune catégorie" onerror="this.style.display='none'">
+                            </div>
+                            <p class="empty-title">Aucune catégorie de service</p>
+                            <p class="empty-subtitle text-muted">
+                                Commencez par créer votre première catégorie de service pour organiser vos services.
+                            </p>
+                            <div class="empty-action">
+                                <a href="{{ path('admin_service_category_new') }}" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Créer une catégorie
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Slug</th>
+                                    <th>Description</th>
+                                    <th>Services</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service_category in service_categories %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex py-1 align-items-center">
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">{{ service_category.name }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ service_category.slug }}</span>
+                                        </td>
+                                        <td>
+                                            {% if service_category.description %}
+                                                <div class="text-muted">
+                                                    {{ service_category.description|length > 100 ? service_category.description|slice(0, 100) ~ '...' : service_category.description }}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">Aucune description</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-blue">{{ service_category.services|length }} service{{ service_category.services|length > 1 ? 's' : '' }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="{{ path('admin_service_category_show', {id: service_category.id}) }}" class="btn btn-white btn-sm">
+                                                    Voir
+                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-white btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="{{ path('admin_service_category_edit', {id: service_category.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                <path d="M16 5l3 3"/>
+                                                            </svg>
+                                                            Modifier
+                                                        </a>
+                                                        {% if service_category.services|length == 0 %}
+                                                            <div class="dropdown-divider"></div>
+                                                            <a class="dropdown-item text-danger" href="#" onclick="confirmDelete('{{ service_category.name }}', '{{ path('admin_service_category_delete', {id: service_category.id}) }}')">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M4 7l16 0"/>
+                                                                    <path d="M10 11l0 6"/>
+                                                                    <path d="M14 11l0 6"/>
+                                                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                </svg>
+                                                                Supprimer
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div class="modal modal-blur fade" id="modal-delete" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 9v2m0 4v.01"/>
+                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                    </svg>
+                    <h3>Êtes-vous sûr ?</h3>
+                    <div class="text-muted">Voulez-vous vraiment supprimer la catégorie "<span id="delete-category-name"></span>" ? Cette action est irréversible.</div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">Annuler</button>
+                            </div>
+                            <div class="col">
+                                <form id="delete-form" method="post" class="w-100">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                                    <button type="submit" class="btn btn-danger w-100">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function confirmDelete(categoryName, deleteUrl) {
+            document.getElementById('delete-category-name').textContent = categoryName;
+            document.getElementById('delete-form').action = deleteUrl;
+            
+            const modal = new bootstrap.Modal(document.getElementById('modal-delete'));
+            modal.show();
+        }
+    </script>
+{% endblock %}
