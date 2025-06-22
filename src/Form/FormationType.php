@@ -154,8 +154,7 @@ class FormationType extends AbstractType
                     new Range([
                         'min' => 1,
                         'max' => 1000,
-                        'minMessage' => 'La durée doit être d\'au moins {{ limit }} heure.',
-                        'maxMessage' => 'La durée ne peut pas dépasser {{ limit }} heures.'
+                        'notInRangeMessage' => 'La durée doit être comprise entre {{ min }} et {{ max }} heures.'
                     ])
                 ]
             ])
