@@ -102,167 +102,180 @@
                 </div>
                 
                 {% if formations|length > 0 %}
-                    <div class="card-body p-0">
-                        <div class="row g-3 p-3">
-                            {% for formation in formations %}
-                                <div class="col-12">
-                                    <div class="card card-sm">
-                                        <div class="card-body">
-                                            <div class="row align-items-center">
-                                                <div class="col-auto">
-                                                    {% if formation.image %}
-                                                        <span class="avatar avatar-md" style="background-image: url('{{ asset('uploads/formations/' ~ formation.image) }}')"></span>
-                                                    {% else %}
-                                                        <span class="avatar avatar-md" style="background-color: var(--tblr-primary); color: white;">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/>
-                                                                <path d="M6 10.6v9.4a6 3 0 0 0 12 0v-9.4"/>
-                                                            </svg>
-                                                        </span>
-                                                    {% endif %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Formation</th>
+                                    <th>Catégorie</th>
+                                    <th>Niveau</th>
+                                    <th>Format</th>
+                                    <th>Durée</th>
+                                    <th>Prix</th>
+                                    <th>Statut</th>
+                                    <th>Créée le</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for formation in formations %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if formation.image %}
+                                                    <span class="avatar avatar-sm me-3" style="background-image: url('{{ asset('uploads/formations/' ~ formation.image) }}')"></span>
+                                                {% else %}
+                                                    <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/>
+                                                            <path d="M6 10.6v9.4a6 3 0 0 0 12 0v-9.4"/>
+                                                        </svg>
+                                                    </span>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="fw-bold">{{ formation.title }}</div>
+                                                    <div class="text-muted small">{{ formation.description|length > 80 ? formation.description|slice(0, 80) ~ '...' : formation.description }}</div>
                                                 </div>
-                                                <div class="col">
-                                                    <div class="row">
-                                                        <div class="col-md-8">
-                                                            <h3 class="card-title mb-1">{{ formation.title }}</h3>
-                                                            <p class="text-muted mb-2">{{ formation.description|length > 120 ? formation.description|slice(0, 120) ~ '...' : formation.description }}</p>
-                                                            <div class="d-flex gap-2 flex-wrap">
-                                                                {% if formation.category %}
-                                                                    <span class="badge bg-blue text-white">{{ formation.category.name }}</span>
-                                                                {% endif %}
-                                                                <span class="badge bg-purple text-white">{{ formation.level }}</span>
-                                                                {% set formatColors = {
-                                                                    'Présentiel': 'green',
-                                                                    'Distanciel': 'blue',
-                                                                    'Hybride': 'orange',
-                                                                    'E-learning': 'cyan'
-                                                                } %}
-                                                                <span class="badge bg-{{ formatColors[formation.format] ?? 'secondary' }} text-white">{{ formation.format }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if formation.category %}
+                                                <span class="badge bg-blue text-white">{{ formation.category.name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Aucune catégorie</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-purple text-white">{{ formation.level }}</span>
+                                        </td>
+                                        <td>
+                                            {% set formatColors = {
+                                                'Présentiel': 'green',
+                                                'Distanciel': 'blue',
+                                                'Hybride': 'orange',
+                                                'E-learning': 'cyan'
+                                            } %}
+                                            <span class="badge bg-{{ formatColors[formation.format] ?? 'secondary' }} text-white">{{ formation.format }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ formation.formattedDuration }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">{{ formation.formattedPrice }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                {% if formation.isActive %}
+                                                    <span class="badge bg-success text-white">Actif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary text-white">Inactif</span>
+                                                {% endif %}
+                                                {% if formation.isFeatured %}
+                                                    <span class="badge bg-yellow text-white">★ Vedette</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ formation.createdAt|date('d/m/Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="{{ path('admin_formation_show', {id: formation.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                    </svg>
+                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{ path('admin_formation_edit', {id: formation.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                <path d="M16 5l3 3"/>
+                                                            </svg>
+                                                            Modifier
+                                                        </a>
+                                                        <form method="post" action="{{ path('admin_formation_toggle_status', {id: formation.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ formation.id) }}">
+                                                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ formation.isActive ? 'désactiver' : 'activer' }} cette formation ?')">
                                                                 {% if formation.isActive %}
-                                                                    <span class="badge bg-success text-white">Actif</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-secondary text-white">Inactif</span>
-                                                                {% endif %}
-                                                                {% if formation.isFeatured %}
-                                                                    <span class="badge bg-yellow text-white">★ Vedette</span>
-                                                                {% endif %}
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4 text-md-end">
-                                                            <div class="mb-2">
-                                                                <div class="text-muted small">Durée</div>
-                                                                <div class="fw-bold">{{ formation.formattedDuration }}</div>
-                                                            </div>
-                                                            <div class="mb-2">
-                                                                <div class="text-muted small">Prix</div>
-                                                                <div class="fw-bold text-primary">{{ formation.formattedPrice }}</div>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <div class="text-muted small">Créée le</div>
-                                                                <div>{{ formation.createdAt|date('d/m/Y') }}</div>
-                                                            </div>
-                                                            <div class="btn-list">
-                                                                <a href="{{ path('admin_formation_show', {id: formation.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
-                                                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                                        <path d="M18 6l-12 12"/>
+                                                                        <path d="M6 6l12 12"/>
                                                                     </svg>
-                                                                    Voir
-                                                                </a>
-                                                                <div class="dropdown">
-                                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                                        Actions
-                                                                    </button>
-                                                                    <div class="dropdown-menu">
-                                                                        <a class="dropdown-item" href="{{ path('admin_formation_edit', {id: formation.id}) }}">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
-                                                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
-                                                                                <path d="M16 5l3 3"/>
-                                                                            </svg>
-                                                                            Modifier
-                                                                        </a>
-                                                                        <form method="post" action="{{ path('admin_formation_toggle_status', {id: formation.id}) }}" style="display: inline;">
-                                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ formation.id) }}">
-                                                                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ formation.isActive ? 'désactiver' : 'activer' }} cette formation ?')">
-                                                                                {% if formation.isActive %}
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                        <path d="M18 6l-12 12"/>
-                                                                                        <path d="M6 6l12 12"/>
-                                                                                    </svg>
-                                                                                    Désactiver
-                                                                                {% else %}
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                        <path d="M5 12l5 5l10 -10"/>
-                                                                                    </svg>
-                                                                                    Activer
-                                                                                {% endif %}
-                                                                            </button>
-                                                                        </form>
-                                                                        <form method="post" action="{{ path('admin_formation_toggle_featured', {id: formation.id}) }}" style="display: inline;">
-                                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_featured' ~ formation.id) }}">
-                                                                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ formation.isFeatured ? 'retirer de la mise en avant' : 'mettre en avant' }} cette formation ?')">
-                                                                                {% if formation.isFeatured %}
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                        <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>
-                                                                                    </svg>
-                                                                                    Retirer vedette
-                                                                                {% else %}
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                        <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>
-                                                                                    </svg>
-                                                                                    Mettre en vedette
-                                                                                {% endif %}
-                                                                            </button>
-                                                                        </form>
-                                                                        <div class="dropdown-divider"></div>
-                                                                        {% if formation.contactRequests|length == 0 %}
-                                                                            <form method="post" action="{{ path('admin_formation_delete', {id: formation.id}) }}" style="display: inline;">
-                                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ formation.id) }}">
-                                                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette formation ? Cette action est irréversible.')">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                        <path d="M4 7l16 0"/>
-                                                                                        <path d="M10 11l0 6"/>
-                                                                                        <path d="M14 11l0 6"/>
-                                                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
-                                                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
-                                                                                    </svg>
-                                                                                    Supprimer
-                                                                                </button>
-                                                                            </form>
-                                                                        {% else %}
-                                                                            <span class="dropdown-item text-muted" title="Impossible de supprimer : la formation a des demandes de contact">
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                                                    <path d="M4 7l16 0"/>
-                                                                                    <path d="M10 11l0 6"/>
-                                                                                    <path d="M14 11l0 6"/>
-                                                                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
-                                                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
-                                                                                </svg>
-                                                                                Supprimer ({{ formation.contactRequests|length }} demandes)
-                                                                            </span>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                                    Désactiver
+                                                                {% else %}
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M5 12l5 5l10 -10"/>
+                                                                    </svg>
+                                                                    Activer
+                                                                {% endif %}
+                                                            </button>
+                                                        </form>
+                                                        <form method="post" action="{{ path('admin_formation_toggle_featured', {id: formation.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_featured' ~ formation.id) }}">
+                                                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ formation.isFeatured ? 'retirer de la mise en avant' : 'mettre en avant' }} cette formation ?')">
+                                                                {% if formation.isFeatured %}
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>
+                                                                    </svg>
+                                                                    Retirer vedette
+                                                                {% else %}
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>
+                                                                    </svg>
+                                                                    Mettre en vedette
+                                                                {% endif %}
+                                                            </button>
+                                                        </form>
+                                                        <div class="dropdown-divider"></div>
+                                                        {% if formation.contactRequests|length == 0 %}
+                                                            <form method="post" action="{{ path('admin_formation_delete', {id: formation.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ formation.id) }}">
+                                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette formation ? Cette action est irréversible.')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M4 7l16 0"/>
+                                                                        <path d="M10 11l0 6"/>
+                                                                        <path d="M14 11l0 6"/>
+                                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                    </svg>
+                                                                    Supprimer
+                                                                </button>
+                                                            </form>
+                                                        {% else %}
+                                                            <span class="dropdown-item text-muted" title="Impossible de supprimer : la formation a des demandes de contact">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M4 7l16 0"/>
+                                                                    <path d="M10 11l0 6"/>
+                                                                    <path d="M14 11l0 6"/>
+                                                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                </svg>
+                                                                Supprimer ({{ formation.contactRequests|length }} demandes)
+                                                            </span>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 {% else %}
                     <div class="card-body">
