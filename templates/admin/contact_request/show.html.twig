@@ -1,0 +1,394 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Demande #{{ contact_request.id }} - {{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        Demande #{{ contact_request.id }} - {{ contact_request.fullName }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_contact_request_edit', {id: contact_request.id}) }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier
+                        </a>
+                        <a href="{{ path('admin_contact_request_edit', {id: contact_request.id}) }}" class="btn btn-primary d-sm-none btn-icon" aria-label="Modifier">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations de la demande</h3>
+                        <div class="card-actions">
+                            <span class="badge {{ contact_request.statusBadgeClass }} text-white">{{ contact_request.statusLabel }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Type de demande</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-blue text-white">{{ contact_request.typeLabel }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Statut</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge {{ contact_request.statusBadgeClass }} text-white">{{ contact_request.statusLabel }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Prénom</label>
+                                    <div class="form-control-plaintext">{{ contact_request.firstName }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nom</label>
+                                    <div class="form-control-plaintext">{{ contact_request.lastName }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <div class="form-control-plaintext">
+                                        <a href="mailto:{{ contact_request.email }}" class="text-decoration-none">
+                                            {{ contact_request.email }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Téléphone</label>
+                                    <div class="form-control-plaintext">
+                                        {% if contact_request.phone %}
+                                            <a href="tel:{{ contact_request.phone }}" class="text-decoration-none">
+                                                {{ contact_request.phone }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">Non renseigné</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if contact_request.company %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Entreprise</label>
+                                <div class="form-control-plaintext">{{ contact_request.company }}</div>
+                            </div>
+                        {% endif %}
+
+                        {% if contact_request.subject %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Sujet</label>
+                                <div class="form-control-plaintext">{{ contact_request.subject }}</div>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Message</label>
+                            <div class="form-control-plaintext">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        {{ contact_request.message|nl2br }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if contact_request.formation or contact_request.service %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Formation/Service concerné</label>
+                                <div class="form-control-plaintext">
+                                    {% if contact_request.formation %}
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/>
+                                                <path d="M6 10.6v9.4a6 3 0 0 0 12 0v-9.4"/>
+                                            </svg>
+                                            <div>
+                                                <div class="fw-bold">{{ contact_request.formation.title }}</div>
+                                                <div class="text-muted small">Formation</div>
+                                            </div>
+                                        </div>
+                                    {% elseif contact_request.service %}
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-info me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                                <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>
+                                                <path d="M19 11h2m-1 -1v2"/>
+                                            </svg>
+                                            <div>
+                                                <div class="fw-bold">{{ contact_request.service.title }}</div>
+                                                <div class="text-muted small">Service</div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if contact_request.additionalData %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Données additionnelles</label>
+                                <div class="form-control-plaintext">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <pre class="mb-0">{{ contact_request.additionalData|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if contact_request.adminNotes %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Notes administratives</label>
+                                <div class="form-control-plaintext">
+                                    <div class="card bg-warning-subtle">
+                                        <div class="card-body">
+                                            {{ contact_request.adminNotes|nl2br }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Métadonnées</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">ID de la demande</label>
+                            <div class="form-control-plaintext">
+                                <code>#{{ contact_request.id }}</code>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Créée le</label>
+                            <div class="form-control-plaintext">
+                                {{ contact_request.createdAt|date('d/m/Y à H:i') }}
+                            </div>
+                        </div>
+
+                        {% if contact_request.updatedAt %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Modifiée le</label>
+                                <div class="form-control-plaintext">
+                                    {{ contact_request.updatedAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if contact_request.processedAt %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Traitée le</label>
+                                <div class="form-control-plaintext">
+                                    {{ contact_request.processedAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Statut actuel</label>
+                            <div class="form-control-plaintext">
+                                {% if contact_request.isPending %}
+                                    <span class="badge bg-warning text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 8v4l3 3"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        </svg>
+                                        En attente de traitement
+                                    </span>
+                                {% elseif contact_request.isInProgress %}
+                                    <span class="badge bg-info text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M7.5 4.21l0 .01"/>
+                                            <path d="M4.21 7.5l0 .01"/>
+                                            <path d="M3 12l0 .01"/>
+                                            <path d="M4.21 16.5l0 .01"/>
+                                            <path d="M7.5 19.79l0 .01"/>
+                                            <path d="M12 21l0 .01"/>
+                                            <path d="M16.5 19.79l0 .01"/>
+                                            <path d="M19.79 16.5l0 .01"/>
+                                            <path d="M21 12l0 .01"/>
+                                            <path d="M19.79 7.5l0 .01"/>
+                                            <path d="M16.5 4.21l0 .01"/>
+                                            <path d="M12 3l0 .01"/>
+                                        </svg>
+                                        En cours de traitement
+                                    </span>
+                                {% elseif contact_request.isCompleted %}
+                                    <span class="badge bg-success text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Demande terminée
+                                    </span>
+                                {% elseif contact_request.isCancelled %}
+                                    <span class="badge bg-danger text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M18 6l-12 12"/>
+                                            <path d="M6 6l12 12"/>
+                                        </svg>
+                                        Demande annulée
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions rapides</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('admin_contact_request_edit', {id: contact_request.id}) }}" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                    <path d="M16 5l3 3"/>
+                                </svg>
+                                Modifier la demande
+                            </a>
+
+                            {% if contact_request.isPending %}
+                                <form method="post" action="{{ path('admin_contact_request_update_status', {id: contact_request.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ contact_request.id) }}">
+                                    <input type="hidden" name="status" value="in_progress">
+                                    <button type="submit" class="btn btn-outline-info w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M7.5 4.21l0 .01"/>
+                                            <path d="M4.21 7.5l0 .01"/>
+                                            <path d="M3 12l0 .01"/>
+                                            <path d="M4.21 16.5l0 .01"/>
+                                            <path d="M7.5 19.79l0 .01"/>
+                                            <path d="M12 21l0 .01"/>
+                                            <path d="M16.5 19.79l0 .01"/>
+                                            <path d="M19.79 16.5l0 .01"/>
+                                            <path d="M21 12l0 .01"/>
+                                            <path d="M19.79 7.5l0 .01"/>
+                                            <path d="M16.5 4.21l0 .01"/>
+                                            <path d="M12 3l0 .01"/>
+                                        </svg>
+                                        Marquer en cours
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            {% if contact_request.isPending or contact_request.isInProgress %}
+                                <form method="post" action="{{ path('admin_contact_request_update_status', {id: contact_request.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ contact_request.id) }}">
+                                    <input type="hidden" name="status" value="completed">
+                                    <button type="submit" class="btn btn-outline-success w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Marquer terminé
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            <a href="mailto:{{ contact_request.email }}" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                    <path d="M3 7l9 6l9 -6"/>
+                                </svg>
+                                Envoyer un email
+                            </a>
+
+                            {% if contact_request.phone %}
+                                <a href="tel:{{ contact_request.phone }}" class="btn btn-outline-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"/>
+                                    </svg>
+                                    Appeler
+                                </a>
+                            {% endif %}
+
+                            <hr>
+
+                            <form method="post" action="{{ path('admin_contact_request_delete', {id: contact_request.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contact_request.id) }}">
+                                <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7l16 0"/>
+                                        <path d="M10 11l0 6"/>
+                                        <path d="M14 11l0 6"/>
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                    </svg>
+                                    Supprimer la demande
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
