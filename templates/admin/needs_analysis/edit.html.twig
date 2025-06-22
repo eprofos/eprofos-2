@@ -1,0 +1,181 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier - {{ request.typeLabel }} - {{ request.recipientName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_needs_analysis_index') }}">Analyse des besoins</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_needs_analysis_show', {id: request.id}) }}">{{ request.recipientName }}</a>
+                        </li>
+                        <li class="breadcrumb-item active">Modifier</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier la demande d'analyse des besoins
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                Informations de la demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'needs-analysis-form'}}) }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.type) }}
+                                        {{ form_widget(form.type) }}
+                                        {{ form_help(form.type) }}
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.formation) }}
+                                        {{ form_widget(form.formation) }}
+                                        {{ form_help(form.formation) }}
+                                        {{ form_errors(form.formation) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.recipientName) }}
+                                        {{ form_widget(form.recipientName) }}
+                                        {{ form_help(form.recipientName) }}
+                                        {{ form_errors(form.recipientName) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.recipientEmail) }}
+                                        {{ form_widget(form.recipientEmail) }}
+                                        {{ form_help(form.recipientEmail) }}
+                                        {{ form_errors(form.recipientEmail) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" id="company-name-field">
+                                {{ form_label(form.companyName) }}
+                                {{ form_widget(form.companyName) }}
+                                {{ form_help(form.companyName) }}
+                                {{ form_errors(form.companyName) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.adminNotes) }}
+                                {{ form_widget(form.adminNotes) }}
+                                {{ form_help(form.adminNotes) }}
+                                {{ form_errors(form.adminNotes) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('admin_needs_analysis_show', {id: request.id}) }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    Enregistrer les modifications
+                                </button>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Current Status -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Statut actuel
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge {{ request.statusBadgeClass }} me-2">
+                                    {{ request.statusLabel }}
+                                </span>
+                                <small class="text-muted">
+                                    Créée le {{ request.createdAt|date('d/m/Y') }}
+                                </small>
+                            </div>
+                            
+                            {% if request.status == 'pending' %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <small>
+                                        Cette demande peut encore être modifiée car elle n'a pas encore été envoyée.
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Warning Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Important
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="small mb-0">
+                                <li>Seules les demandes en statut "En attente" peuvent être modifiées</li>
+                                <li>Une fois envoyée, la demande ne pourra plus être modifiée</li>
+                                <li>Vérifiez bien l'adresse email du destinataire</li>
+                                <li>Le type de demande détermine le formulaire qui sera présenté</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('needs_analysis_request_type');
+    const companyNameField = document.getElementById('company-name-field');
+    
+    function toggleCompanyField() {
+        if (typeSelect.value === 'company') {
+            companyNameField.style.display = 'block';
+        } else {
+            companyNameField.style.display = 'none';
+        }
+    }
+    
+    // Initial state
+    toggleCompanyField();
+    
+    // Listen for changes
+    typeSelect.addEventListener('change', toggleCompanyField);
+});
+</script>
+{% endblock %}

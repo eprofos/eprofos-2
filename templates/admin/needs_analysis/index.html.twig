@@ -1,0 +1,317 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Analyse des besoins - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    Analyse des besoins
+                </h1>
+                <a href="{{ path('admin_needs_analysis_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouvelle demande
+                </a>
+            </div>
+
+            <!-- Help Section -->
+            <div class="alert alert-info mb-4" role="alert">
+                <div class="d-flex">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                            <path d="M12 9h.01"/>
+                            <path d="M11 12h1v4h1"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="alert-title">Système d'analyse des besoins Qualiopi 2.4</h4>
+                        <div class="text-muted">
+                            <strong>Workflow :</strong>
+                            <ol class="mb-0 mt-2">
+                                <li><strong>Créer une demande</strong> : Sélectionnez le type (entreprise/particulier) et renseignez les informations du destinataire</li>
+                                <li><strong>Envoyer le lien</strong> : Le système génère automatiquement un lien sécurisé et l'envoie par email</li>
+                                <li><strong>Suivi des réponses</strong> : Consultez les analyses complétées et exportez les données</li>
+                            </ol>
+                            <div class="mt-2">
+                                <small><strong>Note :</strong> Les liens expirent automatiquement après 30 jours pour garantir la sécurité des données.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-2">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ stats.total }}</h4>
+                                    <small>Total</small>
+                                </div>
+                                <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ stats.pending }}</h4>
+                                    <small>En attente</small>
+                                </div>
+                                <i class="fas fa-clock fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ stats.sent }}</h4>
+                                    <small>Envoyées</small>
+                                </div>
+                                <i class="fas fa-paper-plane fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ stats.completed }}</h4>
+                                    <small>Complétées</small>
+                                </div>
+                                <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ stats.expired }}</h4>
+                                    <small>Expirées</small>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Statut</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="pending" {{ filters.status == 'pending' ? 'selected' : '' }}>En attente</option>
+                                <option value="sent" {{ filters.status == 'sent' ? 'selected' : '' }}>Envoyées</option>
+                                <option value="completed" {{ filters.status == 'completed' ? 'selected' : '' }}>Complétées</option>
+                                <option value="expired" {{ filters.status == 'expired' ? 'selected' : '' }}>Expirées</option>
+                                <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>Annulées</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="type" class="form-label">Type</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="">Tous les types</option>
+                                <option value="company" {{ filters.type == 'company' ? 'selected' : '' }}>Entreprise</option>
+                                <option value="individual" {{ filters.type == 'individual' ? 'selected' : '' }}>Particulier</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" name="search" id="search" class="form-control" 
+                                   value="{{ filters.search }}" placeholder="Nom, email, entreprise...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-search me-1"></i>
+                                    Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-body">
+                    {% if requests|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Destinataire</th>
+                                        <th>Entreprise</th>
+                                        <th>Formation</th>
+                                        <th>Statut</th>
+                                        <th>Créée le</th>
+                                        <th>Expiration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in requests %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-{{ request.type == 'company' ? 'primary' : 'info' }}">
+                                                    {{ request.typeLabel }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ request.recipientName }}</strong><br>
+                                                    <small class="text-muted">{{ request.recipientEmail }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ request.companyName ?? '-' }}
+                                            </td>
+                                            <td>
+                                                {% if request.formation %}
+                                                    <small>{{ request.formation.title }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ request.statusBadgeClass }}">
+                                                    {{ request.statusLabel }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small>{{ request.createdAt|date('d/m/Y H:i') }}</small>
+                                            </td>
+                                            <td>
+                                                {% if request.status in ['pending', 'sent'] %}
+                                                    {% set days = request.daysUntilExpiration %}
+                                                    <small class="text-{{ days <= 3 ? 'danger' : (days <= 7 ? 'warning' : 'muted') }}">
+                                                        {% if days > 0 %}
+                                                            {{ days }} jour{{ days > 1 ? 's' : '' }}
+                                                        {% else %}
+                                                            Expiré
+                                                        {% endif %}
+                                                    </small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{{ path('admin_needs_analysis_show', {id: request.id}) }}" 
+                                                       class="btn btn-outline-primary" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if request.status == 'pending' %}
+                                                        <a href="{{ path('admin_needs_analysis_edit', {id: request.id}) }}" 
+                                                           class="btn btn-outline-secondary" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if total_pages > 1 %}
+                            <nav aria-label="Navigation des pages" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if current_page > 1 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ path('admin_needs_analysis_index', filters|merge({page: current_page - 1})) }}">
+                                                Précédent
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for page in 1..total_pages %}
+                                        {% if page == current_page %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page }}</span>
+                                            </li>
+                                        {% elseif page <= 3 or page >= total_pages - 2 or (page >= current_page - 1 and page <= current_page + 1) %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('admin_needs_analysis_index', filters|merge({page: page})) }}">
+                                                    {{ page }}
+                                                </a>
+                                            </li>
+                                        {% elseif page == 4 and current_page > 5 %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        {% elseif page == total_pages - 3 and current_page < total_pages - 4 %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if current_page < total_pages %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ path('admin_needs_analysis_index', filters|merge({page: current_page + 1})) }}">
+                                                Suivant
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+
+                        <div class="text-muted mt-3">
+                            <small>
+                                Affichage de {{ ((current_page - 1) * 20) + 1 }} à {{ ((current_page - 1) * 20) + requests|length }} 
+                                sur {{ total_items }} résultat{{ total_items > 1 ? 's' : '' }}
+                            </small>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune demande d'analyse trouvée</h5>
+                            <p class="text-muted">
+                                {% if filters.status or filters.type or filters.search %}
+                                    Aucun résultat ne correspond à vos critères de recherche.
+                                {% else %}
+                                    Commencez par créer votre première demande d'analyse des besoins.
+                                {% endif %}
+                            </p>
+                            {% if not (filters.status or filters.type or filters.search) %}
+                                <a href="{{ path('admin_needs_analysis_new') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Créer une demande
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

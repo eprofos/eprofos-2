@@ -330,7 +330,7 @@ class EmailNotificationService
     /**
      * Set from email
      */
-    public function setFromEmail(string $fromEmail, string $fromName = null): void
+    public function setFromEmail(string $fromEmail, ?string $fromName = null): void
     {
         $this->fromEmail = $fromEmail;
         if ($fromName) {

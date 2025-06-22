@@ -85,7 +85,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     /**
      * Find analyses by age range
      */
-    public function findByAgeRange(int $minAge, int $maxAge = null): array
+    public function findByAgeRange(int $minAge, ?int $maxAge = null): array
     {
         $qb = $this->createQueryBuilder('ina')
             ->andWhere('ina.age >= :minAge')

@@ -1,0 +1,187 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvelle demande d'analyse des besoins{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_needs_analysis_index') }}">Analyse des besoins</a>
+                        </li>
+                        <li class="breadcrumb-item active">Nouvelle demande</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouvelle demande d'analyse des besoins
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                Informations de la demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'needs-analysis-form'}}) }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.type) }}
+                                        {{ form_widget(form.type) }}
+                                        {{ form_help(form.type) }}
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.formation) }}
+                                        {{ form_widget(form.formation) }}
+                                        {{ form_help(form.formation) }}
+                                        {{ form_errors(form.formation) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.recipientName) }}
+                                        {{ form_widget(form.recipientName) }}
+                                        {{ form_help(form.recipientName) }}
+                                        {{ form_errors(form.recipientName) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.recipientEmail) }}
+                                        {{ form_widget(form.recipientEmail) }}
+                                        {{ form_help(form.recipientEmail) }}
+                                        {{ form_errors(form.recipientEmail) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" id="company-name-field">
+                                {{ form_label(form.companyName) }}
+                                {{ form_widget(form.companyName) }}
+                                {{ form_help(form.companyName) }}
+                                {{ form_errors(form.companyName) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.adminNotes) }}
+                                {{ form_widget(form.adminNotes) }}
+                                {{ form_help(form.adminNotes) }}
+                                {{ form_errors(form.adminNotes) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('admin_needs_analysis_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    Créer la demande
+                                </button>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Aide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Processus d'analyse des besoins</h6>
+                            <ol class="small">
+                                <li><strong>Création</strong> : Remplissez les informations du destinataire</li>
+                                <li><strong>Envoi</strong> : Un email avec un lien sécurisé sera envoyé</li>
+                                <li><strong>Réponse</strong> : Le destinataire remplit le formulaire d'analyse</li>
+                                <li><strong>Traitement</strong> : Vous recevez les résultats pour traitement</li>
+                            </ol>
+                            
+                            <hr>
+                            
+                            <h6>Types de demandes</h6>
+                            <ul class="small">
+                                <li><strong>Entreprise</strong> : Pour les formations en entreprise</li>
+                                <li><strong>Particulier</strong> : Pour les formations individuelles</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conformité Qualiopi</h6>
+                            <p class="small text-muted">
+                                Cette analyse des besoins répond au critère 2.4 de Qualiopi concernant 
+                                l'adaptation des prestations aux besoins des bénéficiaires.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-eye me-2"></i>
+                                Aperçu
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">
+                                Une fois créée, la demande sera en statut "En attente" et vous pourrez :
+                            </p>
+                            <ul class="small">
+                                <li>Modifier les informations</li>
+                                <li>Envoyer l'invitation par email</li>
+                                <li>Suivre le statut de la demande</li>
+                                <li>Consulter les résultats</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('needs_analysis_request_type');
+    const companyNameField = document.getElementById('company-name-field');
+    
+    function toggleCompanyField() {
+        if (typeSelect.value === 'company') {
+            companyNameField.style.display = 'block';
+        } else {
+            companyNameField.style.display = 'none';
+        }
+    }
+    
+    // Initial state
+    toggleCompanyField();
+    
+    // Listen for changes
+    typeSelect.addEventListener('change', toggleCompanyField);
+});
+</script>
+{% endblock %}

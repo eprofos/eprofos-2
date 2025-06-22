@@ -46,7 +46,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     /**
      * Find analyses by employee count range
      */
-    public function findByEmployeeCountRange(int $minCount, int $maxCount = null): array
+    public function findByEmployeeCountRange(int $minCount, ?int $maxCount = null): array
     {
         $qb = $this->createQueryBuilder('cna')
             ->andWhere('cna.employeeCount >= :minCount')
@@ -130,7 +130,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     /**
      * Find analyses by training duration range
      */
-    public function findByTrainingDurationRange(int $minHours, int $maxHours = null): array
+    public function findByTrainingDurationRange(int $minHours, ?int $maxHours = null): array
     {
         $qb = $this->createQueryBuilder('cna')
             ->andWhere('cna.trainingDurationHours >= :minHours')

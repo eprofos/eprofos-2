@@ -326,4 +326,160 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Find requests by criteria with pagination
+     */
+    public function findByCriteria(array $criteria = [], int $page = 1, int $limit = 20): array
+    {
+        $qb = $this->createQueryBuilder('nar')
+            ->leftJoin('nar.createdByUser', 'u')
+            ->leftJoin('nar.formation', 'f')
+            ->addSelect('u', 'f');
+
+        if (!empty($criteria['status'])) {
+            $qb->andWhere('nar.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        if (!empty($criteria['type'])) {
+            $qb->andWhere('nar.type = :type')
+               ->setParameter('type', $criteria['type']);
+        }
+
+        if (!empty($criteria['formation'])) {
+            $qb->andWhere('nar.formation = :formation')
+               ->setParameter('formation', $criteria['formation']);
+        }
+
+        if (!empty($criteria['created_by'])) {
+            $qb->andWhere('nar.createdByUser = :createdBy')
+               ->setParameter('createdBy', $criteria['created_by']);
+        }
+
+        $offset = ($page - 1) * $limit;
+
+        return $qb->orderBy('nar.createdAt', 'DESC')
+                  ->setFirstResult($offset)
+                  ->setMaxResults($limit)
+                  ->getQuery()
+                  ->getResult();
+    }
+
+    /**
+     * Count requests by criteria
+     */
+    public function countByCriteria(array $criteria = []): int
+    {
+        $qb = $this->createQueryBuilder('nar')
+            ->select('COUNT(nar.id)');
+
+        if (!empty($criteria['status'])) {
+            $qb->andWhere('nar.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        if (!empty($criteria['type'])) {
+            $qb->andWhere('nar.type = :type')
+               ->setParameter('type', $criteria['type']);
+        }
+
+        if (!empty($criteria['formation'])) {
+            $qb->andWhere('nar.formation = :formation')
+               ->setParameter('formation', $criteria['formation']);
+        }
+
+        if (!empty($criteria['created_by'])) {
+            $qb->andWhere('nar.createdByUser = :createdBy')
+               ->setParameter('createdBy', $criteria['created_by']);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Find requests by search term with pagination
+     */
+    public function findBySearchTerm(string $search, array $criteria = [], int $page = 1, int $limit = 20): array
+    {
+        $qb = $this->createQueryBuilder('nar')
+            ->leftJoin('nar.createdByUser', 'u')
+            ->leftJoin('nar.formation', 'f')
+            ->addSelect('u', 'f');
+
+        // Add search conditions
+        $qb->andWhere($qb->expr()->orX(
+            'nar.recipientName LIKE :search',
+            'nar.recipientEmail LIKE :search',
+            'nar.companyName LIKE :search'
+        ))->setParameter('search', '%' . $search . '%');
+
+        // Add criteria filters
+        if (!empty($criteria['status'])) {
+            $qb->andWhere('nar.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        if (!empty($criteria['type'])) {
+            $qb->andWhere('nar.type = :type')
+               ->setParameter('type', $criteria['type']);
+        }
+
+        if (!empty($criteria['formation'])) {
+            $qb->andWhere('nar.formation = :formation')
+               ->setParameter('formation', $criteria['formation']);
+        }
+
+        if (!empty($criteria['created_by'])) {
+            $qb->andWhere('nar.createdByUser = :createdBy')
+               ->setParameter('createdBy', $criteria['created_by']);
+        }
+
+        $offset = ($page - 1) * $limit;
+
+        return $qb->orderBy('nar.createdAt', 'DESC')
+                  ->setFirstResult($offset)
+                  ->setMaxResults($limit)
+                  ->getQuery()
+                  ->getResult();
+    }
+
+    /**
+     * Count requests by search term
+     */
+    public function countBySearchTerm(string $search, array $criteria = []): int
+    {
+        $qb = $this->createQueryBuilder('nar')
+            ->select('COUNT(nar.id)');
+
+        // Add search conditions
+        $qb->andWhere($qb->expr()->orX(
+            'nar.recipientName LIKE :search',
+            'nar.recipientEmail LIKE :search',
+            'nar.companyName LIKE :search'
+        ))->setParameter('search', '%' . $search . '%');
+
+        // Add criteria filters
+        if (!empty($criteria['status'])) {
+            $qb->andWhere('nar.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        if (!empty($criteria['type'])) {
+            $qb->andWhere('nar.type = :type')
+               ->setParameter('type', $criteria['type']);
+        }
+
+        if (!empty($criteria['formation'])) {
+            $qb->andWhere('nar.formation = :formation')
+               ->setParameter('formation', $criteria['formation']);
+        }
+
+        if (!empty($criteria['created_by'])) {
+            $qb->andWhere('nar.createdByUser = :createdBy')
+               ->setParameter('createdBy', $criteria['created_by']);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 }

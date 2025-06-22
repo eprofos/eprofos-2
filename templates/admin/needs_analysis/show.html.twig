@@ -1,0 +1,279 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ request.typeLabel }} - {{ request.recipientName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_needs_analysis_index') }}">Analyse des besoins</a>
+                            </li>
+                            <li class="breadcrumb-item active">{{ request.typeLabel }} - {{ request.recipientName }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Demande d'analyse des besoins
+                    </h1>
+                </div>
+                <div class="btn-group" role="group">
+                    {% if request.status == 'pending' %}
+                        <a href="{{ path('admin_needs_analysis_edit', {id: request.id}) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit me-1"></i>
+                            Modifier
+                        </a>
+                        <form method="post" action="{{ path('admin_needs_analysis_send', {id: request.id}) }}" class="d-inline">
+                            <button type="submit" class="btn btn-success" 
+                                    onclick="return confirm('Êtes-vous sûr de vouloir envoyer cette demande ?')">
+                                <i class="fas fa-paper-plane me-1"></i>
+                                Envoyer
+                            </button>
+                        </form>
+                    {% endif %}
+                    {% if request.status in ['pending', 'sent'] %}
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                            <i class="fas fa-times me-1"></i>
+                            Annuler
+                        </button>
+                    {% endif %}
+                    {% if request.status == 'pending' %}
+                        <form method="post" action="{{ path('admin_needs_analysis_delete', {id: request.id}) }}" class="d-inline">
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?')">
+                                <i class="fas fa-trash me-1"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Information -->
+                <div class="col-lg-8">
+                    <!-- Request Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations de la demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Type :</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-{{ request.type == 'company' ? 'primary' : 'info' }}">
+                                                {{ request.typeLabel }}
+                                            </span>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-4">Destinataire :</dt>
+                                        <dd class="col-sm-8">
+                                            <strong>{{ request.recipientName }}</strong><br>
+                                            <a href="mailto:{{ request.recipientEmail }}">{{ request.recipientEmail }}</a>
+                                        </dd>
+                                        
+                                        {% if request.companyName %}
+                                            <dt class="col-sm-4">Entreprise :</dt>
+                                            <dd class="col-sm-8">{{ request.companyName }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if request.formation %}
+                                            <dt class="col-sm-4">Formation :</dt>
+                                            <dd class="col-sm-8">{{ request.formation.title }}</dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Statut :</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge {{ request.statusBadgeClass }}">
+                                                {{ request.statusLabel }}
+                                            </span>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-4">Créée le :</dt>
+                                        <dd class="col-sm-8">{{ request.createdAt|date('d/m/Y à H:i') }}</dd>
+                                        
+                                        {% if request.sentAt %}
+                                            <dt class="col-sm-4">Envoyée le :</dt>
+                                            <dd class="col-sm-8">{{ request.sentAt|date('d/m/Y à H:i') }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if request.completedAt %}
+                                            <dt class="col-sm-4">Complétée le :</dt>
+                                            <dd class="col-sm-8">{{ request.completedAt|date('d/m/Y à H:i') }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if request.status in ['pending', 'sent'] %}
+                                            <dt class="col-sm-4">Expire le :</dt>
+                                            <dd class="col-sm-8">
+                                                {% set days = request.daysUntilExpiration %}
+                                                <span class="text-{{ days <= 3 ? 'danger' : (days <= 7 ? 'warning' : 'muted') }}">
+                                                    {{ request.expiresAt|date('d/m/Y à H:i') }}
+                                                    {% if days > 0 %}
+                                                        ({{ days }} jour{{ days > 1 ? 's' : '' }} restant{{ days > 1 ? 's' : '' }})
+                                                    {% else %}
+                                                        (Expiré)
+                                                    {% endif %}
+                                                </span>
+                                            </dd>
+                                        {% endif %}
+                                        
+                                        {% if request.createdByUser %}
+                                            <dt class="col-sm-4">Créée par :</dt>
+                                            <dd class="col-sm-8">{{ request.createdByUser.userIdentifier }}</dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                            </div>
+                            
+                            {% if request.status == 'sent' %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-link me-2"></i>
+                                    <strong>Lien public :</strong>
+                                    <a href="{{ url('needs_analysis_public_form', {token: request.token}) }}" target="_blank">
+                                        {{ url('needs_analysis_public_form', {token: request.token}) }}
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-primary ms-2" 
+                                            onclick="navigator.clipboard.writeText('{{ url('needs_analysis_public_form', {token: request.token}) }}')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Analysis Results -->
+                    {% if request.status == 'completed' %}
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    Analyse des besoins
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if request.type == 'company' and request.companyAnalysis %}
+                                    {% include 'admin/needs_analysis/_company_analysis.html.twig' with {analysis: request.companyAnalysis} %}
+                                {% elseif request.type == 'individual' and request.individualAnalysis %}
+                                    {% include 'admin/needs_analysis/_individual_analysis.html.twig' with {analysis: request.individualAnalysis} %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Admin Notes -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>
+                                Notes administratives
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if request.adminNotes %}
+                                <div class="mb-3">
+                                    <pre class="bg-light p-3 rounded small">{{ request.adminNotes }}</pre>
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-3">Aucune note administrative.</p>
+                            {% endif %}
+                            
+                            <!-- Add Note Form -->
+                            <form method="post" action="{{ path('admin_needs_analysis_add_notes', {id: request.id}) }}">
+                                <div class="mb-3">
+                                    <label for="note" class="form-label">Ajouter une note :</label>
+                                    <textarea name="note" id="note" class="form-control" rows="3" 
+                                              placeholder="Nouvelle note administrative..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Ajouter
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt me-2"></i>
+                                Actions rapides
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if request.status == 'sent' %}
+                                    <form method="post" action="{{ path('admin_needs_analysis_send', {id: request.id}) }}">
+                                        <button type="submit" class="btn btn-outline-info w-100">
+                                            <i class="fas fa-redo me-1"></i>
+                                            Renvoyer l'email
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                <a href="{{ path('admin_needs_analysis_index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Retour à la liste
+                                </a>
+                                
+                                <a href="{{ path('admin_needs_analysis_new') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Nouvelle demande
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Annuler la demande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ path('admin_needs_analysis_cancel', {id: request.id}) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Raison de l'annulation :</label>
+                        <textarea name="reason" id="reason" class="form-control" rows="3" 
+                                  placeholder="Précisez la raison de l'annulation..." required></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cette action ne peut pas être annulée.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-times me-1"></i>
+                        Annuler la demande
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
