@@ -44,17 +44,17 @@ class FormationController extends AbstractController
 
         // Get filter parameters
         $filters = [
-            'search' => $request->query->get('search'),
-            'category' => $request->query->get('category'),
-            'level' => $request->query->get('level'),
-            'format' => $request->query->get('format'),
-            'status' => $request->query->get('status'),
+            'search' => $request->query->get('search', ''),
+            'category' => $request->query->get('category', ''),
+            'level' => $request->query->get('level', ''),
+            'format' => $request->query->get('format', ''),
+            'status' => $request->query->get('status', ''),
             'sortBy' => $request->query->get('sortBy', 'createdAt'),
             'sortOrder' => $request->query->get('sortOrder', 'DESC')
         ];
 
-        // Remove empty filters
-        $filters = array_filter($filters, fn($value) => $value !== null && $value !== '');
+        // Create a copy for query building (without empty values)
+        $activeFilters = array_filter($filters, fn($value) => $value !== null && $value !== '');
 
         // Build query with filters
         $queryBuilder = $formationRepository->createQueryBuilder('f')
@@ -62,36 +62,36 @@ class FormationController extends AbstractController
             ->addSelect('c');
 
         // Apply search filter
-        if (!empty($filters['search'])) {
+        if (!empty($activeFilters['search'])) {
             $queryBuilder
                 ->andWhere('f.title LIKE :search OR f.description LIKE :search')
-                ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $activeFilters['search'] . '%');
         }
 
         // Apply category filter
-        if (!empty($filters['category'])) {
+        if (!empty($activeFilters['category'])) {
             $queryBuilder
                 ->andWhere('c.slug = :category')
-                ->setParameter('category', $filters['category']);
+                ->setParameter('category', $activeFilters['category']);
         }
 
         // Apply level filter
-        if (!empty($filters['level'])) {
+        if (!empty($activeFilters['level'])) {
             $queryBuilder
                 ->andWhere('f.level = :level')
-                ->setParameter('level', $filters['level']);
+                ->setParameter('level', $activeFilters['level']);
         }
 
         // Apply format filter
-        if (!empty($filters['format'])) {
+        if (!empty($activeFilters['format'])) {
             $queryBuilder
                 ->andWhere('f.format = :format')
-                ->setParameter('format', $filters['format']);
+                ->setParameter('format', $activeFilters['format']);
         }
 
         // Apply status filter
-        if (!empty($filters['status'])) {
-            $isActive = $filters['status'] === 'active';
+        if (!empty($activeFilters['status'])) {
+            $isActive = $activeFilters['status'] === 'active';
             $queryBuilder
                 ->andWhere('f.isActive = :status')
                 ->setParameter('status', $isActive);
