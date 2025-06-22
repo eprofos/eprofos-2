@@ -1,0 +1,318 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Modifier la formation</h3>
+                    <div class="card-actions">
+                        <a href="{{ path('admin_formation_show', {id: formation.id}) }}" class="btn btn-outline-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                            </svg>
+                            Voir la formation
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                    
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Informations générales</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            {{ form_label(form.title) }}
+                                            {{ form_widget(form.title) }}
+                                            {{ form_errors(form.title) }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.category) }}
+                                            {{ form_widget(form.category) }}
+                                            {{ form_errors(form.category) }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.imageFile) }}
+                                            {{ form_widget(form.imageFile) }}
+                                            {{ form_errors(form.imageFile) }}
+                                            {% if form.imageFile.vars.help %}
+                                                <div class="form-text">{{ form.imageFile.vars.help }}</div>
+                                            {% endif %}
+                                            {% if formation.image %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Image actuelle :</small><br>
+                                                    <img src="{{ asset('uploads/formations/' ~ formation.image) }}" alt="{{ formation.title }}" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            {{ form_label(form.description) }}
+                                            {{ form_widget(form.description) }}
+                                            {{ form_errors(form.description) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Training Details -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Détails de la formation</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            {{ form_label(form.objectives) }}
+                                            {{ form_widget(form.objectives) }}
+                                            {{ form_errors(form.objectives) }}
+                                            {% if form.objectives.vars.help %}
+                                                <div class="form-text">{{ form.objectives.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            {{ form_label(form.prerequisites) }}
+                                            {{ form_widget(form.prerequisites) }}
+                                            {{ form_errors(form.prerequisites) }}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            {{ form_label(form.program) }}
+                                            {{ form_widget(form.program) }}
+                                            {{ form_errors(form.program) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Qualiopi Information -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        Informations Qualiopi
+                                        <span class="badge bg-info text-white ms-2">Requis</span>
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.targetAudience) }}
+                                            {{ form_widget(form.targetAudience) }}
+                                            {{ form_errors(form.targetAudience) }}
+                                            {% if form.targetAudience.vars.help %}
+                                                <div class="form-text">{{ form.targetAudience.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.accessModalities) }}
+                                            {{ form_widget(form.accessModalities) }}
+                                            {{ form_errors(form.accessModalities) }}
+                                            {% if form.accessModalities.vars.help %}
+                                                <div class="form-text">{{ form.accessModalities.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.handicapAccessibility) }}
+                                            {{ form_widget(form.handicapAccessibility) }}
+                                            {{ form_errors(form.handicapAccessibility) }}
+                                            {% if form.handicapAccessibility.vars.help %}
+                                                <div class="form-text">{{ form.handicapAccessibility.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.teachingMethods) }}
+                                            {{ form_widget(form.teachingMethods) }}
+                                            {{ form_errors(form.teachingMethods) }}
+                                            {% if form.teachingMethods.vars.help %}
+                                                <div class="form-text">{{ form.teachingMethods.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.evaluationMethods) }}
+                                            {{ form_widget(form.evaluationMethods) }}
+                                            {{ form_errors(form.evaluationMethods) }}
+                                            {% if form.evaluationMethods.vars.help %}
+                                                <div class="form-text">{{ form.evaluationMethods.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.contactInfo) }}
+                                            {{ form_widget(form.contactInfo) }}
+                                            {{ form_errors(form.contactInfo) }}
+                                            {% if form.contactInfo.vars.help %}
+                                                <div class="form-text">{{ form.contactInfo.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.trainingLocation) }}
+                                            {{ form_widget(form.trainingLocation) }}
+                                            {{ form_errors(form.trainingLocation) }}
+                                            {% if form.trainingLocation.vars.help %}
+                                                <div class="form-text">{{ form.trainingLocation.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.fundingModalities) }}
+                                            {{ form_widget(form.fundingModalities) }}
+                                            {{ form_errors(form.fundingModalities) }}
+                                            {% if form.fundingModalities.vars.help %}
+                                                <div class="form-text">{{ form.fundingModalities.vars.help }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="col-lg-4">
+                            <!-- Formation Info -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Informations</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="text-muted small">Créée le</div>
+                                            <div>{{ formation.createdAt|date('d/m/Y à H:i') }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-muted small">Modifiée le</div>
+                                            <div>{{ formation.updatedAt|date('d/m/Y à H:i') }}</div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="text-muted small">Slug</div>
+                                            <div><code>{{ formation.slug }}</code></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-muted small">Demandes</div>
+                                            <div>{{ formation.contactRequests|length }} demande{{ formation.contactRequests|length > 1 ? 's' : '' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Duration and Pricing -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Durée et tarification</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.durationHours) }}
+                                        {{ form_widget(form.durationHours) }}
+                                        {{ form_errors(form.durationHours) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(form.price) }}
+                                        {{ form_widget(form.price) }}
+                                        {{ form_errors(form.price) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Level and Format -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Niveau et format</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.level) }}
+                                        {{ form_widget(form.level) }}
+                                        {{ form_errors(form.level) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(form.format) }}
+                                        {{ form_widget(form.format) }}
+                                        {{ form_errors(form.format) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Statut</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        {{ form_widget(form.isActive) }}
+                                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                        {% if form.isActive.vars.help %}
+                                            <div class="form-text">{{ form.isActive.vars.help }}</div>
+                                        {% endif %}
+                                        {{ form_errors(form.isActive) }}
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        {{ form_widget(form.isFeatured) }}
+                                        {{ form_label(form.isFeatured, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                        {% if form.isFeatured.vars.help %}
+                                            <div class="form-text">{{ form.isFeatured.vars.help }}</div>
+                                        {% endif %}
+                                        {{ form_errors(form.isFeatured) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M5 12l5 5l10 -10"/>
+                                            </svg>
+                                            Enregistrer les modifications
+                                        </button>
+                                        <a href="{{ path('admin_formation_show', {id: formation.id}) }}" class="btn btn-outline-secondary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M5 12l14 0"/>
+                                                <path d="M5 12l4 -4"/>
+                                                <path d="M5 12l4 4"/>
+                                            </svg>
+                                            Annuler
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-resize textareas
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(function(textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = this.scrollHeight + 'px';
+                });
+                // Initial resize
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            });
+        });
+    </script>
+{% endblock %}
