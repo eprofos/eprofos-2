@@ -9,13 +9,7 @@
 // Import Stimulus bootstrap for controller functionality
 import './bootstrap.js';
 
-// Import Tabler CSS for admin UI styling
+import '@tabler/core';
 import '@tabler/core/dist/css/tabler.min.css';
-
-// Import Tabler JavaScript for interactive components
-import '@tabler/core/dist/js/tabler.min.js';
-
-// Import Hotwire Turbo for SPA-like navigation
-import '@hotwired/turbo';
 
 console.log('Private entrypoint loaded successfully');
