@@ -1,0 +1,27 @@
+{% use "bootstrap_5_layout.html.twig" %}
+
+{%- block form_widget_simple -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' form-control' ~ (errors|length > 0 ? ' is-invalid' : ''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' form-select' ~ (errors|length > 0 ? ' is-invalid' : ''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}
+
+{%- block textarea_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' form-control' ~ (errors|length > 0 ? ' is-invalid' : ''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <div class="invalid-feedback">
+            {%- for error in errors -%}
+                {{ error.message }}
+                {%- if not loop.last %}<br>{% endif -%}
+            {%- endfor -%}
+        </div>
+    {%- endif -%}
+{%- endblock form_errors -%}

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Analyse des besoins - {{ request.recipientName }}{% endblock %}
+{% block title %}Analyse des besoins - {{ request.companyName ?? request.recipientName }}{% endblock %}
 
 {% block body %}
 <div class="container">
@@ -13,11 +13,11 @@
                 </div>
                 <h1 class="h2 mb-3">Analyse des besoins de formation</h1>
                 <p class="lead text-muted">
-                    Bonjour <strong>{{ request.recipientName }}</strong>
+                    Entreprise : <strong>{{ request.companyName ?? request.recipientName }}</strong>
                 </p>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Ce formulaire nous permet d'adapter notre formation à vos besoins et objectifs personnels.
+                    Ce formulaire nous permet d'adapter notre formation à vos besoins spécifiques.
                     Toutes les informations sont confidentielles et utilisées uniquement dans le cadre de votre projet de formation.
                 </div>
             </div>
@@ -34,149 +34,129 @@
             <!-- Form -->
             <div class="card shadow">
                 <div class="card-body p-4">
-                    {{ form_start(form, {'attr': {'class': 'individual-needs-form'}}) }}
+                    {{ form_start(form, {'attr': {'class': 'company-needs-form'}}) }}
                     
-                    <!-- Personal Information Section -->
+                    <!-- Company Information Section -->
                     <div class="mb-5">
                         <h3 class="h4 mb-4 text-primary">
-                            <i class="fas fa-user me-2"></i>
-                            Informations personnelles
+                            <i class="fas fa-building me-2"></i>
+                            Informations sur l'entreprise
                         </h3>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.first_name) }}
-                                    {{ form_widget(form.first_name) }}
-                                    {{ form_help(form.first_name) }}
-                                    {{ form_errors(form.first_name) }}
+                                    {{ form_label(form.company_name) }}
+                                    {{ form_widget(form.company_name) }}
+                                    {{ form_help(form.company_name) }}
+                                    {{ form_errors(form.company_name) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.last_name) }}
-                                    {{ form_widget(form.last_name) }}
-                                    {{ form_help(form.last_name) }}
-                                    {{ form_errors(form.last_name) }}
+                                    {{ form_label(form.responsible_person) }}
+                                    {{ form_widget(form.responsible_person) }}
+                                    {{ form_help(form.responsible_person) }}
+                                    {{ form_errors(form.responsible_person) }}
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.email) }}
-                                    {{ form_widget(form.email) }}
-                                    {{ form_help(form.email) }}
-                                    {{ form_errors(form.email) }}
+                                    {{ form_label(form.contact_email) }}
+                                    {{ form_widget(form.contact_email) }}
+                                    {{ form_help(form.contact_email) }}
+                                    {{ form_errors(form.contact_email) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.phone) }}
-                                    {{ form_widget(form.phone) }}
-                                    {{ form_help(form.phone) }}
-                                    {{ form_errors(form.phone) }}
+                                    {{ form_label(form.contact_phone) }}
+                                    {{ form_widget(form.contact_phone) }}
+                                    {{ form_help(form.contact_phone) }}
+                                    {{ form_errors(form.contact_phone) }}
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3">
-                            {{ form_label(form.address) }}
-                            {{ form_widget(form.address) }}
-                            {{ form_help(form.address) }}
-                            {{ form_errors(form.address) }}
+                            {{ form_label(form.company_address) }}
+                            {{ form_widget(form.company_address) }}
+                            {{ form_help(form.company_address) }}
+                            {{ form_errors(form.company_address) }}
                         </div>
                     </div>
 
-                    <!-- Professional Status Section -->
+                    <!-- Company Details Section -->
                     <div class="mb-5">
                         <h3 class="h4 mb-4 text-primary">
-                            <i class="fas fa-briefcase me-2"></i>
-                            Statut professionnel
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Détails de l'entreprise
                         </h3>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.status) }}
-                                    {{ form_widget(form.status) }}
-                                    {{ form_help(form.status) }}
-                                    {{ form_errors(form.status) }}
+                                    {{ form_label(form.activity_sector) }}
+                                    {{ form_widget(form.activity_sector) }}
+                                    {{ form_help(form.activity_sector) }}
+                                    {{ form_errors(form.activity_sector) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.status_other_details) }}
-                                    {{ form_widget(form.status_other_details) }}
-                                    {{ form_help(form.status_other_details) }}
-                                    {{ form_errors(form.status_other_details) }}
+                                    {{ form_label(form.employee_count) }}
+                                    {{ form_widget(form.employee_count) }}
+                                    {{ form_help(form.employee_count) }}
+                                    {{ form_errors(form.employee_count) }}
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Funding Section -->
-                    <div class="mb-5">
-                        <h3 class="h4 mb-4 text-primary">
-                            <i class="fas fa-euro-sign me-2"></i>
-                            Financement de la formation
-                        </h3>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    {{ form_label(form.funding_type) }}
-                                    {{ form_widget(form.funding_type) }}
-                                    {{ form_help(form.funding_type) }}
-                                    {{ form_errors(form.funding_type) }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    {{ form_label(form.funding_other_details) }}
-                                    {{ form_widget(form.funding_other_details) }}
-                                    {{ form_help(form.funding_other_details) }}
-                                    {{ form_errors(form.funding_other_details) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Training Objectives Section -->
-                    <div class="mb-5">
-                        <h3 class="h4 mb-4 text-primary">
-                            <i class="fas fa-graduation-cap me-2"></i>
-                            Objectifs de formation
-                        </h3>
-                        <div class="mb-3">
-                            {{ form_label(form.desired_training_title) }}
-                            {{ form_widget(form.desired_training_title) }}
-                            {{ form_help(form.desired_training_title) }}
-                            {{ form_errors(form.desired_training_title) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_label(form.professional_objective) }}
-                            {{ form_widget(form.professional_objective) }}
-                            {{ form_help(form.professional_objective) }}
-                            {{ form_errors(form.professional_objective) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_label(form.current_level) }}
-                            {{ form_widget(form.current_level) }}
-                            {{ form_help(form.current_level) }}
-                            {{ form_errors(form.current_level) }}
-                        </div>
-                    </div>
-
-                    <!-- Training Preferences Section -->
-                    <div class="mb-5">
-                        <h3 class="h4 mb-4 text-primary">
-                            <i class="fas fa-calendar-alt me-2"></i>
-                            Préférences de formation
-                        </h3>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    {{ form_label(form.desired_duration_hours) }}
-                                    {{ form_widget(form.desired_duration_hours) }}
-                                    {{ form_help(form.desired_duration_hours) }}
-                                    {{ form_errors(form.desired_duration_hours) }}
+                                    {{ form_label(form.naf_code) }}
+                                    {{ form_widget(form.naf_code) }}
+                                    {{ form_help(form.naf_code) }}
+                                    {{ form_errors(form.naf_code) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.siret) }}
+                                    {{ form_widget(form.siret) }}
+                                    {{ form_help(form.siret) }}
+                                    {{ form_errors(form.siret) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.opco) }}
+                                    {{ form_widget(form.opco) }}
+                                    {{ form_help(form.opco) }}
+                                    {{ form_errors(form.opco) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Information Section -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 text-primary">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Informations sur la formation
+                        </h3>
+                        <div class="mb-3">
+                            {{ form_label(form.training_title) }}
+                            {{ form_widget(form.training_title) }}
+                            {{ form_help(form.training_title) }}
+                            {{ form_errors(form.training_title) }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.training_duration_hours) }}
+                                    {{ form_widget(form.training_duration_hours) }}
+                                    {{ form_help(form.training_duration_hours) }}
+                                    {{ form_errors(form.training_duration_hours) }}
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -203,6 +183,12 @@
                             {{ form_errors(form.training_location_preference) }}
                         </div>
                         <div class="mb-3">
+                            {{ form_label(form.location_appropriation_needs) }}
+                            {{ form_widget(form.location_appropriation_needs) }}
+                            {{ form_help(form.location_appropriation_needs) }}
+                            {{ form_errors(form.location_appropriation_needs) }}
+                        </div>
+                        <div class="mb-3">
                             {{ form_label(form.disability_accommodations) }}
                             {{ form_widget(form.disability_accommodations) }}
                             {{ form_help(form.disability_accommodations) }}
@@ -210,11 +196,11 @@
                         </div>
                     </div>
 
-                    <!-- Training Expectations Section -->
+                    <!-- Training Needs Section -->
                     <div class="mb-5">
                         <h3 class="h4 mb-4 text-primary">
                             <i class="fas fa-target me-2"></i>
-                            Attentes et besoins spécifiques
+                            Analyse des besoins
                         </h3>
                         <div class="mb-3">
                             {{ form_label(form.training_expectations) }}
@@ -262,27 +248,27 @@
 </div>
 
 <style>
-.individual-needs-form .form-label {
+.company-needs-form .form-label {
     font-weight: 600;
     color: #495057;
 }
 
-.individual-needs-form .form-control:focus,
-.individual-needs-form .form-select:focus {
+.company-needs-form .form-control:focus,
+.company-needs-form .form-select:focus {
     border-color: #0d6efd;
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-.individual-needs-form .text-primary {
+.company-needs-form .text-primary {
     color: #0d6efd !important;
 }
 
-.individual-needs-form .alert {
+.company-needs-form .alert {
     border-radius: 0.5rem;
 }
 
 /* Bootstrap validation styles */
-.individual-needs-form .is-invalid {
+.company-needs-form .is-invalid {
     border-color: #dc3545;
     padding-right: calc(1.5em + 0.75rem);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
@@ -291,12 +277,12 @@
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
 
-.individual-needs-form .is-invalid:focus {
+.company-needs-form .is-invalid:focus {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
-.individual-needs-form .invalid-feedback {
+.company-needs-form .invalid-feedback {
     display: block;
     width: 100%;
     margin-top: 0.25rem;
@@ -307,7 +293,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('.individual-needs-form');
+    const form = document.querySelector('.company-needs-form');
     if (!form) return;
 
     // Enhanced client-side validation for better UX (in addition to server-side validation)

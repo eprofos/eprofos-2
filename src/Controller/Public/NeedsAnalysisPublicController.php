@@ -43,6 +43,13 @@ class NeedsAnalysisPublicController extends AbstractController
             throw $this->createNotFoundException('Lien invalide ou expiré.');
         }
 
+        // Check if already completed first
+        if ($needsAnalysisRequest->isCompleted()) {
+            return $this->render('public/needs_analysis/completed.html.twig', [
+                'request' => $needsAnalysisRequest,
+            ]);
+        }
+
         // Check if request is accessible
         if (!$this->needsAnalysisService->isRequestAccessible($needsAnalysisRequest)) {
             $this->logger->warning('Inaccessible request accessed', [
@@ -52,13 +59,6 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
             
             return $this->render('public/needs_analysis/expired.html.twig', [
-                'request' => $needsAnalysisRequest,
-            ]);
-        }
-
-        // Check if already completed
-        if ($needsAnalysisRequest->isCompleted()) {
-            return $this->render('public/needs_analysis/completed.html.twig', [
                 'request' => $needsAnalysisRequest,
             ]);
         }
@@ -99,9 +99,8 @@ class NeedsAnalysisPublicController extends AbstractController
                     'token' => $needsAnalysisRequest->getToken(),
                 ]);
 
-                return $this->render('public/needs_analysis/success.html.twig', [
-                    'request' => $needsAnalysisRequest,
-                    'type' => 'company',
+                return $this->redirectToRoute('needs_analysis_public_success', [
+                    'token' => $needsAnalysisRequest->getToken(),
                 ]);
                 
             } catch (\Exception $e) {
@@ -112,6 +111,12 @@ class NeedsAnalysisPublicController extends AbstractController
                 
                 $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi du formulaire. Veuillez réessayer.');
             }
+        } elseif ($form->isSubmitted()) {
+            // Log validation errors for debugging
+            $this->logger->info('Company form validation failed', [
+                'errors' => (string) $form->getErrors(true),
+                'form_data' => $request->request->all(),
+            ]);
         }
 
         return $this->render('public/needs_analysis/company_form.html.twig', [
@@ -149,9 +154,8 @@ class NeedsAnalysisPublicController extends AbstractController
                     'token' => $needsAnalysisRequest->getToken(),
                 ]);
 
-                return $this->render('public/needs_analysis/success.html.twig', [
-                    'request' => $needsAnalysisRequest,
-                    'type' => 'individual',
+                return $this->redirectToRoute('needs_analysis_public_success', [
+                    'token' => $needsAnalysisRequest->getToken(),
                 ]);
                 
             } catch (\Exception $e) {
@@ -162,6 +166,12 @@ class NeedsAnalysisPublicController extends AbstractController
                 
                 $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi du formulaire. Veuillez réessayer.');
             }
+        } elseif ($form->isSubmitted()) {
+            // Log validation errors for debugging
+            $this->logger->info('Individual form validation failed', [
+                'errors' => (string) $form->getErrors(true),
+                'form_data' => $request->request->all(),
+            ]);
         }
 
         return $this->render('public/needs_analysis/individual_form.html.twig', [
@@ -176,15 +186,13 @@ class NeedsAnalysisPublicController extends AbstractController
      */
     private function convertFormDataToArray($formData): array
     {
-        // This method will convert the form data object to an array
-        // The exact implementation depends on how the form types are structured
-        // For now, we'll assume the form data is already in the correct format
+        // The form data comes as an array from the form submission
         if (is_array($formData)) {
             return $formData;
         }
         
-        // If it's an object, we might need to extract properties
-        // This will be implemented when we create the form types
+        // If for some reason it's not an array, return empty array
+        // This should not happen with our current form setup
         return [];
     }
 
@@ -208,6 +216,27 @@ class NeedsAnalysisPublicController extends AbstractController
 
         return $this->render('public/needs_analysis/info.html.twig', [
             'request' => $needsAnalysisRequest,
+        ]);
+    }
+
+    /**
+     * Display success page after form submission
+     */
+    #[Route('/success/{token}', name: 'success', methods: ['GET'])]
+    public function success(string $token): Response
+    {
+        $needsAnalysisRequest = $this->needsAnalysisService->findRequestByToken($token);
+        
+        if (!$needsAnalysisRequest) {
+            throw $this->createNotFoundException('Lien invalide ou expiré.');
+        }
+
+        // Determine the type based on which analysis exists
+        $type = $needsAnalysisRequest->getCompanyAnalysis() ? 'company' : 'individual';
+
+        return $this->render('public/needs_analysis/success.html.twig', [
+            'request' => $needsAnalysisRequest,
+            'type' => $type,
         ]);
     }
 }
