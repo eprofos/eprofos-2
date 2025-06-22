@@ -16,6 +16,10 @@ return [
         'path' => './assets/public.js',
         'entrypoint' => true,
     ],
+    'private' => [
+        'path' => './assets/private.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
