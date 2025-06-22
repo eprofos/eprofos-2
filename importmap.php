@@ -50,4 +50,11 @@ return [
         'version' => '6.7.2',
         'type' => 'css',
     ],
+    '@tabler/core' => [
+        'version' => '1.3.2',
+    ],
+    '@tabler/core/dist/css/tabler.min.css' => [
+        'version' => '1.3.2',
+        'type' => 'css',
+    ],
 ];
