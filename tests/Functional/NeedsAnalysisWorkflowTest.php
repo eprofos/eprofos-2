@@ -7,6 +7,7 @@ namespace App\Tests\Functional;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
+use App\Entity\User;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
 use App\Service\TokenGeneratorService;
@@ -22,14 +23,18 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class NeedsAnalysisWorkflowTest extends WebTestCase
 {
-    private EntityManagerInterface $entityManager;
-    private NeedsAnalysisRequestRepository $requestRepository;
-    private NeedsAnalysisService $needsAnalysisService;
-    private TokenGeneratorService $tokenGenerator;
+    private ?EntityManagerInterface $entityManager = null;
+    private ?NeedsAnalysisRequestRepository $requestRepository = null;
+    private ?NeedsAnalysisService $needsAnalysisService = null;
+    private ?TokenGeneratorService $tokenGenerator = null;
+    private ?User $testUser = null;
 
     protected function setUp(): void
     {
         parent::setUp();
+        
+        // Reset test user for each test
+        $this->testUser = null;
         
         // Clean database before each test
         $this->cleanDatabase();
@@ -62,23 +67,44 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $token = $request->getToken();
 
         // Step 2: Access the info page
-        $client->request('GET', "/public/needs-analysis/{$token}/info");
+        $client->request('GET', "/needs-analysis/info/{$token}");
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Analyse des besoins de formation');
 
         // Step 3: Access the company form
-        $client->request('GET', "/public/needs-analysis/{$token}/form/company");
+        $crawler = $client->request('GET', "/needs-analysis/form/{$token}");
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form[name="company_needs_analysis"]');
 
+        // Debug: Log the page content to see what's actually rendered
+        error_log("=== COMPANY FORM PAGE DEBUG ===");
+        error_log("Page title: " . $crawler->filter('title')->text());
+        
+        // Look for any submit buttons
+        $allButtons = $crawler->filter('button[type="submit"]');
+        error_log("Found " . $allButtons->count() . " submit buttons");
+        
+        $allButtons->each(function ($node, $i) {
+            error_log("Button $i content: '" . trim($node->text()) . "'");
+            error_log("Button $i HTML: " . $node->outerHtml());
+        });
+        
+        // Look for forms
+        $forms = $crawler->filter('form');
+        error_log("Found " . $forms->count() . " forms");
+        
+        $forms->each(function ($node, $i) {
+            error_log("Form $i name: " . $node->attr('name'));
+        });
+
         // Step 4: Submit the company form
         $formData = $this->getCompanyFormData();
-        $client->submitForm('Envoyer l\'analyse', $formData);
+        $client->submitForm('Envoyer l\'analyse des besoins', $formData);
         
         // Should redirect to success page
         $this->assertResponseRedirects();
         $client->followRedirect();
-        $this->assertSelectorTextContains('h1', 'Analyse envoyée avec succès');
+        $this->assertSelectorTextContains('h1', 'Formulaire envoyé avec succès !');
 
         // Step 5: Verify the analysis was saved
         $this->entityManager->refresh($request);
@@ -86,8 +112,8 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->assertInstanceOf(CompanyNeedsAnalysis::class, $request->getCompanyAnalysis());
 
         // Step 6: Verify accessing the form again shows completed page
-        $client->request('GET', "/public/needs-analysis/{$token}/form/company");
-        $this->assertSelectorTextContains('h1', 'Analyse déjà complétée');
+        $client->request('GET', "/needs-analysis/form/{$token}");
+        $this->assertSelectorTextContains('h1', 'Formulaire déjà complété');
     }
 
     /**
@@ -103,18 +129,18 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $token = $request->getToken();
 
         // Step 2: Access the individual form
-        $client->request('GET', "/public/needs-analysis/{$token}/form/individual");
+        $client->request('GET', "/needs-analysis/form/{$token}");
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form[name="individual_needs_analysis"]');
 
         // Step 3: Submit the individual form
         $formData = $this->getIndividualFormData();
-        $client->submitForm('Envoyer l\'analyse', $formData);
+        $client->submitForm('Envoyer l\'analyse des besoins', $formData);
         
         // Should redirect to success page
         $this->assertResponseRedirects();
         $client->followRedirect();
-        $this->assertSelectorTextContains('h1', 'Analyse envoyée avec succès');
+        $this->assertSelectorTextContains('h1', 'Formulaire envoyé avec succès !');
 
         // Step 4: Verify the analysis was saved
         $this->entityManager->refresh($request);
@@ -135,7 +161,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $token = $request->getToken();
 
         // Try to access the form
-        $client->request('GET', "/public/needs-analysis/{$token}/form/company");
+        $client->request('GET', "/needs-analysis/form/{$token}");
         $this->assertSelectorTextContains('h1', 'Lien expiré');
     }
 
@@ -148,7 +174,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
 
         // Try to access with invalid token
         $invalidToken = 'invalid-token-123';
-        $client->request('GET', "/public/needs-analysis/{$invalidToken}/form/company");
+        $client->request('GET', "/needs-analysis/form/{$invalidToken}");
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
@@ -167,7 +193,11 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('completed');
         $this->entityManager->flush();
 
-        // Access admin show page (assuming admin authentication is handled)
+        // Authenticate as admin user
+        $adminUser = $this->createTestUser();
+        $client->loginUser($adminUser);
+
+        // Access admin show page
         $client->request('GET', "/admin/needs-analysis/{$request->getId()}");
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('.card-title', 'Analyse des besoins');
@@ -185,8 +215,8 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $token = $request->getToken();
 
         // Submit empty form
-        $client->request('GET', "/public/needs-analysis/{$token}/form/company");
-        $client->submitForm('Envoyer l\'analyse', []);
+        $client->request('GET', "/needs-analysis/form/{$token}");
+        $client->submitForm('Envoyer l\'analyse des besoins', []);
 
         // Should show validation errors
         $this->assertSelectorExists('.is-invalid');
@@ -194,10 +224,33 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
+     * Create a test user for needs analysis requests (singleton pattern)
+     */
+    private function createTestUser(): User
+    {
+        if ($this->testUser === null) {
+            $this->testUser = new User();
+            $this->testUser->setEmail('test@eprofos.com');
+            $this->testUser->setFirstName('Test');
+            $this->testUser->setLastName('Admin');
+            $this->testUser->setPassword('$2y$13$test.password.hash'); // Dummy hash for testing
+            $this->testUser->setRoles(['ROLE_ADMIN']);
+            $this->testUser->setIsActive(true);
+
+            $this->entityManager->persist($this->testUser);
+            $this->entityManager->flush();
+        }
+
+        return $this->testUser;
+    }
+
+    /**
      * Create a company needs analysis request for testing
      */
     private function createCompanyRequest(): NeedsAnalysisRequest
     {
+        $user = $this->createTestUser();
+        
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
         $request->setRecipientEmail('test@company.com');
@@ -207,6 +260,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('sent');
         $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
         $request->setSentAt(new \DateTimeImmutable());
+        $request->setCreatedByUser($user);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -219,6 +273,8 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function createIndividualRequest(): NeedsAnalysisRequest
     {
+        $user = $this->createTestUser();
+        
         $request = new NeedsAnalysisRequest();
         $request->setType('individual');
         $request->setRecipientEmail('test@individual.com');
@@ -227,6 +283,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('sent');
         $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
         $request->setSentAt(new \DateTimeImmutable());
+        $request->setCreatedByUser($user);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -239,6 +296,8 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function createExpiredRequest(): NeedsAnalysisRequest
     {
+        $user = $this->createTestUser();
+        
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
         $request->setRecipientEmail('test@expired.com');
@@ -247,6 +306,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('expired');
         $request->setExpiresAt(new \DateTimeImmutable('-1 day'));
         $request->setSentAt(new \DateTimeImmutable('-31 days'));
+        $request->setCreatedByUser($user);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -290,24 +350,18 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     private function getCompanyFormData(): array
     {
         return [
-            'company_needs_analysis[companyName]' => 'Test Company Ltd',
-            'company_needs_analysis[responsiblePerson]' => 'John Doe',
-            'company_needs_analysis[contactEmail]' => 'john@testcompany.com',
-            'company_needs_analysis[contactPhone]' => '0123456789',
-            'company_needs_analysis[companyAddress]' => '123 Test Street, Test City, 12345',
-            'company_needs_analysis[activitySector]' => 'Technology',
-            'company_needs_analysis[employeeCount]' => '75',
-            'company_needs_analysis[traineesInfo][0][first_name]' => 'Alice',
-            'company_needs_analysis[traineesInfo][0][last_name]' => 'Smith',
-            'company_needs_analysis[traineesInfo][0][position]' => 'Developer',
-            'company_needs_analysis[traineesInfo][1][first_name]' => 'Bob',
-            'company_needs_analysis[traineesInfo][1][last_name]' => 'Johnson',
-            'company_needs_analysis[traineesInfo][1][position]' => 'Team Lead',
-            'company_needs_analysis[trainingTitle]' => 'Advanced Web Development',
-            'company_needs_analysis[trainingDurationHours]' => '40',
-            'company_needs_analysis[trainingLocationPreference]' => 'hybrid',
-            'company_needs_analysis[trainingExpectations]' => 'Improve team technical skills and productivity',
-            'company_needs_analysis[specificNeeds]' => 'Focus on modern frameworks and best practices',
+            'company_needs_analysis[company_name]' => 'Test Company Ltd',
+            'company_needs_analysis[responsible_person]' => 'John Doe',
+            'company_needs_analysis[contact_email]' => 'john@testcompany.com',
+            'company_needs_analysis[contact_phone]' => '0123456789',
+            'company_needs_analysis[company_address]' => '123 Test Street, Test City, 12345',
+            'company_needs_analysis[activity_sector]' => 'Technology',
+            'company_needs_analysis[employee_count]' => '75',
+            'company_needs_analysis[training_title]' => 'Advanced Web Development',
+            'company_needs_analysis[training_duration_hours]' => '40',
+            'company_needs_analysis[training_location_preference]' => 'hybrid',
+            'company_needs_analysis[training_expectations]' => 'Improve team technical skills and productivity',
+            'company_needs_analysis[specific_needs]' => 'Focus on modern frameworks and best practices',
         ];
     }
 
@@ -317,20 +371,20 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     private function getIndividualFormData(): array
     {
         return [
-            'individual_needs_analysis[firstName]' => 'John',
-            'individual_needs_analysis[lastName]' => 'Doe',
+            'individual_needs_analysis[first_name]' => 'John',
+            'individual_needs_analysis[last_name]' => 'Doe',
             'individual_needs_analysis[address]' => '123 Main Street, Test City, 12345',
             'individual_needs_analysis[phone]' => '0123456789',
             'individual_needs_analysis[email]' => 'john.doe@example.com',
             'individual_needs_analysis[status]' => 'employee',
-            'individual_needs_analysis[fundingType]' => 'cpf',
-            'individual_needs_analysis[desiredTrainingTitle]' => 'Advanced Web Development',
-            'individual_needs_analysis[professionalObjective]' => 'Become a senior full-stack developer and lead technical projects',
-            'individual_needs_analysis[currentLevel]' => 'intermediate',
-            'individual_needs_analysis[desiredDurationHours]' => '40',
-            'individual_needs_analysis[trainingLocationPreference]' => 'hybrid',
-            'individual_needs_analysis[trainingExpectations]' => 'Learn modern frameworks and improve technical leadership skills',
-            'individual_needs_analysis[specificNeeds]' => 'Focus on practical projects and real-world applications',
+            'individual_needs_analysis[funding_type]' => 'cpf',
+            'individual_needs_analysis[desired_training_title]' => 'Advanced Web Development',
+            'individual_needs_analysis[professional_objective]' => 'Become a senior full-stack developer and lead technical projects',
+            'individual_needs_analysis[current_level]' => 'intermediate',
+            'individual_needs_analysis[desired_duration_hours]' => '40',
+            'individual_needs_analysis[training_location_preference]' => 'hybrid',
+            'individual_needs_analysis[training_expectations]' => 'Learn modern frameworks and improve technical leadership skills',
+            'individual_needs_analysis[specific_needs]' => 'Focus on practical projects and real-world applications',
         ];
     }
 
@@ -343,10 +397,13 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
             return; // Skip cleaning if no entity manager yet
         }
         
-        // Remove all test data
+        // Remove all test data in correct order (respecting foreign key constraints)
         $this->entityManager->createQuery('DELETE FROM App\Entity\CompanyNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\IndividualNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\NeedsAnalysisRequest')->execute();
+        $this->entityManager->createQuery('DELETE FROM App\Entity\User')->execute();
+        
+        $this->entityManager->clear();
     }
 
     protected function tearDown(): void
