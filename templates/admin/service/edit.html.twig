@@ -58,9 +58,9 @@
                         <h3 class="card-title">Modifier le service</h3>
                         <div class="card-actions">
                             {% if service.isActive %}
-                                <span class="badge bg-success" style="color: white;">Actif</span>
+                                <span class="badge bg-success text-white">Actif</span>
                             {% else %}
-                                <span class="badge bg-secondary" style="color: white;">Inactif</span>
+                                <span class="badge bg-secondary text-white">Inactif</span>
                             {% endif %}
                         </div>
                     </div>
@@ -182,23 +182,23 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Slug actuel</label>
+                            <label class="form-label fw-bold">Slug actuel</label>
                             <div class="form-control-plaintext">
                                 <code>{{ service.slug }}</code>
                             </div>
-                            <div class="form-text" style="color: white;">Le slug sera mis à jour automatiquement si vous modifiez le titre.</div>
+                            <div class="form-text">Le slug sera mis à jour automatiquement si vous modifiez le titre.</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Créé le</label>
-                            <div class="form-control-plaintext" style="color: white;">
+                            <label class="form-label fw-bold">Créé le</label>
+                            <div class="form-control-plaintext">
                                 {{ service.createdAt|date('d/m/Y à H:i') }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Dernière modification</label>
-                            <div class="form-control-plaintext" style="color: white;">
+                            <label class="form-label fw-bold">Dernière modification</label>
+                            <div class="form-control-plaintext">
                                 {{ service.updatedAt|date('d/m/Y à H:i') }}
                             </div>
                         </div>
