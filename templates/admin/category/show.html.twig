@@ -1,0 +1,166 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_category_edit', {'id': category.id}) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                <path d="M16 5l3 3"/>
+            </svg>
+            Modifier
+        </a>
+        {% if category.formations|length == 0 %}
+            <form method="post" action="{{ path('admin_category_delete', {'id': category.id}) }}" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+                <button type="submit" class="btn btn-danger" 
+                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M4 7l16 0"/>
+                        <path d="M10 11l0 6"/>
+                        <path d="M14 11l0 6"/>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                    </svg>
+                    Supprimer
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Category Information -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations de la catégorie</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Nom</label>
+                                <div class="d-flex align-items-center">
+                                    {% if category.icon %}
+                                        <span class="me-2">
+                                            <i class="{{ category.icon }}"></i>
+                                        </span>
+                                    {% endif %}
+                                    <strong>{{ category.name }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Slug</label>
+                                <div>
+                                    <code>{{ category.slug }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        {% if category.description %}
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <div class="text-muted">
+                                        {{ category.description|nl2br }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if category.icon %}
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Icône</label>
+                                    <div>
+                                        <code>{{ category.icon }}</code>
+                                        <span class="ms-2">
+                                            <i class="{{ category.icon }}"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Statut</label>
+                                <div>
+                                    <span class="badge {{ category.isActive ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ category.isActive ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label class="form-label">Créée le</label>
+                                <div class="text-muted">
+                                    {{ category.createdAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label class="form-label">Modifiée le</label>
+                                <div class="text-muted">
+                                    {{ category.updatedAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formations in this category -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Formations associées
+                        <span class="badge bg-blue ms-2">{{ category.formations|length }}</span>
+                    </h3>
+                </div>
+                {% if category.formations|length > 0 %}
+                    <div class="list-group list-group-flush">
+                        {% for formation in category.formations %}
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="fw-bold">{{ formation.title }}</div>
+                                        {% if formation.description %}
+                                            <div class="text-muted small text-truncate" style="max-width: 300px;">
+                                                {{ formation.description }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="badge {{ formation.isActive ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ formation.isActive ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMDQgNDBIMjRDMTkuNTggNDAgMTYgNDMuNTggMTYgNDhWODBDMTYgODQuNDIgMTkuNTggODggMjQgODhIMTA0QzEwOC40MiA4OCAxMTIgODQuNDIgMTEyIDgwVjQ4QzExMiA0My41OCAxMDguNDIgNDAgMTA0IDQwWiIgc3Ryb2tlPSIjQ0ZEOERDIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPHA+PC9wPgo8L3N2Zz4K" height="64" alt="">
+                            </div>
+                            <p class="empty-title">Aucune formation</p>
+                            <p class="empty-subtitle text-muted">
+                                Cette catégorie ne contient aucune formation pour le moment.
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
