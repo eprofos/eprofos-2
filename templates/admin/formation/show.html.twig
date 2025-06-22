@@ -143,10 +143,66 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-lg-8">
-            <!-- Description -->
-            <div class="card">
+        <!-- Formation Details -->
+        <div class="col-12">
+            <div class="card card-sm">
+                <div class="card-header">
+                    <h3 class="card-title">Détails de la formation</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Durée</div>
+                            <div class="fw-bold">{{ formation.formattedDuration }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Prix</div>
+                            <div class="fw-bold">{{ formation.formattedPrice }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Niveau</div>
+                            <div>{{ formation.level }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Format</div>
+                            <div>{{ formation.format }}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Créée le</div>
+                            <div>{{ formation.createdAt|date('d/m/Y') }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Modifiée le</div>
+                            <div>{{ formation.updatedAt|date('d/m/Y') }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">ID</div>
+                            <div><code>{{ formation.id }}</code></div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small">Slug</div>
+                            <div><code>{{ formation.slug }}</code></div>
+                        </div>
+                    </div>
+                    {% if formation.image %}
+                        <hr>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="text-muted small">Image</div>
+                                <div><code>{{ formation.image }}</code></div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+            <div class="card card-sm">
                 <div class="card-header">
                     <h3 class="card-title">Description</h3>
                 </div>
@@ -154,10 +210,12 @@
                     <p>{{ formation.description|nl2br }}</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Objectives -->
-            {% if formation.objectives %}
-                <div class="card mt-3">
+        <!-- Objectives -->
+        {% if formation.objectives %}
+            <div class="col-12">
+                <div class="card card-sm">
                     <div class="card-header">
                         <h3 class="card-title">Objectifs pédagogiques</h3>
                     </div>
@@ -165,11 +223,13 @@
                         <p>{{ formation.objectives|nl2br }}</p>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        {% endif %}
 
-            <!-- Prerequisites -->
-            {% if formation.prerequisites %}
-                <div class="card mt-3">
+        <!-- Prerequisites -->
+        {% if formation.prerequisites %}
+            <div class="col-12">
+                <div class="card card-sm">
                     <div class="card-header">
                         <h3 class="card-title">Prérequis</h3>
                     </div>
@@ -177,11 +237,13 @@
                         <p>{{ formation.prerequisites|nl2br }}</p>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        {% endif %}
 
-            <!-- Program -->
-            {% if formation.program %}
-                <div class="card mt-3">
+        <!-- Program -->
+        {% if formation.program %}
+            <div class="col-12">
+                <div class="card card-sm">
                     <div class="card-header">
                         <h3 class="card-title">Programme</h3>
                     </div>
@@ -189,10 +251,12 @@
                         <p>{{ formation.program|nl2br }}</p>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        {% endif %}
 
-            <!-- Qualiopi Information -->
-            <div class="card mt-3">
+        <!-- Qualiopi Information -->
+        <div class="col-12">
+            <div class="card card-sm">
                 <div class="card-header">
                     <h3 class="card-title">
                         Informations Qualiopi
@@ -254,87 +318,26 @@
             </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Formation Details -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Détails</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-muted small">Durée</div>
-                            <div class="fw-bold">{{ formation.formattedDuration }}</div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-muted small">Prix</div>
-                            <div class="fw-bold">{{ formation.formattedPrice }}</div>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-muted small">Niveau</div>
-                            <div>{{ formation.level }}</div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-muted small">Format</div>
-                            <div>{{ formation.format }}</div>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-muted small">Créée le</div>
-                            <div>{{ formation.createdAt|date('d/m/Y') }}</div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-muted small">Modifiée le</div>
-                            <div>{{ formation.updatedAt|date('d/m/Y') }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Technical Info -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h3 class="card-title">Informations techniques</h3>
-                </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <div class="text-muted small">ID</div>
-                        <div><code>{{ formation.id }}</code></div>
-                    </div>
-                    <div class="mb-2">
-                        <div class="text-muted small">Slug</div>
-                        <div><code>{{ formation.slug }}</code></div>
-                    </div>
-                    {% if formation.image %}
-                        <div class="mb-2">
-                            <div class="text-muted small">Image</div>
-                            <div><code>{{ formation.image }}</code></div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Contact Requests -->
-            <div class="card mt-3">
+        <!-- Contact Requests -->
+        <div class="col-12">
+            <div class="card card-sm">
                 <div class="card-header">
                     <h3 class="card-title">Demandes de contact</h3>
                 </div>
                 <div class="card-body">
                     {% if formation.contactRequests|length > 0 %}
-                        <div class="text-center">
-                            <div class="h1 text-primary">{{ formation.contactRequests|length }}</div>
-                            <div class="text-muted">demande{{ formation.contactRequests|length > 1 ? 's' : '' }} reçue{{ formation.contactRequests|length > 1 ? 's' : '' }}</div>
-                        </div>
-                        <div class="mt-3">
-                            <a href="{{ path('admin_contact_request_index', {formation: formation.id}) }}" class="btn btn-outline-primary w-100">
-                                Voir les demandes
-                            </a>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="h1 text-primary mb-0">{{ formation.contactRequests|length }}</div>
+                            </div>
+                            <div class="col">
+                                <div class="text-muted">demande{{ formation.contactRequests|length > 1 ? 's' : '' }} reçue{{ formation.contactRequests|length > 1 ? 's' : '' }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <a href="{{ path('admin_contact_request_index', {formation: formation.id}) }}" class="btn btn-outline-primary">
+                                    Voir les demandes
+                                </a>
+                            </div>
                         </div>
                     {% else %}
                         <div class="text-center text-muted">
