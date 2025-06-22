@@ -1,0 +1,200 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_service_new') }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouveau service
+                        </a>
+                        <a href="{{ path('admin_service_new') }}" class="btn btn-primary d-sm-none btn-icon" aria-label="Nouveau service">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Liste des services</h3>
+                        <div class="card-actions">
+                            <span class="text-muted">{{ services|length }} service{{ services|length > 1 ? 's' : '' }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if services is empty %}
+                        <div class="card-body">
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucun service" onerror="this.style.display='none'">
+                                </div>
+                                <p class="empty-title">Aucun service trouvé</p>
+                                <p class="empty-subtitle text-muted">
+                                    Commencez par créer votre premier service pour EPROFOS.
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('admin_service_new') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Créer le premier service
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Catégorie</th>
+                                        <th>Statut</th>
+                                        <th>Créé le</th>
+                                        <th class="w-1">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if service.icon %}
+                                                        <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                                            <i class="{{ service.icon }}"></i>
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-secondary); color: white;">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                                                <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>
+                                                                <path d="M19 11h2m-1 -1v2"/>
+                                                            </svg>
+                                                        </span>
+                                                    {% endif %}
+                                                    <div>
+                                                        <div class="fw-bold">{{ service.title }}</div>
+                                                        <div class="text-muted small">{{ service.description|length > 80 ? service.description|slice(0, 80) ~ '...' : service.description }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if service.serviceCategory %}
+                                                    <span class="badge bg-blue-lt" style="color: white;">{{ service.serviceCategory.name }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">Aucune catégorie</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if service.isActive %}
+                                                    <span class="badge bg-success" style="color: white;">Actif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary" style="color: white;">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ service.createdAt|date('d/m/Y') }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-list flex-nowrap">
+                                                    <a href="{{ path('admin_service_show', {id: service.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                        Voir
+                                                    </a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            Actions
+                                                        </button>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" href="{{ path('admin_service_edit', {id: service.id}) }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                    <path d="M16 5l3 3"/>
+                                                                </svg>
+                                                                Modifier
+                                                            </a>
+                                                            <form method="post" action="{{ path('admin_service_toggle_status', {id: service.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ service.id) }}">
+                                                                <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ service.isActive ? 'désactiver' : 'activer' }} ce service ?')">
+                                                                    {% if service.isActive %}
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M10.09 4.01l.496 -.495a2 2 0 0 1 2.828 0l7.071 7.07a2 2 0 0 1 0 2.83l-7.07 7.07a2 2 0 0 1 -2.83 0l-7.07 -7.07a2 2 0 0 1 0 -2.83l3.535 -3.535h-3.988"/>
+                                                                            <path d="M7.05 11.038v-3.988"/>
+                                                                        </svg>
+                                                                        Désactiver
+                                                                    {% else %}
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M5 12l14 0"/>
+                                                                            <path d="M13 18l6 -6"/>
+                                                                            <path d="M13 6l6 6"/>
+                                                                        </svg>
+                                                                        Activer
+                                                                    {% endif %}
+                                                                </button>
+                                                            </form>
+                                                            <div class="dropdown-divider"></div>
+                                                            <form method="post" action="{{ path('admin_service_delete', {id: service.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}">
+                                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M4 7l16 0"/>
+                                                                        <path d="M10 11l0 6"/>
+                                                                        <path d="M14 11l0 6"/>
+                                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                    </svg>
+                                                                    Supprimer
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

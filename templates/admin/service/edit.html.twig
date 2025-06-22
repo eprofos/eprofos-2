@@ -1,0 +1,272 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_service_show', {id: service.id}) }}" class="btn btn-outline-secondary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                            </svg>
+                            Voir le service
+                        </a>
+                        <a href="{{ path('admin_service_index') }}" class="btn btn-outline-secondary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l14 0"/>
+                                <path d="M5 12l6 6"/>
+                                <path d="M5 12l6 -6"/>
+                            </svg>
+                            Retour à la liste
+                        </a>
+                        <a href="{{ path('admin_service_show', {id: service.id}) }}" class="btn btn-outline-secondary d-sm-none btn-icon" aria-label="Voir">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Modifier le service</h3>
+                        <div class="card-actions">
+                            {% if service.isActive %}
+                                <span class="badge bg-success" style="color: white;">Actif</span>
+                            {% else %}
+                                <span class="badge bg-secondary" style="color: white;">Inactif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {{ form_start(form, {'attr': {'class': 'card-body'}}) }}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    {{ form_label(form.title, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_widget(form.title) }}
+                                    {{ form_errors(form.title) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                            {{ form_widget(form.description) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.benefits, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                            {{ form_widget(form.benefits) }}
+                            {{ form_errors(form.benefits) }}
+                            {% if form.benefits.vars.help %}
+                                <div class="form-text" style="color: white;">{{ form.benefits.vars.help }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.serviceCategory, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_widget(form.serviceCategory) }}
+                                    {{ form_errors(form.serviceCategory) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.icon, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    <div class="input-group">
+                                        {{ form_widget(form.icon) }}
+                                        {% if service.icon %}
+                                            <span class="input-group-text">
+                                                <i class="{{ service.icon }}" style="color: var(--tblr-primary);"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    {{ form_errors(form.icon) }}
+                                    {% if form.icon.vars.help %}
+                                        <div class="form-text" style="color: white;">{{ form.icon.vars.help }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.image, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_widget(form.image) }}
+                                    {{ form_errors(form.image) }}
+                                    {% if form.image.vars.help %}
+                                        <div class="form-text" style="color: white;">{{ form.image.vars.help }}</div>
+                                    {% endif %}
+                                    {% if service.image %}
+                                        <div class="mt-2">
+                                            <img src="{{ asset('images/' ~ service.image) }}" alt="{{ service.title }}" class="avatar avatar-md" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                            <div class="avatar avatar-md bg-secondary text-white" style="display: none;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M15 8h.01"/>
+                                                    <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/>
+                                                    <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/>
+                                                    <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: white;">&nbsp;</label>
+                                    <div class="form-check">
+                                        {{ form_widget(form.isActive) }}
+                                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label', 'style': 'color: white;'}}) }}
+                                        {{ form_errors(form.isActive) }}
+                                        {% if form.isActive.vars.help %}
+                                            <div class="form-text" style="color: white;">{{ form.isActive.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent mt-auto">
+                            <div class="btn-list justify-content-end">
+                                <a href="{{ path('admin_service_show', {id: service.id}) }}" class="btn btn-outline-secondary">
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Enregistrer les modifications
+                                </button>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: white;">Slug actuel</label>
+                            <div class="form-control-plaintext">
+                                <code>{{ service.slug }}</code>
+                            </div>
+                            <div class="form-text" style="color: white;">Le slug sera mis à jour automatiquement si vous modifiez le titre.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: white;">Créé le</label>
+                            <div class="form-control-plaintext" style="color: white;">
+                                {{ service.createdAt|date('d/m/Y à H:i') }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: white;">Dernière modification</label>
+                            <div class="form-control-plaintext" style="color: white;">
+                                {{ service.updatedAt|date('d/m/Y à H:i') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions rapides</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <form method="post" action="{{ path('admin_service_toggle_status', {id: service.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ service.id) }}">
+                                <button type="submit" class="btn btn-outline-{{ service.isActive ? 'warning' : 'success' }} w-100" onclick="return confirm('Êtes-vous sûr de vouloir {{ service.isActive ? 'désactiver' : 'activer' }} ce service ?')">
+                                    {% if service.isActive %}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M10.09 4.01l.496 -.495a2 2 0 0 1 2.828 0l7.071 7.07a2 2 0 0 1 0 2.83l-7.07 7.07a2 2 0 0 1 -2.83 0l-7.07 -7.07a2 2 0 0 1 0 -2.83l3.535 -3.535h-3.988"/>
+                                            <path d="M7.05 11.038v-3.988"/>
+                                        </svg>
+                                        Désactiver le service
+                                    {% else %}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l14 0"/>
+                                            <path d="M13 18l6 -6"/>
+                                            <path d="M13 6l6 6"/>
+                                        </svg>
+                                        Activer le service
+                                    {% endif %}
+                                </button>
+                            </form>
+
+                            <hr>
+
+                            <form method="post" action="{{ path('admin_service_delete', {id: service.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}">
+                                <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7l16 0"/>
+                                        <path d="M10 11l0 6"/>
+                                        <path d="M14 11l0 6"/>
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                    </svg>
+                                    Supprimer le service
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Aide</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">
+                            Modifiez les informations du service selon vos besoins. Le slug sera automatiquement mis à jour si vous changez le titre.
+                        </p>
+                        <p class="text-muted small">
+                            N'oubliez pas de sauvegarder vos modifications en cliquant sur le bouton "Enregistrer les modifications".
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
