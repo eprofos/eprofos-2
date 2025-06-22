@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Analyse des besoins - {{ request.requestType == 'company' ? 'Entreprise' : 'Particulier' }}{% endblock %}
+{% block title %}Analyse des besoins - {{ request.type == 'company' ? 'Entreprise' : 'Particulier' }}{% endblock %}
 
 {% block body %}
 <div class="container">
@@ -12,7 +12,7 @@
                 </div>
                 <h1 class="h2 text-primary mb-3">Analyse des besoins de formation</h1>
                 <p class="lead text-muted">
-                    {% if request.requestType == 'company' %}
+                    {% if request.type == 'company' %}
                         Formulaire destiné aux entreprises
                     {% else %}
                         Formulaire destiné aux particuliers
@@ -52,7 +52,7 @@
                                     <h5 class="card-title">Durée estimée</h5>
                                     <p class="card-text">
                                         <strong class="text-primary">
-                                            {% if request.requestType == 'company' %}
+                                            {% if request.type == 'company' %}
                                                 15-20 minutes
                                             {% else %}
                                                 10-15 minutes
@@ -78,7 +78,7 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    {% if request.requestType == 'company' %}
+                    {% if request.type == 'company' %}
                         <div class="row">
                             <div class="col-md-6">
                                 <h6 class="text-primary">
@@ -225,7 +225,7 @@
                     </p>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                        <a href="{{ path('public_needs_analysis_form', {token: request.accessToken, type: request.requestType}) }}" 
+                        <a href="{{ path('needs_analysis_public_form', {token: request.token}) }}"
                            class="btn btn-primary btn-lg px-5">
                             <i class="fas fa-play me-2"></i>
                             Commencer l'analyse
