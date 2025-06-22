@@ -51,9 +51,9 @@
                         <h3 class="card-title">Informations du service</h3>
                         <div class="card-actions">
                             {% if service.isActive %}
-                                <span class="badge bg-success" style="color: white;">Actif</span>
+                                <span class="badge bg-success text-white">Actif</span>
                             {% else %}
-                                <span class="badge bg-secondary" style="color: white;">Inactif</span>
+                                <span class="badge bg-secondary text-white">Inactif</span>
                             {% endif %}
                         </div>
                     </div>
@@ -61,14 +61,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color: white;">Titre</label>
-                                    <div class="form-control-plaintext" style="color: white;">{{ service.title }}</div>
+                                    <label class="form-label fw-bold">Titre</label>
+                                    <div class="form-control-plaintext">{{ service.title }}</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color: white;">Slug</label>
-                                    <div class="form-control-plaintext" style="color: white;">
+                                    <label class="form-label fw-bold">Slug</label>
+                                    <div class="form-control-plaintext">
                                         <code>{{ service.slug }}</code>
                                     </div>
                                 </div>
@@ -76,13 +76,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Description</label>
-                            <div class="form-control-plaintext" style="color: white;">{{ service.description|nl2br }}</div>
+                            <label class="form-label fw-bold">Description</label>
+                            <div class="form-control-plaintext">{{ service.description|nl2br }}</div>
                         </div>
 
                         {% if service.benefits %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: white;">Avantages</label>
+                                <label class="form-label fw-bold">Avantages</label>
                                 <div class="form-control-plaintext">
                                     <ul class="list-unstyled">
                                         {% for benefit in service.benefitsArray %}
@@ -91,7 +91,7 @@
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                                     <path d="M5 12l5 5l10 -10"/>
                                                 </svg>
-                                                <span style="color: white;">{{ benefit }}</span>
+                                                <span>{{ benefit }}</span>
                                             </li>
                                         {% endfor %}
                                     </ul>
@@ -102,10 +102,10 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color: white;">Catégorie</label>
+                                    <label class="form-label fw-bold">Catégorie</label>
                                     <div class="form-control-plaintext">
                                         {% if service.serviceCategory %}
-                                            <span class="badge bg-blue-lt" style="color: white;">{{ service.serviceCategory.name }}</span>
+                                            <span class="badge bg-blue text-white">{{ service.serviceCategory.name }}</span>
                                         {% else %}
                                             <span class="text-muted">Aucune catégorie</span>
                                         {% endif %}
@@ -114,10 +114,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color: white;">Icône</label>
+                                    <label class="form-label fw-bold">Icône</label>
                                     <div class="form-control-plaintext">
                                         {% if service.icon %}
-                                            <i class="{{ service.icon }} me-2" style="color: white;"></i>
+                                            <i class="{{ service.icon }} me-2"></i>
                                             <code>{{ service.icon }}</code>
                                         {% else %}
                                             <span class="text-muted">Aucune icône</span>
@@ -129,7 +129,7 @@
 
                         {% if service.image %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: white;">Image</label>
+                                <label class="form-label fw-bold">Image</label>
                                 <div class="form-control-plaintext">
                                     <div class="d-flex align-items-center">
                                         <img src="{{ asset('images/' ~ service.image) }}" alt="{{ service.title }}" class="avatar avatar-lg me-3" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -143,7 +143,7 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <div style="color: white;">{{ service.image }}</div>
+                                            <div>{{ service.image }}</div>
                                             <div class="text-muted small">Image du service</div>
                                         </div>
                                     </div>
@@ -161,24 +161,24 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Créé le</label>
-                            <div class="form-control-plaintext" style="color: white;">
+                            <label class="form-label fw-bold">Créé le</label>
+                            <div class="form-control-plaintext">
                                 {{ service.createdAt|date('d/m/Y à H:i') }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Modifié le</label>
-                            <div class="form-control-plaintext" style="color: white;">
+                            <label class="form-label fw-bold">Modifié le</label>
+                            <div class="form-control-plaintext">
                                 {{ service.updatedAt|date('d/m/Y à H:i') }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold" style="color: white;">Statut</label>
+                            <label class="form-label fw-bold">Statut</label>
                             <div class="form-control-plaintext">
                                 {% if service.isActive %}
-                                    <span class="badge bg-success" style="color: white;">
+                                    <span class="badge bg-success text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                             <path d="M5 12l5 5l10 -10"/>
@@ -186,7 +186,7 @@
                                         Service actif
                                     </span>
                                 {% else %}
-                                    <span class="badge bg-secondary" style="color: white;">
+                                    <span class="badge bg-secondary text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                             <path d="M18 6l-12 12"/>
