@@ -34,11 +34,12 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
 
     /**
      * Define fixture dependencies
-     * 
+     *
      * Ensures all fixtures are loaded in the correct order:
      * 1. Categories and ServiceCategories (no dependencies)
      * 2. Formations and Services (depend on categories)
      * 3. ContactRequests (depend on formations and services)
+     * 4. NeedsAnalysisFixtures (depend on users and formations)
      */
     public function getDependencies(): array
     {
@@ -48,6 +49,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             FormationFixtures::class,
             ServiceFixtures::class,
             ContactRequestFixtures::class,
+            NeedsAnalysisFixtures::class,
         ];
     }
 }

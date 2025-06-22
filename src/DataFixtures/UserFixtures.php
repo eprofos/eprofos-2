@@ -15,6 +15,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  */
 class UserFixtures extends Fixture
 {
+    public const ADMIN_USER_REFERENCE = 'admin-user';
+
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher
     ) {
@@ -41,6 +43,9 @@ class UserFixtures extends Fixture
         $admin->setPassword($hashedPassword);
         
         $manager->persist($admin);
+        
+        // Add reference for other fixtures
+        $this->addReference(self::ADMIN_USER_REFERENCE, $admin);
 
         // Create a second admin user for testing
         $testAdmin = new User();
