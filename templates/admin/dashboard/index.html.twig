@@ -1,0 +1,331 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('app_home') }}" class="btn btn-outline-primary" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M11 7h-5a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-5"/>
+                <path d="M10 14l10 -10"/>
+                <path d="M15 4l5 0l0 5"/>
+            </svg>
+            Voir le site public
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Welcome Section -->
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h2 class="mb-2">
+                                Bienvenue, {{ user.firstName }} ! 👋
+                            </h2>
+                            <p class="text-muted mb-0">
+                                Voici un aperçu de votre plateforme EPROFOS. Utilisez le menu de navigation pour accéder aux différentes sections.
+                            </p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="avatar avatar-lg" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                                {{ user.initials }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row row-deck row-cards mt-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Formations actives</div>
+                        <div class="ms-auto lh-1">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Derniers 7 jours</a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item active" href="#">Derniers 7 jours</a>
+                                    <a class="dropdown-item" href="#">Derniers 30 jours</a>
+                                    <a class="dropdown-item" href="#">Derniers 3 mois</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h1 mb-3">12</div>
+                    <div class="d-flex mb-2">
+                        <div>Taux de conversion</div>
+                        <div class="ms-auto">
+                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                8%
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 17l6 -6l4 4l8 -8"/>
+                                    <path d="M14 7l7 0l0 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-primary" style="width: 75%" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="75% Complete">
+                            <span class="visually-hidden">75% Complete</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Demandes de contact</div>
+                        <div class="ms-auto lh-1">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Derniers 7 jours</a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item active" href="#">Derniers 7 jours</a>
+                                    <a class="dropdown-item" href="#">Derniers 30 jours</a>
+                                    <a class="dropdown-item" href="#">Derniers 3 mois</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-baseline">
+                        <div class="h1 mb-0 me-2">8</div>
+                        <div class="me-auto">
+                            <span class="text-yellow d-inline-flex align-items-center lh-1">
+                                3 en attente
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                    <path d="M12 7v5l3 3"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Services actifs</div>
+                    </div>
+                    <div class="h1 mb-3">6</div>
+                    <div class="d-flex mb-2">
+                        <div>Popularité</div>
+                        <div class="ms-auto">
+                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                +12%
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 17l6 -6l4 4l8 -8"/>
+                                    <path d="M14 7l7 0l0 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-green" style="width: 62%" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="62% Complete">
+                            <span class="visually-hidden">62% Complete</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Revenus estimés</div>
+                        <div class="ms-auto lh-1">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ce mois</a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item active" href="#">Ce mois</a>
+                                    <a class="dropdown-item" href="#">Mois dernier</a>
+                                    <a class="dropdown-item" href="#">Cette année</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-baseline">
+                        <div class="h1 mb-3 me-2">€24,500</div>
+                        <div class="me-auto">
+                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                +5%
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 17l6 -6l4 4l8 -8"/>
+                                    <path d="M14 7l7 0l0 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row row-deck row-cards mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Actions rapides</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-xl-3">
+                            <a href="#" class="btn btn-outline-primary w-100 mb-3" onclick="alert('Fonctionnalité à venir')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 5l0 14"/>
+                                    <path d="M5 12l14 0"/>
+                                </svg>
+                                Ajouter une formation
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <a href="#" class="btn btn-outline-success w-100 mb-3" onclick="alert('Fonctionnalité à venir')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                    <path d="M3 7l9 6l9 -6"/>
+                                </svg>
+                                Voir les demandes
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <a href="#" class="btn btn-outline-info w-100 mb-3" onclick="alert('Fonctionnalité à venir')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                    <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>
+                                    <path d="M19 11h2m-1 -1v2"/>
+                                </svg>
+                                Gérer les services
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-xl-3">
+                            <a href="#" class="btn btn-outline-warning w-100 mb-3" onclick="alert('Fonctionnalité à venir')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/>
+                                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>
+                                </svg>
+                                Paramètres
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row row-deck row-cards mt-3">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Activité récente</h3>
+                </div>
+                <div class="card-body">
+                    <div class="divide-y">
+                        <div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="avatar">JD</span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Jean Dupont</strong> a demandé un devis pour <strong>Formation PHP Avancé</strong>
+                                    </div>
+                                    <div class="text-muted">Il y a 2 minutes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="avatar" style="background-image: url({{ asset('images/default-avatar.jpg') }})">ML</span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Marie Leblanc</strong> s'est inscrite à <strong>Formation JavaScript</strong>
+                                    </div>
+                                    <div class="text-muted">Il y a 1 heure</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="avatar">PM</span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Pierre Martin</strong> a demandé des informations sur <strong>Conseil en formation</strong>
+                                    </div>
+                                    <div class="text-muted">Il y a 3 heures</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations système</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col">Version Symfony</div>
+                            <div class="col-auto text-muted">7.2</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col">Version PHP</div>
+                            <div class="col-auto text-muted">8.3</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col">Base de données</div>
+                            <div class="col-auto text-muted">PostgreSQL</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col">Dernière connexion</div>
+                            <div class="col-auto text-muted">
+                                {% if user.lastLoginAt %}
+                                    {{ user.lastLoginAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    Première connexion
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - EPROFOS Admin</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Connexion à l'interface d'administration EPROFOS">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    
+    {{ importmap('private') }}
+</head>
+<body class="d-flex flex-column">
+    <script src="{{ asset('js/demo-theme.min.js') }}" onerror="console.log('Demo theme not found')"></script>
+    
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="text-center mb-4">
+                <a href="{{ path('app_home') }}" class="navbar-brand navbar-brand-autodark">
+                    <img src="{{ asset('images/logo.svg') }}" height="36" alt="EPROFOS" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span style="display: none; font-size: 1.5rem; font-weight: bold;">EPROFOS</span>
+                </a>
+            </div>
+            
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Connexion Administrateur</h2>
+                    
+                    {% if error %}
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M12 9v2m0 4v.01"></path>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="alert-title">Erreur de connexion</h4>
+                                    <div class="text-muted">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                                </div>
+                            </div>
+                            <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                        </div>
+                    {% endif %}
+                    
+                    <form action="{{ path('admin_login') }}" method="post" autocomplete="off" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="inputEmail">Adresse email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="inputEmail"
+                                   name="_username" 
+                                   value="{{ last_username }}" 
+                                   placeholder="votre@email.com"
+                                   autocomplete="username"
+                                   required>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="form-label" for="inputPassword">
+                                Mot de passe
+                                <span class="form-label-description">
+                                    <a href="#" onclick="alert('Fonctionnalité à venir')">Mot de passe oublié ?</a>
+                                </span>
+                            </label>
+                            <div class="input-group input-group-flat">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="inputPassword"
+                                       name="_password" 
+                                       placeholder="Votre mot de passe"
+                                       autocomplete="current-password"
+                                       required>
+                                <span class="input-group-text">
+                                    <a href="#" class="link-secondary" title="Afficher le mot de passe" data-bs-toggle="tooltip" onclick="togglePassword()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                        </svg>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="form-check">
+                                <input type="checkbox" class="form-check-input" name="_remember_me"/>
+                                <span class="form-check-label">Se souvenir de moi sur cet appareil</span>
+                            </label>
+                        </div>
+                        
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                        
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"/>
+                                    <path d="M9 12h12l-3 -3"/>
+                                    <path d="M18 15l3 -3"/>
+                                </svg>
+                                Se connecter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center text-muted mt-3">
+                Vous n'avez pas accès ? <a href="{{ path('app_contact_index') }}" tabindex="-1">Contactez l'administrateur</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('inputPassword');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        }
+        
+        // Focus on email input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('inputEmail').focus();
+        });
+    </script>
+</body>
+</html>
