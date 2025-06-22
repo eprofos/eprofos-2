@@ -113,16 +113,16 @@
                                             </td>
                                             <td>
                                                 {% if service.serviceCategory %}
-                                                    <span class="badge bg-blue-lt" style="color: white;">{{ service.serviceCategory.name }}</span>
+                                                    <span class="badge bg-blue text-white">{{ service.serviceCategory.name }}</span>
                                                 {% else %}
                                                     <span class="text-muted">Aucune catégorie</span>
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 {% if service.isActive %}
-                                                    <span class="badge bg-success" style="color: white;">Actif</span>
+                                                    <span class="badge bg-success text-white">Actif</span>
                                                 {% else %}
-                                                    <span class="badge bg-secondary" style="color: white;">Inactif</span>
+                                                    <span class="badge bg-secondary text-white">Inactif</span>
                                                 {% endif %}
                                             </td>
                                             <td class="text-muted">

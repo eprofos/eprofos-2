@@ -68,7 +68,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
-                                    {{ form_label(form.title, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
                                     {{ form_widget(form.title) }}
                                     {{ form_errors(form.title) }}
                                 </div>
@@ -76,31 +76,31 @@
                         </div>
 
                         <div class="mb-3">
-                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
                             {{ form_widget(form.description) }}
                             {{ form_errors(form.description) }}
                         </div>
 
                         <div class="mb-3">
-                            {{ form_label(form.benefits, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                            {{ form_label(form.benefits, null, {'label_attr': {'class': 'form-label'}}) }}
                             {{ form_widget(form.benefits) }}
                             {{ form_errors(form.benefits) }}
                             {% if form.benefits.vars.help %}
-                                <div class="form-text" style="color: white;">{{ form.benefits.vars.help }}</div>
+                                <div class="form-text">{{ form.benefits.vars.help }}</div>
                             {% endif %}
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.serviceCategory, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_label(form.serviceCategory, null, {'label_attr': {'class': 'form-label'}}) }}
                                     {{ form_widget(form.serviceCategory) }}
                                     {{ form_errors(form.serviceCategory) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.icon, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_label(form.icon, null, {'label_attr': {'class': 'form-label'}}) }}
                                     <div class="input-group">
                                         {{ form_widget(form.icon) }}
                                         {% if service.icon %}
@@ -111,7 +111,7 @@
                                     </div>
                                     {{ form_errors(form.icon) }}
                                     {% if form.icon.vars.help %}
-                                        <div class="form-text" style="color: white;">{{ form.icon.vars.help }}</div>
+                                        <div class="form-text">{{ form.icon.vars.help }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -120,11 +120,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ form_label(form.image, null, {'label_attr': {'class': 'form-label', 'style': 'color: white;'}}) }}
+                                    {{ form_label(form.image, null, {'label_attr': {'class': 'form-label'}}) }}
                                     {{ form_widget(form.image) }}
                                     {{ form_errors(form.image) }}
                                     {% if form.image.vars.help %}
-                                        <div class="form-text" style="color: white;">{{ form.image.vars.help }}</div>
+                                        <div class="form-text">{{ form.image.vars.help }}</div>
                                     {% endif %}
                                     {% if service.image %}
                                         <div class="mt-2">
@@ -144,13 +144,13 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label" style="color: white;">&nbsp;</label>
+                                    <label class="form-label">&nbsp;</label>
                                     <div class="form-check">
                                         {{ form_widget(form.isActive) }}
-                                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label', 'style': 'color: white;'}}) }}
+                                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
                                         {{ form_errors(form.isActive) }}
                                         {% if form.isActive.vars.help %}
-                                            <div class="form-text" style="color: white;">{{ form.isActive.vars.help }}</div>
+                                            <div class="form-text">{{ form.isActive.vars.help }}</div>
                                         {% endif %}
                                     </div>
                                 </div>
