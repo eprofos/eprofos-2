@@ -1,0 +1,219 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ course.title }}</h1>
+                <div>
+                    <a href="{{ path('admin_course_edit', {'id': course.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ path('admin_course_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Informations du cours</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Type :</strong> <span class="badge bg-info">{{ course.typeLabel }}</span></p>
+                                    <p><strong>Durée :</strong> {{ course.formattedDuration }}</p>
+                                    <p><strong>Ordre :</strong> {{ course.orderIndex }}</p>
+                                    <p><strong>Statut :</strong> 
+                                        {% if course.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Chapitre :</strong> {{ course.chapter.title }}</p>
+                                    <p><strong>Module :</strong> {{ course.chapter.module.title }}</p>
+                                    <p><strong>Formation :</strong> {{ course.chapter.module.formation.title }}</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6>Description</h6>
+                            <p>{{ course.description }}</p>
+                            
+                            {% if course.content %}
+                                <h6>Contenu</h6>
+                                <div class="border p-3 bg-light">
+                                    {{ course.content|nl2br }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if course.contentOutline %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Plan détaillé du contenu</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ course.contentOutline|nl2br }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Exercices et QCM</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Exercices ({{ course.exercises|length }})</h6>
+                                    {% if course.exercises %}
+                                        <ul class="list-group">
+                                            {% for exercise in course.exercises %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ exercise.title }}</strong>
+                                                        <br><small class="text-muted">{{ exercise.typeLabel }} - {{ exercise.difficultyLabel }}</small>
+                                                    </div>
+                                                    <a href="{{ path('admin_exercise_show', {'id': exercise.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-muted">Aucun exercice</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>QCM ({{ course.qcms|length }})</h6>
+                                    {% if course.qcms %}
+                                        <ul class="list-group">
+                                            {% for qcm in course.qcms %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ qcm.title }}</strong>
+                                                        <br><small class="text-muted">{{ qcm.questionCount }} questions</small>
+                                                    </div>
+                                                    <a href="{{ path('admin_qcm_show', {'id': qcm.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-muted">Aucun QCM</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Objectifs pédagogiques (Qualiopi)</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if course.learningObjectives %}
+                                <h6>Objectifs d'apprentissage</h6>
+                                <ul>
+                                    {% for objective in course.learningObjectives %}
+                                        <li>{{ objective }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if course.learningOutcomes %}
+                                <h6>Résultats d'apprentissage</h6>
+                                <ul>
+                                    {% for outcome in course.learningOutcomes %}
+                                        <li>{{ outcome }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if course.prerequisites %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Prérequis</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ course.prerequisites|nl2br }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Méthodes pédagogiques</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if course.teachingMethods %}
+                                <h6>Méthodes d'enseignement</h6>
+                                <p>{{ course.teachingMethods|nl2br }}</p>
+                            {% endif %}
+
+                            {% if course.assessmentMethods %}
+                                <h6>Méthodes d'évaluation</h6>
+                                <p>{{ course.assessmentMethods|nl2br }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if course.resources %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Ressources</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for resource in course.resources %}
+                                        <li>{{ resource }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if course.successCriteria %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Critères de réussite</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for criteria in course.successCriteria %}
+                                        <li>{{ criteria }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Métadonnées</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Créé le :</strong> {{ course.createdAt|date('d/m/Y H:i') }}</p>
+                            <p><strong>Modifié le :</strong> {{ course.updatedAt|date('d/m/Y H:i') }}</p>
+                            <p><strong>Slug :</strong> <code>{{ course.slug }}</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

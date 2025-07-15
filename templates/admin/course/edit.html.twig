@@ -1,0 +1,143 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier le cours - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Modifier le cours</h1>
+                <div>
+                    <a href="{{ path('admin_course_show', {'id': course.id}) }}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                    <a href="{{ path('admin_course_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Titre *</label>
+                                    <input type="text" class="form-control" id="title" name="title" value="{{ course.title }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description *</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ course.description }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">Contenu</label>
+                                    <textarea class="form-control" id="content" name="content" rows="10">{{ course.content }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="content_outline" class="form-label">Plan détaillé du contenu</label>
+                                    <textarea class="form-control" id="content_outline" name="content_outline" rows="5">{{ course.contentOutline }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="learning_objectives" class="form-label">Objectifs d'apprentissage</label>
+                                    <textarea class="form-control" id="learning_objectives" name="learning_objectives" rows="4" placeholder="Un objectif par ligne">{% if course.learningObjectives %}{{ course.learningObjectives|join('\n') }}{% endif %}</textarea>
+                                    <small class="form-text text-muted">Un objectif par ligne</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="learning_outcomes" class="form-label">Résultats d'apprentissage attendus</label>
+                                    <textarea class="form-control" id="learning_outcomes" name="learning_outcomes" rows="4" placeholder="Un résultat par ligne">{% if course.learningOutcomes %}{{ course.learningOutcomes|join('\n') }}{% endif %}</textarea>
+                                    <small class="form-text text-muted">Un résultat par ligne</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="prerequisites" class="form-label">Prérequis</label>
+                                    <textarea class="form-control" id="prerequisites" name="prerequisites" rows="3">{{ course.prerequisites }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="teaching_methods" class="form-label">Méthodes pédagogiques</label>
+                                    <textarea class="form-control" id="teaching_methods" name="teaching_methods" rows="3">{{ course.teachingMethods }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="assessment_methods" class="form-label">Méthodes d'évaluation</label>
+                                    <textarea class="form-control" id="assessment_methods" name="assessment_methods" rows="3">{{ course.assessmentMethods }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="resources" class="form-label">Ressources</label>
+                                    <textarea class="form-control" id="resources" name="resources" rows="4" placeholder="Une ressource par ligne">{% if course.resources %}{{ course.resources|join('\n') }}{% endif %}</textarea>
+                                    <small class="form-text text-muted">Une ressource par ligne</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="success_criteria" class="form-label">Critères de réussite</label>
+                                    <textarea class="form-control" id="success_criteria" name="success_criteria" rows="4" placeholder="Un critère par ligne">{% if course.successCriteria %}{{ course.successCriteria|join('\n') }}{% endif %}</textarea>
+                                    <small class="form-text text-muted">Un critère par ligne</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="chapter_id" class="form-label">Chapitre *</label>
+                                    <select class="form-select" id="chapter_id" name="chapter_id" required>
+                                        <option value="">Sélectionner un chapitre</option>
+                                        {% for chapter in chapters %}
+                                            <option value="{{ chapter.id }}" {{ course.chapter.id == chapter.id ? 'selected' : '' }}>
+                                                {{ chapter.title }}
+                                                {% if chapter.module and chapter.module.formation %}
+                                                    ({{ chapter.module.formation.title }})
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Type *</label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">Sélectionner un type</option>
+                                        {% for key, label in types %}
+                                            <option value="{{ key }}" {{ course.type == key ? 'selected' : '' }}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="duration_minutes" class="form-label">Durée (minutes) *</label>
+                                    <input type="number" class="form-control" id="duration_minutes" name="duration_minutes" min="1" value="{{ course.durationMinutes }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="order_index" class="form-label">Ordre *</label>
+                                    <input type="number" class="form-control" id="order_index" name="order_index" min="1" value="{{ course.orderIndex }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {{ course.isActive ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="is_active">
+                                            Actif
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Modifier le cours</button>
+                                    <a href="{{ path('admin_course_show', {'id': course.id}) }}" class="btn btn-secondary">Annuler</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

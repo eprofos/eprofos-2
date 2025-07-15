@@ -7,9 +7,18 @@ EPROFOS is a Symfony 7.3/PHP 8.3 Learning Management System (LMS) for profession
 
 ### Core Entity Relationships
 - `Formation` (training courses) → `Category` (technical/transversal)
+- `Formation` → `Module` → `Chapter` (3-level pedagogical hierarchy)
 - `Service` → `ServiceCategory` (conseil, accompagnement, certifications, sur-mesure)
 - `ContactRequest` with specialized forms (quote, advice, info, quick registration)
 - `NeedsAnalysisRequest` with company/individual variants
+
+### Hierarchical Program Structure
+**Critical Pattern**: Training content uses a 3-level hierarchy:
+- **Formation**: Overall training course with Qualiopi-compliant fields
+- **Module**: Learning modules within formations (2-5 per formation)
+- **Chapter**: Detailed content within modules (3-8 per module)
+
+Each level has dedicated fields for learning objectives, evaluation methods, and success criteria to meet Qualiopi requirements.
 
 ### Controller Structure
 ```
@@ -57,10 +66,49 @@ Controllers return different responses based on `$request->isXmlHttpRequest()`:
 - Regular requests: full template
 - Ajax requests: partial template (`_formations_list.html.twig`)
 
+Example implementation in `FormationController`:
+```php
+// If it's an Ajax request, return only the formations list
+if ($request->isXmlHttpRequest()) {
+    return $this->render('public/formation/_formations_list.html.twig', [
+        'formations' => $formations,
+        'current_page' => $page,
+        'total_pages' => $totalPages,
+    ]);
+}
+```
+
+### Program Content Generation
+**Critical**: Formation program content is automatically generated from Module and Chapter hierarchy:
+- Use `$formation->getGeneratedProgram()` to build program from modules/chapters
+- Never manually maintain program text - always derive from structure
+- Each module shows learning objectives and active chapters with durations
+
+### Qualiopi Compliance Fields
+Each entity (Formation, Module, Chapter) includes structured fields for:
+- `operationalObjectives` / `learningObjectives` (JSON arrays)
+- `evaluationMethods` / `assessmentMethods` (TEXT)
+- `teachingMethods` (TEXT)
+- `successCriteria` (JSON arrays)
+- `resources` (JSON arrays)
+
+These fields are required for French training quality certification.
+
 ### Form Patterns
 - Multiple specialized contact forms in single controller
 - Each form type has dedicated validation and email templates
 - CSRF protection on all forms
+
+### Collection Form Pattern
+Use `CollectionController` for dynamic form fields:
+```js
+// In Stimulus controller
+addItem(event) {
+    const prototype = this.prototypeTarget.dataset.prototype
+    const newItem = prototype.replace(new RegExp(this.prototypeNameValue, 'g'), this.indexValue)
+    // Add to collection with remove button
+}
+```
 
 ### Repository Query Methods
 Use descriptive method names like:
@@ -88,6 +136,8 @@ templates/
 - Load in dependency order via `getDependencies()` method
 - Use Faker for realistic test data
 - Reference constants like `Formation::LEVELS` for consistent data
+- `AppFixtures` orchestrates all fixtures - acts as dependency coordinator
+- Context-aware data generation (chapter titles match module topics)
 
 ### Email System
 - Templates in `templates/emails/`
@@ -96,6 +146,8 @@ templates/
 
 ## Key Files to Understand
 - `src/Entity/Formation.php` - Core training entity with validation
+- `src/Entity/Module.php` - Learning module with Qualiopi fields
+- `src/Entity/Chapter.php` - Detailed chapter content structure
 - `src/Controller/Public/FormationController.php` - Ajax filtering implementation
 - `assets/controllers/formation_filter_controller.js` - Frontend filtering
 - `templates/base.html.twig` - Main layout structure

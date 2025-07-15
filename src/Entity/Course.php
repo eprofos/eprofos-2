@@ -2,21 +2,21 @@
 
 namespace App\Entity;
 
-use App\Repository\ChapterRepository;
+use App\Repository\CourseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Chapter entity representing a chapter within a module
+ * Course entity representing a course within a chapter
  * 
  * Contains detailed pedagogical content with specific learning objectives,
  * resources, and evaluation methods to meet Qualiopi requirements.
  */
-#[ORM\Entity(repositoryClass: ChapterRepository::class)]
+#[ORM\Entity(repositoryClass: CourseRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-class Chapter
+class Course
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -33,16 +33,16 @@ class Chapter
     private ?string $description = null;
 
     /**
-     * Specific learning objectives for this chapter (required by Qualiopi)
+     * Specific learning objectives for this course (required by Qualiopi)
      *
      * Concrete, measurable objectives that participants will achieve
-     * by completing this specific chapter.
+     * by completing this specific course.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $learningObjectives = null;
 
     /**
-     * Detailed content outline for this chapter (required by Qualiopi)
+     * Detailed content outline for this course (required by Qualiopi)
      *
      * Structured content plan with key topics and subtopics covered.
      */
@@ -50,23 +50,23 @@ class Chapter
     private ?string $contentOutline = null;
 
     /**
-     * Prerequisites specific to this chapter (required by Qualiopi)
+     * Prerequisites specific to this course (required by Qualiopi)
      *
-     * Knowledge or skills required before starting this chapter.
+     * Knowledge or skills required before starting this course.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisites = null;
 
     /**
-     * Expected learning outcomes for this chapter (required by Qualiopi)
+     * Expected learning outcomes for this course (required by Qualiopi)
      *
-     * What participants should know or be able to do after completing this chapter.
+     * What participants should know or be able to do after completing this course.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $learningOutcomes = null;
 
     /**
-     * Teaching methods used in this chapter (required by Qualiopi)
+     * Teaching methods used in this course (required by Qualiopi)
      *
      * Pedagogical approaches and methodologies employed.
      */
@@ -74,7 +74,7 @@ class Chapter
     private ?string $teachingMethods = null;
 
     /**
-     * Resources and materials for this chapter (required by Qualiopi)
+     * Resources and materials for this course (required by Qualiopi)
      *
      * Educational resources, documents, tools, and materials used.
      */
@@ -82,20 +82,32 @@ class Chapter
     private ?array $resources = null;
 
     /**
-     * Assessment methods for this chapter (required by Qualiopi)
+     * Assessment methods for this course (required by Qualiopi)
      *
-     * How learning is evaluated within this chapter.
+     * How learning is evaluated within this course.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $assessmentMethods = null;
 
     /**
-     * Success criteria for chapter completion (required by Qualiopi)
+     * Success criteria for course completion (required by Qualiopi)
      *
-     * Measurable indicators that demonstrate successful chapter completion.
+     * Measurable indicators that demonstrate successful course completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $successCriteria = null;
+
+    /**
+     * Course content (text, video, documents, etc.)
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $content = null;
+
+    /**
+     * Course type (lesson, video, document, interactive, etc.)
+     */
+    #[ORM\Column(length: 50)]
+    private ?string $type = null;
 
     #[ORM\Column]
     private ?int $durationMinutes = null;
@@ -112,20 +124,43 @@ class Chapter
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'chapters')]
+    #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Module $module = null;
+    private ?Chapter $chapter = null;
 
     /**
-     * @var Collection<int, Course>
+     * @var Collection<int, Exercise>
      */
-    #[ORM\OneToMany(targetEntity: Course::class, mappedBy: 'chapter', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: Exercise::class, mappedBy: 'course', cascade: ['persist', 'remove'])]
     #[ORM\OrderBy(['orderIndex' => 'ASC'])]
-    private Collection $courses;
+    private Collection $exercises;
+
+    /**
+     * @var Collection<int, QCM>
+     */
+    #[ORM\OneToMany(targetEntity: QCM::class, mappedBy: 'course', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['orderIndex' => 'ASC'])]
+    private Collection $qcms;
+
+    // Constants for course types
+    public const TYPE_LESSON = 'lesson';
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_DOCUMENT = 'document';
+    public const TYPE_INTERACTIVE = 'interactive';
+    public const TYPE_PRACTICAL = 'practical';
+
+    public const TYPES = [
+        self::TYPE_LESSON => 'Cours magistral',
+        self::TYPE_VIDEO => 'Vidéo',
+        self::TYPE_DOCUMENT => 'Document',
+        self::TYPE_INTERACTIVE => 'Interactif',
+        self::TYPE_PRACTICAL => 'Pratique',
+    ];
 
     public function __construct()
     {
-        $this->courses = new ArrayCollection();
+        $this->exercises = new ArrayCollection();
+        $this->qcms = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -256,6 +291,28 @@ class Chapter
         return $this;
     }
 
+    public function getContent(): ?string
+    {
+        return $this->content;
+    }
+
+    public function setContent(?string $content): static
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+        return $this;
+    }
+
     public function getDurationMinutes(): ?int
     {
         return $this->durationMinutes;
@@ -311,41 +368,41 @@ class Chapter
         return $this;
     }
 
-    public function getModule(): ?Module
+    public function getChapter(): ?Chapter
     {
-        return $this->module;
+        return $this->chapter;
     }
 
-    public function setModule(?Module $module): static
+    public function setChapter(?Chapter $chapter): static
     {
-        $this->module = $module;
+        $this->chapter = $chapter;
         return $this;
     }
 
     /**
-     * @return Collection<int, Course>
+     * @return Collection<int, Exercise>
      */
-    public function getCourses(): Collection
+    public function getExercises(): Collection
     {
-        return $this->courses;
+        return $this->exercises;
     }
 
-    public function addCourse(Course $course): static
+    public function addExercise(Exercise $exercise): static
     {
-        if (!$this->courses->contains($course)) {
-            $this->courses->add($course);
-            $course->setChapter($this);
+        if (!$this->exercises->contains($exercise)) {
+            $this->exercises->add($exercise);
+            $exercise->setCourse($this);
         }
 
         return $this;
     }
 
-    public function removeCourse(Course $course): static
+    public function removeExercise(Exercise $exercise): static
     {
-        if ($this->courses->removeElement($course)) {
+        if ($this->exercises->removeElement($exercise)) {
             // set the owning side to null (unless already changed)
-            if ($course->getChapter() === $this) {
-                $course->setChapter(null);
+            if ($exercise->getCourse() === $this) {
+                $exercise->setCourse(null);
             }
         }
 
@@ -353,27 +410,57 @@ class Chapter
     }
 
     /**
-     * Get active courses for this chapter
-     * 
-     * @return Collection<int, Course>
+     * @return Collection<int, QCM>
      */
-    public function getActiveCourses(): Collection
+    public function getQcms(): Collection
     {
-        return $this->courses->filter(function (Course $course) {
-            return $course->isActive();
+        return $this->qcms;
+    }
+
+    public function addQcm(QCM $qcm): static
+    {
+        if (!$this->qcms->contains($qcm)) {
+            $this->qcms->add($qcm);
+            $qcm->setCourse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQcm(QCM $qcm): static
+    {
+        if ($this->qcms->removeElement($qcm)) {
+            // set the owning side to null (unless already changed)
+            if ($qcm->getCourse() === $this) {
+                $qcm->setCourse(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get active exercises for this course
+     * 
+     * @return Collection<int, Exercise>
+     */
+    public function getActiveExercises(): Collection
+    {
+        return $this->exercises->filter(function (Exercise $exercise) {
+            return $exercise->isActive();
         });
     }
 
     /**
-     * Get total duration of all courses in this chapter
+     * Get active QCMs for this course
+     * 
+     * @return Collection<int, QCM>
      */
-    public function getTotalCoursesDuration(): int
+    public function getActiveQcms(): Collection
     {
-        $totalDuration = 0;
-        foreach ($this->courses as $course) {
-            $totalDuration += $course->getDurationMinutes();
-        }
-        return $totalDuration;
+        return $this->qcms->filter(function (QCM $qcm) {
+            return $qcm->isActive();
+        });
     }
 
     /**
@@ -397,6 +484,14 @@ class Chapter
         }
 
         return $hours . 'h' . $minutes . 'min';
+    }
+
+    /**
+     * Get the type label
+     */
+    public function getTypeLabel(): string
+    {
+        return self::TYPES[$this->type] ?? $this->type;
     }
 
     #[ORM\PreUpdate]
