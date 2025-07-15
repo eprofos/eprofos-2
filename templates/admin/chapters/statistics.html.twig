@@ -1,0 +1,214 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques des chapitres{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Statistiques des chapitres
+                </h1>
+                <a href="{{ path('admin_chapters_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="text-primary">
+                                <i class="fas fa-book-open fa-2x"></i>
+                            </div>
+                            <h3 class="mt-2">{{ totalChapters }}</h3>
+                            <p class="text-muted">Chapitres au total</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="text-success">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                            <h3 class="mt-2">{{ activeChapters }}</h3>
+                            <p class="text-muted">Chapitres actifs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="text-warning">
+                                <i class="fas fa-pause-circle fa-2x"></i>
+                            </div>
+                            <h3 class="mt-2">{{ inactiveChapters }}</h3>
+                            <p class="text-muted">Chapitres inactifs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="text-info">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                            <h3 class="mt-2">{{ avgDuration }}</h3>
+                            <p class="text-muted">Durée moyenne (min)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chapters by Module -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                Répartition des chapitres par module
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if chaptersByModule %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Module</th>
+                                                <th>Nombre de chapitres</th>
+                                                <th>Pourcentage</th>
+                                                <th>Visualisation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in chaptersByModule %}
+                                                {% set percentage = (item.chapterCount / totalChapters * 100)|round(1) %}
+                                                <tr>
+                                                    <td>{{ item.moduleTitle }}</td>
+                                                    <td>{{ item.chapterCount }}</td>
+                                                    <td>{{ percentage }}%</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 20px;">
+                                                            <div class="progress-bar" 
+                                                                 role="progressbar" 
+                                                                 style="width: {{ percentage }}%"
+                                                                 aria-valuenow="{{ percentage }}" 
+                                                                 aria-valuemin="0" 
+                                                                 aria-valuemax="100">
+                                                                {{ percentage }}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune donnée disponible</h5>
+                                    <p class="text-muted">Créez des chapitres pour voir les statistiques.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Summary -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-donut me-2"></i>
+                                Répartition par statut
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="statusChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations générales
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-8">Taux d'activation:</div>
+                                <div class="col-sm-4">
+                                    <strong>{{ ((activeChapters / totalChapters) * 100)|round(1) }}%</strong>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-8">Nombre moyen de chapitres par module:</div>
+                                <div class="col-sm-4">
+                                    <strong>{{ (totalChapters / chaptersByModule|length)|round(1) }}</strong>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-8">Module avec le plus de chapitres:</div>
+                                <div class="col-sm-4">
+                                    {% if chaptersByModule %}
+                                        <strong>{{ chaptersByModule[0].chapterCount }}</strong>
+                                    {% else %}
+                                        <strong>0</strong>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-8">Durée totale de tous les chapitres:</div>
+                                <div class="col-sm-4">
+                                    <strong>{{ (avgDuration * activeChapters)|round(0) }} min</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status distribution chart
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Actifs', 'Inactifs'],
+            datasets: [{
+                data: [{{ activeChapters }}, {{ inactiveChapters }}],
+                backgroundColor: [
+                    '#28a745',
+                    '#6c757d'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

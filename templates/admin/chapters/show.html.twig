@@ -1,0 +1,227 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ chapter.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-book-open me-2"></i>
+                    {{ chapter.title }}
+                    {% if not chapter.isActive %}
+                        <span class="badge bg-secondary ms-2">Inactif</span>
+                    {% endif %}
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ path('admin_chapters_edit', {id: chapter.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_chapters_index', {module: chapter.module.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Basic Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations générales
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3"><strong>Titre:</strong></div>
+                                <div class="col-sm-9">{{ chapter.title }}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3"><strong>Slug:</strong></div>
+                                <div class="col-sm-9"><code>{{ chapter.slug }}</code></div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3"><strong>Description:</strong></div>
+                                <div class="col-sm-9">{{ chapter.description|nl2br }}</div>
+                            </div>
+                            {% if chapter.contentOutline %}
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3"><strong>Plan du contenu:</strong></div>
+                                    <div class="col-sm-9">{{ chapter.contentOutline|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                            {% if chapter.prerequisites %}
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3"><strong>Prérequis:</strong></div>
+                                    <div class="col-sm-9">{{ chapter.prerequisites|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Pedagogical Information -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-graduation-cap me-2"></i>
+                                Informations pédagogiques (Qualiopi)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if chapter.learningObjectives %}
+                                <h6><i class="fas fa-target me-2"></i>Objectifs d'apprentissage</h6>
+                                <ul class="list-unstyled">
+                                    {% for objective in chapter.learningObjectives %}
+                                        <li><i class="fas fa-check text-success me-2"></i>{{ objective }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <hr>
+                            {% endif %}
+
+                            {% if chapter.learningOutcomes %}
+                                <h6><i class="fas fa-trophy me-2"></i>Résultats d'apprentissage attendus</h6>
+                                <ul class="list-unstyled">
+                                    {% for outcome in chapter.learningOutcomes %}
+                                        <li><i class="fas fa-arrow-right text-primary me-2"></i>{{ outcome }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <hr>
+                            {% endif %}
+
+                            {% if chapter.teachingMethods %}
+                                <h6><i class="fas fa-chalkboard-teacher me-2"></i>Méthodes pédagogiques</h6>
+                                <p>{{ chapter.teachingMethods|nl2br }}</p>
+                                <hr>
+                            {% endif %}
+
+                            {% if chapter.assessmentMethods %}
+                                <h6><i class="fas fa-clipboard-check me-2"></i>Méthodes d'évaluation</h6>
+                                <p>{{ chapter.assessmentMethods|nl2br }}</p>
+                                <hr>
+                            {% endif %}
+
+                            {% if chapter.resources %}
+                                <h6><i class="fas fa-book me-2"></i>Ressources et matériaux</h6>
+                                <ul class="list-unstyled">
+                                    {% for resource in chapter.resources %}
+                                        <li><i class="fas fa-file text-info me-2"></i>{{ resource }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <hr>
+                            {% endif %}
+
+                            {% if chapter.successCriteria %}
+                                <h6><i class="fas fa-medal me-2"></i>Critères de réussite</h6>
+                                <ul class="list-unstyled">
+                                    {% for criteria in chapter.successCriteria %}
+                                        <li><i class="fas fa-star text-warning me-2"></i>{{ criteria }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Technical Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cogs me-2"></i>
+                                Détails techniques
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Module:</strong></div>
+                                <div class="col-sm-6">
+                                    <span class="badge bg-info">{{ chapter.module.title }}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Formation:</strong></div>
+                                <div class="col-sm-6">
+                                    <span class="badge bg-primary">{{ chapter.module.formation.title }}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Durée:</strong></div>
+                                <div class="col-sm-6">{{ chapter.formattedDuration }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Ordre:</strong></div>
+                                <div class="col-sm-6">{{ chapter.orderIndex }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Statut:</strong></div>
+                                <div class="col-sm-6">
+                                    {% if chapter.isActive %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Créé le:</strong></div>
+                                <div class="col-sm-6">{{ chapter.createdAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6"><strong>Modifié le:</strong></div>
+                                <div class="col-sm-6">{{ chapter.updatedAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt me-2"></i>
+                                Actions rapides
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_chapters_edit', {id: chapter.id}) }}" class="btn btn-primary">
+                                    <i class="fas fa-edit me-2"></i>Modifier
+                                </a>
+                                
+                                <form method="post" action="{{ path('admin_chapters_duplicate', {id: chapter.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ chapter.id) }}">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-copy me-2"></i>Dupliquer
+                                    </button>
+                                </form>
+                                
+                                <form method="post" action="{{ path('admin_chapters_toggle_active', {id: chapter.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ chapter.id) }}">
+                                    <button type="submit" class="btn btn-{% if chapter.isActive %}warning{% else %}success{% endif %} w-100">
+                                        <i class="fas fa-{% if chapter.isActive %}pause{% else %}play{% endif %} me-2"></i>
+                                        {% if chapter.isActive %}Désactiver{% else %}Activer{% endif %}
+                                    </button>
+                                </form>
+                                
+                                <form method="post" action="{{ path('admin_chapters_delete', {id: chapter.id}) }}" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce chapitre ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ chapter.id) }}">
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        <i class="fas fa-trash me-2"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

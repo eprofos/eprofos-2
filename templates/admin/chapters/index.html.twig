@@ -1,0 +1,246 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des chapitres{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-book-open me-2"></i>
+                    Gestion des chapitres
+                    {% if selectedModule %}
+                        <small class="text-muted">- {{ selectedModule.title }}</small>
+                    {% endif %}
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ path('admin_chapters_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouveau chapitre
+                    </a>
+                    <a href="{{ path('admin_chapters_statistics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>Statistiques
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtres
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ path('admin_chapters_index') }}">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="module" class="form-label">Module</label>
+                                <select name="module" id="module" class="form-select">
+                                    <option value="">Tous les modules</option>
+                                    {% for module in modules %}
+                                        <option value="{{ module.id }}" 
+                                                {% if filters.module == module.id %}selected{% endif %}>
+                                            {{ module.formation.title }} - {{ module.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="search" class="form-label">Recherche</label>
+                                <input type="text" name="search" id="search" class="form-control" 
+                                       value="{{ filters.search }}" placeholder="Titre ou description...">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="active" class="form-label">Statut</label>
+                                <select name="active" id="active" class="form-select">
+                                    <option value="">Tous</option>
+                                    <option value="1" {% if filters.active == '1' %}selected{% endif %}>Actifs</option>
+                                    <option value="0" {% if filters.active == '0' %}selected{% endif %}>Inactifs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-search me-2"></i>Filtrer
+                                    </button>
+                                    <a href="{{ path('admin_chapters_index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Effacer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Chapters List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des chapitres ({{ chapters|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if chapters %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Ordre</th>
+                                        <th>Titre</th>
+                                        <th>Module</th>
+                                        <th>Formation</th>
+                                        <th>Durée</th>
+                                        <th>Objectifs</th>
+                                        <th>Ressources</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chapters-sortable">
+                                    {% for chapter in chapters %}
+                                        <tr data-id="{{ chapter.id }}">
+                                            <td>
+                                                <span class="badge bg-secondary">{{ chapter.orderIndex }}</span>
+                                                {% if selectedModule %}
+                                                    <i class="fas fa-grip-vertical text-muted ms-2" style="cursor: move;"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ chapter.title }}</strong>
+                                                {% if chapter.description %}
+                                                    <br><small class="text-muted">{{ chapter.description|slice(0, 80) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ chapter.module.title }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ chapter.module.formation.title }}</span>
+                                            </td>
+                                            <td>{{ chapter.formattedDuration }}</td>
+                                            <td>
+                                                {% if chapter.learningObjectives %}
+                                                    <span class="badge bg-success">{{ chapter.learningObjectives|length }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if chapter.resources %}
+                                                    <span class="badge bg-warning">{{ chapter.resources|length }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if chapter.isActive %}
+                                                    <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ path('admin_chapters_show', {id: chapter.id}) }}" 
+                                                       class="btn btn-outline-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_chapters_edit', {id: chapter.id}) }}" 
+                                                       class="btn btn-outline-primary" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_chapters_duplicate', {id: chapter.id}) }}" 
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ chapter.id) }}">
+                                                        <button type="submit" class="btn btn-outline-success" title="Dupliquer">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_chapters_toggle_active', {id: chapter.id}) }}" 
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ chapter.id) }}">
+                                                        <button type="submit" class="btn btn-outline-warning" 
+                                                                title="{% if chapter.isActive %}Désactiver{% else %}Activer{% endif %}">
+                                                            <i class="fas fa-{% if chapter.isActive %}pause{% else %}play{% endif %}"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_chapters_delete', {id: chapter.id}) }}" 
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce chapitre ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ chapter.id) }}">
+                                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun chapitre trouvé</h5>
+                            {% if selectedModule %}
+                                <p class="text-muted">Ce module ne contient pas encore de chapitres.</p>
+                                <a href="{{ path('admin_chapters_new', {module: selectedModule.id}) }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Créer un chapitre
+                                </a>
+                            {% else %}
+                                <p class="text-muted">Commencez par créer votre premier chapitre.</p>
+                                <a href="{{ path('admin_chapters_new') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Créer un chapitre
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if selectedModule and chapters %}
+    <!-- Sortable functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.getElementById('chapters-sortable');
+            if (tbody) {
+                new Sortable(tbody, {
+                    handle: '.fa-grip-vertical',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        const chapterIds = Array.from(tbody.children).map(tr => tr.dataset.id);
+                        
+                        fetch('{{ path('admin_chapters_reorder') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({
+                                'chapters': chapterIds,
+                                'module_id': '{{ selectedModule.id }}'
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endif %}
+{% endblock %}

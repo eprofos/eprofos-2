@@ -1,0 +1,31 @@
+{% extends 'bootstrap_5_layout.html.twig' %}
+
+{%- block collection_widget -%}
+    <div {{ block('widget_container_attributes') }}>
+        <div data-collection-target="collection" class="collection-container">
+            {%- for child in form -%}
+                <div class="collection-item mb-2">
+                    <div class="input-group">
+                        {{- form_widget(child) -}}
+                        <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            {%- endfor -%}
+        </div>
+        
+        <div class="mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                <i class="fas fa-plus me-1"></i>
+                {% if attr['data-add-text'] is defined %}
+                    {{ attr['data-add-text'] }}
+                {% else %}
+                    Ajouter un élément
+                {% endif %}
+            </button>
+        </div>
+        
+        <div data-collection-target="prototype" data-prototype="{{ form_widget(prototype)|e('html_attr') }}" style="display: none;"></div>
+    </div>
+{%- endblock collection_widget -%}
