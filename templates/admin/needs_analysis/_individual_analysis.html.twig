@@ -18,10 +18,12 @@
                         <dt class="col-sm-5">Nom complet :</dt>
                         <dd class="col-sm-7">{{ analysis.fullName|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-5">Âge :</dt>
+                        <dt class="col-sm-5">Email :</dt>
                         <dd class="col-sm-7">
-                            {% if analysis.age %}
-                                <span class="badge bg-info">{{ analysis.age }} ans</span>
+                            {% if analysis.email %}
+                                <a href="mailto:{{ analysis.email }}" class="text-decoration-none">
+                                    {{ analysis.email }}
+                                </a>
                             {% else %}
                                 Non renseigné
                             {% endif %}
@@ -38,8 +40,8 @@
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-5">Localisation :</dt>
-                        <dd class="col-sm-7">{{ analysis.location|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-5">Adresse :</dt>
+                        <dd class="col-sm-7">{{ analysis.address|default('Non renseigné') }}</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
@@ -50,21 +52,23 @@
                     <dl class="row">
                         <dt class="col-sm-5">Statut :</dt>
                         <dd class="col-sm-7">
-                            {% if analysis.professionalStatus %}
-                                <span class="badge bg-primary">{{ analysis.professionalStatus }}</span>
+                            {% if analysis.status %}
+                                <span class="badge bg-primary">{{ analysis.statusLabel }}</span>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-5">Secteur d'activité :</dt>
-                        <dd class="col-sm-7">{{ analysis.activitySector|default('Non renseigné') }}</dd>
-                        
-                        <dt class="col-sm-5">Poste actuel :</dt>
-                        <dd class="col-sm-7">{{ analysis.currentPosition|default('Non renseigné') }}</dd>
-                        
-                        <dt class="col-sm-5">Expérience :</dt>
-                        <dd class="col-sm-7">{{ analysis.workExperience|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-5">Détails statut :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.statusOtherDetails %}
+                                <div class="bg-light p-2 rounded">
+                                    {{ analysis.statusOtherDetails|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
                     </dl>
                 </div>
             </div>
@@ -77,27 +81,15 @@
                         Formation et compétences
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-5">Niveau d'études :</dt>
+                        <dt class="col-sm-5">Niveau actuel :</dt>
                         <dd class="col-sm-7">
-                            {% if analysis.educationLevel %}
-                                <span class="badge bg-info">{{ analysis.educationLevel }}</span>
+                            {% if analysis.currentLevel %}
+                                <span class="badge bg-info">{{ analysis.currentLevelLabel }}</span>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
-                        
-                        <dt class="col-sm-5">Diplômes :</dt>
-                        <dd class="col-sm-7">{{ analysis.qualifications|default('Non renseigné') }}</dd>
                     </dl>
-                    
-                    {% if analysis.currentSkills %}
-                        <dt class="col-12">Compétences actuelles :</dt>
-                        <dd class="col-12">
-                            <div class="bg-light p-3 rounded">
-                                {{ analysis.currentSkills|nl2br }}
-                            </div>
-                        </dd>
-                    {% endif %}
                 </div>
                 <div class="col-md-6">
                     <h6 class="text-success border-bottom pb-2">
@@ -105,21 +97,17 @@
                         Projet professionnel
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-5">Objectif :</dt>
-                        <dd class="col-sm-7">{{ analysis.careerGoal|default('Non renseigné') }}</dd>
-                        
-                        <dt class="col-sm-5">Secteur visé :</dt>
-                        <dd class="col-sm-7">{{ analysis.targetSector|default('Non renseigné') }}</dd>
-                    </dl>
-                    
-                    {% if analysis.motivation %}
-                        <dt class="col-12">Motivation :</dt>
-                        <dd class="col-12">
-                            <div class="bg-light p-3 rounded">
-                                {{ analysis.motivation|nl2br }}
-                            </div>
+                        <dt class="col-sm-5">Objectif professionnel :</dt>
+                        <dd class="col-sm-7">
+                            {% if analysis.professionalObjective %}
+                                <div class="bg-light p-3 rounded">
+                                    {{ analysis.professionalObjective|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
                         </dd>
-                    {% endif %}
+                    </dl>
                 </div>
             </div>
 
@@ -131,25 +119,34 @@
                         Besoins de formation
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-3">Domaine souhaité :</dt>
-                        <dd class="col-sm-9">{{ analysis.desiredTrainingDomain|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-3">Formation souhaitée :</dt>
+                        <dd class="col-sm-9">{{ analysis.desiredTrainingTitle|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-3">Compétences à acquérir :</dt>
+                        <dt class="col-sm-3">Durée souhaitée :</dt>
                         <dd class="col-sm-9">
-                            {% if analysis.skillsToAcquire %}
+                            {% if analysis.desiredDurationHours %}
+                                <span class="badge bg-info">{{ analysis.formattedDuration }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Attentes de formation :</dt>
+                        <dd class="col-sm-9">
+                            {% if analysis.trainingExpectations %}
                                 <div class="bg-light p-3 rounded">
-                                    {{ analysis.skillsToAcquire|nl2br }}
+                                    {{ analysis.trainingExpectations|nl2br }}
                                 </div>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-3">Résultats attendus :</dt>
+                        <dt class="col-sm-3">Besoins spécifiques :</dt>
                         <dd class="col-sm-9">
-                            {% if analysis.expectedOutcomes %}
+                            {% if analysis.specificNeeds %}
                                 <div class="bg-light p-3 rounded">
-                                    {{ analysis.expectedOutcomes|nl2br }}
+                                    {{ analysis.specificNeeds|nl2br }}
                                 </div>
                             {% else %}
                                 Non renseigné
@@ -167,29 +164,20 @@
                         Préférences d'apprentissage
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-6">Modalité :</dt>
+                        <dt class="col-sm-6">Lieu de formation :</dt>
                         <dd class="col-sm-6">
-                            {% if analysis.preferredLearningMode %}
-                                <span class="badge bg-secondary">{{ analysis.preferredLearningMode }}</span>
+                            {% if analysis.trainingLocationPreference %}
+                                <span class="badge bg-secondary">{{ analysis.trainingLocationPreferenceLabel }}</span>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-6">Rythme :</dt>
-                        <dd class="col-sm-6">
-                            {% if analysis.preferredPace %}
-                                <span class="badge bg-secondary">{{ analysis.preferredPace }}</span>
-                            {% else %}
-                                Non renseigné
-                            {% endif %}
-                        </dd>
+                        <dt class="col-sm-6">Date de début :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredStartDate ? analysis.preferredStartDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                         
-                        <dt class="col-sm-6">Durée souhaitée :</dt>
-                        <dd class="col-sm-6">{{ analysis.preferredDuration|default('Non renseigné') }}</dd>
-                        
-                        <dt class="col-sm-6">Planning :</dt>
-                        <dd class="col-sm-6">{{ analysis.preferredSchedule|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Date de fin :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredEndDate ? analysis.preferredEndDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
@@ -197,12 +185,12 @@
                         <i class="fas fa-calendar-times me-2"></i>
                         Contraintes
                     </h6>
-                    {% if analysis.constraints %}
+                    {% if analysis.disabilityAccommodations %}
                         <div class="bg-light p-3 rounded">
-                            {{ analysis.constraints|nl2br }}
+                            {{ analysis.disabilityAccommodations|nl2br }}
                         </div>
                     {% else %}
-                        <p class="text-muted">Aucune contrainte particulière</p>
+                        <p class="text-muted">Aucun aménagement handicap spécifique</p>
                     {% endif %}
                 </div>
             </div>
@@ -215,25 +203,26 @@
                         Financement
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-6">Budget disponible :</dt>
-                        <dd class="col-sm-6">{{ analysis.availableBudget|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Type de financement :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.fundingType %}
+                                <span class="badge bg-success">{{ analysis.fundingTypeLabel }}</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
                         
-                        <dt class="col-sm-6">Source de financement :</dt>
-                        <dd class="col-sm-6">{{ analysis.fundingSource|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Détails financement :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.fundingOtherDetails %}
+                                <div class="bg-light p-2 rounded">
+                                    {{ analysis.fundingOtherDetails|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
                     </dl>
-                    
-                    {% if analysis.hasCpf is not null %}
-                        <dl class="row">
-                            <dt class="col-sm-6">CPF :</dt>
-                            <dd class="col-sm-6">
-                                {% if analysis.hasCpf %}
-                                    <span class="badge bg-success">Disponible</span>
-                                {% else %}
-                                    <span class="badge bg-warning">Non disponible</span>
-                                {% endif %}
-                            </dd>
-                        </dl>
-                    {% endif %}
                 </div>
                 <div class="col-md-6">
                     <h6 class="text-success border-bottom pb-2">
@@ -242,50 +231,14 @@
                     </h6>
                     <dl class="row">
                         <dt class="col-sm-6">Début souhaité :</dt>
-                        <dd class="col-sm-6">{{ analysis.desiredStartDate ? analysis.desiredStartDate|date('d/m/Y') : 'Non renseigné' }}</dd>
+                        <dd class="col-sm-6">{{ analysis.preferredStartDate ? analysis.preferredStartDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                         
-                        <dt class="col-sm-6">Urgence :</dt>
-                        <dd class="col-sm-6">
-                            {% if analysis.urgencyLevel %}
-                                {% set urgencyClass = analysis.urgencyLevel == 'high' ? 'danger' : (analysis.urgencyLevel == 'medium' ? 'warning' : 'success') %}
-                                <span class="badge bg-{{ urgencyClass }}">{{ analysis.urgencyLevel|title }}</span>
-                            {% else %}
-                                Non renseigné
-                            {% endif %}
-                        </dd>
+                        <dt class="col-sm-6">Fin souhaitée :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredEndDate ? analysis.preferredEndDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                     </dl>
                 </div>
             </div>
 
-            <!-- Additional Information -->
-            {% if analysis.additionalInfo %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-success border-bottom pb-2">
-                            <i class="fas fa-plus-circle me-2"></i>
-                            Informations complémentaires
-                        </h6>
-                        <div class="bg-light p-3 rounded">
-                            {{ analysis.additionalInfo|nl2br }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Previous Training Experience -->
-            {% if analysis.previousTrainingExperience %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-success border-bottom pb-2">
-                            <i class="fas fa-history me-2"></i>
-                            Expérience de formation antérieure
-                        </h6>
-                        <div class="bg-light p-3 rounded">
-                            {{ analysis.previousTrainingExperience|nl2br }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
 
             <!-- Metadata -->
             <div class="row">
@@ -306,7 +259,7 @@
                                 <div class="col-md-4">
                                     <small class="text-muted">
                                         <strong>Dernière modification :</strong><br>
-                                        {{ analysis.updatedAt ? analysis.updatedAt|date('d/m/Y à H:i') : 'Jamais' }}
+                                        {{ analysis.submittedAt ? analysis.submittedAt|date('d/m/Y à H:i') : 'Jamais' }}
                                     </small>
                                 </div>
                                 <div class="col-md-4">

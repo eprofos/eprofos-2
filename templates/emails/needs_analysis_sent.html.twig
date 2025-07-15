@@ -149,7 +149,7 @@
                 <div class="info-item">
                     <div class="info-label">Type d'analyse</div>
                     <div class="info-value">
-                        {% if request.requestType == 'company' %}
+                        {% if request.type == 'company' %}
                             🏢 Entreprise
                         {% else %}
                             👤 Particulier
@@ -159,25 +159,25 @@
                 <div class="info-item">
                     <div class="info-label">Durée estimée</div>
                     <div class="info-value">
-                        ⏱️ {{ request.requestType == 'company' ? '15-20 minutes' : '10-15 minutes' }}
+                        ⏱️ {{ request.type == 'company' ? '15-20 minutes' : '10-15 minutes' }}
                     </div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Référence</div>
                     <div class="info-value">
-                        #{{ request.id|str_pad(6, '0', 'left') }}
+                        #{{ ('%06d'|format(request.id)) }}
                     </div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Validité du lien</div>
                     <div class="info-value">
-                        📅 {{ request.expiresAt|date('d/m/Y') }}
+                        📅 {{ expires_at|date('d/m/Y') }}
                     </div>
                 </div>
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="{{ url('public_needs_analysis_info', {token: request.accessToken}) }}" class="button">
+                <a href="{{ form_url }}" class="button">
                     🚀 Commencer l'analyse
                 </a>
             </div>
@@ -194,7 +194,7 @@
                 </ul>
             </div>
 
-            {% if request.requestType == 'company' %}
+            {% if request.type == 'company' %}
                 <div class="highlight-box">
                     <h4 style="margin-top: 0; color: #0d6efd;">
                         🏢 Informations à préparer (Entreprise)

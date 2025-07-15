@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email - EPROFOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .test-info {
+            background-color: #e7f3ff;
+            border-left: 4px solid #0d6efd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .footer {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">EPROFOS</div>
+            <div class="subtitle">École professionnelle de formation spécialisée</div>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #0d6efd; margin-bottom: 20px;">
+                ✅ Test Email - Configuration OK
+            </h2>
+
+            <div class="test-info">
+                <h3 style="margin-top: 0; color: #0d6efd;">
+                    🔧 Configuration Email Testée
+                </h3>
+                <p style="margin-bottom: 0;">
+                    Ce message confirme que la configuration email de EPROFOS fonctionne correctement.
+                </p>
+            </div>
+
+            <p><strong>Envoyé le :</strong> {{ sent_at|date('d/m/Y à H:i:s') }}</p>
+
+            <p>
+                Si vous recevez ce message, cela signifie que la configuration 
+                email de l'application EPROFOS est opérationnelle.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 10px;">
+                <strong>EPROFOS</strong> - Test Email
+            </p>
+            <p style="margin-bottom: 0;">
+                Message de test automatique
+            </p>
+        </div>
+    </div>
+</body>
+</html>

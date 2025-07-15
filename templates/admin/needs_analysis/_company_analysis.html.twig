@@ -21,17 +21,17 @@
                         <dt class="col-sm-5">Secteur d'activité :</dt>
                         <dd class="col-sm-7">{{ analysis.activitySector|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-5">Taille :</dt>
+                        <dt class="col-sm-5">Nombre d'employés :</dt>
                         <dd class="col-sm-7">
-                            {% if analysis.companySize %}
-                                <span class="badge bg-info">{{ analysis.companySize }}</span>
+                            {% if analysis.employeeCount %}
+                                <span class="badge bg-info">{{ analysis.employeeCount }} employés</span>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-5">Localisation :</dt>
-                        <dd class="col-sm-7">{{ analysis.location|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-5">Adresse :</dt>
+                        <dd class="col-sm-7">{{ analysis.companyAddress|default('Non renseigné') }}</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
@@ -40,11 +40,11 @@
                         Contact principal
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-5">Nom :</dt>
-                        <dd class="col-sm-7">{{ analysis.contactName|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-5">Responsable :</dt>
+                        <dd class="col-sm-7">{{ analysis.responsiblePerson|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-5">Fonction :</dt>
-                        <dd class="col-sm-7">{{ analysis.contactPosition|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-5">Code NAF :</dt>
+                        <dd class="col-sm-7">{{ analysis.nafCode|default('Non renseigné') }}</dd>
                         
                         <dt class="col-sm-5">Téléphone :</dt>
                         <dd class="col-sm-7">
@@ -79,25 +79,34 @@
                         Besoins de formation
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-3">Domaine de formation :</dt>
-                        <dd class="col-sm-9">{{ analysis.trainingDomain|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-3">Titre de formation :</dt>
+                        <dd class="col-sm-9">{{ analysis.trainingTitle|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-3">Objectifs pédagogiques :</dt>
+                        <dt class="col-sm-3">Durée (heures) :</dt>
                         <dd class="col-sm-9">
-                            {% if analysis.trainingObjectives %}
+                            {% if analysis.trainingDurationHours %}
+                                <span class="badge bg-info">{{ analysis.trainingDurationHours }}h</span>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Attentes de formation :</dt>
+                        <dd class="col-sm-9">
+                            {% if analysis.trainingExpectations %}
                                 <div class="bg-light p-3 rounded">
-                                    {{ analysis.trainingObjectives|nl2br }}
+                                    {{ analysis.trainingExpectations|nl2br }}
                                 </div>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-3">Compétences à développer :</dt>
+                        <dt class="col-sm-3">Besoins spécifiques :</dt>
                         <dd class="col-sm-9">
-                            {% if analysis.skillsToAcquire %}
+                            {% if analysis.specificNeeds %}
                                 <div class="bg-light p-3 rounded">
-                                    {{ analysis.skillsToAcquire|nl2br }}
+                                    {{ analysis.specificNeeds|nl2br }}
                                 </div>
                             {% else %}
                                 Non renseigné
@@ -115,26 +124,24 @@
                         Participants
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-6">Nombre :</dt>
+                        <dt class="col-sm-6">Informations stagiaires :</dt>
                         <dd class="col-sm-6">
-                            {% if analysis.participantsCount %}
-                                <span class="badge bg-success">{{ analysis.participantsCount }}</span>
+                            {% if analysis.traineesInfo %}
+                                <div class="bg-light p-2 rounded">
+                                    {% for trainee in analysis.traineesInfo %}
+                                        <small class="d-block">{{ trainee.first_name|default('') }} {{ trainee.last_name|default('') }} - {{ trainee.position|default('') }}</small>
+                                    {% endfor %}
+                                </div>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-6">Profils :</dt>
-                        <dd class="col-sm-6">{{ analysis.participantsProfiles|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">SIRET :</dt>
+                        <dd class="col-sm-6">{{ analysis.siret|default('Non renseigné') }}</dd>
                         
-                        <dt class="col-sm-6">Niveau actuel :</dt>
-                        <dd class="col-sm-6">
-                            {% if analysis.currentSkillLevel %}
-                                <span class="badge bg-info">{{ analysis.currentSkillLevel }}</span>
-                            {% else %}
-                                Non renseigné
-                            {% endif %}
-                        </dd>
+                        <dt class="col-sm-6">OPCO :</dt>
+                        <dd class="col-sm-6">{{ analysis.opco|default('Non renseigné') }}</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
@@ -143,20 +150,20 @@
                         Organisation
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-6">Modalités :</dt>
+                        <dt class="col-sm-6">Lieu de formation :</dt>
                         <dd class="col-sm-6">
-                            {% if analysis.preferredModality %}
-                                <span class="badge bg-secondary">{{ analysis.preferredModality }}</span>
+                            {% if analysis.trainingLocationPreference %}
+                                <span class="badge bg-secondary">{{ analysis.trainingLocationPreference }}</span>
                             {% else %}
                                 Non renseigné
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-6">Durée souhaitée :</dt>
-                        <dd class="col-sm-6">{{ analysis.preferredDuration|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Date de début :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredStartDate ? analysis.preferredStartDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                         
-                        <dt class="col-sm-6">Planning :</dt>
-                        <dd class="col-sm-6">{{ analysis.preferredSchedule|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Date de fin :</dt>
+                        <dd class="col-sm-6">{{ analysis.preferredEndDate ? analysis.preferredEndDate|date('d/m/Y') : 'Non renseigné' }}</dd>
                     </dl>
                 </div>
             </div>
@@ -169,11 +176,27 @@
                         Budget et financement
                     </h6>
                     <dl class="row">
-                        <dt class="col-sm-6">Budget estimé :</dt>
-                        <dd class="col-sm-6">{{ analysis.estimatedBudget|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Aménagements handicap :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.disabilityAccommodations %}
+                                <div class="bg-light p-2 rounded">
+                                    {{ analysis.disabilityAccommodations|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
                         
-                        <dt class="col-sm-6">Financement :</dt>
-                        <dd class="col-sm-6">{{ analysis.fundingSource|default('Non renseigné') }}</dd>
+                        <dt class="col-sm-6">Besoins d'appropriation :</dt>
+                        <dd class="col-sm-6">
+                            {% if analysis.locationAppropriationNeeds %}
+                                <div class="bg-light p-2 rounded">
+                                    {{ analysis.locationAppropriationNeeds|nl2br }}
+                                </div>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
@@ -181,30 +204,10 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         Contraintes
                     </h6>
-                    {% if analysis.constraints %}
-                        <div class="bg-light p-3 rounded">
-                            {{ analysis.constraints|nl2br }}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">Aucune contrainte particulière</p>
-                    {% endif %}
+                    <p class="text-muted">Informations supplémentaires disponibles dans les champs ci-dessus</p>
                 </div>
             </div>
 
-            <!-- Additional Information -->
-            {% if analysis.additionalInfo %}
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-primary border-bottom pb-2">
-                            <i class="fas fa-plus-circle me-2"></i>
-                            Informations complémentaires
-                        </h6>
-                        <div class="bg-light p-3 rounded">
-                            {{ analysis.additionalInfo|nl2br }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
 
             <!-- Metadata -->
             <div class="row">
@@ -225,7 +228,7 @@
                                 <div class="col-md-4">
                                     <small class="text-muted">
                                         <strong>Dernière modification :</strong><br>
-                                        {{ analysis.updatedAt ? analysis.updatedAt|date('d/m/Y à H:i') : 'Jamais' }}
+                                        {{ analysis.submittedAt ? analysis.submittedAt|date('d/m/Y à H:i') : 'Jamais' }}
                                     </small>
                                 </div>
                                 <div class="col-md-4">

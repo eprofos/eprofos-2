@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation - Analyse des besoins - EPROFOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">EPROFOS</div>
+            <div class="subtitle">École professionnelle de formation spécialisée</div>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #28a745; margin-bottom: 20px;">
+                ✅ Analyse des besoins complétée avec succès
+            </h2>
+
+            <p>Bonjour {{ recipient_name }},</p>
+
+            <div class="success-box">
+                <h3 style="margin-top: 0; color: #155724;">
+                    🎉 Merci pour votre participation !
+                </h3>
+                <p style="margin-bottom: 0;">
+                    Votre analyse des besoins de formation a été complétée avec succès. 
+                    Nos équipes vont maintenant étudier vos réponses pour vous proposer 
+                    une formation parfaitement adaptée à vos besoins.
+                </p>
+            </div>
+
+            <h3 style="color: #0d6efd;">📋 Prochaines étapes</h3>
+            <ol>
+                <li>Analyse de vos réponses par nos experts pédagogiques</li>
+                <li>Élaboration d'une proposition de formation personnalisée</li>
+                <li>Prise de contact pour présenter notre recommandation</li>
+                <li>Finalisation et planification de votre formation</li>
+            </ol>
+
+            <p>
+                <strong>Délai de traitement :</strong> Nous vous contacterons dans les 
+                <strong>48 heures ouvrées</strong> pour vous présenter notre proposition.
+            </p>
+
+            <div class="contact-info">
+                <h4 style="margin-top: 0; color: #495057;">
+                    📞 Vous avez des questions ?
+                </h4>
+                <p style="margin-bottom: 10px;">
+                    N'hésitez pas à nous contacter :
+                </p>
+                <p style="margin-bottom: 5px;">
+                    <strong>Email :</strong> 
+                    <a href="mailto:contact@eprofos.fr" style="color: #0d6efd; text-decoration: none;">
+                        contact@eprofos.fr
+                    </a>
+                </p>
+                <p style="margin-bottom: 0;">
+                    <strong>Téléphone :</strong> 
+                    <a href="tel:+33123456789" style="color: #0d6efd; text-decoration: none;">
+                        01 23 45 67 89
+                    </a>
+                </p>
+            </div>
+
+            <p>
+                Nous vous remercions pour votre confiance et avons hâte de vous accompagner 
+                dans votre projet de formation.
+            </p>
+
+            <p style="margin-bottom: 0;">
+                Cordialement,<br>
+                <strong>L'équipe EPROFOS</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 10px;">
+                <strong>EPROFOS</strong> - École professionnelle de formation spécialisée
+            </p>
+            <p style="margin-bottom: 10px;">
+                Organisme de formation certifié Qualiopi
+            </p>
+            <p style="margin-bottom: 0;">
+                Ce message a été envoyé automatiquement, merci de ne pas y répondre directement.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

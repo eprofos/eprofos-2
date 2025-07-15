@@ -12,4 +12,10 @@ import './bootstrap.js';
 import '@tabler/core';
 import '@tabler/core/dist/css/tabler.min.css';
 
+// Import Font Awesome for admin area
+import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
+import '@fortawesome/fontawesome-free/css/solid.min.css';
+import '@fortawesome/fontawesome-free/css/brands.min.css';
+import '@fortawesome/fontawesome-free';
+
 console.log('Private entrypoint loaded successfully');

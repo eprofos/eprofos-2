@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résumé hebdomadaire - EPROFOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .footer {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">EPROFOS</div>
+            <div class="subtitle">Résumé hebdomadaire</div>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #0d6efd; margin-bottom: 20px;">
+                📊 Rapport hebdomadaire - Analyses des besoins
+            </h2>
+
+            <p>
+                <strong>Période :</strong> 
+                {{ week_start|date('d/m/Y') }} - {{ week_end|date('d/m/Y') }}
+            </p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ statistics.requests.total ?? 0 }}</div>
+                    <div class="stat-label">Demandes totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ statistics.requests.pending ?? 0 }}</div>
+                    <div class="stat-label">En attente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ statistics.requests.sent ?? 0 }}</div>
+                    <div class="stat-label">Envoyées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ statistics.requests.completed ?? 0 }}</div>
+                    <div class="stat-label">Complétées</div>
+                </div>
+            </div>
+
+            <h3 style="color: #0d6efd;">📈 Détails de la semaine</h3>
+            <ul>
+                <li><strong>Nouvelles demandes créées :</strong> {{ statistics.requests.pending ?? 0 }}</li>
+                <li><strong>Demandes envoyées :</strong> {{ statistics.requests.sent ?? 0 }}</li>
+                <li><strong>Analyses complétées :</strong> {{ statistics.requests.completed ?? 0 }}</li>
+                <li><strong>Demandes expirées :</strong> {{ statistics.requests.expired ?? 0 }}</li>
+            </ul>
+
+            <p>
+                Ce rapport est généré automatiquement chaque semaine pour vous tenir informé 
+                de l'activité des analyses des besoins.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 10px;">
+                <strong>EPROFOS</strong> - Rapport automatique
+            </p>
+            <p style="margin-bottom: 0;">
+                Généré le {{ "now"|date('d/m/Y à H:i') }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>

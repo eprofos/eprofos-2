@@ -107,9 +107,9 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'Formulaire envoyé avec succès !');
 
         // Step 5: Verify the analysis was saved
-        $this->entityManager->refresh($request);
-        $this->assertEquals('completed', $request->getStatus());
-        $this->assertInstanceOf(CompanyNeedsAnalysis::class, $request->getCompanyAnalysis());
+        $updatedRequest = $this->requestRepository->find($request->getId());
+        $this->assertEquals('completed', $updatedRequest->getStatus());
+        $this->assertInstanceOf(CompanyNeedsAnalysis::class, $updatedRequest->getCompanyAnalysis());
 
         // Step 6: Verify accessing the form again shows completed page
         $client->request('GET', "/needs-analysis/form/{$token}");
@@ -143,9 +143,9 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'Formulaire envoyé avec succès !');
 
         // Step 4: Verify the analysis was saved
-        $this->entityManager->refresh($request);
-        $this->assertEquals('completed', $request->getStatus());
-        $this->assertInstanceOf(IndividualNeedsAnalysis::class, $request->getIndividualAnalysis());
+        $updatedRequest = $this->requestRepository->find($request->getId());
+        $this->assertEquals('completed', $updatedRequest->getStatus());
+        $this->assertInstanceOf(IndividualNeedsAnalysis::class, $updatedRequest->getIndividualAnalysis());
     }
 
     /**

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse des besoins complétée - EPROFOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .footer {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">EPROFOS</div>
+            <div class="subtitle">Administration</div>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #28a745; margin-bottom: 20px;">
+                ✅ Nouvelle analyse des besoins complétée
+            </h2>
+
+            <div class="info-box">
+                <p><strong>Type :</strong> {{ request.typeLabel }}</p>
+                <p><strong>Destinataire :</strong> {{ request.recipientName }}</p>
+                <p><strong>Email :</strong> {{ request.recipientEmail }}</p>
+                {% if request.companyName %}
+                <p><strong>Entreprise :</strong> {{ request.companyName }}</p>
+                {% endif %}
+                {% if request.formation %}
+                <p><strong>Formation :</strong> {{ request.formation.title }}</p>
+                {% endif %}
+                <p><strong>Référence :</strong> #{{ ('%06d'|format(request.id)) }}</p>
+                <p><strong>Complétée le :</strong> {{ request.completedAt|date('d/m/Y à H:i') }}</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ admin_url }}" class="button">
+                    📋 Consulter l'analyse
+                </a>
+            </div>
+
+            <p>
+                Une nouvelle analyse des besoins a été complétée et est maintenant disponible 
+                pour consultation dans l'interface d'administration.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 10px;">
+                <strong>EPROFOS</strong> - Interface d'administration
+            </p>
+            <p style="margin-bottom: 0;">
+                Notification automatique - Ne pas répondre
+            </p>
+        </div>
+    </div>
+</body>
+</html>

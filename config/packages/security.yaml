@@ -59,3 +59,9 @@ when@test:
                 cost: 4 # Lowest possible value for bcrypt
                 time_cost: 3 # Lowest possible value for argon
                 memory_cost: 10 # Lowest possible value for argon
+        
+        firewalls:
+            # Test firewall to allow loginUser() in tests
+            admin:
+                pattern: ^/admin
+                security: false

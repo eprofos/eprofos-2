@@ -34,46 +34,50 @@ class NeedsAnalysisRequest
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Le type de demande est obligatoire.')]
+    #[Assert\NotBlank(message: 'Le type de demande est obligatoire.', groups: ['Default', 'admin_form'])]
     #[Assert\Choice(
         choices: [self::TYPE_COMPANY, self::TYPE_INDIVIDUAL],
-        message: 'Type de demande invalide.'
+        message: 'Type de demande invalide.',
+        groups: ['Default', 'admin_form']
     )]
     private ?string $type = null;
 
     #[ORM\Column(length: 36, unique: true)]
-    #[Assert\NotBlank(message: 'Le token est obligatoire.')]
-    #[Assert\Uuid(message: 'Le token doit être un UUID valide.')]
+    #[Assert\NotBlank(message: 'Le token est obligatoire.', groups: ['Default', 'token_validation'])]
+    #[Assert\Uuid(message: 'Le token doit être un UUID valide.', groups: ['Default', 'token_validation'])]
     private ?string $token = null;
 
     #[ORM\Column(length: 180)]
-    #[Assert\NotBlank(message: 'L\'email du destinataire est obligatoire.')]
-    #[Assert\Email(message: 'Veuillez saisir une adresse email valide.')]
+    #[Assert\NotBlank(message: 'L\'email du destinataire est obligatoire.', groups: ['Default', 'admin_form'])]
+    #[Assert\Email(message: 'Veuillez saisir une adresse email valide.', groups: ['Default', 'admin_form'])]
     #[Assert\Length(
         max: 180,
-        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.',
+        groups: ['Default', 'admin_form']
     )]
     private ?string $recipientEmail = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le nom du destinataire est obligatoire.')]
+    #[Assert\NotBlank(message: 'Le nom du destinataire est obligatoire.', groups: ['Default', 'admin_form'])]
     #[Assert\Length(
         min: 2,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
+        groups: ['Default', 'admin_form']
     )]
     private ?string $recipientName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(
         max: 255,
-        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.',
+        groups: ['Default', 'admin_form']
     )]
     private ?string $companyName = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.', groups: ['Default', 'admin_form'])]
     #[Assert\Choice(
         choices: [
             self::STATUS_PENDING,
@@ -82,7 +86,8 @@ class NeedsAnalysisRequest
             self::STATUS_EXPIRED,
             self::STATUS_CANCELLED
         ],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
+        groups: ['Default', 'admin_form']
     )]
     private string $status = self::STATUS_PENDING;
 

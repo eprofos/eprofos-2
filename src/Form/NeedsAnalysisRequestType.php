@@ -101,6 +101,7 @@ class NeedsAnalysisRequestType extends AbstractType
             'attr' => [
                 'novalidate' => 'novalidate', // Disable HTML5 validation to use Symfony validation
             ],
+            'validation_groups' => ['admin_form'], // Use specific validation group
         ]);
     }
 }

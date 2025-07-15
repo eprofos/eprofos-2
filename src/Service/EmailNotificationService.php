@@ -41,7 +41,7 @@ class EmailNotificationService
 
             // Generate the public URL for the form
             $formUrl = $this->urlGenerator->generate(
-                'needs_analysis_form',
+                'needs_analysis_public_form',
                 ['token' => $request->getToken()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
@@ -51,7 +51,7 @@ class EmailNotificationService
                 ->from(new Address($this->fromEmail, $this->fromName))
                 ->to(new Address($request->getRecipientEmail(), $request->getRecipientName()))
                 ->subject($this->getRequestEmailSubject($request))
-                ->htmlTemplate('emails/needs_analysis_request.html.twig')
+                ->htmlTemplate('emails/needs_analysis_sent.html.twig')
                 ->context([
                     'request' => $request,
                     'form_url' => $formUrl,
@@ -154,7 +154,7 @@ class EmailNotificationService
 
             // Generate the public URL for the form
             $formUrl = $this->urlGenerator->generate(
-                'needs_analysis_form',
+                'needs_analysis_public_form',
                 ['token' => $request->getToken()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
