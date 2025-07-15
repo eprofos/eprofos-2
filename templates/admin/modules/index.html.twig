@@ -1,0 +1,196 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des modules{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-puzzle-piece me-2"></i>
+                    Gestion des modules
+                    {% if selectedFormation %}
+                        <small class="text-muted">- {{ selectedFormation.title }}</small>
+                    {% endif %}
+                </h1>
+                <a href="{{ path('admin_modules_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nouveau module
+                </a>
+            </div>
+
+            <!-- Formation Filter -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <form method="get" action="{{ path('admin_modules_index') }}">
+                        <div class="input-group">
+                            <select name="formation" class="form-select" onchange="this.form.submit()">
+                                <option value="">Toutes les formations</option>
+                                {% for formation in formations %}
+                                    <option value="{{ formation.id }}" 
+                                            {% if selectedFormation and selectedFormation.id == formation.id %}selected{% endif %}>
+                                        {{ formation.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% if selectedFormation %}
+                    <div class="col-md-8">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Affichage des modules pour : <strong>{{ selectedFormation.title }}</strong>
+                            <a href="{{ path('admin_modules_index') }}" class="btn btn-sm btn-outline-info ms-2">
+                                Voir tous les modules
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Modules List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des modules ({{ modules|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if modules %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Ordre</th>
+                                        <th>Titre</th>
+                                        <th>Formation</th>
+                                        <th>Durée</th>
+                                        <th>Chapitres</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modules-sortable">
+                                    {% for module in modules %}
+                                        <tr data-id="{{ module.id }}">
+                                            <td>
+                                                <span class="badge bg-secondary">{{ module.orderIndex }}</span>
+                                                {% if selectedFormation %}
+                                                    <i class="fas fa-grip-vertical text-muted ms-2" style="cursor: move;"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ module.title }}</strong>
+                                                {% if module.description %}
+                                                    <br><small class="text-muted">{{ module.description|slice(0, 100) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ module.formation.title }}</span>
+                                            </td>
+                                            <td>{{ module.formattedDuration }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ module.chapters|length }}</span>
+                                            </td>
+                                            <td>
+                                                {% if module.isActive %}
+                                                    <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ path('admin_modules_show', {id: module.id}) }}" 
+                                                       class="btn btn-outline-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_modules_edit', {id: module.id}) }}" 
+                                                       class="btn btn-outline-primary" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_modules_toggle_active', {id: module.id}) }}" 
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ module.id) }}">
+                                                        <button type="submit" class="btn btn-outline-warning" 
+                                                                title="{% if module.isActive %}Désactiver{% else %}Activer{% endif %}">
+                                                            <i class="fas fa-{% if module.isActive %}pause{% else %}play{% endif %}"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_modules_delete', {id: module.id}) }}" 
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce module ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
+                                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun module trouvé</h5>
+                            {% if selectedFormation %}
+                                <p class="text-muted">Cette formation ne contient pas encore de modules.</p>
+                            {% else %}
+                                <p class="text-muted">Commencez par créer votre premier module.</p>
+                            {% endif %}
+                            <a href="{{ path('admin_modules_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un module
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if selectedFormation and modules %}
+    <!-- Sortable functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.getElementById('modules-sortable');
+            if (tbody) {
+                new Sortable(tbody, {
+                    handle: '.fa-grip-vertical',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        const moduleIds = Array.from(tbody.children).map(tr => tr.dataset.id);
+                        
+                        fetch('{{ path('admin_modules_reorder') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({
+                                'modules': moduleIds,
+                                'formation_id': '{{ selectedFormation.id }}'
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endif %}
+{% endblock %}

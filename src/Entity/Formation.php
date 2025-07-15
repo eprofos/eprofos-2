@@ -189,9 +189,17 @@ class Formation
     #[ORM\OneToMany(targetEntity: ContactRequest::class, mappedBy: 'formation')]
     private Collection $contactRequests;
 
+    /**
+     * @var Collection<int, Module>
+     */
+    #[ORM\OneToMany(targetEntity: Module::class, mappedBy: 'formation', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['orderIndex' => 'ASC'])]
+    private Collection $modules;
+
     public function __construct()
     {
         $this->contactRequests = new ArrayCollection();
+        $this->modules = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -466,6 +474,60 @@ class Formation
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+            $module->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        if ($this->modules->removeElement($module)) {
+            // set the owning side to null (unless already changed)
+            if ($module->getFormation() === $this) {
+                $module->setFormation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get active modules for this formation
+     * 
+     * @return Collection<int, Module>
+     */
+    public function getActiveModules(): Collection
+    {
+        return $this->modules->filter(function (Module $module) {
+            return $module->isActive();
+        });
+    }
+
+    /**
+     * Get total duration of all modules in this formation
+     */
+    public function getTotalModulesDuration(): int
+    {
+        $totalDuration = 0;
+        foreach ($this->modules as $module) {
+            $totalDuration += $module->getDurationHours();
+        }
+        return $totalDuration;
     }
 
     public function getTargetAudience(): ?string
