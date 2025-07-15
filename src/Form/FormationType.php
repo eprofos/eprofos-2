@@ -8,6 +8,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -90,14 +91,14 @@ class FormationType extends AbstractType
             
             // Training Details
             ->add('objectives', TextareaType::class, [
-                'label' => 'Objectifs pédagogiques',
+                'label' => 'Objectifs pédagogiques (format libre)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
                     'placeholder' => 'Objectifs que les participants atteindront'
                 ],
-                'help' => 'Décrivez les compétences et connaissances acquises',
+                'help' => 'Décrivez les compétences et connaissances acquises (optionnel, utiliser les champs structurés ci-dessous)',
                 'constraints' => [
                     new Length([
                         'max' => 2000,
@@ -105,6 +106,81 @@ class FormationType extends AbstractType
                     ])
                 ]
             ])
+            
+            // Structured Objectives for Qualiopi 2.5 Compliance
+            ->add('operationalObjectives', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'label' => 'Objectifs opérationnels (Qualiopi 2.5)',
+                'required' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'entry_options' => [
+                    'attr' => [
+                        'class' => 'form-control mb-2',
+                        'placeholder' => 'Ex: Être capable de développer une application web'
+                    ]
+                ],
+                'attr' => [
+                    'class' => 'objectives-collection'
+                ],
+                'help' => 'Compétences concrètes que les participants seront capables de réaliser (requis Qualiopi 2.5)'
+            ])
+            ->add('evaluableObjectives', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'label' => 'Objectifs évaluables (Qualiopi 2.5)',
+                'required' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'entry_options' => [
+                    'attr' => [
+                        'class' => 'form-control mb-2',
+                        'placeholder' => 'Ex: Créer une base de données fonctionnelle en moins de 2h'
+                    ]
+                ],
+                'attr' => [
+                    'class' => 'evaluable-objectives-collection'
+                ],
+                'help' => 'Objectifs mesurables avec critères d\'évaluation précis (requis Qualiopi 2.5)'
+            ])
+            ->add('evaluationCriteria', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'label' => 'Critères d\'évaluation (Qualiopi 2.5)',
+                'required' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'entry_options' => [
+                    'attr' => [
+                        'class' => 'form-control mb-2',
+                        'placeholder' => 'Ex: QCM avec 80% de bonnes réponses minimum'
+                    ]
+                ],
+                'attr' => [
+                    'class' => 'evaluation-criteria-collection'
+                ],
+                'help' => 'Méthodes et critères pour mesurer l\'atteinte des objectifs (requis Qualiopi 2.5)'
+            ])
+            ->add('successIndicators', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'label' => 'Indicateurs de réussite (Qualiopi 2.5)',
+                'required' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'entry_options' => [
+                    'attr' => [
+                        'class' => 'form-control mb-2',
+                        'placeholder' => 'Ex: Taux de satisfaction > 85%'
+                    ]
+                ],
+                'attr' => [
+                    'class' => 'success-indicators-collection'
+                ],
+                'help' => 'Indicateurs mesurables de succès de la formation (requis Qualiopi 2.5)'
+            ])
+            
             ->add('prerequisites', TextareaType::class, [
                 'label' => 'Prérequis',
                 'required' => false,

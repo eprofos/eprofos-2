@@ -35,6 +35,35 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
                 'title' => 'Développement Web avec PHP et Symfony',
                 'description' => 'Formation complète au développement web moderne avec PHP 8.3 et le framework Symfony 7. Apprenez à créer des applications web robustes et sécurisées.',
                 'objectives' => "• Maîtriser les concepts avancés de PHP 8.3\n• Développer des applications avec Symfony 7\n• Implémenter des API REST\n• Gérer les bases de données avec Doctrine\n• Appliquer les bonnes pratiques de sécurité",
+                'operationalObjectives' => [
+                    'Développer une application web complète avec Symfony 7',
+                    'Créer et configurer des entités Doctrine avec relations',
+                    'Implémenter un système d\'authentification sécurisé',
+                    'Développer des API REST documentées avec API Platform',
+                    'Mettre en place des tests unitaires et fonctionnels',
+                    'Déployer une application sur un serveur de production'
+                ],
+                'evaluableObjectives' => [
+                    'Créer une application e-commerce fonctionnelle en moins de 40h',
+                    'Atteindre 90% de couverture de code par les tests',
+                    'Implémenter une API REST avec temps de réponse < 200ms',
+                    'Sécuriser l\'application selon les standards OWASP',
+                    'Optimiser les performances avec un score PageSpeed > 85'
+                ],
+                'evaluationCriteria' => [
+                    'QCM final avec 80% de bonnes réponses minimum',
+                    'Projet d\'application web évalué sur 20 critères techniques',
+                    'Code review avec respect des standards PSR',
+                    'Présentation technique de 15 minutes devant jury',
+                    'Documentation technique complète et claire'
+                ],
+                'successIndicators' => [
+                    'Taux de réussite des participants > 90%',
+                    'Note moyenne projet > 16/20',
+                    'Satisfaction formation > 4.5/5',
+                    'Taux d\'insertion professionnelle > 85% à 6 mois',
+                    'Nombre d\'applications déployées en production'
+                ],
                 'prerequisites' => 'Connaissances de base en programmation et HTML/CSS. Expérience préalable en PHP recommandée.',
                 'program' => "Module 1: Fondamentaux PHP 8.3 (14h)\n- Nouveautés PHP 8.3\n- Programmation orientée objet avancée\n- Gestion des erreurs et exceptions\n\nModule 2: Framework Symfony 7 (21h)\n- Architecture MVC\n- Routing et contrôleurs\n- Templates Twig\n- Formulaires et validation\n\nModule 3: Base de données et Doctrine (14h)\n- ORM Doctrine\n- Migrations et fixtures\n- Relations entre entités\n\nModule 4: Sécurité et API (14h)\n- Authentification et autorisation\n- Développement d'API REST\n- Tests unitaires et fonctionnels",
                 'durationHours' => 63,
@@ -103,6 +132,35 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
                 'title' => 'Leadership et Management d\'Équipe',
                 'description' => 'Développez vos compétences de leader pour motiver, fédérer et faire grandir vos équipes. Formation pratique avec mises en situation.',
                 'objectives' => "• Développer son style de leadership\n• Motiver et fédérer une équipe\n• Gérer les conflits et les résistances\n• Déléguer efficacement\n• Conduire le changement",
+                'operationalObjectives' => [
+                    'Identifier son style de management et l\'adapter selon les situations',
+                    'Conduire des entretiens individuels structurés et constructifs',
+                    'Animer des réunions d\'équipe efficaces et participatives',
+                    'Déléguer des tâches avec suivi et accompagnement',
+                    'Gérer les conflits par la médiation et la négociation',
+                    'Accompagner le changement et gérer les résistances'
+                ],
+                'evaluableObjectives' => [
+                    'Améliorer de 20% l\'engagement de son équipe en 3 mois',
+                    'Réduire de 50% le nombre de conflits non résolus',
+                    'Augmenter de 25% l\'autonomie des collaborateurs',
+                    'Diminuer le taux d\'absentéisme de 15%',
+                    'Atteindre 90% de satisfaction lors des entretiens annuels'
+                ],
+                'evaluationCriteria' => [
+                    'Évaluation 360° avec amélioration de 2 points minimum',
+                    'Mise en situation managériale notée par jury d\'experts',
+                    'Plan d\'action personnalisé avec objectifs SMART',
+                    'Présentation d\'un cas de résolution de conflit',
+                    'Autoévaluation des compétences avant/après formation'
+                ],
+                'successIndicators' => [
+                    'Taux de satisfaction des participants > 4.6/5',
+                    'Note moyenne évaluation 360° > 4.2/5',
+                    'Taux d\'application des acquis > 80% à 3 mois',
+                    'Progression moyenne des compétences > 30%',
+                    'Recommandation de la formation > 90%'
+                ],
                 'prerequisites' => 'Expérience en encadrement d\'équipe ou projet de prise de responsabilités managériales.',
                 'program' => "Module 1: Fondamentaux du leadership (7h)\n- Styles de leadership\n- Intelligence émotionnelle\n- Communication assertive\n\nModule 2: Management d'équipe (14h)\n- Motivation et engagement\n- Gestion des personnalités\n- Entretiens individuels\n- Feedback constructif\n\nModule 3: Gestion des conflits (7h)\n- Prévention des conflits\n- Médiation et négociation\n- Résolution collaborative\n\nModule 4: Conduite du changement (7h)\n- Accompagnement du changement\n- Gestion des résistances\n- Communication du changement",
                 'durationHours' => 35,
@@ -294,6 +352,20 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
             $formation->setContactInfo($formationData['contactInfo']);
             $formation->setTrainingLocation($formationData['trainingLocation']);
             $formation->setFundingModalities($formationData['fundingModalities']);
+            
+            // Set structured objectives for Qualiopi 2.5 compliance
+            if (isset($formationData['operationalObjectives'])) {
+                $formation->setOperationalObjectives($formationData['operationalObjectives']);
+            }
+            if (isset($formationData['evaluableObjectives'])) {
+                $formation->setEvaluableObjectives($formationData['evaluableObjectives']);
+            }
+            if (isset($formationData['evaluationCriteria'])) {
+                $formation->setEvaluationCriteria($formationData['evaluationCriteria']);
+            }
+            if (isset($formationData['successIndicators'])) {
+                $formation->setSuccessIndicators($formationData['successIndicators']);
+            }
             
             // Set category reference
             $category = $this->getReference($formationData['category'], Category::class);

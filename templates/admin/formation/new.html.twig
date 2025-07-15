@@ -75,6 +75,127 @@
                                 </div>
                             </div>
 
+                            <!-- Structured Objectives for Qualiopi 2.5 -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        Objectifs structurés
+                                        <span class="badge bg-success text-white ms-2">Qualiopi 2.5</span>
+                                    </h4>
+                                    <div class="card-subtitle text-muted">
+                                        Définition des objectifs opérationnels et évaluables (requis pour la certification Qualiopi)
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div data-controller="collection">
+                                                {{ form_label(form.operationalObjectives) }}
+                                                <div data-collection-target="collection">
+                                                    {% for operationalObjective in form.operationalObjectives %}
+                                                        <div class="collection-item mb-2">
+                                                            <div class="input-group">
+                                                                {{ form_widget(operationalObjective) }}
+                                                                <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                            {{ form_errors(operationalObjective) }}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div data-collection-target="prototype" data-prototype="{{ form_widget(form.operationalObjectives.vars.prototype)|e('html_attr') }}" style="display: none;"></div>
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="click->collection#addItem">
+                                                    <i class="fas fa-plus"></i> Ajouter un objectif opérationnel
+                                                </button>
+                                                {% if form.operationalObjectives.vars.help %}
+                                                    <div class="form-text">{{ form.operationalObjectives.vars.help }}</div>
+                                                {% endif %}
+                                                {{ form_errors(form.operationalObjectives) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div data-controller="collection">
+                                                {{ form_label(form.evaluableObjectives) }}
+                                                <div data-collection-target="collection">
+                                                    {% for evaluableObjective in form.evaluableObjectives %}
+                                                        <div class="collection-item mb-2">
+                                                            <div class="input-group">
+                                                                {{ form_widget(evaluableObjective) }}
+                                                                <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                            {{ form_errors(evaluableObjective) }}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div data-collection-target="prototype" data-prototype="{{ form_widget(form.evaluableObjectives.vars.prototype)|e('html_attr') }}" style="display: none;"></div>
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="click->collection#addItem">
+                                                    <i class="fas fa-plus"></i> Ajouter un objectif évaluable
+                                                </button>
+                                                {% if form.evaluableObjectives.vars.help %}
+                                                    <div class="form-text">{{ form.evaluableObjectives.vars.help }}</div>
+                                                {% endif %}
+                                                {{ form_errors(form.evaluableObjectives) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div data-controller="collection">
+                                                {{ form_label(form.evaluationCriteria) }}
+                                                <div data-collection-target="collection">
+                                                    {% for evaluationCriterion in form.evaluationCriteria %}
+                                                        <div class="collection-item mb-2">
+                                                            <div class="input-group">
+                                                                {{ form_widget(evaluationCriterion) }}
+                                                                <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                            {{ form_errors(evaluationCriterion) }}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div data-collection-target="prototype" data-prototype="{{ form_widget(form.evaluationCriteria.vars.prototype)|e('html_attr') }}" style="display: none;"></div>
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="click->collection#addItem">
+                                                    <i class="fas fa-plus"></i> Ajouter un critère d'évaluation
+                                                </button>
+                                                {% if form.evaluationCriteria.vars.help %}
+                                                    <div class="form-text">{{ form.evaluationCriteria.vars.help }}</div>
+                                                {% endif %}
+                                                {{ form_errors(form.evaluationCriteria) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div data-controller="collection">
+                                                {{ form_label(form.successIndicators) }}
+                                                <div data-collection-target="collection">
+                                                    {% for successIndicator in form.successIndicators %}
+                                                        <div class="collection-item mb-2">
+                                                            <div class="input-group">
+                                                                {{ form_widget(successIndicator) }}
+                                                                <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                            {{ form_errors(successIndicator) }}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div data-collection-target="prototype" data-prototype="{{ form_widget(form.successIndicators.vars.prototype)|e('html_attr') }}" style="display: none;"></div>
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="click->collection#addItem">
+                                                    <i class="fas fa-plus"></i> Ajouter un indicateur de réussite
+                                                </button>
+                                                {% if form.successIndicators.vars.help %}
+                                                    <div class="form-text">{{ form.successIndicators.vars.help }}</div>
+                                                {% endif %}
+                                                {{ form_errors(form.successIndicators) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Qualiopi Information -->
                             <div class="card mt-3">
                                 <div class="card-header">

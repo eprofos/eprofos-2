@@ -35,6 +35,42 @@ class Formation
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $objectives = null;
 
+    /**
+     * Operational objectives that participants will achieve (required by Qualiopi 2.5)
+     *
+     * These are concrete, actionable objectives that define what participants
+     * will be able to do after completing the training.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $operationalObjectives = null;
+
+    /**
+     * Evaluable objectives with measurable criteria (required by Qualiopi 2.5)
+     *
+     * These are objectives that can be measured and evaluated with specific
+     * criteria and success indicators.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $evaluableObjectives = null;
+
+    /**
+     * Evaluation criteria for measuring objective achievement (required by Qualiopi 2.5)
+     *
+     * Specific criteria and methods used to evaluate whether the objectives
+     * have been achieved by participants.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $evaluationCriteria = null;
+
+    /**
+     * Success indicators for tracking objective achievement (required by Qualiopi 2.5)
+     *
+     * Measurable indicators that demonstrate successful achievement of the
+     * training objectives.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $successIndicators = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisites = null;
 
@@ -206,6 +242,50 @@ class Formation
     public function setObjectives(?string $objectives): static
     {
         $this->objectives = $objectives;
+        return $this;
+    }
+
+    public function getOperationalObjectives(): ?array
+    {
+        return $this->operationalObjectives;
+    }
+
+    public function setOperationalObjectives(?array $operationalObjectives): static
+    {
+        $this->operationalObjectives = $operationalObjectives;
+        return $this;
+    }
+
+    public function getEvaluableObjectives(): ?array
+    {
+        return $this->evaluableObjectives;
+    }
+
+    public function setEvaluableObjectives(?array $evaluableObjectives): static
+    {
+        $this->evaluableObjectives = $evaluableObjectives;
+        return $this;
+    }
+
+    public function getEvaluationCriteria(): ?array
+    {
+        return $this->evaluationCriteria;
+    }
+
+    public function setEvaluationCriteria(?array $evaluationCriteria): static
+    {
+        $this->evaluationCriteria = $evaluationCriteria;
+        return $this;
+    }
+
+    public function getSuccessIndicators(): ?array
+    {
+        return $this->successIndicators;
+    }
+
+    public function setSuccessIndicators(?array $successIndicators): static
+    {
+        $this->successIndicators = $successIndicators;
         return $this;
     }
 
