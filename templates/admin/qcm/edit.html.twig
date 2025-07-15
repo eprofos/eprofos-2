@@ -1,0 +1,193 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier le QCM - {{ qcm.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Modifier le QCM</h1>
+                <a href="{{ path('admin_qcm_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <form method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Informations générales</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Titre *</label>
+                                    <input type="text" class="form-control" id="title" name="title" value="{{ qcm.title }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description *</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ qcm.description }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="instructions" class="form-label">Instructions</label>
+                                    <textarea class="form-control" id="instructions" name="instructions" rows="3">{{ qcm.instructions ?? '' }}</textarea>
+                                    <small class="form-text text-muted">Instructions pour les participants sur la façon de compléter le questionnaire</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Questions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div data-controller="qcm-form" data-qcm-form-questions-value="{{ qcm.questions|json_encode|e('html_attr') }}">
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-primary" data-action="click->qcm-form#addQuestion">
+                                            <i class="fas fa-plus"></i> Ajouter une question
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="questions-container" data-qcm-form-target="questionsContainer">
+                                        <!-- Questions will be dynamically added here -->
+                                    </div>
+                                </div>
+                                
+                                <input type="hidden" id="questions" name="questions" data-qcm-form-target="questionsInput">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Paramètres</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="course_id" class="form-label">Cours associé *</label>
+                                    <select class="form-select" id="course_id" name="course_id" required>
+                                        <option value="">Sélectionner un cours</option>
+                                        {% for course in courses %}
+                                            <option value="{{ course.id }}" {{ qcm.course and qcm.course.id == course.id ? 'selected' : '' }}>
+                                                {{ course.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="order_index" class="form-label">Ordre d'affichage *</label>
+                                    <input type="number" class="form-control" id="order_index" name="order_index" value="{{ qcm.orderIndex }}" min="1" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="time_limit_minutes" class="form-label">Temps limite (minutes)</label>
+                                    <input type="number" class="form-control" id="time_limit_minutes" name="time_limit_minutes" value="{{ qcm.timeLimitMinutes ?? '' }}" min="1">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="max_score" class="form-label">Score maximum *</label>
+                                    <input type="number" class="form-control" id="max_score" name="max_score" value="{{ qcm.maxScore }}" min="1" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="passing_score" class="form-label">Score de passage *</label>
+                                    <input type="number" class="form-control" id="passing_score" name="passing_score" value="{{ qcm.passingScore }}" min="0" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="max_attempts" class="form-label">Nombre de tentatives *</label>
+                                    <input type="number" class="form-control" id="max_attempts" name="max_attempts" value="{{ qcm.maxAttempts }}" min="1" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Options</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="show_correct_answers" name="show_correct_answers" {{ qcm.showCorrectAnswers ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="show_correct_answers">
+                                        Afficher les réponses correctes
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="show_explanations" name="show_explanations" {{ qcm.showExplanations ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="show_explanations">
+                                        Afficher les explications
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="randomize_questions" name="randomize_questions" {{ qcm.randomizeQuestions ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="randomize_questions">
+                                        Questions aléatoires
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="randomize_answers" name="randomize_answers" {{ qcm.randomizeAnswers ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="randomize_answers">
+                                        Réponses aléatoires
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {{ qcm.isActive ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">
+                                        Actif
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Critères Qualiopi</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="evaluation_criteria" class="form-label">Critères d'évaluation</label>
+                                    <textarea class="form-control" id="evaluation_criteria" name="evaluation_criteria" rows="4" placeholder="Un critère par ligne">{{ qcm.evaluationCriteria ? qcm.evaluationCriteria|join('&#10;')|raw : '' }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="success_criteria" class="form-label">Critères de réussite</label>
+                                    <textarea class="form-control" id="success_criteria" name="success_criteria" rows="4" placeholder="Un critère par ligne">{{ qcm.successCriteria ? qcm.successCriteria|join('&#10;')|raw : '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{{ path('admin_qcm_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
