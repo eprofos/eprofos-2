@@ -1,0 +1,11 @@
+/**
+ * Admin-specific styles for EPROFOS
+ * 
+ * This file contains custom CSS rules for the admin interface
+ * that extend or override the default Tabler UI framework styles.
+ */
+
+/* Make all text inside spans white in admin area */
+span {
+    color: white !important;
+}

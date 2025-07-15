@@ -18,4 +18,7 @@ import '@fortawesome/fontawesome-free/css/solid.min.css';
 import '@fortawesome/fontawesome-free/css/brands.min.css';
 import '@fortawesome/fontawesome-free';
 
+// Import admin-specific styles
+import './styles/admin.css';
+
 console.log('Private entrypoint loaded successfully');
