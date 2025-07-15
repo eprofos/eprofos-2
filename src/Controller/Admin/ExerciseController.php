@@ -35,7 +35,11 @@ class ExerciseController extends AbstractController
             ->addSelect('c', 'ch', 'm', 'f')
             ->orderBy('e.createdAt', 'DESC');
 
-        $totalExercises = (clone $queryBuilder)->select('COUNT(e.id)')->getQuery()->getSingleScalarResult();
+        // Create a separate count query to avoid grouping issues
+        $countQueryBuilder = $exerciseRepository->createQueryBuilder('e')
+            ->select('COUNT(e.id)');
+        $totalExercises = $countQueryBuilder->getQuery()->getSingleScalarResult();
+        
         $exercises = $queryBuilder->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult();
 
         $totalPages = ceil($totalExercises / $limit);

@@ -36,7 +36,11 @@ class QCMController extends AbstractController
             ->addSelect('c', 'ch', 'm', 'f')
             ->orderBy('q.createdAt', 'DESC');
 
-        $totalQCMs = (clone $queryBuilder)->select('COUNT(q.id)')->getQuery()->getSingleScalarResult();
+        // Create a separate count query to avoid grouping issues
+        $countQueryBuilder = $qcmRepository->createQueryBuilder('q')
+            ->select('COUNT(q.id)');
+        $totalQCMs = $countQueryBuilder->getQuery()->getSingleScalarResult();
+        
         $qcms = $queryBuilder->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult();
 
         $totalPages = ceil($totalQCMs / $limit);

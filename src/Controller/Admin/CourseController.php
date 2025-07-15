@@ -27,15 +27,23 @@ class CourseController extends AbstractController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $queryBuilder = $courseRepository->createQueryBuilder('c')
+        // First, get the total count without joins to avoid grouping issues
+        $totalCourses = $courseRepository->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Then get the courses with all related data
+        $courses = $courseRepository->createQueryBuilder('c')
             ->leftJoin('c.chapter', 'ch')
             ->leftJoin('ch.module', 'm')
             ->leftJoin('m.formation', 'f')
             ->addSelect('ch', 'm', 'f')
-            ->orderBy('c.createdAt', 'DESC');
-
-        $totalCourses = (clone $queryBuilder)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
-        $courses = $queryBuilder->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult();
+            ->orderBy('c.createdAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
 
         $totalPages = ceil($totalCourses / $limit);
 
