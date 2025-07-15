@@ -83,9 +83,24 @@
                                             {{ form_errors(form.prerequisites) }}
                                         </div>
                                         <div class="col-md-12 mb-3">
-                                            {{ form_label(form.program) }}
-                                            {{ form_widget(form.program) }}
-                                            {{ form_errors(form.program) }}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>Programme de formation</strong><br>
+                                                Le programme est automatiquement généré à partir des modules et chapitres.
+                                                {% if formation.activeModules|length > 0 %}
+                                                    <br><small class="text-success">
+                                                        <i class="fas fa-check me-1"></i>
+                                                        {{ formation.activeModules|length }} module(s) configuré(s)
+                                                    </small>
+                                                {% else %}
+                                                    <br><small class="text-warning">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        Aucun module configuré
+                                                    </small>
+                                                {% endif %}                                <br><a href="{{ path('admin_modules_index') }}" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-cogs me-1"></i>Gérer les modules
+                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

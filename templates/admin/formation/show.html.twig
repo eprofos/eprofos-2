@@ -240,15 +240,40 @@
             </div>
         {% endif %}
 
-        <!-- Program -->
-        {% if formation.program %}
+        <!-- Program - Always dynamic content from modules and chapters -->
+        {% set programContent = formation.programContent %}
+        {% if programContent %}
             <div class="col-12">
                 <div class="card card-sm">
                     <div class="card-header">
-                        <h3 class="card-title">Programme</h3>
+                        <h3 class="card-title">
+                            Programme
+                            {% if formation.activeModules|length > 0 %}
+                                <span class="badge bg-success text-white ms-2">{{ formation.activeModules|length }} modules</span>
+                            {% else %}
+                                <span class="badge bg-warning text-white ms-2">Aucun module configuré</span>
+                            {% endif %}
+                        </h3>
                     </div>
                     <div class="card-body">
-                        <p>{{ formation.program|nl2br }}</p>
+                        <p>{{ programContent|nl2br }}</p>
+                        {% if formation.activeModules|length > 0 %}
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Programme généré automatiquement à partir des modules et chapitres.
+                                    <a href="{{ path('admin_modules_index') }}" class="text-primary">Gérer les modules</a>
+                                </small>
+                            </div>
+                        {% else %}
+                            <div class="mt-3">
+                                <small class="text-warning">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Aucun module configuré. Le programme sera vide jusqu'à ce que vous ajoutiez des modules.
+                                    <a href="{{ path('admin_modules_index') }}" class="text-primary">Ajouter des modules</a>
+                                </small>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

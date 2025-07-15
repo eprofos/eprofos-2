@@ -34,7 +34,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 
                 $chapter->setTitle($title);
                 $chapter->setSlug($this->generateSlug($title, $module->getId(), $i));
-                $chapter->setDescription($faker->realText(250));
+                $chapter->setDescription($this->generateRealisticDescription($title));
                 
                 // Content outline (required by Qualiopi)
                 $contentOutline = $this->generateContentOutline($faker, $title);
@@ -129,72 +129,138 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
 
     private function getChapterTitles(string $moduleTitle, int $chapterNumber): array
     {
-        $baseChapters = [
+        // Specific chapters based on module content
+        if (stripos($moduleTitle, 'PHP') !== false && stripos($moduleTitle, 'Fondamentaux') !== false) {
+            return [
+                'Installation et configuration de l\'environnement PHP',
+                'Syntaxe de base et variables',
+                'Structures de contrôle et boucles',
+                'Fonctions et portée des variables',
+                'Gestion des erreurs et debugging'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Symfony') !== false) {
+            return [
+                'Architecture MVC et composants Symfony',
+                'Routing et contrôleurs',
+                'Twig et gestion des vues',
+                'Doctrine ORM et base de données',
+                'Formulaires et validation'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Excel') !== false && stripos($moduleTitle, 'avancées') !== false) {
+            return [
+                'Fonctions de recherche et référence',
+                'Fonctions logiques et conditionnelles',
+                'Fonctions de texte et manipulation de données',
+                'Fonctions de date et heure',
+                'Fonctions mathématiques avancées'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Power BI') !== false) {
+            return [
+                'Interface et navigation Power BI',
+                'Connexion aux sources de données',
+                'Modélisation des données',
+                'Création de visualisations',
+                'Publication et partage de rapports'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Leadership') !== false) {
+            return [
+                'Styles de leadership et adaptation',
+                'Vision et communication inspirante',
+                'Développement de l\'intelligence émotionnelle',
+                'Gestion du changement et influence',
+                'Coaching et développement des équipes'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Marketing') !== false && stripos($moduleTitle, 'Digital') !== false) {
+            return [
+                'Écosystème du marketing digital',
+                'Stratégie de contenu et storytelling',
+                'SEO et référencement naturel',
+                'Publicité payante (SEA, Social Ads)',
+                'Marketing automation et lead nurturing'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Comptabilité') !== false) {
+            return [
+                'Principes comptables fondamentaux',
+                'Journal et grand livre',
+                'Immobilisations et amortissements',
+                'Stocks et provisions',
+                'Rapprochement bancaire'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Anglais') !== false) {
+            return [
+                'Vocabulaire professionnel essentiel',
+                'Grammaire appliquée au business',
+                'Techniques de conversation',
+                'Rédaction de e-mails professionnels',
+                'Présentations et prises de parole'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Scrum') !== false) {
+            return [
+                'Rôles Scrum (Product Owner, Scrum Master)',
+                'Événements Scrum (Sprint, Daily, Review)',
+                'Artefacts Scrum (Backlog, Increment)',
+                'Estimation et planification',
+                'Rétrospectives et amélioration'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Lean') !== false) {
+            return [
+                'Valeur ajoutée vs gaspillages',
+                'Cartographie des flux de valeur',
+                'Outils Lean (5S, Kanban, Poka-yoke)',
+                'Amélioration continue (Kaizen)',
+                'Mesure et indicateurs de performance'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Recrutement') !== false) {
+            return [
+                'Définition du poste et profil candidat',
+                'Sourcing et recherche de candidats',
+                'Entretien structuré et évaluation',
+                'Tests et mises en situation',
+                'Prise de référence et décision'
+            ];
+        }
+
+        if (stripos($moduleTitle, 'Cybersécurité') !== false) {
+            return [
+                'Typologie des menaces informatiques',
+                'Analyse des vulnérabilités',
+                'Mise en place de pare-feu',
+                'Gestion des accès et authentification',
+                'Plan de reprise d\'activité'
+            ];
+        }
+
+        // Default generic chapters
+        return [
             'Introduction et contexte',
             'Concepts fondamentaux',
             'Méthodologie et approches',
             'Outils et techniques',
             'Mise en pratique',
-            'Cas d\'étude',
+            'Cas d\'étude concrets',
             'Bonnes pratiques',
-            'Évaluation et amélioration',
-            'Synthèse et perspectives'
+            'Évaluation et amélioration'
         ];
-
-        // Context-specific chapters based on module title
-        if (stripos($moduleTitle, 'digital') !== false || stripos($moduleTitle, 'numérique') !== false) {
-            return [
-                'Écosystème numérique',
-                'Outils digitaux essentiels',
-                'Stratégies numériques',
-                'Transformation digitale',
-                'Mesure de performance',
-                'Optimisation continue',
-                'Tendances et innovations',
-                'Sécurité numérique'
-            ];
-        }
-
-        if (stripos($moduleTitle, 'gestion') !== false || stripos($moduleTitle, 'management') !== false) {
-            return [
-                'Principes de management',
-                'Leadership et autorité',
-                'Gestion des équipes',
-                'Communication managériale',
-                'Prise de décision',
-                'Gestion des conflits',
-                'Motivation et engagement',
-                'Évaluation des performances'
-            ];
-        }
-
-        if (stripos($moduleTitle, 'communication') !== false) {
-            return [
-                'Bases de la communication',
-                'Communication verbale',
-                'Communication non-verbale',
-                'Écoute active',
-                'Techniques de présentation',
-                'Communication écrite',
-                'Gestion des objections',
-                'Communication de crise'
-            ];
-        }
-
-        if (stripos($moduleTitle, 'vente') !== false || stripos($moduleTitle, 'commercial') !== false) {
-            return [
-                'Prospection efficace',
-                'Qualification des besoins',
-                'Présentation de l\'offre',
-                'Traitement des objections',
-                'Techniques de closing',
-                'Négociation commerciale',
-                'Suivi client',
-                'Fidélisation'
-            ];
-        }
-
-        return $baseChapters;
     }
 
     private function generateSlug(string $title, int $moduleId, int $chapterIndex): string
@@ -315,6 +381,31 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
         $nb = $faker->numberBetween(3, 6);
 
         return str_replace(['{score}', '{nb}'], [$score, $nb], $template);
+    }
+
+    private function generateRealisticDescription(string $chapterTitle): string
+    {
+        $descriptions = [
+            'Installation et configuration de l\'environnement PHP' => 'Installation de PHP, configuration du serveur web, et mise en place des outils de développement nécessaires.',
+            'Syntaxe de base et variables' => 'Apprentissage de la syntaxe PHP, déclaration et manipulation des variables, types de données primitifs.',
+            'Structures de contrôle et boucles' => 'Utilisation des conditions (if, switch) et des boucles (for, while, foreach) pour contrôler le flux du programme.',
+            'Fonctions et portée des variables' => 'Création et utilisation des fonctions, gestion de la portée des variables (scope), et paramètres.',
+            'Gestion des erreurs et debugging' => 'Techniques de débogage, gestion des erreurs et exceptions, et bonnes pratiques de développement.',
+            
+            'Architecture MVC et composants Symfony' => 'Comprendre l\'architecture Modèle-Vue-Contrôleur et les composants fondamentaux de Symfony.',
+            'Routing et contrôleurs' => 'Configuration des routes, création de contrôleurs, et gestion des requêtes HTTP.',
+            'Twig et gestion des vues' => 'Utilisation du moteur de template Twig pour créer des vues dynamiques et maintenables.',
+            'Doctrine ORM et base de données' => 'Intégration de Doctrine ORM pour la gestion des données et des relations entre entités.',
+            'Formulaires et validation' => 'Création et validation de formulaires avec le composant Form de Symfony.',
+            
+            'Fonctions de recherche et référence' => 'Maîtrise des fonctions RECHERCHEV, INDEX/EQUIV, et autres fonctions de recherche avancées.',
+            'Fonctions logiques et conditionnelles' => 'Utilisation des fonctions SI, ET, OU, et création de formules conditionnelles complexes.',
+            'Fonctions de texte et manipulation de données' => 'Manipulation de chaînes de caractères, concaténation, et extraction de données textuelles.',
+            'Fonctions de date et heure' => 'Calculs avec les dates, formatage temporel, et fonctions de manipulation du temps.',
+            'Fonctions mathématiques avancées' => 'Fonctions statistiques, mathématiques, et d\'analyse de données numériques.',
+        ];
+
+        return $descriptions[$chapterTitle] ?? 'Ce chapitre traite des aspects pratiques de ' . strtolower($chapterTitle) . ' avec des exemples concrets et des exercices d\'application.';
     }
 
     public function getDependencies(): array

@@ -67,9 +67,12 @@
                                             {{ form_errors(form.prerequisites) }}
                                         </div>
                                         <div class="col-md-12 mb-3">
-                                            {{ form_label(form.program) }}
-                                            {{ form_widget(form.program) }}
-                                            {{ form_errors(form.program) }}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>Programme de formation</strong><br>
+                                                Le programme sera automatiquement généré à partir des modules et chapitres que vous ajouterez après la création de la formation.
+                                                <br><small class="text-muted">Vous pourrez gérer les modules dans la section dédiée après avoir créé la formation.</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

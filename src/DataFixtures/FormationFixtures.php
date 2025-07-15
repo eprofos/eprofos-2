@@ -330,7 +330,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
             $formation->setDescription($formationData['description']);
             $formation->setObjectives($formationData['objectives']);
             $formation->setPrerequisites($formationData['prerequisites']);
-            $formation->setProgram($formationData['program']);
+            // Note: program is now auto-generated from modules and chapters
             $formation->setDurationHours($formationData['durationHours']);
             $formation->setPrice($formationData['price']);
             $formation->setLevel($formationData['level']);

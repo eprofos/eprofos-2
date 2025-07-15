@@ -196,21 +196,8 @@ class FormationType extends AbstractType
                     ])
                 ]
             ])
-            ->add('program', TextareaType::class, [
-                'label' => 'Programme de formation',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 6,
-                    'placeholder' => 'Détail du programme et des modules'
-                ],
-                'constraints' => [
-                    new Length([
-                        'max' => 5000,
-                        'maxMessage' => 'Le programme ne peut pas dépasser {{ limit }} caractères.'
-                    ])
-                ]
-            ])
+            // Note: Program is now automatically generated from modules and chapters
+            // The program field is kept for backward compatibility but will be replaced by dynamic content
             
             // Duration and Pricing
             ->add('durationHours', IntegerType::class, [

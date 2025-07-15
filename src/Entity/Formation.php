@@ -74,9 +74,6 @@ class Formation
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisites = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $program = null;
-
     #[ORM\Column]
     private ?int $durationHours = null;
 
@@ -305,17 +302,6 @@ class Formation
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
-        return $this;
-    }
-
-    public function getProgram(): ?string
-    {
-        return $this->program;
-    }
-
-    public function setProgram(?string $program): static
-    {
-        $this->program = $program;
         return $this;
     }
 
@@ -647,6 +633,67 @@ class Formation
     public function getFormattedPrice(): string
     {
         return number_format((float) $this->price, 0, ',', ' ') . ' €';
+    }
+
+    /**
+     * Generate program content from modules and chapters
+     */
+    public function getGeneratedProgram(): string
+    {
+        $program = '';
+        $activeModules = $this->getActiveModules();
+        
+        if ($activeModules->isEmpty()) {
+            return 'Aucun module configuré pour cette formation.';
+        }
+        
+        foreach ($activeModules as $index => $module) {
+            $moduleNumber = $index + 1;
+            $program .= "Module {$moduleNumber}: {$module->getTitle()}";
+            
+            if ($module->getDurationHours()) {
+                $program .= " ({$module->getFormattedDuration()})";
+            }
+            
+            $program .= "\n";
+            
+            if ($module->getDescription()) {
+                $program .= "- {$module->getDescription()}\n";
+            }
+            
+            // Add learning objectives if available
+            if ($module->getLearningObjectives()) {
+                $program .= "Objectifs :\n";
+                foreach ($module->getLearningObjectives() as $objective) {
+                    $program .= "• {$objective}\n";
+                }
+            }
+            
+            // Add chapters if available
+            $activeChapters = $module->getActiveChapters();
+            if (!$activeChapters->isEmpty()) {
+                $program .= "Contenu :\n";
+                foreach ($activeChapters as $chapter) {
+                    $program .= "• {$chapter->getTitle()}";
+                    if ($chapter->getDurationMinutes()) {
+                        $program .= " ({$chapter->getFormattedDuration()})";
+                    }
+                    $program .= "\n";
+                }
+            }
+            
+            $program .= "\n";
+        }
+        
+        return $program;
+    }
+
+    /**
+     * Get program content - always returns generated program from modules and chapters
+     */
+    public function getProgramContent(): string
+    {
+        return $this->getGeneratedProgram();
     }
 
     /**
