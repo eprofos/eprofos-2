@@ -1,0 +1,202 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau questionnaire{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                            </li>
+                            <li class="breadcrumb-item active">Nouveau questionnaire</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">Créer un nouveau questionnaire</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <form method="POST">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Informations générales</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="title" name="title" value="{{ questionnaire.title }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="type" name="type" required>
+                                                {% for key, label in types %}
+                                                    <option value="{{ key }}" {{ questionnaire.type == key ? 'selected' : '' }}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ questionnaire.description }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="formation_id" class="form-label">Formation associée</label>
+                                    <select class="form-select" id="formation_id" name="formation_id">
+                                        <option value="">Questionnaire général</option>
+                                        {% for formation in formations %}
+                                            <option value="{{ formation.id }}" {{ questionnaire.formation and questionnaire.formation.id == formation.id ? 'selected' : '' }}>
+                                                {{ formation.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuration</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="is_multi_step" name="is_multi_step" value="1" {{ questionnaire.isMultiStep ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="is_multi_step">
+                                                Questionnaire multi-étapes
+                                            </label>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="questions_per_step" class="form-label">Questions par étape</label>
+                                            <input type="number" class="form-control" id="questions_per_step" name="questions_per_step" value="{{ questionnaire.questionsPerStep ?: 5 }}" min="1" max="20">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="time_limit_minutes" class="form-label">Temps limite (minutes)</label>
+                                            <input type="number" class="form-control" id="time_limit_minutes" name="time_limit_minutes" value="{{ questionnaire.timeLimitMinutes }}" min="1">
+                                            <div class="form-text">Laisser vide pour aucune limite de temps</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="allow_back_navigation" name="allow_back_navigation" value="1" {{ questionnaire.allowBackNavigation ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="allow_back_navigation">
+                                                Autoriser la navigation arrière
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="show_progress_bar" name="show_progress_bar" value="1" {{ questionnaire.showProgressBar ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="show_progress_bar">
+                                                Afficher la barre de progression
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="require_all_questions" name="require_all_questions" value="1" {{ questionnaire.requireAllQuestions ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="require_all_questions">
+                                                Toutes les questions sont obligatoires
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Messages personnalisés</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="welcome_message" class="form-label">Message d'accueil</label>
+                                    <textarea class="form-control" id="welcome_message" name="welcome_message" rows="3">{{ questionnaire.welcomeMessage }}</textarea>
+                                    <div class="form-text">Message affiché au début du questionnaire</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="completion_message" class="form-label">Message de fin</label>
+                                    <textarea class="form-control" id="completion_message" name="completion_message" rows="3">{{ questionnaire.completionMessage }}</textarea>
+                                    <div class="form-text">Message affiché après la soumission du questionnaire</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuration des emails</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="email_subject" class="form-label">Sujet de l'email</label>
+                                    <input type="text" class="form-control" id="email_subject" name="email_subject" value="{{ questionnaire.emailSubject }}">
+                                    <div class="form-text">Laisser vide pour utiliser le sujet par défaut</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="email_template" class="form-label">Modèle d'email personnalisé</label>
+                                    <textarea class="form-control" id="email_template" name="email_template" rows="5">{{ questionnaire.emailTemplate }}</textarea>
+                                    <div class="form-text">
+                                        Variables disponibles : {{ "{{questionnaire_title}}" }}, {{ "{{user_name}}" }}, {{ "{{questionnaire_url}}" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Créer le questionnaire</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Aide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Critère Qualiopi 2.8</h6>
+                            <p class="small text-muted">
+                                Ce questionnaire permet de déterminer les procédures de positionnement et d'évaluation des acquis à l'entrée de la prestation, conformément au critère Qualiopi 2.8.
+                            </p>
+
+                            <h6>Types de questionnaires</h6>
+                            <ul class="small text-muted">
+                                <li><strong>Positionnement :</strong> Évaluation initiale des compétences</li>
+                                <li><strong>Évaluation des acquis :</strong> Test de connaissances préalables</li>
+                                <li><strong>Satisfaction :</strong> Recueil des attentes</li>
+                                <li><strong>Évaluation des compétences :</strong> Analyse approfondie</li>
+                            </ul>
+
+                            <h6>Bonnes pratiques</h6>
+                            <ul class="small text-muted">
+                                <li>Limitez à 15-20 questions maximum</li>
+                                <li>Utilisez des questions claires et précises</li>
+                                <li>Mélangez les types de questions</li>
+                                <li>Testez le questionnaire avant envoi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

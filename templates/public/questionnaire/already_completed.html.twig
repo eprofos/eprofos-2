@@ -1,0 +1,199 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Questionnaire déjà complété - {{ response.questionnaire.title }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Info Header -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-info text-white rounded-circle" 
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                </div>
+                <h1 class="h2 text-info mb-3">Questionnaire déjà complété</h1>
+                <p class="lead text-muted">
+                    Bonjour {{ response.firstName }} {{ response.lastName }}, vous avez déjà complété ce questionnaire.
+                </p>
+            </div>
+
+            <!-- Completion Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        {{ response.questionnaire.title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Questionnaire complété avec succès</strong><br>
+                        Vous avez terminé ce questionnaire le {{ response.completedAt|date('d/m/Y à H:i') }}.
+                    </div>
+
+                    <!-- Completion Details -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar text-primary me-3"></i>
+                                <div>
+                                    <strong>Date de completion :</strong><br>
+                                    <small class="text-muted">{{ response.completedAt|date('d/m/Y à H:i') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-user text-primary me-3"></i>
+                                <div>
+                                    <strong>Participant :</strong><br>
+                                    <small class="text-muted">{{ response.fullName }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Status -->
+                    <div class="mt-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clipboard-list text-primary me-3"></i>
+                            <div>
+                                <strong>Statut d'évaluation :</strong>
+                                <span class="badge {{ response.evaluationStatusBadgeClass }} ms-2">
+                                    {{ response.evaluationStatusLabel }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score Display (if applicable and evaluated) -->
+                    {% if response.isEvaluated and response.scorePercentage %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="text-muted mb-2">Votre score final</h6>
+                                        <div class="display-6 text-success mb-2">{{ response.scorePercentage }}%</div>
+                                        <small class="text-muted">
+                                            {{ response.totalScore ?: 0 }} points sur {{ response.maxPossibleScore ?: 0 }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Formation Information -->
+                    {% if response.formation %}
+                        <div class="mt-4">
+                            <div class="alert alert-light border">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    Formation associée
+                                </h6>
+                                <p class="mb-0">{{ response.formation.title }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Recommendations (if available) -->
+                    {% if response.recommendation %}
+                        <div class="mt-4">
+                            <div class="alert alert-success">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    Recommandations personnalisées
+                                </h6>
+                                <p class="mb-0">{{ response.recommendation|nl2br }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- What's Next -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Que faire maintenant ?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-envelope text-primary" style="font-size: 1.2rem;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Résultats par email</h6>
+                                    <small class="text-muted">
+                                        {% if response.isEvaluated %}
+                                            Vos résultats détaillés ont été envoyés à {{ response.email }}.
+                                        {% else %}
+                                            Vous recevrez vos résultats détaillés par email une fois l'évaluation terminée.
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-phone text-primary" style="font-size: 1.2rem;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Suivi personnalisé</h6>
+                                    <small class="text-muted">
+                                        Notre équipe vous contactera pour discuter de vos options de formation.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="mb-3">
+                        <i class="fas fa-headset me-2"></i>
+                        Questions ou informations complémentaires ?
+                    </h6>
+                    <p class="text-muted mb-3">
+                        N'hésitez pas à nous contacter si vous avez des questions concernant vos résultats ou votre parcours de formation.
+                    </p>
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <a href="mailto:support@eprofos.fr" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-envelope me-2"></i>
+                                support@eprofos.fr
+                            </a>
+                        </div>
+                        <div class="col-auto">
+                            <a href="tel:+33123456789" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-phone me-2"></i>
+                                01 23 45 67 89
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-4">
+                <a href="{{ path('app_home') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>
+                    Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

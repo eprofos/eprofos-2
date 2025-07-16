@@ -1,0 +1,261 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Évaluer - {{ response.participantName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_show', {id: response.questionnaire.id}) }}">{{ response.questionnaire.title }}</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_response_index', {questionnaire: response.questionnaire.id}) }}">Réponses</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_response_show', {id: response.id}) }}">{{ response.participantName }}</a>
+                            </li>
+                            <li class="breadcrumb-item active">Évaluation</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">Évaluer la réponse de {{ response.participantName }}</h1>
+                </div>
+                <div>
+                    <a href="{{ path('admin_questionnaire_response_show', {id: response.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+                    </a>
+                </div>
+            </div>
+
+            <form method="POST">
+                <div class="row">
+                    <!-- Questions List -->
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-question-circle me-2"></i>Réponses aux questions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% for questionResponse in question_responses %}
+                                    <div class="border rounded p-3 mb-3">
+                                        <div class="row">
+                                            <div class="col-lg-8">
+                                                <h6 class="mb-2">
+                                                    {{ loop.index }}. {{ questionResponse.question.questionText }}
+                                                </h6>
+                                                {% if questionResponse.question.helpText %}
+                                                    <p class="text-muted small mb-2">{{ questionResponse.question.helpText }}</p>
+                                                {% endif %}
+                                                
+                                                <div class="response-content mb-2">
+                                                    {% if questionResponse.hasAnswer %}
+                                                        {% if questionResponse.question.type == 'file_upload' %}
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-file me-2"></i>
+                                                                <span>{{ questionResponse.formattedResponse }}</span>
+                                                                {% if questionResponse.fileResponse %}
+                                                                    <a href="{{ asset(questionResponse.filePath) }}" 
+                                                                       class="btn btn-sm btn-outline-primary ms-2" 
+                                                                       target="_blank">
+                                                                        <i class="fas fa-external-link-alt"></i>
+                                                                    </a>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="answer-text bg-light p-2 rounded">
+                                                                {{ questionResponse.formattedResponse|nl2br }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <em class="text-muted">Pas de réponse</em>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if questionResponse.question.hasCorrectAnswers and questionResponse.hasAnswer %}
+                                                    <div class="correct-answer-info">
+                                                        {% if questionResponse.isCorrect %}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>Réponse correcte
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="fas fa-times me-1"></i>Réponse incorrecte
+                                                            </span>
+                                                            <div class="mt-2">
+                                                                <small class="text-muted">Réponse(s) attendue(s) :</small>
+                                                                <ul class="small text-muted mb-0">
+                                                                    {% for option in questionResponse.question.correctOptions %}
+                                                                        <li>{{ option.optionText }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-lg-4">
+                                                {% if questionResponse.question.points %}
+                                                    <div class="score-section">
+                                                        <label class="form-label">
+                                                            Score 
+                                                            <small class="text-muted">(max {{ questionResponse.question.points }})</small>
+                                                        </label>
+                                                        <div class="input-group">
+                                                            <input type="number" 
+                                                                   name="question_scores[{{ questionResponse.id }}]" 
+                                                                   class="form-control" 
+                                                                   min="0" 
+                                                                   max="{{ questionResponse.question.points }}" 
+                                                                   value="{{ questionResponse.scoreEarned ?? (questionResponse.question.hasCorrectAnswers and questionResponse.hasAnswer ? questionResponse.calculateScore() : 0) }}"
+                                                                   {% if questionResponse.question.hasCorrectAnswers %}readonly{% endif %}>
+                                                            <span class="input-group-text">/ {{ questionResponse.question.points }}</span>
+                                                        </div>
+                                                        {% if questionResponse.question.hasCorrectAnswers %}
+                                                            <small class="text-muted">Score automatique basé sur la réponse</small>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Form -->
+                    <div class="col-lg-4">
+                        <!-- Score Summary -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-calculator me-2"></i>Résumé des scores
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center">
+                                    {% set totalScore = 0 %}
+                                    {% set maxScore = 0 %}
+                                    {% for questionResponse in question_responses %}
+                                        {% set totalScore = totalScore + (questionResponse.scoreEarned ?? (questionResponse.question.hasCorrectAnswers and questionResponse.hasAnswer ? questionResponse.calculateScore() : 0)) %}
+                                        {% set maxScore = maxScore + (questionResponse.question.points ?? 0) %}
+                                    {% endfor %}
+                                    
+                                    <div class="display-6 fw-bold text-primary">
+                                        {% if maxScore > 0 %}
+                                            {{ ((totalScore / maxScore) * 100)|number_format(1) }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Score calculé</small>
+                                    <div class="mt-1">
+                                        <small class="text-muted">{{ totalScore }}/{{ maxScore }} points</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evaluation Details -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-star me-2"></i>Évaluation
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="evaluation_status" class="form-label">Statut d'évaluation</label>
+                                    <select name="evaluation_status" id="evaluation_status" class="form-select" required>
+                                        {% for value, label in evaluation_statuses %}
+                                            <option value="{{ value }}" 
+                                                    {% if value == 'completed' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="evaluator_notes" class="form-label">Notes de l'évaluateur</label>
+                                    <textarea name="evaluator_notes" 
+                                              id="evaluator_notes" 
+                                              class="form-control" 
+                                              rows="4" 
+                                              placeholder="Commentaires sur la performance du participant...">{{ response.evaluatorNotes }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="recommendation" class="form-label">Recommandations</label>
+                                    <textarea name="recommendation" 
+                                              id="recommendation" 
+                                              class="form-control" 
+                                              rows="4" 
+                                              placeholder="Recommandations pour l'amélioration...">{{ response.recommendation }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-2"></i>Enregistrer l'évaluation
+                                    </button>
+                                    <a href="{{ path('admin_questionnaire_response_show', {id: response.id}) }}" 
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update total score when individual scores change
+document.addEventListener('DOMContentLoaded', function() {
+    const scoreInputs = document.querySelectorAll('input[name^="question_scores"]');
+    
+    scoreInputs.forEach(input => {
+        input.addEventListener('input', updateTotalScore);
+    });
+    
+    function updateTotalScore() {
+        let total = 0;
+        let maxTotal = 0;
+        
+        scoreInputs.forEach(input => {
+            const value = parseInt(input.value) || 0;
+            const max = parseInt(input.getAttribute('max')) || 0;
+            total += value;
+            maxTotal += max;
+        });
+        
+        const percentage = maxTotal > 0 ? (total / maxTotal * 100).toFixed(1) : 0;
+        
+        // Update display (assuming you have elements with these classes)
+        const percentageDisplay = document.querySelector('.display-6');
+        const pointsDisplay = document.querySelector('.text-muted');
+        
+        if (percentageDisplay) {
+            percentageDisplay.textContent = percentage + '%';
+        }
+    }
+});
+</script>
+{% endblock %}

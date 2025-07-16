@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire de positionnement - {{ questionnaire.title }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .questionnaire-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .questionnaire-info h3 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .info-item {
+            display: table-row;
+        }
+        .info-label,
+        .info-value {
+            display: table-cell;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 40%;
+            color: #6c757d;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .instructions h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .security-note {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .security-note h4 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Questionnaire de positionnement</h1>
+            <p>Évaluation des acquis d'entrée</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Bonjour {{ firstName }} {{ lastName }},
+            </div>
+            
+            <p>
+                Nous vous invitons à compléter un questionnaire de positionnement qui nous permettra 
+                d'évaluer vos connaissances et compétences préalables, conformément aux exigences 
+                qualité Qualiopi.
+            </p>
+            
+            <!-- Questionnaire Information -->
+            <div class="questionnaire-info">
+                <h3>{{ questionnaire.title }}</h3>
+                {% if questionnaire.description %}
+                    <p>{{ questionnaire.description|nl2br }}</p>
+                {% endif %}
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Type :</div>
+                        <div class="info-value">{{ questionnaire.typeLabel }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Durée estimée :</div>
+                        <div class="info-value">{{ questionnaire.estimatedDuration ?: '15' }} minutes</div>
+                    </div>
+                    {% if formation %}
+                    <div class="info-item">
+                        <div class="info-label">Formation :</div>
+                        <div class="info-value">{{ formation.title }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <div class="info-label">Nombre de questions :</div>
+                        <div class="info-value">{{ questionnaire.questions|length }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="{{ questionnaireUrl }}" class="cta-button">
+                    Commencer le questionnaire
+                </a>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="instructions">
+                <h4>📋 Instructions importantes :</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>Prenez votre temps pour répondre de manière réfléchie</li>
+                    <li>Répondez de manière honnête pour une évaluation précise</li>
+                    <li>Vos réponses sont automatiquement sauvegardées</li>
+                    <li>Vous pouvez reprendre là où vous vous êtes arrêté</li>
+                    {% if questionnaire.allowFileUpload %}
+                    <li>Vous pourrez télécharger des documents si nécessaire</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Security Note -->
+            <div class="security-note">
+                <h4>🔒 Sécurité et confidentialité</h4>
+                <p style="margin: 0;">
+                    Ce lien est personnel et sécurisé. Vos réponses sont traitées de manière 
+                    confidentielle et utilisées uniquement pour personnaliser votre parcours de formation.
+                </p>
+            </div>
+            
+            <p>
+                Si vous avez des questions ou rencontrez des difficultés techniques, 
+                n'hésitez pas à nous contacter à 
+                <a href="mailto:support@eprofos.com">support@eprofos.com</a> 
+                ou au 01 23 45 67 89.
+            </p>
+            
+            <p>
+                Merci de votre collaboration et à bientôt pour votre formation !
+            </p>
+            
+            <p style="margin-top: 30px;">
+                Cordialement,<br>
+                <strong>L'équipe pédagogique Eprofos</strong>
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Eprofos - Centre de formation professionnelle</strong></p>
+            <p>Ce questionnaire respecte les exigences Qualiopi pour l'évaluation des acquis d'entrée</p>
+            <p>
+                Si vous ne souhaitez plus recevoir ces emails, 
+                <a href="mailto:contact@eprofos.com?subject=Désinscription">cliquez ici</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,313 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Questions - {{ questionnaire.title }}{% endblock %}
+
+{% block body %}
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Administration</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}">{{ questionnaire.title }}</a></li>
+                            <li class="breadcrumb-item active">Questions</li>
+                        </ol>
+                    </nav>
+                </div>
+                <h2 class="page-title">
+                    Questions - {{ questionnaire.title }}
+                </h2>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au questionnaire
+                    </a>
+                    <a href="{{ path('admin_question_new', {questionnaireId: questionnaire.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouvelle question
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Questionnaire Info Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    Informations du questionnaire
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Type :</strong><br>
+                        <span class="badge bg-{{ questionnaire.type == 'evaluation' ? 'warning' : 'info' }}">
+                            {{ questionnaire.typeLabel }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Status :</strong><br>
+                        <span class="badge bg-{{ questionnaire.isActive ? 'success' : 'secondary' }}">
+                            {{ questionnaire.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Multi-étapes :</strong><br>
+                        <span class="badge bg-{{ questionnaire.isMultiStep ? 'primary' : 'secondary' }}">
+                            {{ questionnaire.isMultiStep ? 'Oui' : 'Non' }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Questions :</strong><br>
+                        <span class="badge bg-dark">{{ questions|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        {% if questions|length > 0 %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list me-2"></i>
+                                Questions ({{ questions|length }})
+                            </h3>
+                            <div class="card-actions">
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="reorderQuestions()">
+                                    <i class="fas fa-sort me-1"></i>Réorganiser
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-vcenter card-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="60">#</th>
+                                            <th>Question</th>
+                                            <th width="120">Type</th>
+                                            <th width="80">Requis</th>
+                                            <th width="100">Étape</th>
+                                            <th width="80">Points</th>
+                                            <th width="100">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="questions-tbody">
+                                        {% for question in questions %}
+                                            <tr data-question-id="{{ question.id }}">
+                                                <td>
+                                                    <span class="text-muted">{{ question.sortOrder ?: loop.index }}</span>
+                                                    <span class="drag-handle ms-2" style="cursor: move;">
+                                                        <i class="fas fa-grip-vertical text-muted"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <strong>{{ question.questionText|length > 80 ? question.questionText|slice(0, 80) ~ '...' : question.questionText }}</strong>
+                                                        {% if question.helpText %}
+                                                            <div class="text-muted small">{{ question.helpText|length > 100 ? question.helpText|slice(0, 100) ~ '...' : question.helpText }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{% if question.type in ['single_choice', 'multiple_choice'] %}warning{% elseif question.type == 'file_upload' %}info{% else %}secondary{% endif %}">
+                                                        {{ question.typeLabel }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if question.isRequired %}
+                                                        <span class="badge bg-danger">Requis</span>
+                                                    {% else %}
+                                                        <span class="text-muted">Optionnel</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if questionnaire.isMultiStep %}
+                                                        <span class="badge bg-primary">{{ question.stepNumber ?: 1 }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if question.maxPoints %}
+                                                        <span class="badge bg-success">{{ question.maxPoints }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ path('admin_question_edit', {questionnaireId: questionnaire.id, id: question.id}) }}" 
+                                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="deleteQuestion({{ question.id }})" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty">
+                <div class="empty-img">
+                    <i class="fas fa-question-circle" style="font-size: 4rem; color: #dadcde;"></i>
+                </div>
+                <p class="empty-title">Aucune question</p>
+                <p class="empty-subtitle text-muted">
+                    Ce questionnaire ne contient pas encore de questions.<br>
+                    Commencez par ajouter votre première question.
+                </p>
+                    <div class="empty-action">
+                        <a href="{{ path('admin_question_new', {questionnaireId: questionnaire.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Créer la première question
+                        </a>
+                    </div>
+            </div>
+        {% endif %}
+
+        <!-- Statistics Card -->
+        {% if questions|length > 0 %}
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                Répartition par type
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% set questionTypes = {} %}
+                            {% for question in questions %}
+                                {% set type = question.type %}
+                                {% set questionTypes = questionTypes|merge({(type): (questionTypes[type] ?? 0) + 1}) %}
+                            {% endfor %}
+                            
+                            {% for type, count in questionTypes %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-dark">{{ type|replace({'_': ' '})|title }}</span>
+                                    <span class="badge bg-secondary">{{ count }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-dark">Questions requises</span>
+                                <span class="badge bg-danger">{{ questions|filter(q => q.isRequired)|length }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-dark">Questions avec points</span>
+                                <span class="badge bg-success">{{ questions|filter(q => q.maxPoints)|length }}</span>
+                            </div>
+                            {% if questionnaire.isMultiStep %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-dark">Nombre d'étapes</span>
+                                    <span class="badge bg-primary">{{ questions|map(q => q.stepNumber ?: 1)|reduce((carry, step) => carry > step ? carry : step, 1) }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-dark">Total des points</span>
+                                <span class="badge bg-warning">{{ questions|map(q => q.maxPoints ?: 0)|reduce((carry, points) => carry + points, 0) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette question ?</p>
+                <p class="text-danger"><strong>Cette action est irréversible.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let questionToDelete = null;
+
+function deleteQuestion(questionId) {
+    questionToDelete = questionId;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDelete').addEventListener('click', function() {
+    if (questionToDelete) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('admin_question_delete', {questionnaireId: questionnaire.id, id: '__ID__'}) }}'.replace('__ID__', questionToDelete);
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = '{{ csrf_token('delete_question') }}';
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+
+function reorderQuestions() {
+    // Simple alert for now - you can implement drag & drop later
+    alert('Fonctionnalité de réorganisation à implémenter avec du drag & drop');
+}
+
+// Make table rows sortable (basic implementation)
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('questions-tbody');
+    if (tbody) {
+        // You can implement Sortable.js here for drag & drop functionality
+        console.log('Table ready for drag & drop implementation');
+    }
+});
+</script>
+{% endblock %}

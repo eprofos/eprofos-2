@@ -1,0 +1,34 @@
+Bonjour {{ response.firstName }} {{ response.lastName }},
+
+RÉSULTATS DE VOTRE ÉVALUATION
+
+Merci d'avoir complété le questionnaire "{{ questionnaire.title }}".
+Voici vos résultats d'évaluation :
+
+VOTRE SCORE :
+{% if response.scorePercentage %}
+{{ response.scorePercentage }}% ({{ response.totalScore ?: 0 }} / {{ response.maxPossibleScore ?: 0 }} points)
+{% else %}
+Évaluation qualitative réalisée
+{% endif %}
+
+{% if response.recommendation %}
+RECOMMANDATIONS PERSONNALISÉES :
+{{ response.recommendation }}
+{% endif %}
+
+{% if response.evaluatorNotes %}
+NOTES DE L'ÉVALUATEUR :
+{{ response.evaluatorNotes }}
+{% endif %}
+
+Ces résultats nous permettront de personnaliser votre parcours de formation pour optimiser votre apprentissage et atteindre vos objectifs.
+
+Si vous avez des questions concernant ces résultats, n'hésitez pas à nous contacter à support@eprofos.fr.
+
+Cordialement,
+L'équipe pédagogique Eprofos
+
+---
+Eprofos - Centre de formation professionnelle
+Ce questionnaire respecte les exigences Qualiopi pour l'évaluation des acquis d'entrée

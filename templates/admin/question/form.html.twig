@@ -1,0 +1,371 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ question.id ? 'Modifier' : 'Nouvelle' }} question{% endblock %}
+
+{% block body %}
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Administration</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}">{{ questionnaire.title }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('admin_question_index', {questionnaireId: questionnaire.id}) }}">Questions</a></li>
+                            <li class="breadcrumb-item active">{{ question.id ? 'Modifier' : 'Nouvelle' }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <h2 class="page-title">
+                    {{ question.id ? 'Modifier' : 'Nouvelle' }} question
+                </h2>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="{{ path('admin_question_index', {questionnaireId: questionnaire.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour aux questions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <form method="POST" id="questionForm">
+            <input type="hidden" name="_token" value="{{ csrf_token('question_form') }}">
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Main Question Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Contenu de la question
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Question Text -->
+                            <div class="mb-3">
+                                <label for="questionText" class="form-label">
+                                    Texte de la question <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="questionText" name="questionText" rows="3" required>{{ question.questionText ?? '' }}</textarea>
+                                <div class="form-hint">Posez une question claire et précise</div>
+                            </div>
+
+                            <!-- Help Text -->
+                            <div class="mb-3">
+                                <label for="helpText" class="form-label">Texte d'aide</label>
+                                <textarea class="form-control" id="helpText" name="helpText" rows="2">{{ question.helpText ?? '' }}</textarea>
+                                <div class="form-hint">Texte d'aide optionnel pour guider la réponse</div>
+                            </div>
+
+                            <!-- Question Type -->
+                            <div class="mb-3">
+                                <label for="type" class="form-label">
+                                    Type de question <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="type" name="type" required onchange="handleTypeChange()">
+                                    <option value="">Sélectionner un type</option>
+                                    <option value="text" {{ question.type == 'text' ? 'selected' : '' }}>Texte court</option>
+                                    <option value="textarea" {{ question.type == 'textarea' ? 'selected' : '' }}>Texte long</option>
+                                    <option value="number" {{ question.type == 'number' ? 'selected' : '' }}>Nombre</option>
+                                    <option value="email" {{ question.type == 'email' ? 'selected' : '' }}>Email</option>
+                                    <option value="date" {{ question.type == 'date' ? 'selected' : '' }}>Date</option>
+                                    <option value="single_choice" {{ question.type == 'single_choice' ? 'selected' : '' }}>Choix unique (QCM)</option>
+                                    <option value="multiple_choice" {{ question.type == 'multiple_choice' ? 'selected' : '' }}>Choix multiples</option>
+                                    <option value="file_upload" {{ question.type == 'file_upload' ? 'selected' : '' }}>Téléchargement de fichier</option>
+                                </select>
+                            </div>
+
+                            <!-- Options for Choice Questions -->
+                            <div id="optionsSection" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0">
+                                        Options de réponse <span class="text-danger">*</span>
+                                    </label>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addOption()">
+                                        <i class="fas fa-plus me-1"></i>Ajouter une option
+                                    </button>
+                                </div>
+                                <div id="optionsContainer">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Configuration Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-cogs me-2"></i>
+                                Configuration
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Required -->
+                            <div class="mb-3">
+                                <label class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="isRequired" 
+                                           {{ question.isRequired ? 'checked' : '' }}>
+                                    <span class="form-check-label">Question requise</span>
+                                </label>
+                                <div class="form-hint">Si activé, l'utilisateur devra obligatoirement répondre à cette question</div>
+                            </div>
+
+                            <!-- Points -->
+                            <div class="mb-3">
+                                <label for="maxPoints" class="form-label">Points maximum</label>
+                                <input type="number" class="form-control" id="maxPoints" name="maxPoints" 
+                                       min="0" step="0.5" value="{{ question.points ?: '' }}">
+                                <div class="form-hint">Points attribués pour une réponse correcte (utilisé pour l'évaluation)</div>
+                            </div>
+
+                            <!-- Step Number (if multi-step) -->
+                            {% if questionnaire.isMultiStep %}
+                                <div class="mb-3">
+                                    <label for="stepNumber" class="form-label">Numéro d'étape</label>
+                                    <input type="number" class="form-control" id="stepNumber" name="stepNumber" 
+                                           min="1" value="{{ question.stepNumber ?: 1 }}">
+                                    <div class="form-hint">Dans quelle étape afficher cette question</div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Sort Order -->
+                            <div class="mb-3">
+                                <label for="sortOrder" class="form-label">Ordre d'affichage</label>
+                                <input type="number" class="form-control" id="sortOrder" name="sortOrder" 
+                                       min="1" value="{{ question.sortOrder ?: 1 }}">
+                                <div class="form-hint">Position dans l'ordre d'affichage</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-eye me-2"></i>
+                                Aperçu
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="questionPreview">
+                                <p class="text-muted">L'aperçu s'affichera ici</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>
+                                    {{ question.id ? 'Modifier' : 'Créer' }} la question
+                                </button>
+                                <a href="{{ path('admin_question_index', {questionnaireId: questionnaire.id}) }}" 
+                                   class="btn btn-outline-secondary">
+                                    Annuler
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const existingOptions = {{ question.options ? question.options|json_encode : '[]' }};
+
+function handleTypeChange() {
+    const type = document.getElementById('type').value;
+    const optionsSection = document.getElementById('optionsSection');
+    
+    if (type === 'single_choice' || type === 'multiple_choice') {
+        optionsSection.style.display = 'block';
+        if (document.querySelectorAll('.option-item').length === 0) {
+            addOption();
+            addOption();
+        }
+    } else {
+        optionsSection.style.display = 'none';
+    }
+    
+    updatePreview();
+}
+
+function addOption() {
+    const container = document.getElementById('optionsContainer');
+    const optionIndex = container.children.length;
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'option-item card mb-3';
+    optionDiv.innerHTML = `
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <input type="text" class="form-control" 
+                           name="options[${optionIndex}][text]" 
+                           placeholder="Texte de l'option" 
+                           onchange="updatePreview()" required>
+                </div>
+                {% if questionnaire.type == 'evaluation' %}
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               name="options[${optionIndex}][isCorrect]"
+                               onchange="updatePreview()">
+                        <label class="form-check-label">Correcte</label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <input type="number" class="form-control" style="width: 80px;"
+                           name="options[${optionIndex}][points]" 
+                           placeholder="Pts" step="0.5" min="0"
+                           onchange="updatePreview()">
+                </div>
+                {% endif %}
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                            onclick="removeOption(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(optionDiv);
+    updatePreview();
+}
+
+function removeOption(button) {
+    button.closest('.option-item').remove();
+    updatePreview();
+}
+
+function updatePreview() {
+    const questionText = document.getElementById('questionText').value;
+    const helpText = document.getElementById('helpText').value;
+    const type = document.getElementById('type').value;
+    const isRequired = document.querySelector('input[name="isRequired"]').checked;
+    
+    let preview = '<div class="question-preview">';
+    
+    if (questionText) {
+        preview += `<h6>${questionText} ${isRequired ? '<span class="text-danger">*</span>' : ''}</h6>`;
+    }
+    
+    if (helpText) {
+        preview += `<small class="text-muted">${helpText}</small><br><br>`;
+    }
+    
+    switch (type) {
+        case 'text':
+            preview += '<input type="text" class="form-control" placeholder="Réponse..." disabled>';
+            break;
+        case 'textarea':
+            preview += '<textarea class="form-control" rows="3" placeholder="Réponse..." disabled></textarea>';
+            break;
+        case 'number':
+            preview += '<input type="number" class="form-control" placeholder="0" disabled>';
+            break;
+        case 'email':
+            preview += '<input type="email" class="form-control" placeholder="email@example.com" disabled>';
+            break;
+        case 'date':
+            preview += '<input type="date" class="form-control" disabled>';
+            break;
+        case 'file_upload':
+            preview += '<input type="file" class="form-control" disabled>';
+            break;
+        case 'single_choice':
+        case 'multiple_choice':
+            const options = document.querySelectorAll('.option-item input[name*="[text]"]');
+            if (options.length > 0) {
+                options.forEach((option, index) => {
+                    if (option.value) {
+                        const inputType = type === 'single_choice' ? 'radio' : 'checkbox';
+                        preview += `
+                            <div class="form-check">
+                                <input class="form-check-input" type="${inputType}" disabled>
+                                <label class="form-check-label">${option.value}</label>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            break;
+        default:
+            preview += '<p class="text-muted">Sélectionnez un type de question</p>';
+    }
+    
+    preview += '</div>';
+    document.getElementById('questionPreview').innerHTML = preview;
+}
+
+// Initialize existing options
+document.addEventListener('DOMContentLoaded', function() {
+    if (existingOptions.length > 0) {
+        existingOptions.forEach((option, index) => {
+            addOption();
+            const lastOption = document.querySelector('.option-item:last-child');
+            lastOption.querySelector('input[name*="[text]"]').value = option.optionText;
+            lastOption.querySelector('input[name*="[text]"]').setAttribute('name', `options[${index}][text]`);
+            {% if questionnaire.type == 'evaluation' %}
+            if (option.isCorrect) {
+                lastOption.querySelector('input[name*="[isCorrect]"]').checked = true;
+            }
+            lastOption.querySelector('input[name*="[isCorrect]"]').setAttribute('name', `options[${index}][isCorrect]`);
+            if (option.points) {
+                lastOption.querySelector('input[name*="[points]"]').value = option.points;
+            }
+            lastOption.querySelector('input[name*="[points]"]').setAttribute('name', `options[${index}][points]`);
+            {% endif %}
+            // Add hidden ID field for existing options
+            if (option.id) {
+                const hiddenId = document.createElement('input');
+                hiddenId.type = 'hidden';
+                hiddenId.name = `options[${index}][id]`;
+                hiddenId.value = option.id;
+                lastOption.appendChild(hiddenId);
+            }
+        });
+    }
+    
+    handleTypeChange();
+    
+    // Add event listeners for real-time preview
+    document.getElementById('questionText').addEventListener('input', updatePreview);
+    document.getElementById('helpText').addEventListener('input', updatePreview);
+    document.querySelector('input[name="isRequired"]').addEventListener('change', updatePreview);
+});
+</script>
+
+<style>
+.question-preview {
+    border: 1px dashed #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.option-item {
+    border-left: 3px solid #007bff;
+}
+
+.form-hint {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}

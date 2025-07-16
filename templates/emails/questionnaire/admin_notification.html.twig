@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau questionnaire complété - {{ questionnaire.title }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .participant-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .participant-info h3 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .info-item {
+            display: table-row;
+        }
+        .info-label,
+        .info-value {
+            display: table-cell;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 40%;
+            color: #6c757d;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Nouveau questionnaire complété</h1>
+            <p>Notification administrateur</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Bonjour,
+            </div>
+            
+            <p>
+                Un nouveau questionnaire de positionnement a été complété dans la plateforme Eprofos.
+            </p>
+            
+            <!-- Participant Information -->
+            <div class="participant-info">
+                <h3>Informations du participant</h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nom :</div>
+                        <div class="info-value">{{ response.fullName }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email :</div>
+                        <div class="info-value">{{ response.email }}</div>
+                    </div>
+                    {% if response.phone %}
+                    <div class="info-item">
+                        <div class="info-label">Téléphone :</div>
+                        <div class="info-value">{{ response.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if response.company %}
+                    <div class="info-item">
+                        <div class="info-label">Entreprise :</div>
+                        <div class="info-value">{{ response.company }}</div>
+                    </div>
+                    {% endif %}
+                    {% if response.formation %}
+                    <div class="info-item">
+                        <div class="info-label">Formation :</div>
+                        <div class="info-value">{{ response.formation.title }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Questionnaire Information -->
+            <div class="participant-info">
+                <h3>Questionnaire : {{ questionnaire.title }}</h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Type :</div>
+                        <div class="info-value">{{ questionnaire.typeLabel }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Complété le :</div>
+                        <div class="info-value">{{ response.completedAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Statut d'évaluation :</div>
+                        <div class="info-value">{{ response.evaluationStatusLabel }}</div>
+                    </div>
+                    {% if response.totalScore is not null %}
+                    <div class="info-item">
+                        <div class="info-label">Score :</div>
+                        <div class="info-value">{{ response.totalScore ?: 0 }} / {{ response.maxPossibleScore ?: 0 }} points ({{ response.scorePercentage ?: 0 }}%)</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="{{ admin_url }}" class="cta-button">
+                    Voir les détails dans l'administration
+                </a>
+            </div>
+            
+            <p>
+                Vous pouvez maintenant consulter les réponses détaillées et procéder à l'évaluation 
+                si nécessaire dans l'interface d'administration.
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Eprofos - Interface d'administration</strong></p>
+            <p>Cette notification est générée automatiquement par le système</p>
+        </div>
+    </div>
+</body>
+</html>

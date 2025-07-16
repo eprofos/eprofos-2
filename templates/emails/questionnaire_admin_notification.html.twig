@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau questionnaire complété - {{ questionnaire.title }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .participant-card {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .participant-card h3 {
+            margin: 0 0 15px 0;
+            color: #007bff;
+        }
+        .info-grid {
+            display: table;
+            width: 100%;
+        }
+        .info-item {
+            display: table-row;
+        }
+        .info-label,
+        .info-value {
+            display: table-cell;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 35%;
+            color: #6c757d;
+        }
+        .score-highlight {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+        }
+        .score-excellent { background-color: #28a745; }
+        .score-good { background-color: #ffc107; }
+        .score-needs-improvement { background-color: #dc3545; }
+        .score-qualitative { background-color: #6c757d; }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📋 Nouveau questionnaire complété</h1>
+            <p>Notification administrative</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <p>
+                Un nouveau questionnaire de positionnement vient d'être complété et nécessite 
+                votre attention pour l'évaluation et le suivi pédagogique.
+            </p>
+            
+            <!-- Participant Information -->
+            <div class="participant-card">
+                <h3>👤 Informations du participant</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nom complet :</div>
+                        <div class="info-value"><strong>{{ response.firstName }} {{ response.lastName }}</strong></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email :</div>
+                        <div class="info-value">{{ response.email }}</div>
+                    </div>
+                    {% if response.phone %}
+                    <div class="info-item">
+                        <div class="info-label">Téléphone :</div>
+                        <div class="info-value">{{ response.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if response.company %}
+                    <div class="info-item">
+                        <div class="info-label">Entreprise :</div>
+                        <div class="info-value">{{ response.company }}</div>
+                    </div>
+                    {% endif %}
+                    {% if response.formation %}
+                    <div class="info-item">
+                        <div class="info-label">Formation :</div>
+                        <div class="info-value">{{ response.formation.title }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Questionnaire Information -->
+            <div class="participant-card">
+                <h3>📊 Détails du questionnaire</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Questionnaire :</div>
+                        <div class="info-value"><strong>{{ questionnaire.title }}</strong></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Type :</div>
+                        <div class="info-value">{{ questionnaire.typeLabel }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Complété le :</div>
+                        <div class="info-value">{{ response.completedAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Durée :</div>
+                        <div class="info-value">
+                            {% if response.startedAt and response.completedAt %}
+                                {{ ((response.completedAt.timestamp - response.startedAt.timestamp) / 60)|round }} minutes
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Réponses :</div>
+                        <div class="info-value">{{ response.questionResponses|length }} réponse(s)</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Référence :</div>
+                        <div class="info-value"><strong>{{ response.token|slice(0, 8)|upper }}</strong></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Score Information -->
+            {% if response.totalScore is not null %}
+                <div class="score-highlight">
+                    <h3>🎯 Résultat de l'évaluation</h3>
+                    {% set percentage = (response.totalScore / response.maxScore * 100)|round %}
+                    <div>
+                        <span class="score-badge 
+                            {% if percentage >= 80 %}score-excellent
+                            {% elseif percentage >= 60 %}score-good
+                            {% else %}score-needs-improvement{% endif %}">
+                            {{ response.totalScore }} / {{ response.maxScore }} points ({{ percentage }}%)
+                        </span>
+                    </div>
+                    <p>
+                        {% if percentage >= 80 %}
+                            ✅ <strong>Excellent niveau</strong> - Le participant maîtrise bien les prérequis
+                        {% elseif percentage >= 60 %}
+                            ⚠️ <strong>Bon niveau</strong> - Quelques points à renforcer
+                        {% else %}
+                            ⚡ <strong>Niveau à consolider</strong> - Des bases importantes à renforcer
+                        {% endif %}
+                    </p>
+                </div>
+            {% else %}
+                <div class="score-highlight">
+                    <h3>📝 Évaluation qualitative</h3>
+                    <span class="score-badge score-qualitative">Évaluation manuelle requise</span>
+                    <p>Ce questionnaire nécessite une évaluation qualitative des réponses.</p>
+                </div>
+            {% endif %}
+            
+            <!-- Action Required -->
+            <div class="alert alert-info">
+                <h4 style="margin-top: 0;">🔔 Actions requises :</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>Examiner les réponses détaillées du participant</li>
+                    {% if response.totalScore is null %}
+                        <li><strong>Effectuer l'évaluation qualitative</strong></li>
+                    {% endif %}
+                    <li>Adapter le parcours de formation en conséquence</li>
+                    <li>Contacter le participant pour le suivi pédagogique</li>
+                    {% if response.formation %}
+                        <li>Préparer les adaptations pour la formation "{{ response.formation.title }}"</li>
+                    {% endif %}
+                    <li>Constituer le dossier de positionnement (exigence Qualiopi 2.8)</li>
+                </ul>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ adminUrl }}" class="btn btn-primary">
+                    🔍 Voir les réponses détaillées
+                </a>
+                {% if response.totalScore is null %}
+                    <a href="{{ evaluationUrl }}" class="btn btn-success">
+                        ✏️ Effectuer l'évaluation
+                    </a>
+                {% endif %}
+            </div>
+            
+            <hr style="margin: 30px 0;">
+            
+            <p>
+                <strong>Rappel Qualiopi :</strong> Ce questionnaire de positionnement répond au critère 2.8 
+                concernant les procédures de positionnement et d'évaluation des acquis à l'entrée de la prestation. 
+                Assurez-vous de conserver tous les éléments dans le dossier du participant.
+            </p>
+            
+            <p style="font-size: 14px; color: #6c757d;">
+                Cette notification a été générée automatiquement par le système de gestion des questionnaires Eprofos.
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Eprofos - Administration</strong></p>
+            <p>Système de gestion des questionnaires de positionnement</p>
+            <p>Certification Qualiopi - Critère 2.8</p>
+        </div>
+    </div>
+</body>
+</html>

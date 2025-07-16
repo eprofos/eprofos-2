@@ -1,0 +1,30 @@
+Bonjour {{ response.firstName }} {{ response.lastName }},
+
+RAPPEL - QUESTIONNAIRE DE POSITIONNEMENT
+
+Nous avons remarqué que vous n'avez pas encore terminé votre questionnaire de positionnement.
+Cette évaluation est importante pour personnaliser votre parcours de formation selon vos besoins.
+
+Le questionnaire de positionnement nous permet d'adapter nos contenus à votre niveau et de vous proposer un parcours personnalisé optimal.
+
+QUESTIONNAIRE : {{ questionnaire.title }}
+{% if questionnaire.description %}
+{{ questionnaire.description }}
+{% endif %}
+
+INFORMATIONS :
+- Durée estimée : {{ questionnaire.timeLimitMinutes ?: '15' }} minutes
+- {{ questionnaire.questionCount }} questions
+{% if response.formation %}- Formation : {{ response.formation.title }}
+{% endif %}- Vos réponses sont automatiquement sauvegardées
+
+LIEN D'ACCÈS :
+{{ questionnaire_url }}
+
+Si vous avez des questions ou rencontrez des difficultés techniques, n'hésitez pas à nous contacter à support@eprofos.fr.
+
+Cordialement,
+L'équipe pédagogique Eprofos
+
+---
+Eprofos - Centre de formation professionnelle

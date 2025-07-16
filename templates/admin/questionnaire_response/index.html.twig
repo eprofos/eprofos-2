@@ -1,0 +1,341 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Réponses aux questionnaires{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        {% if current_questionnaire %}
+                            Réponses : {{ current_questionnaire.title }}
+                        {% else %}
+                            Réponses aux questionnaires
+                        {% endif %}
+                    </h1>
+                    {% if current_questionnaire %}
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="{{ path('admin_questionnaire_show', {id: current_questionnaire.id}) }}">{{ current_questionnaire.title }}</a>
+                                </li>
+                                <li class="breadcrumb-item active">Réponses</li>
+                            </ol>
+                        </nav>
+                    {% endif %}
+                </div>
+                <div class="btn-group">
+                    {% if current_questionnaire %}
+                        <a href="{{ path('admin_questionnaire_show', {id: current_questionnaire.id}) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour au questionnaire
+                        </a>
+                        <a href="{{ path('admin_questionnaire_response_statistics', {id: current_questionnaire.id}) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line me-2"></i>Statistiques
+                        </a>
+                    {% endif %}
+                    <a href="{{ path('admin_questionnaire_response_pending_evaluation') }}" class="btn btn-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Évaluations en attente
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        {% if not current_questionnaire %}
+                            <div class="col-md-3">
+                                <label for="questionnaire" class="form-label">Questionnaire</label>
+                                <select name="questionnaire" id="questionnaire" class="form-select">
+                                    <option value="">Tous les questionnaires</option>
+                                    {% for questionnaire in questionnaires %}
+                                        <option value="{{ questionnaire.id }}" 
+                                                {% if current_questionnaire and current_questionnaire.id == questionnaire.id %}selected{% endif %}>
+                                            {{ questionnaire.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="questionnaire" value="{{ current_questionnaire.id }}">
+                        {% endif %}
+
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Statut</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                {% for value, label in statuses %}
+                                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="evaluation_status" class="form-label">Évaluation</label>
+                            <select name="evaluation_status" id="evaluation_status" class="form-select">
+                                <option value="">Toutes les évaluations</option>
+                                {% for value, label in evaluation_statuses %}
+                                    <option value="{{ value }}" {% if current_evaluation_status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-2"></i>Filtrer
+                            </button>
+                            <a href="{{ path('admin_questionnaire_response_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            {% if responses %}
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{ responses|length }}</h4>
+                                        <p class="mb-0">Total réponses</p>
+                                    </div>
+                                    <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        {% set completed = responses|filter(r => r.isCompleted)|length %}
+                                        <h4 class="mb-0">{{ completed }}</h4>
+                                        <p class="mb-0">Terminées</p>
+                                    </div>
+                                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        {% set pending_eval = responses|filter(r => r.isCompleted and r.evaluationStatus == 'pending')|length %}
+                                        <h4 class="mb-0">{{ pending_eval }}</h4>
+                                        <p class="mb-0">À évaluer</p>
+                                    </div>
+                                    <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        {% set evaluated = responses|filter(r => r.evaluationStatus == 'completed')|length %}
+                                        <h4 class="mb-0">{{ evaluated }}</h4>
+                                        <p class="mb-0">Évaluées</p>
+                                    </div>
+                                    <i class="fas fa-star fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Responses List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des réponses
+                        {% if responses %}
+                            <span class="badge bg-secondary ms-2">{{ responses|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if responses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Questionnaire</th>
+                                        <th>Participant</th>
+                                        <th>Formation</th>
+                                        <th>Statut</th>
+                                        <th>Évaluation</th>
+                                        <th>Score</th>
+                                        <th>Démarré le</th>
+                                        <th>Terminé le</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for response in responses %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ response.questionnaire.title }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ response.questionnaire.typeLabel }}</small>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ response.participantName }}</strong>
+                                                    {% if response.participantEmail %}
+                                                        <br>
+                                                        <small class="text-muted">{{ response.participantEmail }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if response.formation %}
+                                                    <a href="{{ path('admin_formation_show', {id: response.formation.id}) }}" 
+                                                       class="text-decoration-none">
+                                                        {{ response.formation.title }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ response.statusBadgeClass }}">
+                                                    {{ response.statusLabel }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if response.isCompleted %}
+                                                    <span class="badge {{ response.evaluationStatusBadgeClass }}">
+                                                        {{ response.evaluationStatusLabel }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if response.finalScore is not null %}
+                                                    <strong>{{ response.finalScore }}%</strong>
+                                                    {% if response.scoreTotal %}
+                                                        <br>
+                                                        <small class="text-muted">{{ response.scoreObtained }}/{{ response.scoreTotal }}</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ response.createdAt|date('d/m/Y H:i') }}</small>
+                                            </td>
+                                            <td>
+                                                {% if response.completedAt %}
+                                                    <small>{{ response.completedAt|date('d/m/Y H:i') }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ path('admin_questionnaire_response_show', {id: response.id}) }}" 
+                                                       class="btn btn-outline-primary" title="Voir les détails">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    
+                                                    {% if response.isCompleted and response.evaluationStatus == 'pending' %}
+                                                        <a href="{{ path('admin_questionnaire_response_evaluate', {id: response.id}) }}" 
+                                                           class="btn btn-outline-warning" title="Évaluer">
+                                                            <i class="fas fa-star"></i>
+                                                        </a>
+                                                    {% endif %}
+
+                                                    {% if response.hasFileResponses %}
+                                                        <a href="{{ path('admin_questionnaire_response_download_files', {id: response.id}) }}" 
+                                                           class="btn btn-outline-info" title="Télécharger les fichiers">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    {% endif %}
+
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="confirmDelete({{ response.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune réponse trouvée</h5>
+                            <p class="text-muted">
+                                {% if current_questionnaire %}
+                                    Ce questionnaire n'a pas encore reçu de réponses.
+                                {% else %}
+                                    Aucune réponse ne correspond aux critères de recherche.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(responseId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('deleteForm');
+    const token = document.getElementById('deleteToken');
+    
+    form.action = '{{ path('admin_questionnaire_response_delete', {id: '__ID__'}) }}'.replace('__ID__', responseId);
+    token.value = '{{ csrf_token('delete__ID__') }}'.replace('__ID__', responseId);
+    
+    modal.show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+Bonjour {{ response.firstName }} {{ response.lastName }},
+
+Nous vous invitons à compléter un questionnaire de positionnement qui nous permettra d'évaluer vos connaissances et compétences préalables, conformément aux exigences qualité Qualiopi.
+
+QUESTIONNAIRE : {{ questionnaire.title }}
+{% if questionnaire.description %}
+{{ questionnaire.description }}
+{% endif %}
+
+INFORMATIONS :
+- Type : {{ questionnaire.typeLabel }}
+- Durée estimée : {{ questionnaire.timeLimitMinutes ?: '15' }} minutes
+{% if response.formation %}- Formation : {{ response.formation.title }}
+{% endif %}- Nombre de questions : {{ questionnaire.questionCount }}
+
+LIEN D'ACCÈS :
+{{ questionnaire_url }}
+
+INSTRUCTIONS IMPORTANTES :
+- Prenez votre temps pour répondre de manière réfléchie
+- Répondez de manière honnête pour une évaluation précise  
+- Vos réponses sont automatiquement sauvegardées
+{% if questionnaire.allowBackNavigation %}- Vous pouvez revenir en arrière pour modifier vos réponses
+{% endif %}{% if questionnaire.isMultiStep %}- Le questionnaire est divisé en plusieurs étapes
+{% endif %}
+
+SÉCURITÉ ET CONFIDENTIALITÉ :
+Ce lien est personnel et sécurisé. Vos réponses sont traitées de manière confidentielle et utilisées uniquement pour personnaliser votre parcours de formation.
+
+Si vous avez des questions ou rencontrez des difficultés techniques, n'hésitez pas à nous contacter à support@eprofos.fr.
+
+Merci de votre collaboration et à bientôt pour votre formation !
+
+Cordialement,
+L'équipe pédagogique Eprofos
+
+---
+Eprofos - Centre de formation professionnelle
+Ce questionnaire respecte les exigences Qualiopi pour l'évaluation des acquis d'entrée

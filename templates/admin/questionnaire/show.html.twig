@@ -1,0 +1,266 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ questionnaire.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                            </li>
+                            <li class="breadcrumb-item active">{{ questionnaire.title }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">{{ questionnaire.title }}</h1>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ path('admin_questionnaire_edit', {id: questionnaire.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_question_index', {questionnaireId: questionnaire.id}) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-question-circle me-2"></i>Gérer les questions
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Questionnaire Info -->
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations du questionnaire
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Type :</dt>
+                                        <dd class="col-sm-8">{{ questionnaire.typeLabel }}</dd>
+
+                                        <dt class="col-sm-4">Statut :</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge {{ questionnaire.statusBadgeClass }}">
+                                                {{ questionnaire.statusLabel }}
+                                            </span>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Formation :</dt>
+                                        <dd class="col-sm-8">
+                                            {% if questionnaire.formation %}
+                                                <a href="{{ path('admin_formation_show', {id: questionnaire.formation.id}) }}">
+                                                    {{ questionnaire.formation.title }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Questionnaire général</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Multi-étapes :</dt>
+                                        <dd class="col-sm-8">
+                                            {% if questionnaire.isMultiStep %}
+                                                <i class="fas fa-check text-success"></i> Oui ({{ questionnaire.questionsPerStep }} questions par étape)
+                                            {% else %}
+                                                <i class="fas fa-times text-danger"></i> Non
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-5">Temps limite :</dt>
+                                        <dd class="col-sm-7">
+                                            {% if questionnaire.timeLimitMinutes %}
+                                                {{ questionnaire.timeLimitMinutes }} minutes
+                                            {% else %}
+                                                <span class="text-muted">Aucune limite</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-5">Navigation arrière :</dt>
+                                        <dd class="col-sm-7">
+                                            {% if questionnaire.allowBackNavigation %}
+                                                <i class="fas fa-check text-success"></i> Autorisée
+                                            {% else %}
+                                                <i class="fas fa-times text-danger"></i> Interdite
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-5">Barre de progression :</dt>
+                                        <dd class="col-sm-7">
+                                            {% if questionnaire.showProgressBar %}
+                                                <i class="fas fa-check text-success"></i> Affichée
+                                            {% else %}
+                                                <i class="fas fa-times text-danger"></i> Masquée
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-5">Questions obligatoires :</dt>
+                                        <dd class="col-sm-7">
+                                            {% if questionnaire.requireAllQuestions %}
+                                                <i class="fas fa-check text-success"></i> Toutes
+                                            {% else %}
+                                                <i class="fas fa-times text-warning"></i> Optionnelles
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            {% if questionnaire.description %}
+                                <div class="mt-3">
+                                    <h6>Description :</h6>
+                                    <p>{{ questionnaire.description|nl2br }}</p>
+                                </div>
+                            {% endif %}
+
+                            {% if questionnaire.welcomeMessage %}
+                                <div class="mt-3">
+                                    <h6>Message d'accueil :</h6>
+                                    <div class="bg-light p-3 rounded">
+                                        {{ questionnaire.welcomeMessage|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if questionnaire.completionMessage %}
+                                <div class="mt-3">
+                                    <h6>Message de fin :</h6>
+                                    <div class="bg-light p-3 rounded">
+                                        {{ questionnaire.completionMessage|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    {% if questionnaire.emailSubject or questionnaire.emailTemplate %}
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-envelope me-2"></i>Configuration des emails
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if questionnaire.emailSubject %}
+                                    <div class="mb-3">
+                                        <h6>Sujet de l'email :</h6>
+                                        <code>{{ questionnaire.emailSubject }}</code>
+                                    </div>
+                                {% endif %}
+
+                                {% if questionnaire.emailTemplate %}
+                                    <div>
+                                        <h6>Modèle d'email personnalisé :</h6>
+                                        <div class="bg-light p-3 rounded">
+                                            {{ questionnaire.emailTemplate|nl2br }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Statistics -->
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiques
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h3 class="text-primary mb-0">{{ statistics.total_questions }}</h3>
+                                        <small class="text-muted">Questions</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h3 class="text-info mb-0">{{ statistics.step_count }}</h3>
+                                    <small class="text-muted">Étapes</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h3 class="text-success mb-0">{{ statistics.total_responses }}</h3>
+                                        <small class="text-muted">Réponses</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h3 class="text-warning mb-0">{{ statistics.completed_responses }}</h3>
+                                    <small class="text-muted">Terminées</small>
+                                </div>
+                            </div>
+                            {% if statistics.total_responses > 0 %}
+                                <hr>
+                                <div class="text-center">
+                                    <h4 class="text-primary mb-0">{{ statistics.completion_rate|number_format(1) }}%</h4>
+                                    <small class="text-muted">Taux de completion</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt me-2"></i>Actions rapides
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if questionnaire.isActive %}
+                                    <a href="{{ path('admin_questionnaire_send', {questionnaire: questionnaire.id}) }}" class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-2"></i>Envoyer le questionnaire
+                                    </a>
+                                    
+                                    <a href="{{ path('admin_questionnaire_response_index', {questionnaire: questionnaire.id}) }}" class="btn btn-info">
+                                        <i class="fas fa-clipboard-list me-2"></i>Voir les réponses
+                                    </a>
+                                {% endif %}
+
+                                {% if statistics.completed_responses > 0 %}
+                                    <a href="{{ path('admin_questionnaire_response_statistics', {id: questionnaire.id}) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-chart-line me-2"></i>Statistiques détaillées
+                                    </a>
+                                {% endif %}
+
+                                {% if questionnaire.isDraft and statistics.total_questions > 0 %}
+                                    <form method="POST" action="{{ path('admin_questionnaire_activate', {id: questionnaire.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ questionnaire.id) }}">
+                                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir activer ce questionnaire ?')">
+                                            <i class="fas fa-play me-2"></i>Activer le questionnaire
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                {% if questionnaire.isActive %}
+                                    <form method="POST" action="{{ path('admin_questionnaire_archive', {id: questionnaire.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ questionnaire.id) }}">
+                                        <button type="submit" class="btn btn-warning w-100" onclick="return confirm('Êtes-vous sûr de vouloir archiver ce questionnaire ?')">
+                                            <i class="fas fa-archive me-2"></i>Archiver
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

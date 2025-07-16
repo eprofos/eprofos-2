@@ -1,0 +1,396 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Réponse de {{ response.participantName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_show', {id: response.questionnaire.id}) }}">{{ response.questionnaire.title }}</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_response_index', {questionnaire: response.questionnaire.id}) }}">Réponses</a>
+                            </li>
+                            <li class="breadcrumb-item active">{{ response.participantName }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">Réponse de {{ response.participantName }}</h1>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ path('admin_questionnaire_response_index', {questionnaire: response.questionnaire.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                    {% if response.isCompleted and response.evaluationStatus == 'pending' %}
+                        <a href="{{ path('admin_questionnaire_response_evaluate', {id: response.id}) }}" class="btn btn-warning">
+                            <i class="fas fa-star me-2"></i>Évaluer
+                        </a>
+                    {% endif %}
+                    {% if response.hasFileResponses %}
+                        <a href="{{ path('admin_questionnaire_response_download_files', {id: response.id}) }}" class="btn btn-info">
+                            <i class="fas fa-download me-2"></i>Télécharger les fichiers
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Response Details -->
+                <div class="col-lg-8">
+                    <!-- Participant Info -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i>Informations du participant
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Nom :</dt>
+                                        <dd class="col-sm-8">{{ response.participantName }}</dd>
+
+                                        <dt class="col-sm-4">Email :</dt>
+                                        <dd class="col-sm-8">
+                                            <a href="mailto:{{ response.participantEmail }}">{{ response.participantEmail }}</a>
+                                        </dd>
+
+                                        {% if response.phone %}
+                                            <dt class="col-sm-4">Téléphone :</dt>
+                                            <dd class="col-sm-8">{{ response.phone }}</dd>
+                                        {% endif %}
+
+                                        {% if response.company %}
+                                            <dt class="col-sm-4">Entreprise :</dt>
+                                            <dd class="col-sm-8">{{ response.company }}</dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Formation :</dt>
+                                        <dd class="col-sm-8">
+                                            {% if response.formation %}
+                                                <a href="{{ path('admin_formation_show', {id: response.formation.id}) }}">
+                                                    {{ response.formation.title }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Non spécifiée</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Démarré le :</dt>
+                                        <dd class="col-sm-8">{{ response.createdAt|date('d/m/Y à H:i') }}</dd>
+
+                                        {% if response.completedAt %}
+                                            <dt class="col-sm-4">Terminé le :</dt>
+                                            <dd class="col-sm-8">{{ response.completedAt|date('d/m/Y à H:i') }}</dd>
+                                        {% endif %}
+
+                                        {% if response.durationMinutes %}
+                                            <dt class="col-sm-4">Durée :</dt>
+                                            <dd class="col-sm-8">{{ response.durationMinutes }} minutes</dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions and Responses -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle me-2"></i>Réponses aux questions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if question_responses %}
+                                {% for questionResponse in question_responses %}
+                                    <div class="border-bottom pb-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-2">
+                                                    {{ loop.index }}. {{ questionResponse.question.questionText }}
+                                                </h6>
+                                                {% if questionResponse.question.helpText %}
+                                                    <p class="text-muted small mb-2">{{ questionResponse.question.helpText }}</p>
+                                                {% endif %}
+                                                
+                                                <div class="response-content">
+                                                    {% if questionResponse.hasAnswer %}
+                                                        {% if questionResponse.question.type == 'file_upload' %}
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-file me-2"></i>
+                                                                <span>{{ questionResponse.formattedResponse }}</span>
+                                                                {% if questionResponse.fileResponse %}
+                                                                    <a href="{{ asset(questionResponse.filePath) }}" 
+                                                                       class="btn btn-sm btn-outline-primary ms-2" 
+                                                                       target="_blank">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="answer-text">
+                                                                {{ questionResponse.formattedResponse|nl2br }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <em class="text-muted">Pas de réponse</em>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if questionResponse.question.hasCorrectAnswers and questionResponse.hasAnswer %}
+                                                    <div class="mt-2">
+                                                        {% if questionResponse.isCorrect %}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>Correct
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="fas fa-times me-1"></i>Incorrect
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="text-end ms-3">
+                                                {% if questionResponse.question.points %}
+                                                    <div class="score-info">
+                                                        {% if questionResponse.scoreEarned is not null %}
+                                                            <span class="fw-bold">{{ questionResponse.scoreEarned }}/{{ questionResponse.question.points }}</span>
+                                                        {% else %}
+                                                            <span class="text-muted">-/{{ questionResponse.question.points }}</span>
+                                                        {% endif %}
+                                                        <small class="text-muted d-block">points</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune réponse</h5>
+                                    <p class="text-muted">Ce participant n'a pas encore commencé à répondre.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="col-lg-4">
+                    <!-- Status and Score -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>Résumé
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <span class="badge {{ response.statusBadgeClass }} fs-6 mb-2">
+                                    {{ response.statusLabel }}
+                                </span>
+                                {% if response.isCompleted %}
+                                    <br>
+                                    <span class="badge {{ response.evaluationStatusBadgeClass }} fs-6">
+                                        {{ response.evaluationStatusLabel }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {% if response.finalScore is not null %}
+                                <div class="text-center mb-3">
+                                    <div class="display-6 fw-bold text-primary">{{ response.finalScore|number_format(1) }}%</div>
+                                    <small class="text-muted">Score final</small>
+                                    {% if response.scoreObtained is not null and response.scoreTotal is not null %}
+                                        <div class="mt-1">
+                                            <small class="text-muted">{{ response.scoreObtained }}/{{ response.scoreTotal }} points</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <hr>
+
+                            <div class="progress-info">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progression</small>
+                                    <small>{{ response.progressPercentage }}%</small>
+                                </div>
+                                <div class="progress mb-3" style="height: 6px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ response.progressPercentage }}%"></div>
+                                </div>
+                            </div>
+
+                            {% if response.questionnaire.isMultiStep %}
+                                <div class="step-info">
+                                    <small class="text-muted">
+                                        Étape {{ response.currentStep|default(1) }}/{{ response.questionnaire.stepCount }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Evaluation -->
+                    {% if response.isCompleted %}
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-star me-2"></i>Évaluation
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if response.evaluationStatus == 'pending' %}
+                                    <div class="text-center">
+                                        <p class="text-muted mb-3">Cette réponse est en attente d'évaluation.</p>
+                                        <a href="{{ path('admin_questionnaire_response_evaluate', {id: response.id}) }}" 
+                                           class="btn btn-warning">
+                                            <i class="fas fa-star me-2"></i>Commencer l'évaluation
+                                        </a>
+                                    </div>
+                                {% elseif response.evaluationStatus == 'in_review' %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Évaluation en cours...
+                                    </div>
+                                {% else %}
+                                    <div class="evaluation-complete">
+                                        <p class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Évaluation terminée
+                                        </p>
+                                        {% if response.evaluatedAt %}
+                                            <small class="text-muted">{{ response.evaluatedAt|date('d/m/Y à H:i') }}</small>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if response.evaluatorNotes %}
+                                        <div class="mt-3">
+                                            <h6>Notes de l'évaluateur :</h6>
+                                            <div class="bg-light p-2 rounded">
+                                                {{ response.evaluatorNotes|nl2br }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if response.recommendation %}
+                                        <div class="mt-3">
+                                            <h6>Recommandations :</h6>
+                                            <div class="bg-light p-2 rounded">
+                                                {{ response.recommendation|nl2br }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cogs me-2"></i>Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if response.isCompleted and response.evaluationStatus == 'pending' %}
+                                    <button type="button" class="btn btn-warning" 
+                                            onclick="startEvaluation({{ response.id }})">
+                                        <i class="fas fa-play me-2"></i>Démarrer l'évaluation
+                                    </button>
+                                {% endif %}
+
+                                {% if response.hasFileResponses %}
+                                    <a href="{{ path('admin_questionnaire_response_download_files', {id: response.id}) }}" 
+                                       class="btn btn-info">
+                                        <i class="fas fa-download me-2"></i>Télécharger les fichiers
+                                    </a>
+                                {% endif %}
+
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete({{ response.id }})">
+                                    <i class="fas fa-trash me-2"></i>Supprimer cette réponse
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(responseId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('deleteForm');
+    const token = document.getElementById('deleteToken');
+    
+    form.action = '{{ path('admin_questionnaire_response_delete', {id: '__ID__'}) }}'.replace('__ID__', responseId);
+    token.value = '{{ csrf_token('delete__ID__') }}'.replace('__ID__', responseId);
+    
+    modal.show();
+}
+
+function startEvaluation(responseId) {
+    fetch('{{ path('admin_questionnaire_response_start_evaluation', {id: '__ID__'}) }}'.replace('__ID__', responseId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: '_token=' + encodeURIComponent('{{ csrf_token('start_evaluation__ID__') }}'.replace('__ID__', responseId))
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '{{ path('admin_questionnaire_response_evaluate', {id: '__ID__'}) }}'.replace('__ID__', responseId);
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+</script>
+{% endblock %}

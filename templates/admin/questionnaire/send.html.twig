@@ -1,0 +1,232 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Envoyer un questionnaire{% endblock %}
+
+{% block page_title %}Envoyer un questionnaire{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l14 0"/>
+            <path d="M5 12l4 -4"/>
+            <path d="M5 12l4 4"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Questionnaire Selection -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                    </svg>
+                                    Sélection du questionnaire
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 9h.01"/>
+                                        <path d="M11 12h1v4h1"/>
+                                    </svg>
+                                    <div>
+                                        <strong>Questionnaire de positionnement</strong><br>
+                                        Le destinataire recevra un email avec un lien sécurisé pour compléter le questionnaire.
+                                        Ce questionnaire permet d'évaluer les connaissances préalables conformément aux exigences Qualiopi.
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required">Questionnaire</label>
+                                        <select class="form-select" id="questionnaire_id" name="questionnaire_id" required>
+                                            <option value="">Sélectionner un questionnaire</option>
+                                            {% for questionnaire in questionnaires %}
+                                                <option value="{{ questionnaire.id }}"{% if preselected_questionnaire and preselected_questionnaire.id == questionnaire.id %} selected{% endif %}>
+                                                    {{ questionnaire.title }} ({{ questionnaire.typeLabel }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Formation associée</label>
+                                        <select class="form-select" id="formation_id" name="formation_id">
+                                            <option value="">Aucune formation spécifique</option>
+                                            {% for formation in formations %}
+                                                <option value="{{ formation.id }}">{{ formation.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">Optionnel : permet de personnaliser le questionnaire</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Information -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+                                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                    </svg>
+                                    Informations du destinataire
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required">Prénom</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required">Nom</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                        <div class="form-text">L'email de confirmation sera envoyé à cette adresse</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Téléphone</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Entreprise</label>
+                                        <input type="text" class="form-control" id="company" name="company">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- Information Panel -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 9h.01"/>
+                                        <path d="M11 12h1v4h1"/>
+                                    </svg>
+                                    Informations
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h4 class="subheader">Qu'est-ce qu'un questionnaire de positionnement ?</h4>
+                                    <p class="text-muted">
+                                        Le questionnaire de positionnement permet d'évaluer les connaissances et compétences 
+                                        préalables du candidat avant le début de la formation, conformément aux exigences Qualiopi.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 class="subheader">Sécurité et confidentialité</h4>
+                                    <p class="text-muted">
+                                        Chaque questionnaire est protégé par un token unique. Les données sont sécurisées 
+                                        et seul le destinataire peut accéder à son questionnaire.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M10 14l11 -11"/>
+                                            <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/>
+                                        </svg>
+                                        Envoyer le questionnaire
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747"/>
+                                            <path d="M20 4v5h-5"/>
+                                        </svg>
+                                        Réinitialiser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add dynamic questionnaire description
+            const questionnaireSelect = document.getElementById('questionnaire_id');
+            const questionnaires = {{ questionnaires|json_encode|raw }};
+            
+            function updateQuestionnaireDescription() {
+                const selectedId = questionnaireSelect.value;
+                const questionnaire = questionnaires.find(q => q.id == selectedId);
+                
+                // Remove existing description
+                const existingDesc = document.querySelector('.questionnaire-description');
+                if (existingDesc) {
+                    existingDesc.remove();
+                }
+                
+                if (questionnaire && questionnaire.description) {
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'questionnaire-description alert alert-info mt-2';
+                    descDiv.innerHTML = `
+                        <div class="d-flex">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                    <path d="M12 9h.01"/>
+                                    <path d="M11 12h1v4h1"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong>Description du questionnaire :</strong><br>
+                                ${questionnaire.description}
+                            </div>
+                        </div>
+                    `;
+                    questionnaireSelect.closest('.card-body').appendChild(descDiv);
+                }
+            }
+            
+            questionnaireSelect.addEventListener('change', updateQuestionnaireDescription);
+            
+            // Trigger on page load if questionnaire is preselected
+            if (questionnaireSelect.value) {
+                updateQuestionnaireDescription();
+            }
+        });
+    </script>
+{% endblock %}

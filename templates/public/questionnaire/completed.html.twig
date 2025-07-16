@@ -1,0 +1,243 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Questionnaire complété - {{ response.questionnaire.title }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Header -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle" 
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <h1 class="h2 text-success mb-3">Questionnaire complété avec succès !</h1>
+                <p class="lead text-muted">
+                    Merci {{ response.firstName }} {{ response.lastName }} d'avoir pris le temps de répondre à ce questionnaire.
+                </p>
+            </div>
+
+            <!-- Questionnaire Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        {{ response.questionnaire.title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Custom Completion Message -->
+                    {% if response.questionnaire.completionMessage %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ response.questionnaire.completionMessage|nl2br }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Completion Details -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar text-primary me-3"></i>
+                                <div>
+                                    <strong>Date de completion :</strong><br>
+                                    <small class="text-muted">{{ response.completedAt|date('d/m/Y à H:i') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if response.completionTimeMinutes %}
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-clock text-primary me-3"></i>
+                                <div>
+                                    <strong>Temps de completion :</strong><br>
+                                    <small class="text-muted">{{ response.completionTimeMinutes }} minutes</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Score Display (if applicable) -->
+                    {% if response.questionnaire.type in ['evaluation', 'skills_assessment'] and response.scorePercentage %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="text-muted mb-2">Votre score</h6>
+                                        <div class="display-6 text-primary mb-2">{{ response.scorePercentage }}%</div>
+                                        <small class="text-muted">
+                                            {{ response.totalScore ?: 0 }} points sur {{ response.maxPossibleScore ?: 0 }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Formation Information -->
+                    {% if response.formation %}
+                        <div class="mt-4">
+                            <div class="alert alert-light border">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    Formation associée
+                                </h6>
+                                <p class="mb-0">{{ response.formation.title }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-route me-2"></i>
+                        Prochaines étapes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                          style="width: 24px; height: 24px; font-size: 12px;">1</span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Évaluation des réponses</h6>
+                                    <small class="text-muted">
+                                        Nos experts vont analyser vos réponses pour personnaliser votre parcours.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                          style="width: 24px; height: 24px; font-size: 12px;">2</span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Recommandations personnalisées</h6>
+                                    <small class="text-muted">
+                                        Vous recevrez des recommandations adaptées à votre profil.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                          style="width: 24px; height: 24px; font-size: 12px;">3</span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Notification par email</h6>
+                                    <small class="text-muted">
+                                        Un email de confirmation vous sera envoyé à {{ response.email }}.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                          style="width: 24px; height: 24px; font-size: 12px;">4</span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Suivi personnalisé</h6>
+                                    <small class="text-muted">
+                                        Notre équipe vous contactera pour définir votre parcours optimal.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="mb-3">
+                        <i class="fas fa-headset me-2"></i>
+                        Besoin d'aide ou de renseignements ?
+                    </h6>
+                    <p class="text-muted mb-3">
+                        Notre équipe pédagogique est là pour vous accompagner dans votre parcours de formation.
+                    </p>
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <a href="mailto:support@eprofos.fr" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-envelope me-2"></i>
+                                support@eprofos.fr
+                            </a>
+                        </div>
+                        <div class="col-auto">
+                            <a href="tel:+33123456789" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-phone me-2"></i>
+                                01 23 45 67 89
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-4">
+                <a href="{{ path('app_home') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>
+                    Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Animation -->
+<style>
+.fa-check {
+    animation: checkmark 0.8s ease-in-out;
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Confetti animation on page load (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simple celebration effect
+            setTimeout(function() {
+                const checkIcon = document.querySelector('.fa-check');
+                if (checkIcon) {
+                    checkIcon.style.animation = 'checkmark 0.8s ease-in-out';
+                }
+            }, 200);
+        });
+    </script>
+{% endblock %}

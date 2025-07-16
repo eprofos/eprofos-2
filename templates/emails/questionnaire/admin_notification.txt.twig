@@ -1,0 +1,29 @@
+NOUVEAU QUESTIONNAIRE COMPLÉTÉ
+
+Bonjour,
+
+Un nouveau questionnaire de positionnement a été complété dans la plateforme Eprofos.
+
+INFORMATIONS DU PARTICIPANT :
+- Nom : {{ response.fullName }}
+- Email : {{ response.email }}
+{% if response.phone %}- Téléphone : {{ response.phone }}
+{% endif %}{% if response.company %}- Entreprise : {{ response.company }}
+{% endif %}{% if response.formation %}- Formation : {{ response.formation.title }}
+{% endif %}
+
+QUESTIONNAIRE : {{ questionnaire.title }}
+- Type : {{ questionnaire.typeLabel }}
+- Complété le : {{ response.completedAt|date('d/m/Y à H:i') }}
+- Statut d'évaluation : {{ response.evaluationStatusLabel }}
+{% if response.totalScore is not null %}- Score : {{ response.totalScore ?: 0 }} / {{ response.maxPossibleScore ?: 0 }} points ({{ response.scorePercentage ?: 0 }}%)
+{% endif %}
+
+LIEN D'ADMINISTRATION :
+{{ admin_url }}
+
+Vous pouvez maintenant consulter les réponses détaillées et procéder à l'évaluation si nécessaire dans l'interface d'administration.
+
+---
+Eprofos - Interface d'administration
+Cette notification est générée automatiquement par le système

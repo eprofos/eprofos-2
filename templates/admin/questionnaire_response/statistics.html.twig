@@ -1,0 +1,260 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques - {{ questionnaire.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_index') }}">Questionnaires</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}">{{ questionnaire.title }}</a>
+                            </li>
+                            <li class="breadcrumb-item active">Statistiques</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">Statistiques - {{ questionnaire.title }}</h1>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au questionnaire
+                    </a>
+                    <a href="{{ path('admin_questionnaire_response_index', {questionnaire: questionnaire.id}) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>Voir les réponses
+                    </a>
+                </div>
+            </div>
+
+            <!-- Overview Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ completion_stats.total ?? 0 }}</h4>
+                                    <p class="mb-0">Total réponses</p>
+                                </div>
+                                <i class="fas fa-users fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ completion_stats.completed ?? 0 }}</h4>
+                                    <p class="mb-0">Terminées</p>
+                                </div>
+                                <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ evaluation_stats.pending ?? 0 }}</h4>
+                                    <p class="mb-0">À évaluer</p>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">
+                                        {% if completion_stats.total > 0 %}
+                                            {{ ((completion_stats.completed / completion_stats.total) * 100)|number_format(1) }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </h4>
+                                    <p class="mb-0">Taux de completion</p>
+                                </div>
+                                <i class="fas fa-chart-pie fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Performance Overview -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Distribution des scores
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if score_distribution %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Tranche de score</th>
+                                                <th>Nombre</th>
+                                                <th>Pourcentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for range, data in score_distribution %}
+                                                <tr>
+                                                    <td>{{ range }}</td>
+                                                    <td>{{ data.count }}</td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                                                <div class="progress-bar" 
+                                                                     style="width: {{ data.percentage }}%">
+                                                                </div>
+                                                            </div>
+                                                            <small>{{ data.percentage|number_format(1) }}%</small>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-chart-bar fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Aucune donnée de score disponible</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Analysis -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clock me-2"></i>Analyse du temps
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if average_time %}
+                                <div class="text-center mb-3">
+                                    <h3 class="text-primary">{{ average_time }} min</h3>
+                                    <small class="text-muted">Temps moyen de completion</small>
+                                </div>
+                            {% endif %}
+
+                            {% if questionnaire.timeLimitMinutes %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Temps limite fixé : {{ questionnaire.timeLimitMinutes }} minutes
+                                </div>
+                            {% endif %}
+
+                            <div class="text-muted small">
+                                <p class="mb-1">
+                                    <i class="fas fa-users me-1"></i>
+                                    Basé sur {{ completion_stats.completed ?? 0 }} réponses terminées
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Statistics -->
+            {% if question_stats %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-question-circle me-2"></i>Statistiques par question
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Type</th>
+                                        <th>Réponses</th>
+                                        <th>Taux de réponse</th>
+                                        <th>Score moyen</th>
+                                        <th>Taux de réussite</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in question_stats %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">{{ stat.question.questionText|slice(0, 60) }}{% if stat.question.questionText|length > 60 %}...{% endif %}</div>
+                                                {% if stat.question.points %}
+                                                    <small class="text-muted">{{ stat.question.points }} points</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ stat.question.typeLabel }}</span>
+                                            </td>
+                                            <td>
+                                                {{ stat.statistics.total_responses ?? 0 }}
+                                            </td>
+                                            <td>
+                                                {% set response_rate = stat.statistics.response_rate ?? 0 %}
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1 me-2" style="height: 15px;">
+                                                        <div class="progress-bar" style="width: {{ response_rate }}%"></div>
+                                                    </div>
+                                                    <small>{{ response_rate|number_format(1) }}%</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if stat.statistics.average_score is defined %}
+                                                    <span class="fw-bold">{{ stat.statistics.average_score|number_format(1) }}%</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if stat.statistics.success_rate is defined %}
+                                                    {% set success_rate = stat.statistics.success_rate %}
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress flex-grow-1 me-2" style="height: 15px;">
+                                                            <div class="progress-bar 
+                                                                        {% if success_rate >= 80 %}bg-success
+                                                                        {% elseif success_rate >= 60 %}bg-warning
+                                                                        {% else %}bg-danger{% endif %}" 
+                                                                 style="width: {{ success_rate }}%"></div>
+                                                        </div>
+                                                        <small>{{ success_rate|number_format(1) }}%</small>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

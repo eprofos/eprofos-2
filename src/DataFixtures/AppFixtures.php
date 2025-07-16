@@ -40,8 +40,12 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
      * 2. Formations and Services (depend on categories)
      * 3. Modules (depend on formations)
      * 4. Chapters (depend on modules)
-     * 5. ContactRequests (depend on formations and services)
-     * 6. NeedsAnalysisFixtures (depend on users and formations)
+     * 5. Questionnaires (depend on formations)
+     * 6. Questions (depend on questionnaires)
+     * 7. QuestionOptions (depend on questions)
+     * 8. QuestionnaireResponses (depend on questionnaires and options)
+     * 9. ContactRequests (depend on formations and services)
+     * 10. NeedsAnalysisFixtures (depend on users and formations)
      */
     public function getDependencies(): array
     {
@@ -52,6 +56,10 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             ServiceFixtures::class,
             ModuleFixtures::class,
             ChapterFixtures::class,
+            QuestionnaireFixtures::class,
+            QuestionFixtures::class,
+            QuestionOptionFixtures::class,
+            QuestionnaireResponseFixtures::class,
             ContactRequestFixtures::class,
             NeedsAnalysisFixtures::class,
         ];

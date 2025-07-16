@@ -1,0 +1,314 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}{{ questionnaire.title }} - Étape {{ currentStep }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Progress Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ questionnaire.title }}</h5>
+                            <small class="text-muted">{{ response.firstName }} {{ response.lastName }}</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">Étape {{ currentStep }} sur {{ totalSteps }}</small>
+                            <div class="progress mt-1" style="width: 200px; height: 8px;">
+                                <div class="progress-bar bg-primary" 
+                                     style="width: {{ (currentStep / totalSteps * 100)|round }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Form -->
+            <form method="POST" enctype="multipart/form-data" id="questionnaireForm">
+                <input type="hidden" name="token" value="{{ csrf_token('questionnaire_step') }}">
+                
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        {% for question in questions %}
+                            <div class="question-block mb-5" data-question-id="{{ question.id }}">
+                                <!-- Question Header -->
+                                <div class="d-flex align-items-start mb-3">
+                                    <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-2">
+                                            {{ question.questionText }}
+                                            {% if question.isRequired %}
+                                                <span class="text-danger">*</span>
+                                            {% endif %}
+                                        </h6>
+                                        {% if question.helpText %}
+                                            <small class="text-muted">{{ question.helpText }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Question Input -->
+                                <div class="question-input ms-5">
+                                    {% set existingResponse = existingResponses[question.id] ?? null %}
+                                    
+                                    {% if question.type == 'text' %}
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="responses[{{ question.id }}]" 
+                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               {% if question.isRequired %}required{% endif %}>
+                                    
+                                    {% elseif question.type == 'textarea' %}
+                                        <textarea class="form-control" 
+                                                  rows="4" 
+                                                  name="responses[{{ question.id }}]" 
+                                                  {% if question.isRequired %}required{% endif %}>{{ existingResponse ? existingResponse.responseText : '' }}</textarea>
+                                    
+                                    {% elseif question.type == 'number' %}
+                                        <input type="number" 
+                                               class="form-control" 
+                                               name="responses[{{ question.id }}]" 
+                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               {% if question.isRequired %}required{% endif %}>
+                                    
+                                    {% elseif question.type == 'email' %}
+                                        <input type="email" 
+                                               class="form-control" 
+                                               name="responses[{{ question.id }}]" 
+                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               {% if question.isRequired %}required{% endif %}>
+                                    
+                                    {% elseif question.type == 'date' %}
+                                        <input type="date" 
+                                               class="form-control" 
+                                               name="responses[{{ question.id }}]" 
+                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               {% if question.isRequired %}required{% endif %}>
+                                    
+                                    {% elseif question.type == 'single_choice' %}
+                                        {% for option in question.options %}
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="responses[{{ question.id }}]" 
+                                                       value="{{ option.id }}" 
+                                                       id="option_{{ option.id }}"
+                                                       {% if existingResponse and existingResponse.selectedOptions and option.id in existingResponse.selectedOptions %}checked{% endif %}
+                                                       {% if question.isRequired %}required{% endif %}>
+                                                <label class="form-check-label" for="option_{{ option.id }}">
+                                                    {{ option.optionText }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    
+                                    {% elseif question.type == 'multiple_choice' %}
+                                        {% for option in question.options %}
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       name="responses[{{ question.id }}][]" 
+                                                       value="{{ option.id }}" 
+                                                       id="option_{{ option.id }}"
+                                                       {% if existingResponse and existingResponse.selectedOptions and option.id in existingResponse.selectedOptions %}checked{% endif %}>
+                                                <label class="form-check-label" for="option_{{ option.id }}">
+                                                    {{ option.optionText }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    
+                                    {% elseif question.type == 'file_upload' %}
+                                        <input type="file" 
+                                               class="form-control" 
+                                               name="responses[{{ question.id }}]" 
+                                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                               {% if question.isRequired and not existingResponse %}required{% endif %}>
+                                        {% if existingResponse and existingResponse.uploadedFile %}
+                                            <div class="mt-2">
+                                                <small class="text-success">
+                                                    <i class="fas fa-file-check me-1"></i>
+                                                    Fichier téléchargé : {{ existingResponse.uploadedFile }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">
+                                            Formats acceptés : PDF, DOC, DOCX, JPG, PNG (max 10MB)
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="d-flex justify-content-between mt-4">
+                    <div>
+                        {% if currentStep > 1 %}
+                            <a href="{{ path('questionnaire_step', {token: response.token, step: currentStep - 1}) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Précédent
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        {% if currentStep < totalSteps %}
+                            <button type="submit" name="action" value="next" class="btn btn-primary">
+                                Suivant<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        {% else %}
+                            <button type="submit" name="action" value="finish" class="btn btn-success btn-lg">
+                                <i class="fas fa-check me-2"></i>Terminer le questionnaire
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="text-center mt-3">
+                    <button type="submit" name="action" value="save" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-save me-2"></i>Sauvegarder le brouillon
+                    </button>
+                </div>
+            </form>
+
+            <!-- Help Section -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card bg-light border-0">
+                        <div class="card-body py-3">
+                            <h6 class="card-title">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Conseils
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>Répondez de manière précise et honnête</li>
+                                <li>N'hésitez pas à utiliser les zones de texte pour détailler</li>
+                                <li>Vos réponses nous aident à personnaliser votre formation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-light border-0">
+                        <div class="card-body py-3">
+                            <h6 class="card-title">
+                                <i class="fas fa-question-circle text-info me-2"></i>
+                                Besoin d'aide ?
+                            </h6>
+                            <p class="small mb-0">
+                                Si vous avez des questions, contactez-nous à 
+                                <a href="mailto:support@eprofos.com">support@eprofos.com</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('questionnaireForm');
+    let isSubmitting = false;
+    
+    // Auto-save functionality
+    const autoSave = () => {
+        if (isSubmitting) return;
+        
+        const formData = new FormData(form);
+        formData.set('action', 'autosave');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                console.log('Auto-saved');
+            }
+        }).catch(error => {
+            console.error('Auto-save failed:', error);
+        });
+    };
+    
+    // Auto-save every 30 seconds
+    setInterval(autoSave, 30000);
+    
+    // Auto-save on input change (debounced)
+    let autoSaveTimeout;
+    form.addEventListener('input', function() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(autoSave, 2000);
+    });
+    
+    // Prevent double submission
+    form.addEventListener('submit', function() {
+        isSubmitting = true;
+        const submitButtons = form.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach(btn => {
+            btn.disabled = true;
+            const spinner = document.createElement('span');
+            spinner.className = 'spinner-border spinner-border-sm me-2';
+            btn.insertBefore(spinner, btn.firstChild);
+        });
+    });
+    
+    // File upload validation
+    const fileInputs = form.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && file.size > 10 * 1024 * 1024) { // 10MB
+                alert('Le fichier ne doit pas dépasser 10MB');
+                this.value = '';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.question-block {
+    border-left: 3px solid #e9ecef;
+    padding-left: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.question-block:hover {
+    border-left-color: #007bff;
+}
+
+.badge {
+    font-size: 0.875rem;
+    min-width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
