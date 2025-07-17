@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annulation d'inscription - {{ formation.title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+        }
+        .session-details {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .detail-value {
+            color: #6c757d;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn:hover {
+            background-color: #218838;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .cancel-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="cancel-icon">❌</div>
+            <h1>Inscription annulée</h1>
+            <p>Votre annulation a été prise en compte</p>
+        </div>
+
+        <div class="content">
+            <h2>Bonjour {{ registration.firstName }} {{ registration.lastName }},</h2>
+            
+            <p>Nous confirmons l'annulation de votre inscription à la session de formation suivante :</p>
+
+            <div class="session-details">
+                <h3 style="margin-top: 0; color: #dc3545;">{{ formation.title }}</h3>
+                <p><strong>Session :</strong> {{ session.name }}</p>
+                
+                <div class="detail-row">
+                    <span class="detail-label">📅 Date :</span>
+                    <span class="detail-value">{{ session.startDate|date('d/m/Y') }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">🕐 Horaires :</span>
+                    <span class="detail-value">{{ session.startDate|date('H:i') }} - {{ session.endDate|date('H:i') }}</span>
+                </div>
+                
+                {% if session.location %}
+                <div class="detail-row">
+                    <span class="detail-label">📍 Lieu :</span>
+                    <span class="detail-value">{{ session.location }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="detail-label">📧 Email :</span>
+                    <span class="detail-value">{{ registration.email }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">🗓️ Annulée le :</span>
+                    <span class="detail-value">{{ registration.cancelledAt|date('d/m/Y à H:i') }}</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ Informations importantes :</strong><br>
+                • Votre place a été libérée et peut être attribuée à un autre participant<br>
+                • Aucun frais d'annulation ne vous sera facturé<br>
+                • Vous pouvez vous réinscrire à une autre session si disponible
+            </div>
+
+            <h3>Vous souhaitez vous réinscrire ?</h3>
+            <p>
+                Si vous souhaitez participer à une autre session de cette formation ou à une formation similaire, 
+                nous vous invitons à consulter notre catalogue en ligne :
+            </p>
+            
+            <div style="text-align: center;">
+                <a href="{{ absolute_url(path('app_formation_show', {slug: formation.slug})) }}" class="btn">
+                    Voir les autres sessions
+                </a>
+            </div>
+
+            <h3>Nous restons à votre écoute</h3>
+            <p>
+                Si cette annulation fait suite à un problème ou si vous avez des suggestions pour améliorer nos services, 
+                n'hésitez pas à nous faire part de vos remarques. Votre feedback est précieux pour nous.
+            </p>
+
+            <p>
+                Notre équipe reste disponible pour vous accompagner dans vos projets de formation. 
+                Contactez-nous par email à 
+                <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a> 
+                ou consultez notre catalogue pour découvrir nos autres formations.
+            </p>
+
+            <p>
+                Nous espérons avoir l'occasion de vous accueillir prochainement dans l'une de nos formations !
+            </p>
+
+            <p style="margin-top: 30px;">
+                Cordialement,<br>
+                <strong>L'équipe EPROFOS</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>EPROFOS</strong><br>
+                Organisme de formation professionnelle<br>
+                Email : contact@eprofos.fr
+            </p>
+            <p style="font-size: 12px; margin-top: 15px;">
+                Cet email a été envoyé automatiquement, merci de ne pas y répondre directement.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -113,6 +113,12 @@ class FormationController extends AbstractController
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
+        // Get upcoming sessions for this formation
+        $upcomingSessions = $formation->getUpcomingSessions();
+        
+        // Get open sessions (available for registration)
+        $openSessions = $formation->getOpenSessions();
+
         // Get similar formations
         $similarFormations = $this->formationRepository->findSimilarFormations($formation, 4);
 
@@ -120,11 +126,14 @@ class FormationController extends AbstractController
         $this->logger->info('Formation viewed', [
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
+            'upcoming_sessions_count' => $upcomingSessions->count(),
             'user_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
         ]);
 
         return $this->render('public/formation/show.html.twig', [
             'formation' => $formation,
+            'upcoming_sessions' => $upcomingSessions,
+            'open_sessions' => $openSessions,
             'similar_formations' => $similarFormations,
         ]);
     }

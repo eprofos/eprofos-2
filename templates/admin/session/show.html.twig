@@ -1,0 +1,367 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = session.name %}
+{% set breadcrumb = [
+    { label: 'Admin', url: path('admin_dashboard') },
+    { label: 'Sessions', url: path('admin_session_index') },
+    { label: session.name }
+] %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_session_edit', {id: session.id}) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                <path d="M16 5l3 3"/>
+            </svg>
+            Modifier
+        </a>
+        <a href="{{ path('admin_session_export', {id: session.id}) }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                <path d="M9 9l1 0"/>
+                <path d="M9 13l6 0"/>
+                <path d="M9 17l6 0"/>
+            </svg>
+            Exporter CSV
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Actions
+            </button>
+            <div class="dropdown-menu">
+                <form method="post" action="{{ path('admin_session_toggle_status', {id: session.id}) }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ session.id) }}">
+                    {% if session.status != 'open' %}
+                        <button type="submit" name="status" value="open" class="dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                            Ouvrir les inscriptions
+                        </button>
+                    {% endif %}
+                    {% if session.status != 'confirmed' and session.canBeConfirmed %}
+                        <button type="submit" name="status" value="confirmed" class="dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 12l5 5l10 -10"/>
+                            </svg>
+                            Confirmer la session
+                        </button>
+                    {% endif %}
+                    {% if session.status not in ['cancelled', 'completed'] %}
+                        <button type="submit" name="status" value="cancelled" class="dropdown-item text-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M18 6l-12 12"/>
+                                <path d="M6 6l12 12"/>
+                            </svg>
+                            Annuler la session
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Session Info -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations de la session</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Formation</label>
+                                <div>
+                                    <a href="{{ path('admin_formation_show', {id: session.formation.id}) }}" class="text-decoration-none">
+                                        <strong>{{ session.formation.title }}</strong>
+                                    </a>
+                                    <div class="text-muted small">{{ session.formation.category.name }}</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dates</label>
+                                <div>{{ session.formattedDateRange }}</div>
+                                <div class="text-muted small">{{ session.durationInDays }} jour{{ session.durationInDays > 1 ? 's' : '' }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lieu</label>
+                                <div>{{ session.location }}</div>
+                                {% if session.address %}
+                                    <div class="text-muted small">{{ session.address }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Capacité</label>
+                                <div>{{ session.currentRegistrations }} / {{ session.maxCapacity }} participants</div>
+                                <div class="progress progress-sm mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ session.maxCapacity > 0 ? (session.currentRegistrations / session.maxCapacity * 100) : 0 }}%" aria-valuenow="{{ session.currentRegistrations }}" aria-valuemin="0" aria-valuemax="{{ session.maxCapacity }}"></div>
+                                </div>
+                                {% if session.minCapacity > 0 %}
+                                    <div class="text-muted small">Minimum: {{ session.minCapacity }} participants</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prix</label>
+                                <div>{{ session.formattedPrice }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Statut</label>
+                                <div>
+                                    <span class="badge {{ session.statusBadgeClass }}">{{ session.statusLabel }}</span>
+                                    {% if not session.isActive %}
+                                        <span class="badge bg-secondary ms-1">Inactive</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if session.registrationDeadline %}
+                        <div class="mb-3">
+                            <label class="form-label">Date limite d'inscription</label>
+                            <div>{{ session.registrationDeadline|date('d/m/Y') }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if session.instructor %}
+                        <div class="mb-3">
+                            <label class="form-label">Formateur</label>
+                            <div>{{ session.instructor }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if session.description %}
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <div>{{ session.description|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if session.notes %}
+                        <div class="mb-3">
+                            <label class="form-label">Notes administratives</label>
+                            <div class="text-muted">{{ session.notes|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques rapides</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-primary text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                    <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ session.registrations|filter(r => r.status == 'confirmed')|length }}
+                                            </div>
+                                            <div class="text-muted">Confirmées</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-warning text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M12 9v2m0 4v.01"/>
+                                                    <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ session.registrations|filter(r => r.status == 'pending')|length }}
+                                            </div>
+                                            <div class="text-muted">En attente</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-success text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M8.5 11a2.5 2.5 0 0 1 0 -5a4.8 8 0 0 1 4.5 5a4.8 8 0 0 1 4.5 -5a2.5 2.5 0 0 1 0 5a4.8 8 0 0 1 -4.5 5a4.8 8 0 0 1 -4.5 -5"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ session.availablePlaces }}
+                                            </div>
+                                            <div class="text-muted">Places libres</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-danger text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M18 6l-12 12"/>
+                                                    <path d="M6 6l12 12"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ session.registrations|filter(r => r.status == 'cancelled')|length }}
+                                            </div>
+                                            <div class="text-muted">Annulées</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Actions rapides</h3>
+                </div>
+                <div class="card-body">
+                    <a href="{{ path('admin_session_new', {formation: session.formation.id}) }}" class="btn btn-outline-primary btn-sm d-block mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 5l0 14"/>
+                            <path d="M5 12l14 0"/>
+                        </svg>
+                        Nouvelle session de cette formation
+                    </a>
+                    <a href="{{ path('admin_formation_show', {id: session.formation.id}) }}" class="btn btn-outline-secondary btn-sm d-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                        </svg>
+                        Voir la formation
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Registrations List -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Inscriptions ({{ session.registrations|length }})</h3>
+                    <div class="card-actions">
+                        <a href="{{ path('admin_session_registration_index', {session: session.id}) }}" class="btn btn-sm btn-outline-primary">
+                            Voir toutes les inscriptions
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Contact</th>
+                                <th>Entreprise</th>
+                                <th>Statut</th>
+                                <th>Date inscription</th>
+                                <th class="w-1">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registration in session.registrations %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ registration.fullName }}</strong>
+                                            {% if registration.position %}
+                                                <div class="text-muted small">{{ registration.position }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>{{ registration.email }}</div>
+                                        {% if registration.phone %}
+                                            <div class="text-muted small">{{ registration.phone }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ registration.company ?? '-' }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ registration.statusBadgeClass }}">{{ registration.statusLabel }}</span>
+                                    </td>
+                                    <td>
+                                        {{ registration.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_session_registration_show', {id: registration.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                            </svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        Aucune inscription pour cette session
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

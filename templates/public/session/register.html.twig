@@ -1,0 +1,259 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Inscription - {{ session.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .registration-hero {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 25px;
+        }
+        .form-floating > .form-control:focus ~ label {
+            color: #28a745;
+        }
+        .form-floating > .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_session_show', {id: session.id}) }}">{{ session.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Inscription</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Registration Hero -->
+            <div class="registration-hero p-5 mb-5 text-center">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="fas fa-user-plus me-3"></i>Inscription
+                </h1>
+                <p class="lead mb-0">{{ session.name }}</p>
+                <p class="mb-0">{{ session.formation.title }}</p>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                <div class="card-body p-5">
+                    <h2 class="h3 fw-bold mb-4">
+                        <i class="fas fa-edit text-success me-2"></i>
+                        Vos informations
+                    </h2>
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row">
+                        <!-- Personal Information -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                                {{ form_label(form.firstName, 'Prénom *') }}
+                            </div>
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                                {{ form_label(form.lastName, 'Nom *') }}
+                            </div>
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Email'}}) }}
+                                {{ form_label(form.email, 'Email *') }}
+                            </div>
+                            {{ form_errors(form.email) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.phone, {'attr': {'class': 'form-control', 'placeholder': 'Téléphone'}}) }}
+                                {{ form_label(form.phone, 'Téléphone') }}
+                            </div>
+                            {{ form_errors(form.phone) }}
+                        </div>
+                        
+                        <!-- Company Information -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.company, {'attr': {'class': 'form-control', 'placeholder': 'Entreprise'}}) }}
+                                {{ form_label(form.company, 'Entreprise') }}
+                            </div>
+                            {{ form_errors(form.company) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.position, {'attr': {'class': 'form-control', 'placeholder': 'Poste'}}) }}
+                                {{ form_label(form.position, 'Poste') }}
+                            </div>
+                            {{ form_errors(form.position) }}
+                        </div>
+                        
+                        <!-- Special Requirements -->
+                        <div class="col-12 mb-4">
+                            <div class="form-floating">
+                                {{ form_widget(form.specialRequirements, {'attr': {'class': 'form-control', 'style': 'height: 120px', 'placeholder': 'Commentaires ou besoins particuliers'}}) }}
+                                {{ form_label(form.specialRequirements, 'Commentaires ou besoins particuliers') }}
+                            </div>
+                            {{ form_errors(form.specialRequirements) }}
+                        </div>
+                    </div>
+
+                    <!-- Terms and Privacy -->
+                    <div class="bg-light p-4 rounded-3 mb-4">
+                        <div class="form-check mb-3">
+                            {{ form_widget(form.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                            {{ form_label(form.agreeTerms, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                            {{ form_errors(form.agreeTerms) }}
+                        </div>
+                        
+                        <div class="form-check">
+                            {{ form_widget(form.agreeContact, {'attr': {'class': 'form-check-input'}}) }}
+                            {{ form_label(form.agreeContact, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                            {{ form_errors(form.agreeContact) }}
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ path('app_session_show', {id: session.id}) }}" 
+                           class="btn btn-outline-secondary btn-lg me-md-2" style="border-radius: 20px;">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg" style="border-radius: 20px; min-width: 200px;">
+                            <i class="fas fa-paper-plane me-2"></i>Confirmer l'inscription
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 2rem;">
+                <!-- Session Summary -->
+                <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-calendar-check text-success me-2"></i>
+                            Récapitulatif
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <strong>{{ session.formation.title }}</strong>
+                            <br>
+                            <span class="text-muted">{{ session.name }}</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="mb-2">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <strong>Date :</strong> {{ session.startDate|date('d/m/Y') }}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Horaires :</strong> {{ session.startDate|date('H:i') }} - {{ session.endDate|date('H:i') }}
+                        </div>
+                        
+                        {% if session.location %}
+                        <div class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Lieu :</strong> {{ session.location }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Durée :</strong> {{ session.formation.durationHours }} heures
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="text-center">
+                            {% if session.price %}
+                                <div class="h4 text-success fw-bold">{{ session.formattedPrice }}</div>
+                            {% elseif session.formation.price %}
+                                <div class="h4 text-success fw-bold">{{ session.formation.formattedPrice }}</div>
+                            {% else %}
+                                <div class="h5 text-success fw-bold">Prix sur devis</div>
+                            {% endif %}
+                            <small class="text-muted">Prix par participant</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-body p-4 text-center">
+                        <i class="fas fa-question-circle fa-2x text-primary mb-3"></i>
+                        <h6 class="fw-bold mb-3">Besoin d'aide ?</h6>
+                        <p class="text-muted small mb-3">
+                            Des questions sur cette formation ou votre inscription ? 
+                            Notre équipe est là pour vous accompagner.
+                        </p>
+                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary btn-sm w-100" style="border-radius: 15px;">
+                            <i class="fas fa-envelope me-1"></i>Nous contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const termsCheckbox = form.querySelector('input[name="session_registration[agreeTerms]"]');
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            function checkFormValidity() {
+                const isValid = form.checkValidity() && (termsCheckbox ? termsCheckbox.checked : true);
+                submitButton.disabled = !isValid;
+                submitButton.classList.toggle('btn-success', isValid);
+                submitButton.classList.toggle('btn-secondary', !isValid);
+            }
+            
+            // Check validity on input changes
+            form.addEventListener('input', checkFormValidity);
+            if (termsCheckbox) {
+                termsCheckbox.addEventListener('change', checkFormValidity);
+            }
+            
+            // Initial check
+            checkFormValidity();
+            
+            // Prevent form submission if terms not accepted
+            form.addEventListener('submit', function(e) {
+                if (termsCheckbox && !termsCheckbox.checked) {
+                    e.preventDefault();
+                    alert('Veuillez accepter les conditions générales pour continuer.');
+                    return false;
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %}

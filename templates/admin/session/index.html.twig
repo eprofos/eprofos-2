@@ -1,0 +1,299 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Sessions de formation' %}
+{% set breadcrumb = [
+    { label: 'Admin', url: path('admin_dashboard') },
+    { label: 'Sessions' }
+] %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_session_new') }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 5l0 14"/>
+            <path d="M5 12l14 0"/>
+        </svg>
+        Nouvelle session
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Statistics Cards -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Sessions totales</div>
+                    </div>
+                    <div class="h1 mb-3">{{ stats.total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Inscriptions ouvertes</div>
+                    </div>
+                    <div class="h1 mb-3">{{ stats.open }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Confirmées</div>
+                    </div>
+                    <div class="h1 mb-3">{{ stats.confirmed }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Total inscriptions</div>
+                    </div>
+                    <div class="h1 mb-3">{{ stats.totalRegistrations }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Card -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Filtres</h3>
+                    <div class="card-actions">
+                        <a href="{{ path('admin_session_index') }}" class="btn btn-sm btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+                                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+                            </svg>
+                            Réinitialiser
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ path('admin_session_index') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Recherche</label>
+                            <input type="text" name="search" class="form-control" placeholder="Nom, formation, lieu..." value="{{ filters.search ?? '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Statut</label>
+                            <select name="status" class="form-select">
+                                <option value="">Tous</option>
+                                <option value="planned" {{ filters.status == 'planned' ? 'selected' : '' }}>Planifiée</option>
+                                <option value="open" {{ filters.status == 'open' ? 'selected' : '' }}>Inscriptions ouvertes</option>
+                                <option value="confirmed" {{ filters.status == 'confirmed' ? 'selected' : '' }}>Confirmée</option>
+                                <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' : '' }}>Annulée</option>
+                                <option value="completed" {{ filters.status == 'completed' ? 'selected' : '' }}>Terminée</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Date début</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ filters.start_date ?? '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Date fin</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ filters.end_date ?? '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Active</label>
+                            <select name="active" class="form-select">
+                                <option value="">Toutes</option>
+                                <option value="1" {{ filters.active == '1' ? 'selected' : '' }}>Actives</option>
+                                <option value="0" {{ filters.active == '0' ? 'selected' : '' }}>Inactives</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block">Filtrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions List -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sessions ({{ total_sessions }})</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <a href="{{ path('admin_session_index', filters|merge({sort: 'name', direction: filters.sort == 'name' and filters.direction == 'ASC' ? 'DESC' : 'ASC'})) }}" class="text-decoration-none">
+                                        Nom
+                                        {% if filters.sort == 'name' %}
+                                            <small>{{ filters.direction == 'ASC' ? '↑' : '↓' }}</small>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Formation</th>
+                                <th>
+                                    <a href="{{ path('admin_session_index', filters|merge({sort: 'startDate', direction: filters.sort == 'startDate' and filters.direction == 'ASC' ? 'DESC' : 'ASC'})) }}" class="text-decoration-none">
+                                        Dates
+                                        {% if filters.sort == 'startDate' %}
+                                            <small>{{ filters.direction == 'ASC' ? '↑' : '↓' }}</small>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Lieu</th>
+                                <th>
+                                    <a href="{{ path('admin_session_index', filters|merge({sort: 'currentRegistrations', direction: filters.sort == 'currentRegistrations' and filters.direction == 'ASC' ? 'DESC' : 'ASC'})) }}" class="text-decoration-none">
+                                        Inscriptions
+                                        {% if filters.sort == 'currentRegistrations' %}
+                                            <small>{{ filters.direction == 'ASC' ? '↑' : '↓' }}</small>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('admin_session_index', filters|merge({sort: 'status', direction: filters.sort == 'status' and filters.direction == 'ASC' ? 'DESC' : 'ASC'})) }}" class="text-decoration-none">
+                                        Statut
+                                        {% if filters.sort == 'status' %}
+                                            <small>{{ filters.direction == 'ASC' ? '↑' : '↓' }}</small>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th class="w-1">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <strong>{{ session.name }}</strong>
+                                                {% if session.instructor %}
+                                                    <div class="text-muted small">{{ session.instructor }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_formation_show', {id: session.formation.id}) }}" class="text-decoration-none">
+                                            {{ session.formation.title }}
+                                        </a>
+                                        <div class="text-muted small">{{ session.formation.category.name }}</div>
+                                    </td>
+                                    <td>
+                                        <div>{{ session.formattedDateRange }}</div>
+                                        {% if session.registrationDeadline %}
+                                            <div class="text-muted small">
+                                                Limite: {{ session.registrationDeadline|date('d/m/Y') }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ session.location }}
+                                        {% if session.address %}
+                                            <div class="text-muted small">{{ session.address|u.truncate(50) }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-primary me-1">{{ session.currentRegistrations }}</span>
+                                            <span class="text-muted">/ {{ session.maxCapacity }}</span>
+                                        </div>
+                                        <div class="progress progress-sm mt-1">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ session.maxCapacity > 0 ? (session.currentRegistrations / session.maxCapacity * 100) : 0 }}%" aria-valuenow="{{ session.currentRegistrations }}" aria-valuemin="0" aria-valuemax="{{ session.maxCapacity }}"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ session.statusBadgeClass }}">{{ session.statusLabel }}</span>
+                                        {% if not session.isActive %}
+                                            <div class="text-muted small">Inactive</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-list flex-nowrap">
+                                            <a href="{{ path('admin_session_show', {id: session.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                </svg>
+                                            </a>
+                                            <a href="{{ path('admin_session_edit', {id: session.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                    <path d="M16 5l3 3"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        Aucune session trouvée
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if total_pages > 1 %}
+                    <div class="card-footer d-flex align-items-center">
+                        <p class="m-0 text-muted">
+                            Affichage de <span>{{ (current_page - 1) * 20 + 1 }}</span> à <span>{{ min(current_page * 20, total_sessions) }}</span> sur <span>{{ total_sessions }}</span> sessions
+                        </p>
+                        <ul class="pagination m-0 ms-auto">
+                            {% if current_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_session_index', filters|merge({page: current_page - 1})) }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M15 6l-6 6l6 6"/>
+                                        </svg>
+                                        Précédent
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page in 1..total_pages %}
+                                {% if page == current_page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page }}</span>
+                                    </li>
+                                {% elseif page == 1 or page == total_pages or (page >= current_page - 2 and page <= current_page + 2) %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_session_index', filters|merge({page: page})) }}">{{ page }}</a>
+                                    </li>
+                                {% elseif page == current_page - 3 or page == current_page + 3 %}
+                                    <li class="page-item">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if current_page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_session_index', filters|merge({page: current_page + 1})) }}">
+                                        Suivant
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 6l6 6l-6 6"/>
+                                        </svg>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

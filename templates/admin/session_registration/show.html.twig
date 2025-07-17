@@ -1,0 +1,313 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Inscription #' ~ registration.id %}
+{% set breadcrumb = [
+    { label: 'Admin', url: path('admin_dashboard') },
+    { label: 'Inscriptions', url: path('admin_session_registration_index') },
+    { label: 'Inscription #' ~ registration.id }
+] %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        {% if registration.status == 'pending' %}
+            <form method="post" action="{{ path('admin_session_registration_confirm', {id: registration.id}) }}" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('confirm_registration' ~ registration.id) }}">
+                <button type="submit" class="btn btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l5 5l10 -10"/>
+                    </svg>
+                    Confirmer
+                </button>
+            </form>
+        {% endif %}
+        
+        {% if registration.status != 'cancelled' %}
+            <form method="post" action="{{ path('admin_session_registration_cancel', {id: registration.id}) }}" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel_registration' ~ registration.id) }}">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette inscription ?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M18 6l-12 12"/>
+                        <path d="M6 6l12 12"/>
+                    </svg>
+                    Annuler
+                </button>
+            </form>
+        {% endif %}
+        
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Actions
+            </button>
+            <div class="dropdown-menu">
+                <a href="{{ path('admin_session_show', {id: registration.session.id}) }}" class="dropdown-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 14l2 -2l2 2"/>
+                        <path d="M12 12v8"/>
+                        <path d="M9 7a3 3 0 0 1 6 0v2a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3v-2z"/>
+                    </svg>
+                    Voir la session
+                </a>
+                
+                <form method="post" action="{{ path('admin_session_registration_delete', {id: registration.id}) }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_registration' ~ registration.id) }}">
+                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette inscription ?')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M4 7l16 0"/>
+                            <path d="M10 11l0 6"/>
+                            <path d="M14 11l0 6"/>
+                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                        </svg>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Registration Details Card -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Détails de l'inscription</h3>
+                    <div class="card-actions">
+                        {% if registration.status == 'pending' %}
+                            <span class="badge bg-warning-lt">En attente</span>
+                        {% elseif registration.status == 'confirmed' %}
+                            <span class="badge bg-success-lt">Confirmée</span>
+                        {% elseif registration.status == 'cancelled' %}
+                            <span class="badge bg-danger-lt">Annulée</span>
+                        {% else %}
+                            <span class="badge bg-secondary-lt">{{ registration.status|title }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Prénom</label>
+                                <div class="form-control-plaintext">{{ registration.firstName }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom</label>
+                                <div class="form-control-plaintext">{{ registration.lastName }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <div class="form-control-plaintext">
+                                    <a href="mailto:{{ registration.email }}">{{ registration.email }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <div class="form-control-plaintext">
+                                    {% if registration.phone %}
+                                        <a href="tel:{{ registration.phone }}">{{ registration.phone }}</a>
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Entreprise</label>
+                                <div class="form-control-plaintext">
+                                    {% if registration.company %}
+                                        {{ registration.company }}
+                                    {% else %}
+                                        <span class="text-muted">Non renseignée</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Poste</label>
+                                <div class="form-control-plaintext">
+                                    {% if registration.position %}
+                                        {{ registration.position }}
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if registration.specialRequirements %}
+                    <div class="mb-3">
+                        <label class="form-label">Besoins spécifiques</label>
+                        <div class="form-control-plaintext">
+                            {{ registration.specialRequirements|nl2br }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Session & Status Card -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Session</h3>
+                </div>
+                <div class="card-body">
+                    <h4>{{ registration.session.name }}</h4>
+                    <p class="text-muted mb-3">{{ registration.session.formation.title }}</p>
+                    
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <rect x="4" y="5" width="16" height="16" rx="2"/>
+                                        <line x1="16" y1="3" x2="16" y2="7"/>
+                                        <line x1="8" y1="3" x2="8" y2="7"/>
+                                        <line x1="4" y1="11" x2="20" y2="11"/>
+                                    </svg>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>{{ registration.session.startDate|date('d/m/Y') }}</strong>
+                                    </div>
+                                    <div class="text-muted">
+                                        {{ registration.session.startDate|date('H:i') }} - {{ registration.session.endDate|date('H:i') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if registration.session.location %}
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-4.5 -7l-7 -4.5a0.55 .55 0 0 1 0 -1l18 -6.5"/>
+                                    </svg>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        {{ registration.session.location }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                    </svg>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>{{ registration.session.currentRegistrations }}/{{ registration.session.maxCapacity }}</strong>
+                                    </div>
+                                    <div class="text-muted">Participants</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ path('admin_session_show', {id: registration.session.id}) }}" class="btn btn-outline-primary w-100">
+                            Voir la session complète
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Timeline -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Historique</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="status-dot status-dot-animated bg-success"></span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        Inscription créée
+                                    </div>
+                                    <div class="text-muted">
+                                        {{ registration.createdAt|date('d/m/Y à H:i') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if registration.confirmedAt %}
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="status-dot bg-success"></span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        Inscription confirmée
+                                    </div>
+                                    <div class="text-muted">
+                                        {{ registration.confirmedAt|date('d/m/Y à H:i') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if registration.status == 'cancelled' %}
+                        <div class="list-group-item px-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="status-dot bg-danger"></span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        Inscription annulée
+                                    </div>
+                                    <div class="text-muted">
+                                        Statut: {{ registration.statusLabel }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

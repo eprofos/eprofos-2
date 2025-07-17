@@ -193,10 +193,18 @@ class Formation
     #[ORM\OrderBy(['orderIndex' => 'ASC'])]
     private Collection $modules;
 
+    /**
+     * @var Collection<int, Session>
+     */
+    #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'formation', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['startDate' => 'ASC'])]
+    private Collection $sessions;
+
     public function __construct()
     {
         $this->contactRequests = new ArrayCollection();
         $this->modules = new ArrayCollection();
+        $this->sessions = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -493,6 +501,36 @@ class Formation
     }
 
     /**
+     * @return Collection<int, Session>
+     */
+    public function getSessions(): Collection
+    {
+        return $this->sessions;
+    }
+
+    public function addSession(Session $session): static
+    {
+        if (!$this->sessions->contains($session)) {
+            $this->sessions->add($session);
+            $session->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSession(Session $session): static
+    {
+        if ($this->sessions->removeElement($session)) {
+            // set the owning side to null (unless already changed)
+            if ($session->getFormation() === $this) {
+                $session->setFormation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Get active modules for this formation
      * 
      * @return Collection<int, Module>
@@ -502,6 +540,63 @@ class Formation
         return $this->modules->filter(function (Module $module) {
             return $module->isActive();
         });
+    }
+
+    /**
+     * Get upcoming sessions for this formation
+     * 
+     * @return Collection<int, Session>
+     */
+    public function getUpcomingSessions(): Collection
+    {
+        $now = new \DateTime();
+        return $this->sessions->filter(function (Session $session) use ($now) {
+            return $session->isActive() && $session->getStartDate() > $now;
+        });
+    }
+
+    /**
+     * Get open sessions for this formation (available for registration)
+     * 
+     * @return Collection<int, Session>
+     */
+    public function getOpenSessions(): Collection
+    {
+        $now = new \DateTime();
+        return $this->sessions->filter(function (Session $session) use ($now) {
+            return $session->isActive() 
+                && $session->getStatus() === 'open'
+                && $session->getStartDate() > $now
+                && !$session->isFull()
+                && $session->isRegistrationOpen();
+        });
+    }
+
+    /**
+     * Get the next upcoming session
+     */
+    public function getNextSession(): ?Session
+    {
+        $upcomingSessions = $this->getUpcomingSessions();
+        
+        if ($upcomingSessions->isEmpty()) {
+            return null;
+        }
+
+        $sessionsArray = $upcomingSessions->toArray();
+        usort($sessionsArray, function (Session $a, Session $b) {
+            return $a->getStartDate() <=> $b->getStartDate();
+        });
+
+        return $sessionsArray[0];
+    }
+
+    /**
+     * Check if formation has available sessions for registration
+     */
+    public function hasAvailableSessions(): bool
+    {
+        return !$this->getOpenSessions()->isEmpty();
     }
 
     /**

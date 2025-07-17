@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation d'inscription - {{ formation.title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+        }
+        .session-details {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .detail-value {
+            color: #6c757d;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn:hover {
+            background-color: #c82333;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .alert {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>Inscription confirmée !</h1>
+            <p>Votre place est réservée</p>
+        </div>
+
+        <div class="content">
+            <h2>Bonjour {{ registration.firstName }} {{ registration.lastName }},</h2>
+            
+            <p>Nous avons le plaisir de confirmer votre inscription à la session de formation suivante :</p>
+
+            <div class="session-details">
+                <h3 style="margin-top: 0; color: #28a745;">{{ formation.title }}</h3>
+                <p><strong>Session :</strong> {{ session.name }}</p>
+                
+                <div class="detail-row">
+                    <span class="detail-label">📅 Date :</span>
+                    <span class="detail-value">{{ session.startDate|date('d/m/Y') }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">🕐 Horaires :</span>
+                    <span class="detail-value">{{ session.startDate|date('H:i') }} - {{ session.endDate|date('H:i') }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">⏱️ Durée :</span>
+                    <span class="detail-value">{{ session.formation.durationHours }} heures</span>
+                </div>
+                
+                {% if session.location %}
+                <div class="detail-row">
+                    <span class="detail-label">📍 Lieu :</span>
+                    <span class="detail-value">{{ session.location }}</span>
+                </div>
+                {% endif %}
+                
+                {% if registration.company %}
+                <div class="detail-row">
+                    <span class="detail-label">🏢 Entreprise :</span>
+                    <span class="detail-value">{{ registration.company }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="detail-label">📧 Email :</span>
+                    <span class="detail-value">{{ registration.email }}</span>
+                </div>
+                
+                {% if registration.phone %}
+                <div class="detail-row">
+                    <span class="detail-label">📞 Téléphone :</span>
+                    <span class="detail-value">{{ registration.phone }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="alert">
+                <strong>📝 Prochaines étapes :</strong><br>
+                • Vous recevrez plus d'informations pratiques 48h avant la formation<br>
+                • En cas d'empêchement, merci de nous prévenir au plus tôt<br>
+                • Pensez à noter cette date dans votre agenda
+            </div>
+
+            {% if registration.specialRequirements %}
+            <div style="background-color: #e7f3ff; border-radius: 10px; padding: 15px; margin: 20px 0;">
+                <strong>💬 Vos besoins spécifiques :</strong><br>
+                {{ registration.specialRequirements|nl2br }}
+            </div>
+            {% endif %}
+
+            <h3>Besoin de modifier ou annuler votre inscription ?</h3>
+            <p>Si vous devez annuler votre participation, vous pouvez le faire en cliquant sur le lien ci-dessous :</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ cancel_url }}" class="btn">Annuler mon inscription</a>
+            </div>
+            
+            <p style="font-size: 14px; color: #6c757d; text-align: center;">
+                ⚠️ L'annulation doit être effectuée au moins 48h avant la formation
+            </p>
+
+            <h3>Questions ?</h3>
+            <p>
+                Notre équipe reste à votre disposition pour toute question concernant cette formation. 
+                N'hésitez pas à nous contacter par email à 
+                <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a> 
+                ou par téléphone.
+            </p>
+
+            <p>
+                Nous avons hâte de vous accueillir lors de cette formation !
+            </p>
+
+            <p style="margin-top: 30px;">
+                Cordialement,<br>
+                <strong>L'équipe EPROFOS</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>EPROFOS</strong><br>
+                Organisme de formation professionnelle<br>
+                Email : contact@eprofos.fr
+            </p>
+            <p style="font-size: 12px; margin-top: 15px;">
+                Cet email a été envoyé automatiquement, merci de ne pas y répondre directement.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

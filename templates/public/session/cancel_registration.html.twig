@@ -1,0 +1,119 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Annuler votre inscription - {{ registration.session.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .cancel-hero {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 25px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Cancel Hero -->
+            <div class="cancel-hero p-5 mb-5 text-center">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="fas fa-times-circle me-3"></i>Annuler votre inscription
+                </h1>
+                <p class="lead mb-0">{{ registration.session.name }}</p>
+                <p class="mb-0">{{ registration.session.formation.title }}</p>
+            </div>
+
+            {% if registration.isCancelled %}
+                <!-- Already Cancelled -->
+                <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle fa-4x text-success"></i>
+                        </div>
+                        <h2 class="h3 fw-bold mb-3">Inscription déjà annulée</h2>
+                        <p class="text-muted mb-4">
+                            Votre inscription pour cette session a déjà été annulée le {{ registration.cancelledAt|date('d/m/Y à H:i') }}.
+                        </p>
+                        <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                           class="btn btn-primary" style="border-radius: 20px;">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la formation
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Cancellation Form -->
+                <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h2 class="h3 fw-bold">Confirmer l'annulation</h2>
+                        </div>
+
+                        <!-- Registration Details -->
+                        <div class="bg-light p-4 rounded-3 mb-4">
+                            <h5 class="fw-bold mb-3">Détails de votre inscription</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Participant :</strong> {{ registration.firstName }} {{ registration.lastName }}</p>
+                                    <p class="mb-2"><strong>Email :</strong> {{ registration.email }}</p>
+                                    {% if registration.company %}
+                                    <p class="mb-2"><strong>Entreprise :</strong> {{ registration.company }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Formation :</strong> {{ registration.session.formation.title }}</p>
+                                    <p class="mb-2"><strong>Session :</strong> {{ registration.session.name }}</p>
+                                    <p class="mb-2"><strong>Date :</strong> {{ registration.session.startDate|date('d/m/Y') }}</p>
+                                    <p class="mb-2"><strong>Inscrit le :</strong> {{ registration.createdAt|date('d/m/Y à H:i') }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warning Message -->
+                        <div class="alert alert-warning" role="alert">
+                            <h6 class="alert-heading fw-bold">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Attention
+                            </h6>
+                            <p class="mb-0">
+                                Cette action est irréversible. Une fois votre inscription annulée, vous devrez vous réinscrire 
+                                si vous souhaitez participer à cette session (sous réserve de places disponibles).
+                            </p>
+                        </div>
+
+                        <!-- Cancellation Form -->
+                        <form method="post" class="text-center">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                                   class="btn btn-outline-secondary btn-lg me-md-2" style="border-radius: 20px;">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour sans annuler
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-lg" style="border-radius: 20px;" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir annuler votre inscription ?')">
+                                    <i class="fas fa-times me-2"></i>Confirmer l'annulation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="card border-0 shadow-sm mt-4" style="border-radius: 20px;">
+                    <div class="card-body p-4 text-center">
+                        <h6 class="fw-bold mb-3">Besoin d'aide ?</h6>
+                        <p class="text-muted mb-3">
+                            Si vous rencontrez des difficultés ou avez des questions concernant votre inscription, 
+                            n'hésitez pas à nous contacter avant d'annuler.
+                        </p>
+                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary" style="border-radius: 15px;">
+                            <i class="fas fa-envelope me-2"></i>Nous contacter
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

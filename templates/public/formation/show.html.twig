@@ -294,9 +294,102 @@
                     </div>
                 {% endif %}
 
+                {# Sessions Section #}
+                {% set upcomingSessions = upcoming_sessions %}
+                {% if upcomingSessions is not empty %}
+                    <div class="mb-5">
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px; border-left: 5px solid #28a745;">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <h2 class="h3 fw-bold mb-0">Prochaines sessions</h2>
+                                </div>
+                                
+                                <div class="row">
+                                    {% for session in upcomingSessions %}
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card border-0 bg-light h-100" style="border-radius: 15px;">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                                        <div>
+                                                            <h5 class="card-title fw-bold text-primary mb-1">
+                                                                {{ session.startDate|date('d/m/Y') }}
+                                                            </h5>
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                {{ session.startDate|date('H:i') }} - {{ session.endDate|date('H:i') }}
+                                                            </p>
+                                                        </div>
+                                                        <span class="badge bg-{{ session.status == 'open' ? 'success' : (session.status == 'full' ? 'warning' : 'secondary') }} rounded-pill">
+                                                            {% if session.status == 'open' %}
+                                                                Ouvert
+                                                            {% elseif session.status == 'full' %}
+                                                                Complet
+                                                            {% else %}
+                                                                {{ session.status|title }}
+                                                            {% endif %}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        {% if session.location %}
+                                                            <p class="mb-1">
+                                                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                                                <small>{{ session.location }}</small>
+                                                            </p>
+                                                        {% endif %}
+                                                        {% if session.maxCapacity %}
+                                                            <p class="mb-1">
+                                                                <i class="fas fa-users text-primary me-2"></i>
+                                                                <small>{{ session.currentRegistrations }}/{{ session.maxCapacity }} participants</small>
+                                                            </p>
+                                                        {% endif %}
+                                                        {% if session.price and session.price != formation.price %}
+                                                            <p class="mb-1">
+                                                                <i class="fas fa-euro-sign text-primary me-2"></i>
+                                                                <small>{{ session.formattedPrice }}</small>
+                                                            </p>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <div class="d-grid">
+                                                        {% if session.status == 'open' and not session.isFull %}
+                                                            <a href="{{ path('app_session_register', {id: session.id}) }}" 
+                                                               class="btn btn-success btn-sm" style="border-radius: 10px;">
+                                                                <i class="fas fa-user-plus me-1"></i>S'inscrire
+                                                            </a>
+                                                        {% elseif session.status == 'full' %}
+                                                            <button class="btn btn-warning btn-sm" disabled style="border-radius: 10px;">
+                                                                <i class="fas fa-users me-1"></i>Complet
+                                                            </button>
+                                                        {% else %}
+                                                            <a href="{{ path('app_session_show', {id: session.id}) }}" 
+                                                               class="btn btn-outline-primary btn-sm" style="border-radius: 10px;">
+                                                                <i class="fas fa-info-circle me-1"></i>Voir détails
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=session" 
+                                       class="btn btn-outline-success" style="border-radius: 15px;">
+                                        <i class="fas fa-calendar-plus me-2"></i>Demander une nouvelle session
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
 
                 {# Modern Related Formations Section #}
-                {% if related_formations is defined and related_formations is not empty %}
+                {% if similar_formations is defined and similar_formations is not empty %}
                     <div class="mb-5">
                         <div class="d-flex align-items-center mb-4">
                             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
@@ -305,7 +398,7 @@
                             <h2 class="h3 fw-bold mb-0">Formations similaires</h2>
                         </div>
                         <div class="row">
-                            {% for related_formation in related_formations %}
+                            {% for related_formation in similar_formations %}
                                 <div class="col-md-6 mb-4">
                                     {% include 'public/components/formation_card.html.twig' with {
                                         'formation': related_formation,

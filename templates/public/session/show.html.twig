@@ -1,0 +1,218 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}{{ session.name }} - {{ session.formation.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .session-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+        }
+        .info-card {
+            border-radius: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ session.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Session Hero -->
+            <div class="session-hero p-5 mb-5 text-center">
+                <h1 class="display-5 fw-bold mb-3">{{ session.name }}</h1>
+                <p class="lead mb-4">{{ session.formation.title }}</p>
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                    <div class="text-center">
+                        <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                        <div class="fw-bold">{{ session.startDate|date('d/m/Y') }}</div>
+                        <small>{{ session.startDate|date('H:i') }} - {{ session.endDate|date('H:i') }}</small>
+                    </div>
+                    {% if session.location %}
+                    <div class="text-center">
+                        <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
+                        <div class="fw-bold">Lieu</div>
+                        <small>{{ session.location }}</small>
+                    </div>
+                    {% endif %}
+                    {% if session.maxCapacity %}
+                    <div class="text-center">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <div class="fw-bold">{{ session.currentRegistrations }}/{{ session.maxCapacity }}</div>
+                        <small>Participants</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Session Details -->
+            {% if session.description %}
+            <div class="card info-card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-3">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Description de la session
+                    </h3>
+                    <div class="text-muted" style="line-height: 1.7;">
+                        {{ session.description|nl2br }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Formation Details -->
+            <div class="card info-card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-3">
+                        <i class="fas fa-graduation-cap text-primary me-2"></i>
+                        À propos de cette formation
+                    </h3>
+                    <div class="text-muted mb-3" style="line-height: 1.7;">
+                        {{ session.formation.description|nl2br }}
+                    </div>
+                    <a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-1"></i>Voir la formation complète
+                    </a>
+                </div>
+            </div>
+
+            <!-- Program -->
+            {% set programContent = session.formation.programContent %}
+            {% if programContent %}
+            <div class="card info-card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-3">
+                        <i class="fas fa-list-alt text-primary me-2"></i>
+                        Programme
+                    </h3>
+                    <div class="text-muted" style="line-height: 1.7;">
+                        {{ programContent|nl2br }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 2rem;">
+                <!-- Registration Card -->
+                <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
+                    <div class="card-body p-4 text-center">
+                        <!-- Status Badge -->
+                        <div class="mb-4">
+                            {% if session.status == 'open' %}
+                                <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                                    <i class="fas fa-check-circle me-1"></i>Inscriptions ouvertes
+                                </span>
+                            {% elseif session.status == 'full' %}
+                                <span class="badge bg-warning fs-6 px-3 py-2 rounded-pill">
+                                    <i class="fas fa-users me-1"></i>Session complète
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill">
+                                    <i class="fas fa-clock me-1"></i>{{ session.status|title }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price -->
+                        <div class="mb-4">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-euro-sign fa-lg"></i>
+                            </div>
+                            {% if session.price %}
+                                <div class="display-5 fw-bold text-primary mb-1">{{ session.formattedPrice }}</div>
+                            {% elseif session.formation.price %}
+                                <div class="display-5 fw-bold text-primary mb-1">{{ session.formation.formattedPrice }}</div>
+                            {% else %}
+                                <div class="h3 text-primary fw-bold mb-1">Prix sur devis</div>
+                            {% endif %}
+                            <small class="text-muted fw-semibold">Prix par participant</small>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3">
+                            {% if session.status == 'open' and not session.isFull %}
+                                <a href="{{ path('app_session_register', {id: session.id}) }}" 
+                                   class="btn btn-success btn-lg" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-user-plus me-2"></i>S'inscrire à cette session
+                                </a>
+                            {% elseif session.status == 'full' %}
+                                <button class="btn btn-warning btn-lg" disabled style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-users me-2"></i>Session complète
+                                </button>
+                                <a href="{{ path('app_contact_index') }}?formation={{ session.formation.id }}&type=session" 
+                                   class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-calendar-plus me-2"></i>Demander une nouvelle session
+                                </a>
+                            {% else %}
+                                <a href="{{ path('app_contact_index') }}?formation={{ session.formation.id }}&type=information" 
+                                   class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
+                                    <i class="fas fa-info-circle me-2"></i>Plus d'informations
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Session Info -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row text-start">
+                                <div class="col-12 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        Durée : {{ session.formation.durationHours }} heures
+                                    </small>
+                                </div>
+                                {% if session.formation.level %}
+                                <div class="col-12 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-signal text-primary me-2"></i>
+                                        Niveau : {{ session.formation.level }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                {% if session.formation.category %}
+                                <div class="col-12 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag text-primary me-2"></i>
+                                        Catégorie : {{ session.formation.category.name }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Card -->
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-body p-4 text-center">
+                        <h5 class="fw-bold mb-3">Besoin d'aide ?</h5>
+                        <p class="text-muted mb-3">Notre équipe est là pour répondre à vos questions.</p>
+                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary w-100" style="border-radius: 15px;">
+                            <i class="fas fa-envelope me-2"></i>Nous contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
