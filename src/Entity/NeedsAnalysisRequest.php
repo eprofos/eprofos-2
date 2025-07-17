@@ -117,6 +117,10 @@ class NeedsAnalysisRequest
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Formation $formation = null;
 
+    #[ORM\ManyToOne(targetEntity: Prospect::class, inversedBy: 'needsAnalysisRequests')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Prospect $prospect = null;
+
     #[ORM\OneToOne(targetEntity: CompanyNeedsAnalysis::class, mappedBy: 'needsAnalysisRequest', cascade: ['persist', 'remove'])]
     private ?CompanyNeedsAnalysis $companyAnalysis = null;
 
@@ -453,6 +457,17 @@ class NeedsAnalysisRequest
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+        return $this;
+    }
+
+    public function getProspect(): ?Prospect
+    {
+        return $this->prospect;
+    }
+
+    public function setProspect(?Prospect $prospect): static
+    {
+        $this->prospect = $prospect;
         return $this;
     }
 

@@ -259,6 +259,226 @@
             </div>
         {% endif %}
 
+        <!-- Activity Timeline Section -->
+        {% set interactions = prospect.getAllInteractions() %}
+        {% set leadScore = prospect.getLeadScore() %}
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M4 4l6 6l-6 6"/>
+                                <path d="M14 4l6 6l-6 6"/>
+                            </svg>
+                            Historique des interactions
+                            <span class="badge bg-primary ms-2">{{ interactions|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if interactions is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 7v4a1 1 0 0 0 1 1h3"/>
+                                        <path d="M7 7v10"/>
+                                        <path d="M10 8v8a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-8a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1z"/>
+                                        <path d="M17 7v4a1 1 0 0 0 1 1h3"/>
+                                        <path d="M21 7v10"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Aucune interaction enregistrée</p>
+                                <p class="empty-subtitle text-muted">
+                                    Ce prospect n'a pas encore d'historique d'interactions.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for interaction in interactions %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                {% if interaction.type == 'session_registration' %}
+                                                    <span class="avatar avatar-sm bg-success text-white">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M9 11l3 3l8 -8"/>
+                                                            <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+                                                        </svg>
+                                                    </span>
+                                                {% elseif interaction.type == 'contact_request' %}
+                                                    <span class="avatar avatar-sm bg-info text-white">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                                            <path d="M3 7l9 6l9 -6"/>
+                                                        </svg>
+                                                    </span>
+                                                {% elseif interaction.type == 'needs_analysis' %}
+                                                    <span class="avatar avatar-sm bg-warning text-white">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                                            <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                                            <path d="M9 12l2 2l4 -4"/>
+                                                        </svg>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">{{ interaction.title }}</h6>
+                                                        <p class="text-muted mb-1">{{ interaction.description }}</p>
+                                                        <small class="text-muted">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <circle cx="12" cy="12" r="9"/>
+                                                                <polyline points="12,7 12,12 15,15"/>
+                                                            </svg>
+                                                            {{ interaction.date|date('d/m/Y à H:i') }}
+                                                        </small>
+                                                    </div>
+                                                    <div class="btn-list ms-3">
+                                                        {% if interaction.type == 'session_registration' %}
+                                                            <a href="{{ path('admin_session_registration_show', {id: interaction.entity.id}) }}" 
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                                </svg>
+                                                                Voir inscription
+                                                            </a>
+                                                        {% elseif interaction.type == 'contact_request' %}
+                                                            <a href="{{ path('admin_contact_request_show', {id: interaction.entity.id}) }}" 
+                                                               class="btn btn-sm btn-outline-info">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                                </svg>
+                                                                Voir demande
+                                                            </a>
+                                                        {% elseif interaction.type == 'needs_analysis' %}
+                                                            <a href="{{ path('admin_needs_analysis_show', {id: interaction.entity.id}) }}" 
+                                                               class="btn btn-sm btn-outline-warning">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                                </svg>
+                                                                Voir analyse
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lead Score Section -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                            </svg>
+                            Score de lead
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="text-center">
+                                    <div class="h1 mb-0 text-{% if leadScore > 200 %}success{% elseif leadScore > 100 %}warning{% else %}muted{% endif %}">
+                                        {{ leadScore }}
+                                    </div>
+                                    <small class="text-muted">points</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-{% if leadScore > 200 %}success{% elseif leadScore > 100 %}warning{% else %}info{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ (leadScore / 500 * 100)|round }}%;">
+                                        {% if leadScore > 200 %}Lead chaud{% elseif leadScore > 100 %}Lead tiède{% else %}Lead froid{% endif %}
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        {% if leadScore > 200 %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs text-danger me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M8.5 4.5l2.5 2.5l2.5 -2.5a4.95 4.95 0 0 1 7 7l-2.5 2.5l2.5 2.5a4.95 4.95 0 0 1 -7 7l-2.5 -2.5l-2.5 2.5a4.95 4.95 0 0 1 -7 -7l2.5 -2.5l-2.5 -2.5a4.95 4.95 0 0 1 7 -7z"/>
+                                            </svg>
+                                            Prospect très intéressé - Contact prioritaire recommandé
+                                        {% elseif leadScore > 100 %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs text-warning me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M4 13.5a4 4 0 1 0 4 0v-8.5a2 2 0 1 0 -4 0v8.5"/>
+                                                <path d="M4 9h4"/>
+                                            </svg>
+                                            Prospect intéressé - Suivi régulier conseillé
+                                        {% else %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs text-info me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M10 4l3 1l6 6l-3 -1l-6 -6"/>
+                                                <path d="M12 6l-3 1l6 6l3 -1l-6 -6"/>
+                                                <path d="M14 8l-3 1l6 6l3 -1l-6 -6"/>
+                                                <path d="M16 10l-3 1l6 6l3 -1l-6 -6"/>
+                                            </svg>
+                                            Prospect à développer - Nurturing nécessaire
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Score breakdown -->
+                        <hr class="my-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Inscriptions</div>
+                                    <div class="h4 mb-0">{{ prospect.sessionRegistrations|length }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Demandes</div>
+                                    <div class="h4 mb-0">{{ prospect.contactRequests|length }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Analyses</div>
+                                    <div class="h4 mb-0">{{ prospect.needsAnalysisRequests|length }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Formations</div>
+                                    <div class="h4 mb-0">{{ prospect.formations|length }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Notes Section -->
         <div class="row">
             <div class="col-12">

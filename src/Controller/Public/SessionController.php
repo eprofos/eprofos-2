@@ -7,6 +7,7 @@ use App\Entity\SessionRegistration;
 use App\Form\SessionRegistrationType;
 use App\Repository\SessionRepository;
 use App\Repository\SessionRegistrationRepository;
+use App\Service\ProspectManagementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,7 +31,8 @@ class SessionController extends AbstractController
         private SessionRegistrationRepository $registrationRepository,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
+        private ProspectManagementService $prospectService
     ) {
     }
 
@@ -94,6 +96,22 @@ class SessionController extends AbstractController
                 $session->setCurrentRegistrations($session->getCurrentRegistrations() + 1);
                 
                 $this->entityManager->flush();
+
+                // Create or update prospect
+                try {
+                    $prospect = $this->prospectService->createProspectFromSessionRegistration($registration);
+                    
+                    $this->logger->info('Prospect created/updated from session registration', [
+                        'prospect_id' => $prospect->getId(),
+                        'registration_id' => $registration->getId()
+                    ]);
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to create prospect from registration', [
+                        'registration_id' => $registration->getId(),
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the registration if prospect creation fails
+                }
 
                 // Send confirmation email
                 $this->sendRegistrationConfirmationEmail($registration);

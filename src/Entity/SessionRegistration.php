@@ -110,6 +110,10 @@ class SessionRegistration
     #[ORM\JoinColumn(nullable: false)]
     private ?Session $session = null;
 
+    #[ORM\ManyToOne(targetEntity: Prospect::class, inversedBy: 'sessionRegistrations')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Prospect $prospect = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -272,6 +276,17 @@ class SessionRegistration
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+        return $this;
+    }
+
+    public function getProspect(): ?Prospect
+    {
+        return $this->prospect;
+    }
+
+    public function setProspect(?Prospect $prospect): static
+    {
+        $this->prospect = $prospect;
         return $this;
     }
 

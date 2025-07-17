@@ -6,6 +6,7 @@ use App\Entity\Prospect;
 use App\Entity\ProspectNote;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
@@ -14,8 +15,9 @@ use Faker\Factory;
  * 
  * Loads realistic test data for the prospect management system.
  * Creates prospects with various statuses, priorities, and associated notes.
+ * These are independent prospects not linked to contact requests or session registrations.
  */
-class ProspectFixtures extends Fixture
+class ProspectFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -217,5 +219,15 @@ class ProspectFixtures extends Fixture
         $manager->flush();
 
         echo "✅ Prospects: Created " . count($prospects) . " prospects with notes\n";
+    }
+
+    /**
+     * Define fixture dependencies
+     */
+    public function getDependencies(): array
+    {
+        return [
+            UserFixtures::class,
+        ];
     }
 }

@@ -5,14 +5,21 @@ namespace App\DataFixtures;
 use App\Entity\Formation;
 use App\Entity\Session;
 use App\Entity\SessionRegistration;
+use App\Service\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Psr\Log\LoggerInterface;
 
 class SessionFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
+    public function __construct(
+        private ProspectManagementService $prospectService,
+        private LoggerInterface $logger
+    ) {}
+
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create('fr_FR');
@@ -215,13 +222,40 @@ class SessionFixtures extends Fixture implements DependentFixtureInterface, Fixt
         
         $manager->flush();
         
+        // Create prospects from session registrations using the ProspectManagementService
+        echo "Creating prospects from session registrations...\n";
+        $createdProspects = 0;
+        
+        $sessionRegistrations = $manager->getRepository(SessionRegistration::class)->findAll();
+        
+        foreach ($sessionRegistrations as $registration) {
+            try {
+                $prospect = $this->prospectService->createProspectFromSessionRegistration($registration);
+                $createdProspects++;
+                
+                $this->logger->info('Prospect created from session registration fixture', [
+                    'prospect_id' => $prospect->getId(),
+                    'session_registration_id' => $registration->getId(),
+                    'email' => $registration->getEmail()
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Failed to create prospect from session registration fixture', [
+                    'session_registration_id' => $registration->getId(),
+                    'email' => $registration->getEmail(),
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
         echo "✅ Sessions: Created {$sessionCount} sessions with {$registrationCount} registrations\n";
+        echo "✅ Prospects: Created {$createdProspects} prospects from session registrations\n";
     }
 
     public function getDependencies(): array
     {
         return [
             FormationFixtures::class,
+            ProspectFixtures::class, // Ensure base prospects are created first
         ];
     }
 

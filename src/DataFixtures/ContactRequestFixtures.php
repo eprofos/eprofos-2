@@ -5,9 +5,11 @@ namespace App\DataFixtures;
 use App\Entity\ContactRequest;
 use App\Entity\Formation;
 use App\Entity\Service;
+use App\Service\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Psr\Log\LoggerInterface;
 
 /**
  * ContactRequest fixtures for EPROFOS platform
@@ -15,9 +17,17 @@ use Doctrine\Persistence\ObjectManager;
  * Creates sample contact requests for testing purposes including
  * different types of requests (quote, advice, information, quick_registration)
  * with various statuses and realistic data.
+ * 
+ * Each contact request will automatically create a prospect through the
+ * ProspectManagementService to test the unified prospect system.
  */
 class ContactRequestFixtures extends Fixture implements DependentFixtureInterface
 {
+    public function __construct(
+        private ProspectManagementService $prospectService,
+        private LoggerInterface $logger
+    ) {}
+
     /**
      * Load contact request fixtures
      */
@@ -186,6 +196,37 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
         }
 
         $manager->flush();
+        
+        // Create prospects from contact requests using the ProspectManagementService
+        echo "Creating prospects from contact requests...\n";
+        $createdProspects = 0;
+        
+        foreach ($contactRequests as $requestData) {
+            $contactRequest = $manager->getRepository(ContactRequest::class)
+                ->findOneBy(['email' => $requestData['email']]);
+                
+            if ($contactRequest) {
+                try {
+                    $prospect = $this->prospectService->createProspectFromContactRequest($contactRequest);
+                    $createdProspects++;
+                    
+                    $this->logger->info('Prospect created from contact request fixture', [
+                        'prospect_id' => $prospect->getId(),
+                        'contact_request_id' => $contactRequest->getId(),
+                        'email' => $contactRequest->getEmail()
+                    ]);
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to create prospect from contact request fixture', [
+                        'contact_request_id' => $contactRequest->getId(),
+                        'email' => $contactRequest->getEmail(),
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+        
+        echo "✅ Contact Requests: Created " . count($contactRequests) . " contact requests\n";
+        echo "✅ Prospects: Created {$createdProspects} prospects from contact requests\n";
     }
 
     /**
@@ -196,6 +237,7 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
         return [
             FormationFixtures::class,
             ServiceFixtures::class,
+            ProspectFixtures::class, // Ensure base prospects are created first
         ];
     }
 }

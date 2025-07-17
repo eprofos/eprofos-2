@@ -44,8 +44,11 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
      * 6. Questions (depend on questionnaires)
      * 7. QuestionOptions (depend on questions)
      * 8. QuestionnaireResponses (depend on questionnaires and options)
-     * 9. ContactRequests (depend on formations and services)
-     * 10. NeedsAnalysisFixtures (depend on users and formations)
+     * 9. Users (for prospect assignment)
+     * 10. ProspectFixtures (independent prospects, depend on users)
+     * 11. ContactRequests (depend on formations and services, will create prospects via service)
+     * 12. SessionFixtures (depend on formations, will create prospects via service)
+     * 13. NeedsAnalysisFixtures (depend on users and formations, will create prospects via service)
      */
     public function getDependencies(): array
     {
@@ -60,7 +63,10 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             QuestionFixtures::class,
             QuestionOptionFixtures::class,
             QuestionnaireResponseFixtures::class,
+            UserFixtures::class,
+            ProspectFixtures::class,
             ContactRequestFixtures::class,
+            SessionFixtures::class,
             NeedsAnalysisFixtures::class,
         ];
     }

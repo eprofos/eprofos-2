@@ -7,12 +7,14 @@ use App\Entity\Formation;
 use App\Entity\IndividualNeedsAnalysis;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\User;
+use App\Service\ProspectManagementService;
 use App\Service\TokenGeneratorService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Faker\Generator;
+use Psr\Log\LoggerInterface;
 
 /**
  * Needs Analysis fixtures for EPROFOS platform
@@ -20,11 +22,21 @@ use Faker\Generator;
  * Creates realistic needs analysis requests, company analyses, and individual analyses
  * with various statuses and realistic data for testing and demonstration purposes.
  * Complies with Qualiopi 2.4 requirements for needs analysis documentation.
+ * 
+ * Each needs analysis request will automatically create a prospect through the
+ * ProspectManagementService to test the unified prospect system.
  */
 class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
 {
     private Generator $faker;
-    private TokenGeneratorService $tokenGenerator;
+
+    public function __construct(
+        private TokenGeneratorService $tokenGenerator,
+        private ProspectManagementService $prospectService,
+        private LoggerInterface $logger
+    ) {
+        $this->faker = Factory::create('fr_FR');
+    }
 
     // Company names for realistic data
     private array $companyNames = [
@@ -92,12 +104,6 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
         'Qualité et Certification ISO'
     ];
 
-    public function __construct(TokenGeneratorService $tokenGenerator)
-    {
-        $this->faker = Factory::create('fr_FR');
-        $this->tokenGenerator = $tokenGenerator;
-    }
-
     /**
      * Load needs analysis fixtures
      */
@@ -127,6 +133,34 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
         }
 
         $manager->flush();
+        
+        // Create prospects from needs analysis requests using the ProspectManagementService
+        echo "Creating prospects from needs analysis requests...\n";
+        $createdProspects = 0;
+        
+        $needsAnalysisRequests = $manager->getRepository(NeedsAnalysisRequest::class)->findAll();
+        
+        foreach ($needsAnalysisRequests as $request) {
+            try {
+                $prospect = $this->prospectService->createProspectFromNeedsAnalysis($request);
+                $createdProspects++;
+                
+                $this->logger->info('Prospect created from needs analysis request fixture', [
+                    'prospect_id' => $prospect->getId(),
+                    'needs_analysis_request_id' => $request->getId(),
+                    'email' => $request->getRecipientEmail()
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Failed to create prospect from needs analysis request fixture', [
+                    'needs_analysis_request_id' => $request->getId(),
+                    'email' => $request->getRecipientEmail(),
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        echo "✅ Needs Analysis: Created " . count($needsAnalysisRequests) . " needs analysis requests\n";
+        echo "✅ Prospects: Created {$createdProspects} prospects from needs analysis requests\n";
     }
 
     /**
@@ -525,6 +559,7 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
         return [
             UserFixtures::class,
             FormationFixtures::class,
+            ProspectFixtures::class, // Ensure base prospects are created first
         ];
     }
 }

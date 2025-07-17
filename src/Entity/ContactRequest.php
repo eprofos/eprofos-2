@@ -124,6 +124,10 @@ class ContactRequest
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Service $service = null;
 
+    #[ORM\ManyToOne(targetEntity: Prospect::class, inversedBy: 'contactRequests')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Prospect $prospect = null;
+
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $additionalData = null;
 
@@ -408,6 +412,17 @@ class ContactRequest
     public function setService(?Service $service): static
     {
         $this->service = $service;
+        return $this;
+    }
+
+    public function getProspect(): ?Prospect
+    {
+        return $this->prospect;
+    }
+
+    public function setProspect(?Prospect $prospect): static
+    {
+        $this->prospect = $prospect;
         return $this;
     }
 

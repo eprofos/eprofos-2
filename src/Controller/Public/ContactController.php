@@ -6,6 +6,7 @@ use App\Entity\ContactRequest;
 use App\Entity\Formation;
 use App\Repository\ContactRequestRepository;
 use App\Repository\FormationRepository;
+use App\Service\ProspectManagementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +30,8 @@ class ContactController extends AbstractController
         private FormationRepository $formationRepository,
         private ValidatorInterface $validator,
         private MailerInterface $mailer,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private ProspectManagementService $prospectService
     ) {
     }
 
@@ -205,6 +207,22 @@ class ContactController extends AbstractController
         try {
             // Save to database
             $this->contactRequestRepository->save($contactRequest, true);
+
+            // Create or update prospect
+            try {
+                $prospect = $this->prospectService->createProspectFromContactRequest($contactRequest);
+                
+                $this->logger->info('Prospect created/updated from contact request', [
+                    'prospect_id' => $prospect->getId(),
+                    'contact_request_id' => $contactRequest->getId()
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Failed to create prospect from contact request', [
+                    'contact_request_id' => $contactRequest->getId(),
+                    'error' => $e->getMessage()
+                ]);
+                // Don't fail the contact form if prospect creation fails
+            }
 
             // Send email notification
             $this->sendEmailNotification($contactRequest);

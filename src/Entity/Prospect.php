@@ -148,6 +148,24 @@ class Prospect
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
     private Collection $notes;
 
+    /**
+     * @var Collection<int, SessionRegistration>
+     */
+    #[ORM\OneToMany(targetEntity: SessionRegistration::class, mappedBy: 'prospect')]
+    private Collection $sessionRegistrations;
+
+    /**
+     * @var Collection<int, ContactRequest>
+     */
+    #[ORM\OneToMany(targetEntity: ContactRequest::class, mappedBy: 'prospect')]
+    private Collection $contactRequests;
+
+    /**
+     * @var Collection<int, NeedsAnalysisRequest>
+     */
+    #[ORM\OneToMany(targetEntity: NeedsAnalysisRequest::class, mappedBy: 'prospect')]
+    private Collection $needsAnalysisRequests;
+
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $customFields = null;
 
@@ -163,6 +181,9 @@ class Prospect
         $this->interestedFormations = new ArrayCollection();
         $this->interestedServices = new ArrayCollection();
         $this->notes = new ArrayCollection();
+        $this->sessionRegistrations = new ArrayCollection();
+        $this->contactRequests = new ArrayCollection();
+        $this->needsAnalysisRequests = new ArrayCollection();
         $this->tags = [];
     }
 
@@ -428,6 +449,124 @@ class Prospect
     public function hasTag(string $tag): bool
     {
         return in_array($tag, $this->tags ?? []);
+    }
+
+    /**
+     * @return Collection<int, SessionRegistration>
+     */
+    public function getSessionRegistrations(): Collection
+    {
+        return $this->sessionRegistrations;
+    }
+
+    /**
+     * @return Collection<int, ContactRequest>
+     */
+    public function getContactRequests(): Collection
+    {
+        return $this->contactRequests;
+    }
+
+    /**
+     * @return Collection<int, NeedsAnalysisRequest>
+     */
+    public function getNeedsAnalysisRequests(): Collection
+    {
+        return $this->needsAnalysisRequests;
+    }
+
+    /**
+     * Get all interactions (registrations, contacts, needs analysis) for timeline
+     */
+    public function getAllInteractions(): array
+    {
+        $interactions = [];
+        
+        foreach ($this->sessionRegistrations as $registration) {
+            $interactions[] = [
+                'type' => 'session_registration',
+                'entity' => $registration,
+                'date' => $registration->getCreatedAt(),
+                'title' => 'Inscription session: ' . $registration->getSession()->getName(),
+                'description' => 'Formation: ' . $registration->getSession()->getFormation()->getTitle(),
+            ];
+        }
+        
+        foreach ($this->contactRequests as $contact) {
+            $interactions[] = [
+                'type' => 'contact_request',
+                'entity' => $contact,
+                'date' => $contact->getCreatedAt(),
+                'title' => $contact->getTypeLabel(),
+                'description' => $contact->getSubject() ?: substr($contact->getMessage(), 0, 100) . '...',
+            ];
+        }
+        
+        foreach ($this->needsAnalysisRequests as $analysis) {
+            $interactions[] = [
+                'type' => 'needs_analysis',
+                'entity' => $analysis,
+                'date' => $analysis->getCreatedAt(),
+                'title' => 'Analyse de besoins: ' . $analysis->getTypeLabel(),
+                'description' => 'Destinataire: ' . $analysis->getRecipientName(),
+            ];
+        }
+        
+        // Sort by date, most recent first
+        usort($interactions, fn($a, $b) => $b['date'] <=> $a['date']);
+        
+        return $interactions;
+    }
+
+    /**
+     * Get lead score based on interactions
+     */
+    public function getLeadScore(): int
+    {
+        $score = 0;
+        
+        // Base prospect score
+        $score += match($this->status) {
+            'lead' => 10,
+            'prospect' => 20,
+            'qualified' => 40,
+            'negotiation' => 60,
+            'customer' => 100,
+            'lost' => 0,
+            default => 5
+        };
+        
+        // Contact requests scoring
+        foreach ($this->contactRequests as $contact) {
+            $score += match($contact->getType()) {
+                'quote' => 50,
+                'advice' => 30,
+                'information' => 20,
+                'quick_registration' => 60,
+                default => 15
+            };
+        }
+        
+        // Session registrations scoring (high intent)
+        $score += count($this->sessionRegistrations) * 80;
+        
+        // Needs analysis scoring (Qualiopi compliance)
+        foreach ($this->needsAnalysisRequests as $analysis) {
+            $score += $analysis->isCompleted() ? 60 : 30;
+        }
+        
+        // Multiple formations interest
+        $score += count($this->interestedFormations) * 20;
+        
+        // Company email domain bonus
+        if ($this->company && filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            $domain = substr(strrchr($this->email, "@"), 1);
+            if (!in_array($domain, ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'])) {
+                $score += 10;
+            }
+        }
+        
+        return min($score, 999); // Cap at 999
     }
 
     // Getters and Setters
