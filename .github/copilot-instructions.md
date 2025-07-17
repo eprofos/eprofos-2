@@ -35,9 +35,9 @@ src/Controller/
 - Fixtures load realistic test data: `doctrine:fixtures:load`
 
 ### Frontend Architecture
-- **Asset Mapper** (not Webpack Encore) - import paths like `./bootstrap.js`
-- **Stimulus Controllers**: `assets/controllers/formation_filter_controller.js` for Ajax filtering
-- **Bootstrap 5** with custom CSS in `assets/styles/`
+- **Asset Mapper** (not Webpack Encore) - use `importmap.php` for dependencies
+- **Stimulus Controllers**: Follow pattern in `assets/controllers/formation_filter_controller.js`
+- **Bootstrap 5** + FontAwesome + Tabler CSS framework
 - **Turbo** integration for SPA-like navigation
 
 ## Development Workflow
@@ -56,19 +56,19 @@ docker compose exec php php bin/console cache:clear
 ```
 
 ### File Upload Pattern
-- Images stored in `public/uploads/` with parameter `formations_images_directory`
+- Images stored in `public/uploads/` with parameter configuration
 - Entity methods like `getImagePath()` handle file references
+- Use `{{ asset('uploads/formations/' ~ formation.image) }}` in templates
 
 ## Project-Specific Conventions
 
 ### Ajax Filtering Pattern
-Controllers return different responses based on `$request->isXmlHttpRequest()`:
+**Critical**: Controllers return different responses based on `$request->isXmlHttpRequest()`:
 - Regular requests: full template
-- Ajax requests: partial template (`_formations_list.html.twig`)
+- Ajax requests: partial template (e.g., `_formations_list.html.twig`)
 
-Example implementation in `FormationController`:
+Example implementation:
 ```php
-// If it's an Ajax request, return only the formations list
 if ($request->isXmlHttpRequest()) {
     return $this->render('public/formation/_formations_list.html.twig', [
         'formations' => $formations,
@@ -94,15 +94,15 @@ Each entity (Formation, Module, Chapter) includes structured fields for:
 
 These fields are required for French training quality certification.
 
-### Form Patterns
-- Multiple specialized contact forms in single controller
-- Each form type has dedicated validation and email templates
-- CSRF protection on all forms
+### Stimulus Controller Patterns
+- Target naming: `data-formation-filter-target="search"`
+- Value passing: `data-formation-filter-url-value="{{ path('route') }}"`
+- Event dispatching: `this.dispatch('resultsUpdated', { detail: data })`
+- Debounced search with `setTimeout()` for performance
 
 ### Collection Form Pattern
-Use `CollectionController` for dynamic form fields:
+Use dedicated `CollectionController` for dynamic form fields:
 ```js
-// In Stimulus controller
 addItem(event) {
     const prototype = this.prototypeTarget.dataset.prototype
     const newItem = prototype.replace(new RegExp(this.prototypeNameValue, 'g'), this.indexValue)
@@ -127,11 +127,6 @@ templates/
 
 ## Integration Points
 
-### Stimulus Controllers
-- Target naming: `data-formation-filter-target="search"`
-- Value passing: `data-formation-filter-url-value="{{ path('route') }}"`
-- Event dispatching: `this.dispatch('resultsUpdated', { detail: data })`
-
 ### Database Fixtures
 - Load in dependency order via `getDependencies()` method
 - Use Faker for realistic test data
@@ -139,19 +134,26 @@ templates/
 - `AppFixtures` orchestrates all fixtures - acts as dependency coordinator
 - Context-aware data generation (chapter titles match module topics)
 
+### Asset Management
+- Asset Mapper configuration in `importmap.php`
+- Public entrypoint: `assets/public.js`
+- Private/admin entrypoint: `assets/private.js`
+- CSS imports: Bootstrap, FontAwesome, Tabler, custom styles
+
 ### Email System
 - Templates in `templates/emails/`
 - Symfony Mailer configuration in `config/packages/mailer.yaml`
 - Email sending in specialized service classes
 
 ## Key Files to Understand
-- `src/Entity/Formation.php` - Core training entity with validation
+- `src/Entity/Formation.php` - Core training entity with validation & auto-generated program
 - `src/Entity/Module.php` - Learning module with Qualiopi fields
 - `src/Entity/Chapter.php` - Detailed chapter content structure
 - `src/Controller/Public/FormationController.php` - Ajax filtering implementation
-- `assets/controllers/formation_filter_controller.js` - Frontend filtering
+- `assets/controllers/formation_filter_controller.js` - Frontend filtering with debounce
 - `templates/base.html.twig` - Main layout structure
 - `src/DataFixtures/AppFixtures.php` - Test data orchestration
+- `importmap.php` - Asset management configuration
 
 ## Testing & Quality
 - PHPUnit tests in `tests/` directory
