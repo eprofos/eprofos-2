@@ -1,0 +1,348 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Accessibilité et handicap - EPROFOS{% endblock %}
+
+{% block meta_description %}Informations sur l'accessibilité des formations EPROFOS pour les personnes en situation de handicap. Procédures d'adaptation et contact spécialisé.{% endblock %}
+
+{% block body %}
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">ACCESSIBILITÉ</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Accessibilité et <span class="text-warning">handicap</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        Nos formations sont accessibles à tous. Découvrez nos dispositifs d'accompagnement.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        {# Introduction Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-universal-access"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Notre engagement</h2>
+                            </div>
+                        </div>
+                        <p class="text-center mb-0" style="line-height: 1.7; font-size: 1.1rem;">
+                            EPROFOS s'engage à rendre ses formations accessibles à tous, en proposant des 
+                            adaptations personnalisées pour les personnes en situation de handicap.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Quick Contact Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);">
+                    <div class="card-body p-5">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h3 class="fw-bold mb-3">
+                                    <i class="fas fa-phone me-2"></i>Contact prioritaire
+                                </h3>
+                                <p class="mb-3">
+                                    Pour toute demande d'adaptation liée à un handicap, contactez directement 
+                                    notre référent handicap qui vous accompagnera dans vos démarches.
+                                </p>
+                                <div class="contact-info">
+                                    <p class="mb-2">
+                                        <strong>Email :</strong> 
+                                        <a href="mailto:handicap@eprofos.fr" class="text-decoration-none">
+                                            handicap@eprofos.fr
+                                        </a>
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Téléphone :</strong> 
+                                        <a href="tel:+33123456789" class="text-decoration-none">
+                                            +33 1 23 45 67 89
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="contact-form-link">
+                                    <a href="#accessibility-form" 
+                                       class="btn btn-warning btn-lg" 
+                                       style="border-radius: 25px;">
+                                        <i class="fas fa-paper-plane me-2"></i>Faire une demande
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Accessibility Policy Section #}
+        {% if accessibility_policy %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ accessibility_policy.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ accessibility_policy.version }} - Mis à jour le {{ accessibility_policy.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ accessibility_policy.content|raw }}
+                        </div>
+
+                        {% if accessibility_policy.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ accessibility_policy.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-success btn-lg" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Accessibility Procedures Section #}
+        {% if accessibility_procedures %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-purple text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; background-color: #9c27b0;">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ accessibility_procedures.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ accessibility_procedures.version }} - Mis à jour le {{ accessibility_procedures.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ accessibility_procedures.content|raw }}
+                        </div>
+
+                        {% if accessibility_procedures.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ accessibility_procedures.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-lg text-white" 
+                               style="border-radius: 25px; background-color: #9c27b0;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# FAQ Section #}
+        {% if accessibility_faq %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ accessibility_faq.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ accessibility_faq.version }} - Mis à jour le {{ accessibility_faq.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ accessibility_faq.content|raw }}
+                        </div>
+
+                        {% if accessibility_faq.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ accessibility_faq.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-primary btn-lg" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Accessibility Request Form #}
+        <div class="row mb-5" id="accessibility-form">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Demande d'adaptation</h2>
+                            </div>
+                            <p class="text-muted">
+                                Décrivez-nous vos besoins spécifiques pour que nous puissions adapter nos formations
+                            </p>
+                        </div>
+                        
+                        <form method="POST" action="{{ path('app_contact_accessibility_request') }}" novalidate>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">Prénom *</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Nom *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="company" class="form-label">Entreprise</label>
+                                <input type="text" class="form-control" id="company" name="company">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Description de vos besoins d'adaptation *</label>
+                                <textarea class="form-control" 
+                                          id="message" 
+                                          name="message" 
+                                          rows="6" 
+                                          required
+                                          placeholder="Décrivez précisément vos besoins d'adaptation pour que nous puissions vous proposer la meilleure solution..."></textarea>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-warning btn-lg" style="border-radius: 25px;">
+                                    <i class="fas fa-paper-plane me-2"></i>Envoyer ma demande
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Additional Resources #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-external-link-alt fa-2x"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-3">Ressources externes</h3>
+                        <p class="text-muted mb-4" style="line-height: 1.7;">
+                            Découvrez les dispositifs d'aide et les organismes partenaires qui peuvent 
+                            vous accompagner dans vos démarches de formation.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="https://www.agefiph.fr/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-lg" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-external-link-alt me-2"></i>AGEFIPH
+                            </a>
+                            <a href="https://www.fiphfp.fr/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-lg" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-external-link-alt me-2"></i>FIPHFP
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .content-display {
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        .content-display h1, .content-display h2, .content-display h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content-display ul, .content-display ol {
+            margin-bottom: 1rem;
+        }
+        
+        .content-display p {
+            margin-bottom: 1rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .section-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .contact-info a {
+            color: #856404;
+            font-weight: 600;
+        }
+        
+        .contact-info a:hover {
+            color: #533703;
+        }
+    </style>
+{% endblock %}

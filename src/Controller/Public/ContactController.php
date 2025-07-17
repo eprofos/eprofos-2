@@ -340,4 +340,101 @@ class ContactController extends AbstractController
         
         return $content;
     }
+
+    /**
+     * Handle accessibility request form submission
+     */
+    #[Route('/demande-accessibilite', name: 'app_contact_accessibility_request', methods: ['POST'])]
+    public function accessibilityRequest(Request $request): Response
+    {
+        try {
+            // Create and populate ContactRequest entity
+            $contactRequest = new ContactRequest();
+            $contactRequest->setType('accessibility_request');
+            $contactRequest->setFirstName($request->request->get('first_name'));
+            $contactRequest->setLastName($request->request->get('last_name'));
+            $contactRequest->setEmail($request->request->get('email'));
+            $contactRequest->setPhone($request->request->get('phone'));
+            $contactRequest->setCompany($request->request->get('company'));
+            $contactRequest->setMessage($request->request->get('message'));
+
+            // Validate the contact request
+            $errors = $this->validator->validate($contactRequest);
+            if (count($errors) > 0) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+                return $this->redirectToRoute('app_legal_accessibility');
+            }
+
+            // Save the contact request
+            $this->contactRequestRepository->save($contactRequest, true);
+
+            // Send notification email to admin
+            $this->sendAccessibilityNotificationEmail($contactRequest);
+
+            // Send notification (which includes both admin and user confirmation)
+            $this->sendEmailNotification($contactRequest);
+
+            // Log the activity
+            $this->logger->info('Accessibility request submitted', [
+                'contact_request_id' => $contactRequest->getId(),
+                'email' => $contactRequest->getEmail(),
+            ]);
+
+            $this->addFlash('success', 'Votre demande d\'adaptation a été envoyée avec succès. Nous vous contacterons rapidement.');
+            
+        } catch (\Exception $e) {
+            $this->logger->error('Error processing accessibility request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer.');
+        }
+
+        return $this->redirectToRoute('app_legal_accessibility');
+    }
+
+    /**
+     * Send accessibility request notification email to admin
+     */
+    private function sendAccessibilityNotificationEmail(ContactRequest $contactRequest): void
+    {
+        $email = (new Email())
+            ->from('noreply@eprofos.fr')
+            ->to('handicap@eprofos.fr')
+            ->cc('contact@eprofos.fr')
+            ->subject('Nouvelle demande d\'adaptation - Accessibilité')
+            ->text($this->generateAccessibilityNotificationContent($contactRequest));
+
+        $this->mailer->send($email);
+    }
+
+    /**
+     * Generate accessibility notification email content for admin
+     */
+    private function generateAccessibilityNotificationContent(ContactRequest $contactRequest): string
+    {
+        $content = "Nouvelle demande d'adaptation pour l'accessibilité\n\n";
+        $content .= "Informations du demandeur:\n";
+        $content .= "- Nom: " . $contactRequest->getFirstName() . " " . $contactRequest->getLastName() . "\n";
+        $content .= "- Email: " . $contactRequest->getEmail() . "\n";
+        
+        if ($contactRequest->getPhone()) {
+            $content .= "- Téléphone: " . $contactRequest->getPhone() . "\n";
+        }
+        
+        if ($contactRequest->getCompany()) {
+            $content .= "- Entreprise: " . $contactRequest->getCompany() . "\n";
+        }
+        
+        $content .= "- Date de la demande: " . $contactRequest->getCreatedAt()->format('d/m/Y à H:i') . "\n\n";
+        $content .= "Description des besoins d'adaptation:\n";
+        $content .= $contactRequest->getMessage() . "\n\n";
+        $content .= "Cette demande nécessite un traitement prioritaire par le référent handicap.\n\n";
+        $content .= "Accéder à la demande: " . $_SERVER['HTTP_HOST'] . "/admin/contact-requests/" . $contactRequest->getId();
+        
+        return $content;
+    }
 }

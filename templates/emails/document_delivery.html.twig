@@ -1,0 +1,80 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block title %}Documents obligatoires - Formation EPROFOS{% endblock %}
+
+{% block body %}
+    <div class="header">
+        <h1>Documents obligatoires pour votre formation</h1>
+        <p class="subtitle">{{ formation.title }}</p>
+    </div>
+
+    <div class="content">
+        <p>Bonjour {{ registration.firstName }},</p>
+        
+        <p>Dans le cadre de votre inscription à la formation <strong>{{ formation.title }}</strong> 
+        qui aura lieu du {{ session.startDate|date('d/m/Y') }} au {{ session.endDate|date('d/m/Y') }}, 
+        nous vous transmettons les documents obligatoires que vous devez prendre connaissance.</p>
+
+        <div class="info-box">
+            <h3>📋 Documents à consulter</h3>
+            <ul>
+                {% for document in documents %}
+                    <li>
+                        <strong>{{ document.typeLabel }}</strong>
+                        {% if document.hasFile %}
+                            - <a href="{{ absolute_url(document.fileUrl) }}" target="_blank">Télécharger le PDF</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="important-notice">
+            <h3>⚠️ Important</h3>
+            <p>Conformément à la réglementation Qualiopi, vous devez confirmer avoir pris connaissance 
+            de ces documents avant le début de votre formation.</p>
+            
+            <div class="action-button">
+                <a href="{{ acknowledgment_url }}" class="btn-primary">
+                    Confirmer la réception des documents
+                </a>
+            </div>
+        </div>
+
+        <div class="session-details">
+            <h3>📅 Détails de votre session</h3>
+            <table>
+                <tr>
+                    <td><strong>Formation :</strong></td>
+                    <td>{{ formation.title }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Dates :</strong></td>
+                    <td>Du {{ session.startDate|date('d/m/Y à H:i') }} au {{ session.endDate|date('d/m/Y à H:i') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Lieu :</strong></td>
+                    <td>{{ session.location }}{% if session.address %}<br>{{ session.address }}{% endif %}</td>
+                </tr>
+                {% if session.instructor %}
+                <tr>
+                    <td><strong>Formateur :</strong></td>
+                    <td>{{ session.instructor }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+
+        <p>Si vous avez des questions concernant ces documents ou votre formation, 
+        n'hésitez pas à nous contacter.</p>
+
+        <p>Nous vous souhaitons une excellente formation !</p>
+    </div>
+
+    <div class="footer">
+        <p><strong>L'équipe EPROFOS</strong><br>
+        École Professionnelle de Formation Spécialisée</p>
+        <p>📧 contact@eprofos.fr | 📞 +33 1 23 45 67 89<br>
+        🌐 <a href="{{ absolute_url(path('app_home')) }}">www.eprofos.fr</a></p>
+    </div>
+{% endblock %}

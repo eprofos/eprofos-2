@@ -1,0 +1,320 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ type_title }} - Documents légaux{% endblock %}
+
+{% block body %}
+<div class="container-xl">
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Documents légaux
+                    </div>
+                    <h2 class="page-title">
+                        {{ type_title }}
+                        <span class="badge bg-orange ms-2">Qualiopi 3.9</span>
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_legal_document_new', {type: type}) }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouveau document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="page-body">
+        <div class="container-xl">
+            <!-- Type Statistics -->
+            <div class="row row-deck row-cards mb-3">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Total</div>
+                                <div class="ms-auto lh-1">
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Tous</a>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type) }}">Tous</a>
+                                            <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type, {status: 'published'}) }}">Publiés</a>
+                                            <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type, {status: 'draft'}) }}">Brouillons</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">{{ type_statistics.total }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Publiés</div>
+                                <div class="ms-auto lh-1">
+                                    <span class="badge bg-green">Actifs</span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3 text-green">{{ type_statistics.published }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Brouillons</div>
+                                <div class="ms-auto lh-1">
+                                    <span class="badge bg-warning">En attente</span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3 text-warning">{{ type_statistics.drafts }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Version actuelle</div>
+                                <div class="ms-auto lh-1">
+                                    {% if type_statistics.latest_published %}
+                                        <span class="badge bg-blue">{{ type_statistics.latest_published.version }}</span>
+                                    {% else %}
+                                        <span class="badge bg-muted">Aucune</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">
+                                {% if type_statistics.latest_published %}
+                                    <small class="text-muted">{{ type_statistics.latest_published.publishedAt|date('d/m/Y') }}</small>
+                                {% else %}
+                                    <small class="text-muted">Non publié</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Filtres</h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="search" class="form-label">Recherche</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           value="{{ filters.search }}" placeholder="Titre ou contenu...">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="status" class="form-label">Statut</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="published" {{ filters.status == 'published' ? 'selected' : '' }}>Publiés</option>
+                                        <option value="draft" {{ filters.status == 'draft' ? 'selected' : '' }}>Brouillons</option>
+                                        <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inactifs</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">Filtrer</button>
+                                    <a href="{{ path('admin_legal_document_' ~ type) }}" class="btn btn-outline-secondary">Réinitialiser</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents List -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Documents {{ type_title }}</h3>
+                            <div class="card-actions">
+                                <a href="{{ path('admin_legal_document_new', {type: type}) }}" class="btn btn-primary btn-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Nouveau
+                                </a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Version</th>
+                                        <th>Statut</th>
+                                        <th>Modifié le</th>
+                                        <th class="w-1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for document in documents %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar avatar-sm me-3" style="background-image: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M14 3v4a1 1 0 0 0 1 1h4&quot;/><path d=&quot;M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z&quot;/></svg>')">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">{{ document.title }}</div>
+                                                        {% if document.hasFile() %}
+                                                            <div class="text-muted">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M9 12l2 2l4 -4"/>
+                                                                    <path d="M21 12c-1 0 -3 1 -3 3s2 3 3 3s3 -1 3 -3s-2 -3 -3 -3"/>
+                                                                    <path d="M10 12a9 9 0 1 0 9 -9"/>
+                                                                </svg>
+                                                                Fichier joint
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-blue">{{ document.version }}</span>
+                                            </td>
+                                            <td>
+                                                {% if document.isPublished %}
+                                                    <span class="badge bg-success">Publié</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Brouillon</span>
+                                                {% endif %}
+                                                {% if not document.isActive %}
+                                                    <span class="badge bg-danger ms-1">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ document.updatedAt|date('d/m/Y H:i') }}
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        Actions
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="{{ path('admin_legal_document_show', {id: document.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                            </svg>
+                                                            Voir
+                                                        </a>
+                                                        <a class="dropdown-item" href="{{ path('admin_legal_document_edit', {id: document.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                <path d="M16 5l3 3"/>
+                                                            </svg>
+                                                            Modifier
+                                                        </a>
+                                                        {% if document.isPublished %}
+                                                            <form method="POST" action="{{ path('admin_legal_document_toggle_publish', {id: document.id}) }}" class="d-inline">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                                                                <button type="submit" class="dropdown-item text-warning">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                                        <path d="M3 3l18 18"/>
+                                                                    </svg>
+                                                                    Dépublier
+                                                                </button>
+                                                            </form>
+                                                        {% else %}
+                                                            <form method="POST" action="{{ path('admin_legal_document_toggle_publish', {id: document.id}) }}" class="d-inline">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                                                                <button type="submit" class="dropdown-item text-success">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                                                        <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7"/>
+                                                                    </svg>
+                                                                    Publier
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                        <div class="dropdown-divider"></div>
+                                                        <form method="POST" action="{{ path('admin_legal_document_delete', {id: document.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce document ?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document.id) }}">
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M4 7l16 0"/>
+                                                                    <path d="M10 11l0 6"/>
+                                                                    <path d="M14 11l0 6"/>
+                                                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                </svg>
+                                                                Supprimer
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">
+                                                <div class="empty">
+                                                    <div class="empty-icon">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <p class="empty-title">Aucun document trouvé</p>
+                                                    <p class="empty-subtitle text-muted">
+                                                        Aucun document de type "{{ type_title }}" ne correspond à vos critères.
+                                                    </p>
+                                                    <div class="empty-action">
+                                                        <a href="{{ path('admin_legal_document_new', {type: type}) }}" class="btn btn-primary">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M12 5l0 14"/>
+                                                                <path d="M5 12l14 0"/>
+                                                            </svg>
+                                                            Créer le premier document
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

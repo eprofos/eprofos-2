@@ -1,0 +1,229 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for item in breadcrumb %}
+                {% if item.url %}
+                    <li class="breadcrumb-item">
+                        <a href="{{ item.url }}">{{ item.label }}</a>
+                    </li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ item.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">{{ document.title }}</h3>
+                    <div class="btn-group">
+                        <a href="{{ path('admin_legal_document_edit', {id: document.id}) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        
+                        {% if document.isPublished %}
+                            <form method="post" 
+                                  action="{{ path('admin_legal_document_toggle_publish', {id: document.id}) }}" 
+                                  class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                                <button type="submit" class="btn btn-secondary" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir dépublier ce document ?')">
+                                    <i class="fas fa-eye-slash"></i> Dépublier
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" 
+                                  action="{{ path('admin_legal_document_toggle_publish', {id: document.id}) }}" 
+                                  class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-eye"></i> Publier
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="post" 
+                              action="{{ path('admin_legal_document_delete', {id: document.id}) }}" 
+                              class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document.id) }}">
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce document ?')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {# Document info #}
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Type de document</h6>
+                                    <span class="badge bg-secondary fs-6">{{ document.typeLabel }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Version</h6>
+                                    <code class="fs-6">{{ document.version }}</code>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Statut</h6>
+                                    {% if document.isPublished %}
+                                        <span class="badge bg-success fs-6">
+                                            <i class="fas fa-check"></i> Publié
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            Publié le {{ document.publishedAt|date('d/m/Y à H:i') }}
+                                        </small>
+                                    {% elseif document.isActive %}
+                                        <span class="badge bg-warning fs-6">
+                                            <i class="fas fa-edit"></i> Brouillon
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary fs-6">
+                                            <i class="fas fa-times"></i> Inactif
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Fichier PDF</h6>
+                                    {% if document.hasFile %}
+                                        <a href="{{ document.fileUrl }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i> Télécharger le PDF
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Aucun fichier</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Content preview #}
+                            <div class="mb-4">
+                                <h5>Contenu du document</h5>
+                                <div class="border rounded p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+                                    {{ document.content|raw }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            {# Metadata #}
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Métadonnées
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td class="text-muted">Créé le :</td>
+                                            <td>{{ document.createdAt|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Modifié le :</td>
+                                            <td>{{ document.updatedAt|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Version :</td>
+                                            <td><code>{{ document.version }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Type :</td>
+                                            <td>{{ document.type }}</td>
+                                        </tr>
+                                        {% if document.metadata %}
+                                        <tr>
+                                            <td class="text-muted">Métadonnées :</td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ document.metadata|json_encode(constant('JSON_PRETTY_PRINT'))|nl2br }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+
+                            {# Public URL if published #}
+                            {% if document.isPublished %}
+                                <div class="card bg-success bg-opacity-10 mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-globe"></i> Accès public
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2">Ce document est accessible publiquement :</p>
+                                        {% if document.type == 'internal_regulation' or document.type == 'student_handbook' or document.type == 'training_terms' %}
+                                            <a href="{{ path('app_legal_student_information') }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-external-link-alt"></i> Page stagiaires
+                                            </a>
+                                        {% elseif document.type starts with 'accessibility_' %}
+                                            <a href="{{ path('app_legal_accessibility') }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-external-link-alt"></i> Page accessibilité
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {# Actions #}
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-tools"></i> Actions rapides
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ path('admin_legal_document_edit', {id: document.id}) }}" 
+                                           class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Modifier le document
+                                        </a>
+                                        
+                                        {% if document.hasFile %}
+                                            <a href="{{ document.fileUrl }}" 
+                                               target="_blank" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-download"></i> Télécharger le PDF
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <a href="{{ path('admin_legal_document_index') }}" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-list"></i> Retour à la liste
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

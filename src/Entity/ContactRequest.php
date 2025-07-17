@@ -26,7 +26,7 @@ class ContactRequest
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Le type de demande est obligatoire.')]
     #[Assert\Choice(
-        choices: ['quote', 'advice', 'information', 'quick_registration'],
+        choices: ['quote', 'advice', 'information', 'quick_registration', 'accessibility_request', 'document_acknowledgment'],
         message: 'Type de demande invalide.'
     )]
     private ?string $type = null;
@@ -179,6 +179,8 @@ class ContactRequest
             'advice' => 'Demande de conseil',
             'information' => 'Demande d\'information',
             'quick_registration' => 'Inscription rapide',
+            'accessibility_request' => 'Demande d\'adaptation handicap',
+            'document_acknowledgment' => 'Accusé de réception de documents',
             default => 'Autre'
         };
     }
@@ -252,6 +254,42 @@ class ContactRequest
         if ($this->status === 'pending') {
             $this->status = 'in_progress';
         }
+    }
+
+    /**
+     * Check if this is an accessibility request
+     */
+    public function isAccessibilityRequest(): bool
+    {
+        return $this->type === 'accessibility_request';
+    }
+
+    /**
+     * Check if this is a document acknowledgment
+     */
+    public function isDocumentAcknowledgment(): bool
+    {
+        return $this->type === 'document_acknowledgment';
+    }
+
+    /**
+     * Get accessibility needs from additional data
+     */
+    public function getAccessibilityNeeds(): ?array
+    {
+        return $this->additionalData['accessibilityNeeds'] ?? null;
+    }
+
+    /**
+     * Set accessibility needs in additional data
+     */
+    public function setAccessibilityNeeds(?array $accessibilityNeeds): static
+    {
+        if ($this->additionalData === null) {
+            $this->additionalData = [];
+        }
+        $this->additionalData['accessibilityNeeds'] = $accessibilityNeeds;
+        return $this;
     }
 
     // Getters and Setters

@@ -106,6 +106,24 @@ class SessionRegistration
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $confirmedAt = null;
 
+    /**
+     * Date when legal documents were delivered to the participant
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $documentsDeliveredAt = null;
+
+    /**
+     * Date when participant acknowledged receiving the documents
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $documentsAcknowledgedAt = null;
+
+    /**
+     * Token for document acknowledgment (security)
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $documentAcknowledgmentToken = null;
+
     #[ORM\ManyToOne(targetEntity: Session::class, inversedBy: 'registrations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Session $session = null;
@@ -368,6 +386,82 @@ class SessionRegistration
     public function cancel(): static
     {
         $this->status = 'cancelled';
+        return $this;
+    }
+
+    public function getDocumentsDeliveredAt(): ?\DateTimeInterface
+    {
+        return $this->documentsDeliveredAt;
+    }
+
+    public function setDocumentsDeliveredAt(?\DateTimeInterface $documentsDeliveredAt): static
+    {
+        $this->documentsDeliveredAt = $documentsDeliveredAt;
+        return $this;
+    }
+
+    public function getDocumentsAcknowledgedAt(): ?\DateTimeInterface
+    {
+        return $this->documentsAcknowledgedAt;
+    }
+
+    public function setDocumentsAcknowledgedAt(?\DateTimeInterface $documentsAcknowledgedAt): static
+    {
+        $this->documentsAcknowledgedAt = $documentsAcknowledgedAt;
+        return $this;
+    }
+
+    public function getDocumentAcknowledgmentToken(): ?string
+    {
+        return $this->documentAcknowledgmentToken;
+    }
+
+    public function setDocumentAcknowledgmentToken(?string $documentAcknowledgmentToken): static
+    {
+        $this->documentAcknowledgmentToken = $documentAcknowledgmentToken;
+        return $this;
+    }
+
+    /**
+     * Mark documents as delivered
+     */
+    public function markDocumentsAsDelivered(): static
+    {
+        $this->documentsDeliveredAt = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * Mark documents as acknowledged by participant
+     */
+    public function markDocumentsAsAcknowledged(): static
+    {
+        $this->documentsAcknowledgedAt = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * Check if documents have been delivered
+     */
+    public function areDocumentsDelivered(): bool
+    {
+        return $this->documentsDeliveredAt !== null;
+    }
+
+    /**
+     * Check if documents have been acknowledged
+     */
+    public function areDocumentsAcknowledged(): bool
+    {
+        return $this->documentsAcknowledgedAt !== null;
+    }
+
+    /**
+     * Generate acknowledgment token for security
+     */
+    public function generateDocumentAcknowledgmentToken(): static
+    {
+        $this->documentAcknowledgmentToken = bin2hex(random_bytes(32));
         return $this;
     }
 

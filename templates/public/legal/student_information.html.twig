@@ -1,0 +1,223 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Informations stagiaires - EPROFOS{% endblock %}
+
+{% block meta_description %}Informations obligatoires pour les stagiaires d'EPROFOS. Règlement intérieur, livret d'accueil et conditions de formation conformes Qualiopi.{% endblock %}
+
+{% block body %}
+    {# Modern Hero Section #}
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="section-badge mb-3">INFORMATIONS OBLIGATOIRES</span>
+                    <h1 class="display-4 fw-bold mb-4">
+                        Informations <span class="text-warning">stagiaires</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        Documents obligatoires et informations essentielles pour votre formation
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        {# Introduction Section #}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">Informations importantes</h2>
+                            </div>
+                        </div>
+                        <p class="text-center mb-0" style="line-height: 1.7; font-size: 1.1rem;">
+                            Conformément à la réglementation Qualiopi, nous mettons à votre disposition 
+                            tous les documents et informations nécessaires au bon déroulement de votre formation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Internal Regulation Section #}
+        {% if internal_regulation %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-gavel"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ internal_regulation.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ internal_regulation.version }} - Mis à jour le {{ internal_regulation.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ internal_regulation.content|raw }}
+                        </div>
+
+                        {% if internal_regulation.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ internal_regulation.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-primary btn-lg" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Student Handbook Section #}
+        {% if student_handbook %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ student_handbook.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ student_handbook.version }} - Mis à jour le {{ student_handbook.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ student_handbook.content|raw }}
+                        </div>
+
+                        {% if student_handbook.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ student_handbook.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-warning btn-lg text-white" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Training Terms Section #}
+        {% if training_terms %}
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-purple text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; background-color: #9c27b0;">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <h2 class="h3 fw-bold mb-0">{{ training_terms.title }}</h2>
+                            </div>
+                            <p class="text-muted">Version {{ training_terms.version }} - Mis à jour le {{ training_terms.updatedAt|date('d/m/Y') }}</p>
+                        </div>
+                        
+                        <div class="content-display">
+                            {{ training_terms.content|raw }}
+                        </div>
+
+                        {% if training_terms.hasFile %}
+                        <div class="text-center mt-4">
+                            <a href="{{ training_terms.fileUrl }}" 
+                               target="_blank" 
+                               class="btn btn-lg text-white" 
+                               style="border-radius: 25px; background-color: #9c27b0;">
+                                <i class="fas fa-download me-2"></i>Télécharger le PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Contact Section #}
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-question-circle fa-2x"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-3">Questions ou besoin d'aide ?</h3>
+                        <p class="text-muted mb-4" style="line-height: 1.7;">
+                            Notre équipe pédagogique est à votre disposition pour répondre à vos questions 
+                            concernant ces documents ou votre formation.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ path('app_contact_index') }}" class="btn btn-primary btn-lg" style="border-radius: 25px;">
+                                <i class="fas fa-envelope me-2"></i>Nous contacter
+                            </a>
+                            <a href="mailto:contact@eprofos.fr" class="btn btn-outline-primary btn-lg" style="border-radius: 25px;">
+                                <i class="fas fa-at me-2"></i>contact@eprofos.fr
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .content-display {
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        .content-display h1, .content-display h2, .content-display h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content-display ul, .content-display ol {
+            margin-bottom: 1rem;
+        }
+        
+        .content-display p {
+            margin-bottom: 1rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .section-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+{% endblock %}

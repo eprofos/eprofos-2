@@ -1,0 +1,187 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for item in breadcrumb %}
+                {% if item.url %}
+                    <li class="breadcrumb-item">
+                        <a href="{{ item.url }}">{{ item.label }}</a>
+                    </li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ item.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">{{ page_title }}</h3>
+                </div>
+
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form_label(form.type) }}
+                                {{ form_widget(form.type) }}
+                                {{ form_help(form.type) }}
+                                {% if form.type.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.title) }}
+                                {{ form_widget(form.title) }}
+                                {{ form_help(form.title) }}
+                                {% if form.title.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.title) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.content) }}
+                                {{ form_widget(form.content) }}
+                                {{ form_help(form.content) }}
+                                {% if form.content.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.content) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-cog"></i> Configuration
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.version) }}
+                                        {{ form_widget(form.version) }}
+                                        {{ form_help(form.version) }}
+                                        {% if form.version.vars.errors|length > 0 %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(form.version) }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.file) }}
+                                        {{ form_widget(form.file) }}
+                                        {{ form_help(form.file) }}
+                                        {% if form.file.vars.errors|length > 0 %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(form.file) }}
+                                            </div>
+                                        {% endif %}
+                                        {% if document.hasFile %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    Fichier actuel: 
+                                                    <a href="{{ document.fileUrl }}" target="_blank">
+                                                        <i class="fas fa-download"></i> Télécharger
+                                                    </a>
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        {{ form_widget(form.isActive) }}
+                                        {{ form_label(form.isActive) }}
+                                        {{ form_help(form.isActive) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.publishedAt) }}
+                                        {{ form_widget(form.publishedAt) }}
+                                        {{ form_help(form.publishedAt) }}
+                                        {% if form.publishedAt.vars.errors|length > 0 %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(form.publishedAt) }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card bg-info bg-opacity-10 mt-3">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Aide
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <small class="text-muted">
+                                        <strong>Publication :</strong> Définissez une date de publication pour 
+                                        programmer la mise en ligne automatique. Laissez vide pour enregistrer 
+                                        en brouillon.
+                                    </small>
+                                    <hr>
+                                    <small class="text-muted">
+                                        <strong>Fichier PDF :</strong> Le fichier PDF est optionnel. Si fourni, 
+                                        il sera proposé en téléchargement aux utilisateurs.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('admin_legal_document_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        
+                        <div>
+                            <button type="submit" name="save" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            {% if document.id %}
+                                <button type="submit" name="save_and_continue" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Enregistrer et continuer
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Preview functionality for content
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentTextarea = document.getElementById('legal_document_content');
+            if (contentTextarea) {
+                // Add some basic editor helpers here if needed
+                contentTextarea.style.fontFamily = 'monospace';
+            }
+        });
+    </script>
+{% endblock %}

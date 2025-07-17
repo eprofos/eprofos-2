@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\NeedsAnalysisRequest;
+use App\Entity\SessionRegistration;
+use App\Entity\LegalDocument;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -270,6 +272,139 @@ class EmailNotificationService
         } catch (\Exception $e) {
             $this->logger->error('Failed to send test email', [
                 'to_email' => $toEmail,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send legal documents delivery notification to participant
+     */
+    public function sendDocumentDelivery(SessionRegistration $registration, array $documents): bool
+    {
+        try {
+            $this->logger->info('Sending document delivery notification', [
+                'registration_id' => $registration->getId(),
+                'email' => $registration->getEmail(),
+                'documents_count' => count($documents)
+            ]);
+
+            // Generate acknowledgment URL
+            $acknowledgmentUrl = $this->urlGenerator->generate(
+                'app_document_acknowledgment',
+                ['token' => $registration->getDocumentAcknowledgmentToken()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->fromEmail, $this->fromName))
+                ->to(new Address($registration->getEmail(), $registration->getFullName()))
+                ->subject('Documents obligatoires - Formation EPROFOS')
+                ->htmlTemplate('emails/document_delivery.html.twig')
+                ->context([
+                    'registration' => $registration,
+                    'session' => $registration->getSession(),
+                    'formation' => $registration->getSession()->getFormation(),
+                    'documents' => $documents,
+                    'acknowledgment_url' => $acknowledgmentUrl
+                ]);
+
+            $this->mailer->send($email);
+
+            $this->logger->info('Document delivery notification sent successfully', [
+                'registration_id' => $registration->getId()
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to send document delivery notification', [
+                'registration_id' => $registration->getId(),
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send document acknowledgment confirmation
+     */
+    public function sendDocumentAcknowledgmentConfirmation(SessionRegistration $registration): bool
+    {
+        try {
+            $this->logger->info('Sending document acknowledgment confirmation', [
+                'registration_id' => $registration->getId()
+            ]);
+
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->fromEmail, $this->fromName))
+                ->to(new Address($registration->getEmail(), $registration->getFullName()))
+                ->subject('Confirmation de réception - Documents EPROFOS')
+                ->htmlTemplate('emails/document_acknowledgment_confirmation.html.twig')
+                ->context([
+                    'registration' => $registration,
+                    'session' => $registration->getSession(),
+                    'formation' => $registration->getSession()->getFormation()
+                ]);
+
+            $this->mailer->send($email);
+
+            $this->logger->info('Document acknowledgment confirmation sent successfully', [
+                'registration_id' => $registration->getId()
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to send document acknowledgment confirmation', [
+                'registration_id' => $registration->getId(),
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Send accessibility request notification to admin
+     */
+    public function sendAccessibilityRequestNotification(\App\Entity\ContactRequest $contactRequest): bool
+    {
+        try {
+            $this->logger->info('Sending accessibility request notification to admin', [
+                'contact_request_id' => $contactRequest->getId()
+            ]);
+
+            $adminUrl = $this->urlGenerator->generate(
+                'admin_contact_request_show',
+                ['id' => $contactRequest->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->fromEmail, $this->fromName))
+                ->to(new Address($this->adminEmail, 'Administration EPROFOS'))
+                ->subject('Nouvelle demande d\'adaptation handicap - EPROFOS')
+                ->htmlTemplate('emails/accessibility_request_admin.html.twig')
+                ->context([
+                    'contactRequest' => $contactRequest,
+                    'admin_url' => $adminUrl
+                ]);
+
+            $this->mailer->send($email);
+
+            $this->logger->info('Accessibility request notification sent to admin successfully', [
+                'contact_request_id' => $contactRequest->getId()
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to send accessibility request notification to admin', [
+                'contact_request_id' => $contactRequest->getId(),
                 'error' => $e->getMessage()
             ]);
 

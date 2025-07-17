@@ -1,0 +1,91 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block title %}Nouvelle demande d'adaptation handicap - EPROFOS{% endblock %}
+
+{% block body %}
+    <div class="header">
+        <h1>Nouvelle demande d'adaptation handicap</h1>
+        <p class="subtitle">Demande d'accommodement</p>
+    </div>
+
+    <div class="content">
+        <p>Une nouvelle demande d'adaptation pour personne en situation de handicap a été soumise.</p>
+
+        <div class="info-box">
+            <h3>👤 Informations du demandeur</h3>
+            <table>
+                <tr>
+                    <td><strong>Nom :</strong></td>
+                    <td>{{ contactRequest.fullName }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Email :</strong></td>
+                    <td>{{ contactRequest.email }}</td>
+                </tr>
+                {% if contactRequest.phone %}
+                <tr>
+                    <td><strong>Téléphone :</strong></td>
+                    <td>{{ contactRequest.phone }}</td>
+                </tr>
+                {% endif %}
+                {% if contactRequest.company %}
+                <tr>
+                    <td><strong>Entreprise :</strong></td>
+                    <td>{{ contactRequest.company }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>Date de demande :</strong></td>
+                    <td>{{ contactRequest.createdAt|date('d/m/Y à H:i') }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {% if contactRequest.formation %}
+        <div class="formation-info">
+            <h3>🎓 Formation concernée</h3>
+            <p><strong>{{ contactRequest.formation.title }}</strong></p>
+        </div>
+        {% endif %}
+
+        <div class="message-content">
+            <h3>💬 Message</h3>
+            <div class="message-text">
+                {{ contactRequest.message|nl2br }}
+            </div>
+        </div>
+
+        {% if contactRequest.accessibilityNeeds %}
+        <div class="accessibility-needs">
+            <h3>♿ Besoins d'adaptation spécifiés</h3>
+            <ul>
+                {% for need in contactRequest.accessibilityNeeds %}
+                    <li>{{ need }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="action-required">
+            <h3>⚠️ Action requise</h3>
+            <p>Cette demande nécessite un traitement prioritaire pour garantir l'accessibilité 
+            de nos formations. Veuillez contacter le demandeur dans les plus brefs délais.</p>
+            
+            <div class="action-button">
+                <a href="{{ admin_url }}" class="btn-primary">
+                    Voir la demande dans l'administration
+                </a>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <h3>📞 Contact recommandé</h3>
+            <p>Responsable accessibilité : <a href="mailto:handicap@eprofos.fr">handicap@eprofos.fr</a></p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Système d'administration EPROFOS</strong><br>
+        École Professionnelle de Formation Spécialisée</p>
+    </div>
+{% endblock %}

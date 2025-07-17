@@ -1,0 +1,253 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}
+    {% if already_acknowledged %}
+        Documents déjà confirmés - EPROFOS
+    {% elseif acknowledgment_confirmed %}
+        Confirmation reçue - EPROFOS
+    {% else %}
+        Confirmation de réception - EPROFOS
+    {% endif %}
+{% endblock %}
+
+{% block meta_description %}Confirmation de réception des documents légaux pour votre inscription à la formation EPROFOS.{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                {% if already_acknowledged %}
+                {# Already Acknowledged #}
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                        <h1 class="h3 fw-bold mb-3">Documents déjà confirmés</h1>
+                        <p class="mb-4" style="line-height: 1.7;">
+                            Vous avez déjà confirmé la réception des documents pour votre inscription à la formation
+                            <strong>{{ session_registration.session.formation.title }}</strong>.
+                        </p>
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Confirmation effectuée le :</strong> 
+                            {{ session_registration.documentsAcknowledgedAt|date('d/m/Y à H:i') }}
+                        </div>
+                        <a href="{{ path('app_formations_index') }}" 
+                           class="btn btn-success btn-lg" 
+                           style="border-radius: 25px;">
+                            <i class="fas fa-graduation-cap me-2"></i>Voir nos formations
+                        </a>
+                    </div>
+                </div>
+
+                {% elseif acknowledgment_confirmed %}
+                {# Acknowledgment Just Confirmed #}
+                <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-thumbs-up fa-2x"></i>
+                            </div>
+                        </div>
+                        <h1 class="h3 fw-bold mb-3 text-success">Confirmation reçue !</h1>
+                        <p class="mb-4" style="line-height: 1.7;">
+                            Merci d'avoir confirmé la réception des documents pour votre inscription à la formation
+                            <strong>{{ session_registration.session.formation.title }}</strong>.
+                        </p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-white">
+                                    <div class="card-body p-3">
+                                        <h5 class="card-title">Formation</h5>
+                                        <p class="card-text">{{ session_registration.session.formation.title }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-white">
+                                    <div class="card-body p-3">
+                                        <h5 class="card-title">Session</h5>
+                                        <p class="card-text">
+                                            Du {{ session_registration.session.startDate|date('d/m/Y') }}
+                                            au {{ session_registration.session.endDate|date('d/m/Y') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-envelope me-2"></i>
+                            Un email de confirmation vous a été envoyé à l'adresse : 
+                            <strong>{{ session_registration.participantEmail }}</strong>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ path('app_legal_student_information') }}" 
+                               class="btn btn-primary" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-file-alt me-2"></i>Consulter les documents
+                            </a>
+                            <a href="{{ path('app_contact_index') }}" 
+                               class="btn btn-outline-secondary" 
+                               style="border-radius: 25px;">
+                                <i class="fas fa-envelope me-2"></i>Nous contacter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                {# Acknowledgment Form #}
+                <div class="card border-0 shadow-sm" style="border-radius: 25px;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-file-signature fa-2x"></i>
+                            </div>
+                            <h1 class="h3 fw-bold mb-3">Confirmation de réception des documents</h1>
+                            <p class="text-muted" style="line-height: 1.7;">
+                                Veuillez confirmer que vous avez bien reçu et pris connaissance des documents 
+                                relatifs à votre inscription.
+                            </p>
+                        </div>
+
+                        {# Session Information #}
+                        <div class="card border-0 bg-light mb-4" style="border-radius: 15px;">
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold mb-3">Informations de votre inscription</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Formation :</strong><br>
+                                        {{ session_registration.session.formation.title }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Participant :</strong><br>
+                                        {{ session_registration.participantFirstName }} {{ session_registration.participantLastName }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Email :</strong><br>
+                                        {{ session_registration.participantEmail }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Dates de formation :</strong><br>
+                                        Du {{ session_registration.session.startDate|date('d/m/Y') }}
+                                        au {{ session_registration.session.endDate|date('d/m/Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Documents List #}
+                        <div class="card border-0 bg-light mb-4" style="border-radius: 15px;">
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold mb-3">Documents transmis</h4>
+                                <p class="text-muted mb-3">
+                                    Les documents suivants vous ont été transmis par email le 
+                                    <strong>{{ session_registration.documentsDeliveredAt|date('d/m/Y à H:i') }}</strong> :
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Règlement intérieur</strong> - Règles de fonctionnement de l'organisme
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Livret du stagiaire</strong> - Guide pratique de votre formation
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Conditions générales de formation</strong> - Modalités contractuelles
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {# Acknowledgment Declaration #}
+                        <div class="alert alert-warning" role="alert">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Déclaration
+                            </h5>
+                            <p class="mb-0">
+                                En confirmant ci-dessous, je déclare avoir reçu et pris connaissance de l'ensemble 
+                                des documents relatifs à ma formation. Je comprends que cette confirmation est 
+                                requise dans le cadre de la certification Qualiopi.
+                            </p>
+                        </div>
+
+                        {# Confirmation Form #}
+                        <form method="POST" class="text-center">
+                            <button type="submit" 
+                                    class="btn btn-warning btn-lg" 
+                                    style="border-radius: 25px;">
+                                <i class="fas fa-signature me-2"></i>Confirmer la réception des documents
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <p class="small text-muted">
+                                Si vous rencontrez des difficultés, contactez-nous à 
+                                <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# Additional Information #}
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm" style="border-radius: 25px; background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);">
+                            <div class="card-body p-4 text-center">
+                                <h4 class="fw-bold mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Information
+                                </h4>
+                                <p class="mb-3" style="line-height: 1.6;">
+                                    Cette procédure de confirmation est requise dans le cadre de notre certification Qualiopi
+                                    et garantit la traçabilité de la remise des documents obligatoires.
+                                </p>
+                                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                    <a href="{{ path('app_legal_student_information') }}" 
+                                       class="btn btn-outline-info" 
+                                       style="border-radius: 25px;">
+                                        <i class="fas fa-file-alt me-2"></i>Consulter les documents
+                                    </a>
+                                    <a href="{{ path('app_legal_accessibility') }}" 
+                                       class="btn btn-outline-primary" 
+                                       style="border-radius: 25px;">
+                                        <i class="fas fa-universal-access me-2"></i>Accessibilité
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .card {
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .alert {
+            border-radius: 15px;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+{% endblock %}

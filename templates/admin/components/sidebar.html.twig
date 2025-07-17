@@ -408,6 +408,73 @@
                     </div>
                 </li>
                 
+                <!-- Legal Documents Section -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_legal_document' ? 'active' : '' }}" href="#navbar-legal-documents" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                <path d="M9 9l1 0"/>
+                                <path d="M9 13l6 0"/>
+                                <path d="M9 17l6 0"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Documents légaux
+                        </span>
+                        <span class="badge badge-sm bg-orange text-white ms-auto">Qualiopi 3.9</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 11l3 3l8 -8"/>
+                                        <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+                                    </svg>
+                                    Tous les documents
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_new') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Nouveau document
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_internal_regulation') }}">
+                                    <span class="badge bg-blue text-white me-2">●</span>
+                                    Règlements intérieurs
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_student_handbook') }}">
+                                    <span class="badge bg-green text-white me-2">●</span>
+                                    Livrets d'accueil
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_training_terms') }}">
+                                    <span class="badge bg-purple text-white me-2">●</span>
+                                    Conditions de formation
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_policy') }}">
+                                    <span class="badge bg-orange text-white me-2">♿</span>
+                                    Politiques accessibilité
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_procedures') }}">
+                                    <span class="badge bg-yellow text-white me-2">⚙️</span>
+                                    Procédures accessibilité
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_faq') }}">
+                                    <span class="badge bg-cyan text-white me-2">❓</span>
+                                    FAQ Accessibilité
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
                 <!-- Divider -->
                 <li class="nav-item">
                     <div class="hr-text">Système</div>

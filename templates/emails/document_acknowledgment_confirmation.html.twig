@@ -1,0 +1,61 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block title %}Confirmation de réception - Documents EPROFOS{% endblock %}
+
+{% block body %}
+    <div class="header">
+        <h1>Confirmation de réception</h1>
+        <p class="subtitle">Documents obligatoires</p>
+    </div>
+
+    <div class="content">
+        <p>Bonjour {{ registration.firstName }},</p>
+        
+        <p>Nous confirmons avoir bien reçu votre accusé de réception concernant les documents 
+        obligatoires pour votre formation <strong>{{ formation.title }}</strong>.</p>
+
+        <div class="success-box">
+            <h3>✅ Confirmation enregistrée</h3>
+            <p>Date de confirmation : {{ registration.documentsAcknowledgedAt|date('d/m/Y à H:i') }}</p>
+            <p>Vous êtes désormais prêt(e) pour votre formation !</p>
+        </div>
+
+        <div class="session-reminder">
+            <h3>📅 Rappel de votre session</h3>
+            <table>
+                <tr>
+                    <td><strong>Formation :</strong></td>
+                    <td>{{ formation.title }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Dates :</strong></td>
+                    <td>Du {{ session.startDate|date('d/m/Y à H:i') }} au {{ session.endDate|date('d/m/Y à H:i') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Lieu :</strong></td>
+                    <td>{{ session.location }}{% if session.address %}<br>{{ session.address }}{% endif %}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="next-steps">
+            <h3>🚀 Prochaines étapes</h3>
+            <ul>
+                <li>Vous recevrez un rappel quelques jours avant le début de la formation</li>
+                <li>Assurez-vous d'avoir tout le matériel nécessaire (si applicable)</li>
+                <li>Préparez vos questions pour maximiser votre apprentissage</li>
+            </ul>
+        </div>
+
+        <p>Si vous avez des questions ou besoin d'assistance, notre équipe reste à votre disposition.</p>
+
+        <p>À très bientôt pour votre formation !</p>
+    </div>
+
+    <div class="footer">
+        <p><strong>L'équipe EPROFOS</strong><br>
+        École Professionnelle de Formation Spécialisée</p>
+        <p>📧 contact@eprofos.fr | 📞 +33 1 23 45 67 89<br>
+        🌐 <a href="{{ absolute_url(path('app_home')) }}">www.eprofos.fr</a></p>
+    </div>
+{% endblock %}
