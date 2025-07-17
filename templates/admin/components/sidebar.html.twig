@@ -258,6 +258,83 @@
                     </div>
                 </li>
                 
+                <!-- Prospects Section -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_prospect' ? 'active' : '' }}" href="#navbar-prospects" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M17 21v-2a4 4 0 0 0 -4 -4h-6a4 4 0 0 0 -4 4v2"/>
+                                <path d="M10 7a4 4 0 1 0 0 -8a4 4 0 0 0 0 8z"/>
+                                <path d="M16 11h6m-3 -3v6"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Prospects
+                        </span>
+                        <span class="badge badge-sm bg-blue text-white ms-auto">CRM</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 11l3 3l8 -8"/>
+                                        <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+                                    </svg>
+                                    Tous les prospects
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_new') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Nouveau prospect
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'new'}) }}">
+                                    <span class="badge bg-blue text-white me-2">●</span>
+                                    Nouveaux
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'qualified'}) }}">
+                                    <span class="badge bg-orange text-white me-2">●</span>
+                                    Qualifiés
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'proposal_sent'}) }}">
+                                    <span class="badge bg-yellow text-white me-2">●</span>
+                                    Proposition envoyée
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'negotiation'}) }}">
+                                    <span class="badge bg-purple text-white me-2">●</span>
+                                    En négociation
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'converted'}) }}">
+                                    <span class="badge bg-green text-white me-2">●</span>
+                                    Convertis
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {priority: 'urgent'}) }}">
+                                    <span class="badge bg-red text-white me-2">🔥</span>
+                                    Urgents
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_prospect_export') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                        <path d="M9 9l1 0"/>
+                                        <path d="M9 13l6 0"/>
+                                        <path d="M9 17l6 0"/>
+                                    </svg>
+                                    Exporter CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
                 <!-- Questionnaires Section -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_questionnaire' or app.request.get('_route') starts with 'admin_question' ? 'active' : '' }}" href="#navbar-questionnaires" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">

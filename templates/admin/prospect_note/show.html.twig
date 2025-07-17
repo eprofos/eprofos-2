@@ -1,0 +1,233 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-outline-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Note Content -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-sm me-3" style="background-color: {{ note.typeBadgeClass }}; color: white;">
+                                {{ note.typeIcon }}
+                            </span>
+                            <div>
+                                <h3 class="card-title mb-0">{{ note.title }}</h3>
+                                <div class="text-muted small">
+                                    {{ note.typeLabel }}
+                                    {% if note.isImportant %}
+                                        <span class="badge bg-red text-white ms-2">Important</span>
+                                    {% endif %}
+                                    {% if note.isPrivate %}
+                                        <span class="badge bg-dark text-white ms-2">Privé</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            {{ note.content|nl2br }}
+                        </div>
+                        
+                        {% if note.metadata is not empty %}
+                            <div class="mb-3">
+                                <h4 class="card-subtitle">Métadonnées</h4>
+                                <div class="mt-2">
+                                    {% for key, value in note.metadata %}
+                                        <div class="row mb-2">
+                                            <div class="col-md-3 fw-bold">{{ key|title }}:</div>
+                                            <div class="col-md-9">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Related Prospect -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Prospect associé</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-md me-3" style="background-color: var(--tblr-primary); color: white;">
+                                {{ note.prospect.firstName|first|upper }}{{ note.prospect.lastName|first|upper }}
+                            </span>
+                            <div class="flex-fill">
+                                <div class="fw-bold">{{ note.prospect.fullName }}</div>
+                                <div class="text-muted">{{ note.prospect.email }}</div>
+                                {% if note.prospect.company %}
+                                    <div class="text-muted small">{{ note.prospect.company }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{{ path('admin_prospect_show', {id: note.prospect.id}) }}" class="btn btn-outline-primary">
+                                    Voir le prospect
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Note Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Type</label>
+                            <div>
+                                <span class="badge {{ note.typeBadgeClass }} text-white">{{ note.typeLabel }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Statut</label>
+                            <div>
+                                <span class="badge {{ note.statusBadgeClass }} text-white">{{ note.statusLabel }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Créé par</label>
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-xs me-2" style="background-color: var(--tblr-success); color: white;">
+                                    {{ note.createdBy.initials }}
+                                </span>
+                                <span>{{ note.createdBy.fullName }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Date de création</label>
+                            <div class="text-muted">{{ note.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                        
+                        {% if note.updatedAt %}
+                            <div class="mb-3">
+                                <label class="form-label">Dernière modification</label>
+                                <div class="text-muted">{{ note.updatedAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if note.scheduledAt %}
+                            <div class="mb-3">
+                                <label class="form-label">Programmé pour</label>
+                                <div class="text-muted">{{ note.scheduledAt|date('d/m/Y H:i') }}</div>
+                                {% if note.scheduledAt < date() and note.status != 'completed' %}
+                                    <div class="text-danger small">En retard</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if note.completedAt %}
+                            <div class="mb-3">
+                                <label class="form-label">Terminé le</label>
+                                <div class="text-muted">{{ note.completedAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="btn-list d-grid">
+                            <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-outline-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                    <path d="M16 5l3 3"/>
+                                </svg>
+                                Modifier cette note
+                            </a>
+                            
+                            {% if note.type == 'task' and note.status != 'completed' %}
+                                <form method="post" action="{{ path('admin_prospect_note_complete', {id: note.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ note.id) }}">
+                                    <button type="submit" class="btn btn-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Marquer comme terminé
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{{ path('admin_prospect_note_new', {prospect: note.prospect.id}) }}" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 5l0 14"/>
+                                    <path d="M5 12l14 0"/>
+                                </svg>
+                                Ajouter une nouvelle note
+                            </a>
+                            
+                            <div class="btn-list">
+                                <form method="post" action="{{ path('admin_prospect_note_delete', {id: note.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ note.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette note ? Cette action est irréversible.')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M4 7l16 0"/>
+                                            <path d="M10 11l0 6"/>
+                                            <path d="M14 11l0 6"/>
+                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                        </svg>
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvelle note de prospect{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_prospect_note_index') }}">Notes de prospects</a>
+                        </li>
+                        <li class="breadcrumb-item active">Nouvelle note</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouvelle note de prospect
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-sticky-note me-2"></i>
+                                Informations de la note
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'prospect-note-form'}}) }}
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        {{ form_label(form.title) }}
+                                        {{ form_widget(form.title) }}
+                                        {{ form_help(form.title) }}
+                                        {{ form_errors(form.title) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.type) }}
+                                        {{ form_widget(form.type) }}
+                                        {{ form_help(form.type) }}
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.content) }}
+                                {{ form_widget(form.content) }}
+                                {{ form_help(form.content) }}
+                                {{ form_errors(form.content) }}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.prospect) }}
+                                        {{ form_widget(form.prospect) }}
+                                        {{ form_help(form.prospect) }}
+                                        {{ form_errors(form.prospect) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.status) }}
+                                        {{ form_widget(form.status) }}
+                                        {{ form_help(form.status) }}
+                                        {{ form_errors(form.status) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3" id="scheduled-field">
+                                        {{ form_label(form.scheduledAt) }}
+                                        {{ form_widget(form.scheduledAt) }}
+                                        {{ form_help(form.scheduledAt) }}
+                                        {{ form_errors(form.scheduledAt) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch mt-4">
+                                            {{ form_widget(form.isImportant) }}
+                                            {{ form_label(form.isImportant, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            {{ form_widget(form.isPrivate) }}
+                                            {{ form_label(form.isPrivate, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.metadata) }}
+                                {{ form_widget(form.metadata) }}
+                                {{ form_help(form.metadata) }}
+                                {{ form_errors(form.metadata) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('admin_prospect_note_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    Créer la note
+                                </button>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Aide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de notes</h6>
+                            <ul class="small">
+                                <li><strong>Note:</strong> Information générale</li>
+                                <li><strong>Appel:</strong> Log d'appel téléphonique</li>
+                                <li><strong>Email:</strong> Communication par email</li>
+                                <li><strong>Rendez-vous:</strong> Rencontre planifiée</li>
+                                <li><strong>Tâche:</strong> Action à effectuer</li>
+                                <li><strong>Rappel:</strong> Notification programmée</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Statut</h6>
+                            <p class="small text-muted">
+                                Définissez si cette note/tâche est en attente, en cours ou terminée.
+                            </p>
+                            
+                            <hr>
+                            
+                            <h6>Planification</h6>
+                            <p class="small text-muted">
+                                Pour les tâches et rappels, vous pouvez définir une date/heure d'échéance.
+                            </p>
+                            
+                            <hr>
+                            
+                            <h6>Métadonnées</h6>
+                            <p class="small text-muted">
+                                Ajoutez des données structurées au format JSON pour enrichir cette note.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Prospect Status Card -->
+                    {% if prospect is defined %}
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-user me-2"></i>
+                                    Statut du prospect
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted">
+                                    <strong>Statut:</strong> {{ prospect.getStatusLabel() }}<br>
+                                    <strong>Priorité:</strong> {{ prospect.getPriorityLabel() }}<br>
+                                    {% if prospect.assignedTo %}
+                                        <strong>Assigné à:</strong> {{ prospect.assignedTo.fullName }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('prospect_note_type');
+    const scheduledField = document.getElementById('scheduled-field');
+    
+    function toggleScheduledField() {
+        if (typeSelect && (typeSelect.value === 'task' || typeSelect.value === 'reminder')) {
+            scheduledField.style.display = 'block';
+        } else {
+            scheduledField.style.display = 'none';
+        }
+    }
+    
+    // Initial state
+    toggleScheduledField();
+    
+    // Listen for changes
+    if (typeSelect) {
+        typeSelect.addEventListener('change', toggleScheduledField);
+    }
+});
+</script>
+{% endblock %}

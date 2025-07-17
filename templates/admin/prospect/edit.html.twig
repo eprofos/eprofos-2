@@ -1,0 +1,277 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier le prospect - {{ prospect.fullName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_prospect_index') }}">Prospects</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_prospect_show', {'id': prospect.id}) }}">{{ prospect.fullName }}</a>
+                        </li>
+                        <li class="breadcrumb-item active">Modifier</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier le prospect - {{ prospect.fullName }}
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                Informations du prospect
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'prospect-form'}}) }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.firstName) }}
+                                        {{ form_widget(form.firstName) }}
+                                        {{ form_help(form.firstName) }}
+                                        {{ form_errors(form.firstName) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.lastName) }}
+                                        {{ form_widget(form.lastName) }}
+                                        {{ form_help(form.lastName) }}
+                                        {{ form_errors(form.lastName) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.email) }}
+                                        {{ form_widget(form.email) }}
+                                        {{ form_help(form.email) }}
+                                        {{ form_errors(form.email) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.phone) }}
+                                        {{ form_widget(form.phone) }}
+                                        {{ form_help(form.phone) }}
+                                        {{ form_errors(form.phone) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.company) }}
+                                        {{ form_widget(form.company) }}
+                                        {{ form_help(form.company) }}
+                                        {{ form_errors(form.company) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.position) }}
+                                        {{ form_widget(form.position) }}
+                                        {{ form_help(form.position) }}
+                                        {{ form_errors(form.position) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.status) }}
+                                        {{ form_widget(form.status) }}
+                                        {{ form_help(form.status) }}
+                                        {{ form_errors(form.status) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.priority) }}
+                                        {{ form_widget(form.priority) }}
+                                        {{ form_help(form.priority) }}
+                                        {{ form_errors(form.priority) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.assignedTo) }}
+                                {{ form_widget(form.assignedTo) }}
+                                {{ form_help(form.assignedTo) }}
+                                {{ form_errors(form.assignedTo) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.interestedFormations) }}
+                                {{ form_widget(form.interestedFormations) }}
+                                {{ form_help(form.interestedFormations) }}
+                                {{ form_errors(form.interestedFormations) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.interestedServices) }}
+                                {{ form_widget(form.interestedServices) }}
+                                {{ form_help(form.interestedServices) }}
+                                {{ form_errors(form.interestedServices) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.description) }}
+                                {{ form_widget(form.description) }}
+                                {{ form_help(form.description) }}
+                                {{ form_errors(form.description) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('admin_prospect_show', {'id': prospect.id}) }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    Sauvegarder
+                                </button>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6>Historique</h6>
+                                <p class="small text-muted">
+                                    <strong>Créé:</strong> {{ prospect.createdAt|date('d/m/Y à H:i') }}<br>
+                                    {% if prospect.updatedAt != prospect.createdAt %}
+                                        <strong>Modifié:</strong> {{ prospect.updatedAt|date('d/m/Y à H:i') }}<br>
+                                    {% endif %}
+                                    <strong>Statut actuel:</strong> {{ prospect.getStatusLabel() }}<br>
+                                    <strong>Priorité:</strong> {{ prospect.getPriorityLabel() }}
+                                </p>
+                            </div>
+
+                            {% if prospect.assignedTo %}
+                                <div class="mb-3">
+                                    <h6>Assignation</h6>
+                                    <p class="small text-muted">
+                                        Assigné à <strong>{{ prospect.assignedTo.fullName }}</strong>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if prospect.estimatedBudget %}
+                                <div class="mb-3">
+                                    <h6>Budget estimé</h6>
+                                    <p class="small text-muted">
+                                        {{ prospect.estimatedBudget|number_format(2, ',', ' ') }} €
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if prospect.nextFollowUpDate %}
+                                <div class="mb-0">
+                                    <h6>Prochain suivi</h6>
+                                    <p class="small text-muted">
+                                        {{ prospect.nextFollowUpDate|date('d/m/Y') }}
+                                        {% if prospect.nextFollowUpDate < date() %}
+                                            <span class="badge bg-red text-white ms-1">En retard</span>
+                                        {% elseif prospect.nextFollowUpDate|date('Y-m-d') == date()|date('Y-m-d') %}
+                                            <span class="badge bg-orange text-white ms-1">Aujourd'hui</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions Card -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_prospect_note_new', {'prospect': prospect.id}) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Ajouter une note
+                                </a>
+                                <a href="{{ path('admin_prospect_show', {'id': prospect.id}) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Voir les détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interests Card -->
+                    {% if prospect.interestedFormations|length > 0 or prospect.interestedServices|length > 0 %}
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-heart me-2"></i>
+                                    Centres d'intérêt
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if prospect.interestedFormations|length > 0 %}
+                                    <div class="mb-3">
+                                        <h6>Formations</h6>
+                                        <ul class="small">
+                                            {% for formation in prospect.interestedFormations %}
+                                                <li>{{ formation.title }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if prospect.interestedServices|length > 0 %}
+                                    <div class="mb-0">
+                                        <h6>Services</h6>
+                                        <ul class="small">
+                                            {% for service in prospect.interestedServices %}
+                                                <li>{{ service.title }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

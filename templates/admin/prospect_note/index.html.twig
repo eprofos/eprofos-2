@@ -1,0 +1,410 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_prospect_note_export') }}" class="btn btn-outline-primary d-none d-sm-inline-block">
+                            <i class="fas fa-download me-2"></i>
+                            Exporter CSV
+                        </a>
+                        <a href="{{ path('admin_prospect_note_new_standalone') }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <i class="fas fa-plus me-2"></i>
+                            Nouvelle note
+                        </a>
+                        <a href="{{ path('admin_prospect_note_new_standalone') }}" class="btn btn-primary d-sm-none btn-icon" aria-label="Nouvelle note">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-body">
+        <div class="container-xl">
+            <!-- Statistics Cards -->
+            <div class="row row-deck row-cards mb-3">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Total notes</div>
+                            </div>
+                            <div class="h1 mb-3">{{ statistics.total ?? 0 }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-primary" style="width: 100%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Notes en attente</div>
+                            </div>
+                            <div class="h1 mb-3">{{ status_counts.pending ?? 0 }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-warning" style="width: {{ status_counts.pending ?? 0 > 0 ? ((status_counts.pending ?? 0) / (statistics.total ?? 1) * 100) : 0 }}%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Notes terminées</div>
+                            </div>
+                            <div class="h1 mb-3">{{ status_counts.completed ?? 0 }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-success" style="width: {{ status_counts.completed ?? 0 > 0 ? ((status_counts.completed ?? 0) / (statistics.total ?? 1) * 100) : 0 }}%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Notes importantes</div>
+                            </div>
+                            <div class="h1 mb-3">{{ statistics.important ?? 0 }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-danger" style="width: {{ statistics.important ?? 0 > 0 ? ((statistics.important ?? 0) / (statistics.total ?? 1) * 100) : 0 }}%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Filtres</h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" action="{{ path('admin_prospect_note_index') }}">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Type</label>
+                                            <select name="type" class="form-select">
+                                                <option value="">Tous les types</option>
+                                                <option value="call"{{ current_type == 'call' ? ' selected' : '' }}>Appel téléphonique</option>
+                                                <option value="email"{{ current_type == 'email' ? ' selected' : '' }}>Email</option>
+                                                <option value="meeting"{{ current_type == 'meeting' ? ' selected' : '' }}>Réunion</option>
+                                                <option value="demo"{{ current_type == 'demo' ? ' selected' : '' }}>Démonstration</option>
+                                                <option value="proposal"{{ current_type == 'proposal' ? ' selected' : '' }}>Proposition</option>
+                                                <option value="follow_up"{{ current_type == 'follow_up' ? ' selected' : '' }}>Suivi</option>
+                                                <option value="general"{{ current_type == 'general' ? ' selected' : '' }}>Note générale</option>
+                                                <option value="task"{{ current_type == 'task' ? ' selected' : '' }}>Tâche</option>
+                                                <option value="reminder"{{ current_type == 'reminder' ? ' selected' : '' }}>Rappel</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Statut</label>
+                                            <select name="status" class="form-select">
+                                                <option value="">Tous les statuts</option>
+                                                <option value="pending"{{ current_status == 'pending' ? ' selected' : '' }}>En attente</option>
+                                                <option value="completed"{{ current_status == 'completed' ? ' selected' : '' }}>Terminé</option>
+                                                <option value="cancelled"{{ current_status == 'cancelled' ? ' selected' : '' }}>Annulé</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Importance</label>
+                                            <select name="important" class="form-select">
+                                                <option value="">Toutes</option>
+                                                <option value="true"{{ current_important == 'true' ? ' selected' : '' }}>Importantes uniquement</option>
+                                                <option value="false"{{ current_important == 'false' ? ' selected' : '' }}>Non importantes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Recherche</label>
+                                            <input type="text" name="search" class="form-control" placeholder="Titre, contenu, prospect..." value="{{ current_search }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>
+                                        Filtrer
+                                    </button>
+                                    <a href="{{ path('admin_prospect_note_index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>
+                                        Réinitialiser
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes List -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Notes de prospects ({{ notes|length }})</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if notes|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter card-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Note</th>
+                                                <th>Type</th>
+                                                <th>Prospect</th>
+                                                <th>Statut</th>
+                                                <th>Créé le</th>
+                                                <th>Créé par</th>
+                                                <th class="w-1">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for note in notes %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            {% if note.isImportant %}
+                                                                <i class="fas fa-exclamation-circle text-danger me-2" title="Important"></i>
+                                                            {% endif %}
+                                                            <div>
+                                                                <div class="fw-bold">{{ note.title }}</div>
+                                                                {% if note.content|length > 80 %}
+                                                                    <div class="text-muted small">{{ note.content|slice(0, 80) }}...</div>
+                                                                {% else %}
+                                                                    <div class="text-muted small">{{ note.content }}</div>
+                                                                {% endif %}
+                                                                {% if note.scheduledAt %}
+                                                                    <div class="text-info small">
+                                                                        <i class="fas fa-clock me-1"></i>
+                                                                        Prévu le {{ note.scheduledAt|date('d/m/Y à H:i') }}
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ note.typeBadgeClass }}">
+                                                            {{ note.typeLabel }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if note.prospect %}
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar avatar-sm avatar-rounded me-2" style="background-color: var(--tblr-primary);">
+                                                                    {{ note.prospect.firstName|first|upper }}{{ note.prospect.lastName|first|upper }}
+                                                                </div>
+                                                                <div>
+                                                                    <div class="fw-bold">{{ note.prospect.fullName }}</div>
+                                                                    {% if note.prospect.company %}
+                                                                        <div class="text-muted small">{{ note.prospect.company }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">Aucun prospect</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ note.statusBadgeClass }}">
+                                                            {{ note.statusLabel }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div>{{ note.createdAt|date('d/m/Y') }}</div>
+                                                        <div class="text-muted small">{{ note.createdAt|date('H:i') }}</div>
+                                                    </td>
+                                                    <td>
+                                                        {% if note.createdBy %}
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar avatar-sm avatar-rounded me-2" style="background-color: var(--tblr-secondary);">
+                                                                    {{ note.createdBy.firstName|first|upper }}{{ note.createdBy.lastName|first|upper }}
+                                                                </div>
+                                                                <div>{{ note.createdBy.fullName }}</div>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">Système</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-list flex-nowrap">
+                                                            <a href="{{ path('admin_prospect_note_show', {id: note.id}) }}" class="btn btn-white btn-sm" title="Voir">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-white btn-sm" title="Modifier">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                            {% if note.prospect %}
+                                                                <a href="{{ path('admin_prospect_show', {id: note.prospect.id}) }}" class="btn btn-white btn-sm" title="Voir le prospect">
+                                                                    <i class="fas fa-user"></i>
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                    <p class="empty-title">Aucune note trouvée</p>
+                                    <p class="empty-subtitle text-muted">
+                                        {% if current_search or current_type or current_status or current_important %}
+                                            Aucune note ne correspond à vos critères de recherche.
+                                        {% else %}
+                                            Commencez par créer votre première note de prospect.
+                                        {% endif %}
+                                    </p>
+                                    <div class="empty-action">
+                                        {% if current_search or current_type or current_status or current_important %}
+                                            <a href="{{ path('admin_prospect_note_index') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-times me-2"></i>
+                                                Réinitialiser les filtres
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ path('admin_prospect_note_new_standalone') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus me-2"></i>
+                                                Créer une note
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Actions rapides</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <a href="{{ path('admin_prospect_note_pending_tasks') }}" class="list-group-item list-group-item-action">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-tasks text-warning"></i>
+                                        </div>
+                                        <div class="col text-truncate">
+                                            <div class="text-body d-block">Tâches en attente</div>
+                                            <div class="d-block text-muted text-truncate mt-n1">
+                                                Voir toutes les tâches à faire
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge bg-warning">{{ status_counts.pending ?? 0 }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="{{ path('admin_prospect_note_important') }}" class="list-group-item list-group-item-action">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <i class="fas fa-exclamation-circle text-danger"></i>
+                                        </div>
+                                        <div class="col text-truncate">
+                                            <div class="text-body d-block">Notes importantes</div>
+                                            <div class="d-block text-muted text-truncate mt-n1">
+                                                Voir les notes marquées importantes
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge bg-danger">{{ statistics.important ?? 0 }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Statistiques par type</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for type, count in type_counts %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col text-truncate">
+                                                {% set type_labels = {
+                                                    'call': 'Appels téléphoniques',
+                                                    'email': 'Emails',
+                                                    'meeting': 'Réunions',
+                                                    'demo': 'Démonstrations',
+                                                    'proposal': 'Propositions',
+                                                    'follow_up': 'Suivis',
+                                                    'general': 'Notes générales',
+                                                    'task': 'Tâches',
+                                                    'reminder': 'Rappels'
+                                                } %}
+                                                <div class="text-body">{{ type_labels[type] ?? type|title }}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <span class="text-muted">{{ count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

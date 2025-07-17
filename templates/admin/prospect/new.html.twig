@@ -1,0 +1,222 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau prospect{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_prospect_index') }}">Prospects</a>
+                        </li>
+                        <li class="breadcrumb-item active">Nouveau prospect</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouveau prospect
+                </h1>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                Informations du prospect
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'prospect-form'}}) }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.firstName) }}
+                                        {{ form_widget(form.firstName) }}
+                                        {{ form_help(form.firstName) }}
+                                        {{ form_errors(form.firstName) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.lastName) }}
+                                        {{ form_widget(form.lastName) }}
+                                        {{ form_help(form.lastName) }}
+                                        {{ form_errors(form.lastName) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.email) }}
+                                        {{ form_widget(form.email) }}
+                                        {{ form_help(form.email) }}
+                                        {{ form_errors(form.email) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.phone) }}
+                                        {{ form_widget(form.phone) }}
+                                        {{ form_help(form.phone) }}
+                                        {{ form_errors(form.phone) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.company) }}
+                                        {{ form_widget(form.company) }}
+                                        {{ form_help(form.company) }}
+                                        {{ form_errors(form.company) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.position) }}
+                                        {{ form_widget(form.position) }}
+                                        {{ form_help(form.position) }}
+                                        {{ form_errors(form.position) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.status) }}
+                                        {{ form_widget(form.status) }}
+                                        {{ form_help(form.status) }}
+                                        {{ form_errors(form.status) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.priority) }}
+                                        {{ form_widget(form.priority) }}
+                                        {{ form_help(form.priority) }}
+                                        {{ form_errors(form.priority) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.assignedTo) }}
+                                {{ form_widget(form.assignedTo) }}
+                                {{ form_help(form.assignedTo) }}
+                                {{ form_errors(form.assignedTo) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.interestedFormations) }}
+                                {{ form_widget(form.interestedFormations) }}
+                                {{ form_help(form.interestedFormations) }}
+                                {{ form_errors(form.interestedFormations) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.interestedServices) }}
+                                {{ form_widget(form.interestedServices) }}
+                                {{ form_help(form.interestedServices) }}
+                                {{ form_errors(form.interestedServices) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.description) }}
+                                {{ form_widget(form.description) }}
+                                {{ form_help(form.description) }}
+                                {{ form_errors(form.description) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('admin_prospect_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    Créer le prospect
+                                </button>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Aide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Statuts des prospects</h6>
+                            <ul class="small">
+                                <li><strong>Lead</strong> : Premier contact, potentiel non qualifié</li>
+                                <li><strong>Prospect</strong> : Intérêt confirmé, besoin identifié</li>
+                                <li><strong>Qualifié</strong> : Budget et décision validés</li>
+                                <li><strong>Négociation</strong> : Proposition en cours</li>
+                                <li><strong>Client</strong> : Vente conclue</li>
+                                <li><strong>Perdu</strong> : Opportunité fermée</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Niveaux de priorité</h6>
+                            <ul class="small">
+                                <li><strong>Faible</strong> : Suivi occasionnel</li>
+                                <li><strong>Moyenne</strong> : Suivi régulier</li>
+                                <li><strong>Élevée</strong> : Suivi prioritaire</li>
+                                <li><strong>Critique</strong> : Action immédiate</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Bonnes pratiques</h6>
+                            <p class="small text-muted">
+                                Renseignez les formations et services d'intérêt pour 
+                                personnaliser le suivi commercial.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps Card -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Prochaines étapes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">
+                                Une fois le prospect créé, vous pourrez :
+                            </p>
+                            <ul class="small">
+                                <li>Ajouter des notes et commentaires</li>
+                                <li>Planifier des tâches et rappels</li>
+                                <li>Suivre l'évolution du statut</li>
+                                <li>Générer des devis personnalisés</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

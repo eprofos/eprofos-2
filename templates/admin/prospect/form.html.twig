@@ -1,0 +1,205 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{{ page_title }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.firstName) }}
+                                    {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.firstName) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.lastName) }}
+                                    {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.lastName) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.email) }}
+                                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.email) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.phone) }}
+                                    {{ form_widget(form.phone, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.phone) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.company) }}
+                                    {{ form_widget(form.company, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.company) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.position) }}
+                                    {{ form_widget(form.position, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.position) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.status) }}
+                                    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.status) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.priority) }}
+                                    {{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.priority) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.source) }}
+                                    {{ form_widget(form.source, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.source) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.estimatedBudget) }}
+                                    <div class="input-group">
+                                        {{ form_widget(form.estimatedBudget, {'attr': {'class': 'form-control'}}) }}
+                                        <span class="input-group-text">€</span>
+                                    </div>
+                                    {{ form_errors(form.estimatedBudget) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.assignedTo) }}
+                                    {{ form_widget(form.assignedTo, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.assignedTo) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.expectedClosureDate) }}
+                                    {{ form_widget(form.expectedClosureDate, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.expectedClosureDate) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.nextFollowUpDate) }}
+                                    {{ form_widget(form.nextFollowUpDate, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.nextFollowUpDate) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.formations) }}
+                                    {{ form_widget(form.formations, {'attr': {'class': 'form-select', 'multiple': 'multiple'}}) }}
+                                    {{ form_errors(form.formations) }}
+                                    <div class="form-hint">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs formations</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.services) }}
+                                    {{ form_widget(form.services, {'attr': {'class': 'form-select', 'multiple': 'multiple'}}) }}
+                                    {{ form_errors(form.services) }}
+                                    <div class="form-hint">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs services</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.tags) }}
+                            {{ form_widget(form.tags, {'attr': {'class': 'form-control', 'placeholder': 'Ajoutez des tags séparés par des virgules'}}) }}
+                            {{ form_errors(form.tags) }}
+                            <div class="form-hint">Séparez les tags par des virgules (ex: client, urgent, formation)</div>
+                        </div>
+
+                        {{ form_rest(form) }}
+
+                        <div class="form-footer">
+                            <div class="btn-list">
+                                <a href="{{ path('admin_prospect_index') }}" class="btn btn-outline-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1"/>
+                                    </svg>
+                                    Retour à la liste
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    {% if prospect.id is defined %}Modifier le prospect{% else %}Créer le prospect{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

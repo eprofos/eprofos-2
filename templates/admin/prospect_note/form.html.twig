@@ -1,0 +1,198 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Prospect Information -->
+                {% if prospect is defined %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Note pour le prospect</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-md me-3" style="background-color: var(--tblr-primary); color: white;">
+                                    {{ prospect.firstName|first|upper }}{{ prospect.lastName|first|upper }}
+                                </span>
+                                <div class="flex-fill">
+                                    <div class="fw-bold">{{ prospect.fullName }}</div>
+                                    <div class="text-muted">{{ prospect.email }}</div>
+                                    {% if prospect.company %}
+                                        <div class="text-muted small">{{ prospect.company }}</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="{{ path('admin_prospect_show', {id: prospect.id}) }}" class="btn btn-outline-primary btn-sm">
+                                        Voir le prospect
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Note Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{{ page_title }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    {{ form_label(form.title) }}
+                                    {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.title) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(form.type) }}
+                                    {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.type) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.content) }}
+                            {{ form_widget(form.content, {'attr': {'class': 'form-control', 'rows': '6'}}) }}
+                            {{ form_errors(form.content) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.status) }}
+                                    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.status) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.scheduledAt) }}
+                                    {{ form_widget(form.scheduledAt, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.scheduledAt) }}
+                                    <div class="form-hint">Optionnel : programmer cette note/tâche pour une date/heure spécifique</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form_widget(form.isImportant, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(form.isImportant, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                    </div>
+                                    {{ form_errors(form.isImportant) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form_widget(form.isPrivate, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(form.isPrivate, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                    </div>
+                                    {{ form_errors(form.isPrivate) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Metadata section for advanced users -->
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h4 class="card-title">Métadonnées additionnelles (optionnel)</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{ form_label(form.metadata) }}
+                                    {{ form_widget(form.metadata, {'attr': {'class': 'form-control', 'rows': '3', 'placeholder': '{"key": "value", "autre_cle": "autre_valeur"}'}}) }}
+                                    {{ form_errors(form.metadata) }}
+                                    <div class="form-hint">Format JSON pour des données structurées additionnelles</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ form_rest(form) }}
+
+                        <div class="form-footer">
+                            <div class="btn-list">
+                                {% if prospect is defined %}
+                                    <a href="{{ path('admin_prospect_show', {id: prospect.id}) }}" class="btn btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1"/>
+                                        </svg>
+                                        Retour au prospect
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('admin_prospect_index') }}" class="btn btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1"/>
+                                        </svg>
+                                        Retour aux prospects
+                                    </a>
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    {% if note.id is defined %}Modifier la note{% else %}Créer la note{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide scheduled date based on note type
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.querySelector('select[name*="[type]"]');
+            const scheduledAtField = document.querySelector('input[name*="[scheduledAt]"]').closest('.mb-3');
+            
+            function toggleScheduledField() {
+                if (typeSelect.value === 'task' || typeSelect.value === 'reminder') {
+                    scheduledAtField.style.display = 'block';
+                } else {
+                    scheduledAtField.style.display = 'none';
+                }
+            }
+            
+            if (typeSelect) {
+                typeSelect.addEventListener('change', toggleScheduledField);
+                toggleScheduledField(); // Initial call
+            }
+        });
+    </script>
+{% endblock %}

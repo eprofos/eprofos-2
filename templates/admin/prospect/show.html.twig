@@ -1,0 +1,336 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_prospect_edit', {id: prospect.id}) }}" class="btn btn-outline-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier
+                        </a>
+                        <a href="{{ path('admin_prospect_note_new', {prospect: prospect.id}) }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Ajouter une note
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <!-- Prospect Information -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations du prospect</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <div class="d-flex align-items-center">
+                                        <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                            {{ prospect.firstName|first|upper }}{{ prospect.lastName|first|upper }}
+                                        </span>
+                                        <strong>{{ prospect.fullName }}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <div>
+                                        <a href="mailto:{{ prospect.email }}" class="text-decoration-none">{{ prospect.email }}</a>
+                                    </div>
+                                </div>
+                                {% if prospect.phone %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Téléphone</label>
+                                        <div>
+                                            <a href="tel:{{ prospect.phone }}" class="text-decoration-none">{{ prospect.phone }}</a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if prospect.company %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Entreprise</label>
+                                        <div><strong>{{ prospect.company }}</strong></div>
+                                        {% if prospect.position %}
+                                            <div class="text-muted">{{ prospect.position }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Statut</label>
+                                    <div>
+                                        <span class="badge {{ prospect.statusBadgeClass }} text-white">{{ prospect.statusLabel }}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Priorité</label>
+                                    <div>
+                                        <span class="badge {{ prospect.priorityBadgeClass }} text-white">{{ prospect.priorityLabel }}</span>
+                                    </div>
+                                </div>
+                                {% if prospect.estimatedBudget %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Budget estimé</label>
+                                        <div><strong class="text-success">{{ prospect.estimatedBudget|number_format(0, ',', ' ') }} €</strong></div>
+                                    </div>
+                                {% endif %}
+                                {% if prospect.assignedTo %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Assigné à</label>
+                                        <div class="d-flex align-items-center">
+                                            <span class="avatar avatar-xs me-2" style="background-color: var(--tblr-success); color: white;">
+                                                {{ prospect.assignedTo.initials }}
+                                            </span>
+                                            <span>{{ prospect.assignedTo.fullName }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if prospect.source %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Source</label>
+                                        <div>{{ prospect.sourceLabel }}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if prospect.description %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <div class="text-muted">{{ prospect.description|nl2br }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if prospect.tags is not empty %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tags</label>
+                                        <div>
+                                            {% for tag in prospect.tags %}
+                                                <span class="badge bg-azure text-white me-1">{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Timeline Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations de suivi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Date de création</label>
+                            <div class="text-muted">{{ prospect.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                        {% if prospect.updatedAt %}
+                            <div class="mb-3">
+                                <label class="form-label">Dernière modification</label>
+                                <div class="text-muted">{{ prospect.updatedAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                        {% endif %}
+                        {% if prospect.lastContactDate %}
+                            <div class="mb-3">
+                                <label class="form-label">Dernier contact</label>
+                                <div class="text-muted">{{ prospect.lastContactDate|date('d/m/Y H:i') }}</div>
+                            </div>
+                        {% endif %}
+                        {% if prospect.nextFollowUpDate %}
+                            <div class="mb-3">
+                                <label class="form-label">Prochain suivi</label>
+                                <div class="text-muted">{{ prospect.nextFollowUpDate|date('d/m/Y') }}</div>
+                                {% if prospect.nextFollowUpDate < date() %}
+                                    <div class="text-danger small">En retard</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        {% if prospect.expectedClosureDate %}
+                            <div class="mb-3">
+                                <label class="form-label">Date de clôture prévue</label>
+                                <div class="text-muted">{{ prospect.expectedClosureDate|date('d/m/Y') }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formations and Services of Interest -->
+        {% if prospect.formations is not empty or prospect.services is not empty %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Formations et services d'intérêt</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if prospect.formations is not empty %}
+                                <div class="mb-3">
+                                    <label class="form-label">Formations</label>
+                                    <div class="row">
+                                        {% for formation in prospect.formations %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/>
+                                                        <path d="M6 10.6v9.4a6 3 0 0 0 12 0v-9.4"/>
+                                                    </svg>
+                                                    <div>
+                                                        <div class="fw-bold">{{ formation.title }}</div>
+                                                        <div class="text-muted small">{{ formation.category.name }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if prospect.services is not empty %}
+                                <div class="mb-3">
+                                    <label class="form-label">Services</label>
+                                    <div class="row">
+                                        {% for service in prospect.services %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-info me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                                        <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>
+                                                        <path d="M19 11h2m-1 -1v2"/>
+                                                    </svg>
+                                                    <div>
+                                                        <div class="fw-bold">{{ service.title }}</div>
+                                                        <div class="text-muted small">{{ service.category.name }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Notes Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">Notes et activités</h3>
+                        <a href="{{ path('admin_prospect_note_new', {prospect: prospect.id}) }}" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Ajouter une note
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if prospect.notes is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune note" onerror="this.style.display='none'">
+                                </div>
+                                <p class="empty-title">Aucune note</p>
+                                <p class="empty-subtitle text-muted">
+                                    Aucune note n'a encore été ajoutée pour ce prospect.
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('admin_prospect_note_new', {prospect: prospect.id}) }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter une note
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for note in prospect.notes %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm" style="background-color: {{ note.typeBadgeClass }}; color: white;">
+                                                    {{ note.typeIcon }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <div class="fw-bold">{{ note.title }}</div>
+                                                        <div class="text-muted">{{ note.content|slice(0, 150) }}{% if note.content|length > 150 %}...{% endif %}</div>
+                                                        <div class="text-muted small">
+                                                            Par {{ note.createdBy.fullName }} • {{ note.createdAt|date('d/m/Y H:i') }}
+                                                            {% if note.isImportant %}
+                                                                <span class="badge bg-red text-white ms-2">Important</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="btn-list">
+                                                        <a href="{{ path('admin_prospect_note_show', {id: note.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                        <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

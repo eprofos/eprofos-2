@@ -1,0 +1,452 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration • Notes prospects
+                    </div>
+                    <h2 class="page-title">
+                        <i class="fas fa-tasks me-2"></i>
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_prospect_note_new_standalone') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Nouvelle tâche
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-body">
+        <div class="container-xl">
+            <!-- Summary Cards -->
+            <div class="row row-deck row-cards mb-3">
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Tâches en retard</div>
+                            </div>
+                            <div class="h1 mb-3 text-danger">{{ overdue_notes|length }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-danger" style="width: 100%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted">Nécessitent une attention immédiate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Prévues aujourd'hui</div>
+                            </div>
+                            <div class="h1 mb-3 text-info">{{ today_notes|length }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-info" style="width: 100%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted">À traiter aujourd'hui</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Total en attente</div>
+                            </div>
+                            <div class="h1 mb-3 text-warning">{{ pending_notes|length }}</div>
+                            <div class="d-flex mb-2">
+                                <div class="flex-fill">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-warning" style="width: 100%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted">Toutes les tâches à faire</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overdue Notes (Priority) -->
+            {% if overdue_notes|length > 0 %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Tâches en retard ({{ overdue_notes|length }})
+                            </h3>
+                            <div class="card-subtitle mt-1 text-white-50">
+                                Ces tâches nécessitent une attention immédiate
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-vcenter card-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tâche</th>
+                                            <th>Prospect</th>
+                                            <th>Prévue le</th>
+                                            <th>Retard</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for note in overdue_notes %}
+                                            <tr class="table-danger">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if note.isImportant %}
+                                                            <i class="fas fa-exclamation-circle text-danger me-2" title="Important"></i>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="fw-bold">{{ note.title }}</div>
+                                                            <div class="text-muted small">{{ note.content|slice(0, 80) }}{% if note.content|length > 80 %}...{% endif %}</div>
+                                                            <span class="badge bg-{{ note.typeBadgeClass }} mt-1">{{ note.typeLabel }}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if note.prospect %}
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar avatar-sm avatar-rounded me-2" style="background-color: var(--tblr-primary);">
+                                                                {{ note.prospect.firstName|first|upper }}{{ note.prospect.lastName|first|upper }}
+                                                            </div>
+                                                            <div>
+                                                                <div class="fw-bold">{{ note.prospect.fullName }}</div>
+                                                                {% if note.prospect.company %}
+                                                                    <div class="text-muted small">{{ note.prospect.company }}</div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="text-muted">Aucun prospect</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="text-danger fw-bold">{{ note.scheduledAt|date('d/m/Y') }}</div>
+                                                    <div class="text-muted small">{{ note.scheduledAt|date('H:i') }}</div>
+                                                </td>
+                                                <td>
+                                                    {% set days_overdue = date().diff(note.scheduledAt).days %}
+                                                    <span class="badge bg-danger">
+                                                        {{ days_overdue }} jour{{ days_overdue > 1 ? 's' : '' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-list flex-nowrap">
+                                                        <form method="POST" action="{{ path('admin_prospect_note_update_status', {id: note.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ note.id) }}">
+                                                            <input type="hidden" name="status" value="completed">
+                                                            <button type="submit" class="btn btn-success btn-sm" title="Marquer comme terminé">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                        <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-white btn-sm" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        {% if note.prospect %}
+                                                            <a href="{{ path('admin_prospect_show', {id: note.prospect.id}) }}" class="btn btn-white btn-sm" title="Voir le prospect">
+                                                                <i class="fas fa-user"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Today's Tasks -->
+            {% if today_notes|length > 0 %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                Prévues aujourd'hui ({{ today_notes|length }})
+                            </h3>
+                            <div class="card-subtitle mt-1 text-white-50">
+                                Tâches planifiées pour aujourd'hui
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-vcenter card-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tâche</th>
+                                            <th>Prospect</th>
+                                            <th>Heure</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for note in today_notes %}
+                                            <tr class="table-info">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if note.isImportant %}
+                                                            <i class="fas fa-exclamation-circle text-danger me-2" title="Important"></i>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="fw-bold">{{ note.title }}</div>
+                                                            <div class="text-muted small">{{ note.content|slice(0, 80) }}{% if note.content|length > 80 %}...{% endif %}</div>
+                                                            <span class="badge bg-{{ note.typeBadgeClass }} mt-1">{{ note.typeLabel }}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if note.prospect %}
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar avatar-sm avatar-rounded me-2" style="background-color: var(--tblr-primary);">
+                                                                {{ note.prospect.firstName|first|upper }}{{ note.prospect.lastName|first|upper }}
+                                                            </div>
+                                                            <div>
+                                                                <div class="fw-bold">{{ note.prospect.fullName }}</div>
+                                                                {% if note.prospect.company %}
+                                                                    <div class="text-muted small">{{ note.prospect.company }}</div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="text-muted">Aucun prospect</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="fw-bold text-info">{{ note.scheduledAt|date('H:i') }}</div>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-list flex-nowrap">
+                                                        <form method="POST" action="{{ path('admin_prospect_note_update_status', {id: note.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ note.id) }}">
+                                                            <input type="hidden" name="status" value="completed">
+                                                            <button type="submit" class="btn btn-success btn-sm" title="Marquer comme terminé">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                        <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-white btn-sm" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        {% if note.prospect %}
+                                                            <a href="{{ path('admin_prospect_show', {id: note.prospect.id}) }}" class="btn btn-white btn-sm" title="Voir le prospect">
+                                                                <i class="fas fa-user"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- All Pending Tasks -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list me-2"></i>
+                                Toutes les tâches en attente ({{ pending_notes|length }})
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if pending_notes|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter card-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Tâche</th>
+                                                <th>Type</th>
+                                                <th>Prospect</th>
+                                                <th>Prévue le</th>
+                                                <th>Créée le</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for note in pending_notes %}
+                                                {% set is_overdue = note.scheduledAt and note.scheduledAt < date() %}
+                                                {% set is_today = note.scheduledAt and note.scheduledAt|date('Y-m-d') == date()|date('Y-m-d') %}
+                                                <tr class="{% if is_overdue %}table-danger{% elseif is_today %}table-info{% endif %}">
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            {% if note.isImportant %}
+                                                                <i class="fas fa-exclamation-circle text-danger me-2" title="Important"></i>
+                                                            {% endif %}
+                                                            {% if is_overdue %}
+                                                                <i class="fas fa-exclamation-triangle text-danger me-2" title="En retard"></i>
+                                                            {% endif %}
+                                                            <div>
+                                                                <div class="fw-bold">{{ note.title }}</div>
+                                                                <div class="text-muted small">{{ note.content|slice(0, 60) }}{% if note.content|length > 60 %}...{% endif %}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ note.typeBadgeClass }}">
+                                                            {{ note.typeLabel }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if note.prospect %}
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar avatar-sm avatar-rounded me-2" style="background-color: var(--tblr-primary);">
+                                                                    {{ note.prospect.firstName|first|upper }}{{ note.prospect.lastName|first|upper }}
+                                                                </div>
+                                                                <div>
+                                                                    <div class="fw-bold">{{ note.prospect.fullName }}</div>
+                                                                    {% if note.prospect.company %}
+                                                                        <div class="text-muted small">{{ note.prospect.company }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">Aucun prospect</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if note.scheduledAt %}
+                                                            <div class="{% if is_overdue %}text-danger fw-bold{% elseif is_today %}text-info fw-bold{% endif %}">
+                                                                {{ note.scheduledAt|date('d/m/Y') }}
+                                                            </div>
+                                                            <div class="text-muted small">{{ note.scheduledAt|date('H:i') }}</div>
+                                                            {% if is_overdue %}
+                                                                {% set days_overdue = date().diff(note.scheduledAt).days %}
+                                                                <span class="badge bg-danger small mt-1">
+                                                                    Retard: {{ days_overdue }} jour{{ days_overdue > 1 ? 's' : '' }}
+                                                                </span>
+                                                            {% elseif is_today %}
+                                                                <span class="badge bg-info small mt-1">Aujourd'hui</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="text-muted">Non planifiée</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div>{{ note.createdAt|date('d/m/Y') }}</div>
+                                                        <div class="text-muted small">{{ note.createdAt|date('H:i') }}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-list flex-nowrap">
+                                                            <form method="POST" action="{{ path('admin_prospect_note_update_status', {id: note.id}) }}" class="d-inline">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ note.id) }}">
+                                                                <input type="hidden" name="status" value="completed">
+                                                                <button type="submit" class="btn btn-success btn-sm" title="Marquer comme terminé">
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                            </form>
+                                                            <a href="{{ path('admin_prospect_note_show', {id: note.id}) }}" class="btn btn-white btn-sm" title="Voir">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ path('admin_prospect_note_edit', {id: note.id}) }}" class="btn btn-white btn-sm" title="Modifier">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                            {% if note.prospect %}
+                                                                <a href="{{ path('admin_prospect_show', {id: note.prospect.id}) }}" class="btn btn-white btn-sm" title="Voir le prospect">
+                                                                    <i class="fas fa-user"></i>
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                    <p class="empty-title">Aucune tâche en attente</p>
+                                    <p class="empty-subtitle text-muted">
+                                        Toutes vos tâches sont terminées ! Bravo !
+                                    </p>
+                                    <div class="empty-action">
+                                        <a href="{{ path('admin_prospect_note_new_standalone') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Créer une nouvelle tâche
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Navigation rapide</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <a href="{{ path('admin_prospect_note_index') }}" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-list me-2"></i>
+                                        Toutes les notes
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="{{ path('admin_prospect_note_important') }}" class="btn btn-outline-danger w-100 mb-2">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        Notes importantes
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="{{ path('admin_prospect_index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                                        <i class="fas fa-users me-2"></i>
+                                        Gestion prospects
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
