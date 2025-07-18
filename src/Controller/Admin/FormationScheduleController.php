@@ -4,6 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Formation;
 use App\Service\FormationScheduleService;
+use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,7 +22,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class FormationScheduleController extends AbstractController
 {
     public function __construct(
-        private FormationScheduleService $scheduleService
+        private FormationScheduleService $scheduleService,
+        private Pdf $knpSnappyPdf
     ) {
     }
 
@@ -45,5 +48,51 @@ class FormationScheduleController extends AbstractController
                 ['label' => 'Planning', 'url' => null]
             ]
         ]);
+    }
+
+    /**
+     * Download the daily schedule as PDF
+     */
+    #[Route('/pdf', name: 'pdf', methods: ['GET'])]
+    public function downloadPdf(Formation $formation): Response
+    {
+        // Calculate the complete schedule
+        $scheduleData = $this->scheduleService->calculateFormationSchedule($formation);
+        
+        // Render the PDF template
+        $html = $this->renderView('admin/formation/schedule_pdf.html.twig', [
+            'formation' => $formation,
+            'scheduleData' => $scheduleData,
+            'scheduleService' => $this->scheduleService,
+            'page_title' => 'Planning de formation',
+        ]);
+
+        // Configure PDF options
+        $options = [
+            'page-size' => 'A4',
+            'margin-top' => '0.75in',
+            'margin-right' => '0.75in',
+            'margin-bottom' => '0.75in',
+            'margin-left' => '0.75in',
+            'encoding' => 'UTF-8',
+            'orientation' => 'portrait',
+            'disable-smart-shrinking' => true,
+            'print-media-type' => true,
+            'lowquality' => false,
+            'no-background' => false,
+            'grayscale' => false,
+        ];
+
+        // Generate filename
+        $filename = sprintf(
+            'planning_%s_%s.pdf',
+            $formation->getSlug(),
+            date('Y-m-d')
+        );
+
+        return new PdfResponse(
+            $this->knpSnappyPdf->getOutputFromHtml($html, $options),
+            $filename
+        );
     }
 }

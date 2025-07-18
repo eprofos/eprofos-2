@@ -555,7 +555,11 @@ class FormationScheduleService
         $originalTitle = preg_replace('/\s*\(partie\s+\d+\)$/', '', $item['title']);
         
         if ($this->isContinuationSegment($item)) {
-            return $originalTitle . ' (suite)';
+            // Check if title already contains "(suite)" to avoid duplication
+            if (!preg_match('/\(suite\)/', $originalTitle)) {
+                return $originalTitle . ' (suite)';
+            }
+            return $originalTitle;
         }
         
         return $originalTitle;

@@ -25,13 +25,9 @@
             <div class="flex-fill">
                 <h5 class="mb-1">
                     {{ scheduleService.getDisplayTitle(item) }}
-                    {% if isSplit %}
+                    {% if isSplit and not isContinuation %}
                         <small class="ms-2">
-                            {% if isContinuation %}
-                                <span class="badge badge-continuation">Suite</span>
-                            {% else %}
-                                <span class="badge badge-segment">{{ scheduleService.getSegmentInfo(item) }}</span>
-                            {% endif %}
+                            <span class="badge badge-segment">{{ scheduleService.getSegmentInfo(item) }}</span>
                         </small>
                     {% endif %}
                 </h5>
