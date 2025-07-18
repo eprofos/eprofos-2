@@ -1,0 +1,139 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Duration Management{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Duration Management</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group-vertical d-grid gap-2">
+                                        <a href="{{ path('admin_duration_statistics') }}" class="btn btn-primary">
+                                            <i class="fas fa-chart-bar"></i> View Statistics
+                                        </a>
+                                        <a href="{{ path('admin_duration_analyze', {entityType: 'formation'}) }}" class="btn btn-info">
+                                            <i class="fas fa-search"></i> Analyze Formations
+                                        </a>
+                                        <a href="{{ path('admin_duration_analyze', {entityType: 'module'}) }}" class="btn btn-info">
+                                            <i class="fas fa-search"></i> Analyze Modules
+                                        </a>
+                                        <a href="{{ path('admin_duration_analyze', {entityType: 'chapter'}) }}" class="btn btn-info">
+                                            <i class="fas fa-search"></i> Analyze Chapters
+                                        </a>
+                                        <a href="{{ path('admin_duration_analyze', {entityType: 'course'}) }}" class="btn btn-info">
+                                            <i class="fas fa-search"></i> Analyze Courses
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>System Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group-vertical d-grid gap-2">
+                                        <button type="button" class="btn btn-warning" onclick="syncAll()">
+                                            <i class="fas fa-sync"></i> Sync All Durations
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="clearCache()">
+                                            <i class="fas fa-trash"></i> Clear Duration Cache
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Processing...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function syncAll() {
+    if (!confirm('This will synchronize all duration calculations. This may take a while. Continue?')) {
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('{{ path('admin_duration_sync_all') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            entity_type: 'all',
+            batch_size: 50
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        modal.hide();
+        if (data.success) {
+            alert('Success: ' + data.message);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        modal.hide();
+        alert('Error: ' + error.message);
+    });
+}
+
+function clearCache() {
+    if (!confirm('Clear all duration caches?')) {
+        return;
+    }
+    
+    fetch('{{ path('admin_duration_clear_cache') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Success: ' + data.message);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Duration Statistics{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Duration Statistics</h3>
+                    <div class="card-tools">
+                        <a href="{{ path('admin_duration_index') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Duration Management
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Formations</span>
+                                    <span class="info-box-number">{{ stats.formations.total }}</span>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-danger" style="width: {{ stats.formations.percentage }}%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        {{ stats.formations.inconsistencies }} inconsistencies ({{ stats.formations.percentage }}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success">
+                                    <i class="fas fa-layer-group"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Modules</span>
+                                    <span class="info-box-number">{{ stats.modules.total }}</span>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-danger" style="width: {{ stats.modules.percentage }}%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        {{ stats.modules.inconsistencies }} inconsistencies ({{ stats.modules.percentage }}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Chapters</span>
+                                    <span class="info-box-number">{{ stats.chapters.total }}</span>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-danger" style="width: {{ stats.chapters.percentage }}%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        {{ stats.chapters.inconsistencies }} inconsistencies ({{ stats.chapters.percentage }}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info">
+                                    <i class="fas fa-file-alt"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Courses</span>
+                                    <span class="info-box-number">{{ stats.courses.total }}</span>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-danger" style="width: {{ stats.courses.percentage }}%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        {{ stats.courses.inconsistencies }} inconsistencies ({{ stats.courses.percentage }}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Quick Analysis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <a href="{{ path('admin_duration_analyze', {entityType: 'formation'}) }}" class="btn btn-block btn-primary">
+                                                Analyze Formations
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{{ path('admin_duration_analyze', {entityType: 'module'}) }}" class="btn btn-block btn-success">
+                                                Analyze Modules
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{{ path('admin_duration_analyze', {entityType: 'chapter'}) }}" class="btn btn-block btn-warning">
+                                                Analyze Chapters
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{{ path('admin_duration_analyze', {entityType: 'course'}) }}" class="btn btn-block btn-info">
+                                                Analyze Courses
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Duration Analysis - {{ entity_type|title }}s{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Duration Analysis - {{ entity_type|title }}s</h3>
+                    <div class="card-tools">
+                        <a href="{{ path('admin_duration_statistics') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Statistics
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if results is empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No {{ entity_type }}s found to analyze.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Stored Duration</th>
+                                        <th>Calculated Duration</th>
+                                        <th>Difference</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in results %}
+                                        <tr class="{{ result.needs_update ? 'table-warning' : '' }}">
+                                            <td>{{ result.entity_id }}</td>
+                                            <td>
+                                                <strong>{{ result.entity.title }}</strong>
+                                                {% if result.entity_type == 'Course' and result.entity.chapter %}
+                                                    <br><small class="text-muted">Chapter: {{ result.entity.chapter.title }}</small>
+                                                {% elseif result.entity_type == 'Chapter' and result.entity.module %}
+                                                    <br><small class="text-muted">Module: {{ result.entity.module.title }}</small>
+                                                {% elseif result.entity_type == 'Module' and result.entity.formation %}
+                                                    <br><small class="text-muted">Formation: {{ result.entity.formation.title }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ result.stored_duration|duration_format(result.unit) }}
+                                                {% if result.unit == 'minutes' and result.stored_duration >= 60 %}
+                                                    <br><small class="text-muted">({{ (result.stored_duration / 60)|round(1) }}h)</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ result.calculated_duration|duration_format(result.unit) }}
+                                                {% if result.unit == 'minutes' and result.calculated_duration >= 60 %}
+                                                    <br><small class="text-muted">({{ (result.calculated_duration / 60)|round(1) }}h)</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if result.difference != 0 %}
+                                                    <span class="badge badge-{{ result.difference > 0 ? 'success' : 'danger' }}">
+                                                        {{ result.difference > 0 ? '+' : '' }}{{ result.difference }} {{ result.unit }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if result.needs_update %}
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-exclamation-triangle"></i> Needs Update
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check"></i> OK
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-primary" 
+                                                        onclick="updateDuration('{{ entity_type }}', {{ result.entity_id }}, this)">
+                                                    <i class="fas fa-sync"></i> Update
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-info" 
+                                                        onclick="showDetails({{ result|json_encode|e('html_attr') }})">
+                                                    <i class="fas fa-info"></i> Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-warning" onclick="updateAllInconsistent()">
+                                <i class="fas fa-sync"></i> Update All Inconsistent
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Duration Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detailsContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateDuration(entityType, entityId, button) {
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    button.disabled = true;
+    
+    fetch(`{{ path('admin_duration_update', {entityType: 'ENTITY_TYPE', entityId: 'ENTITY_ID'}) }}`.replace('ENTITY_TYPE', entityType).replace('ENTITY_ID', entityId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to show updated data
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    })
+    .finally(() => {
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    });
+}
+
+function updateAllInconsistent() {
+    if (!confirm('Update all entities with duration inconsistencies?')) {
+        return;
+    }
+    
+    const inconsistentRows = document.querySelectorAll('tr.table-warning');
+    let processed = 0;
+    
+    inconsistentRows.forEach(row => {
+        const updateButton = row.querySelector('button[onclick*="updateDuration"]');
+        if (updateButton) {
+            setTimeout(() => {
+                updateButton.click();
+            }, processed * 500); // Stagger requests
+            processed++;
+        }
+    });
+}
+
+function showDetails(result) {
+    const content = document.getElementById('detailsContent');
+    content.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Entity Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Type:</strong></td><td>${result.entity_type}</td></tr>
+                    <tr><td><strong>ID:</strong></td><td>${result.entity_id}</td></tr>
+                    <tr><td><strong>Unit:</strong></td><td>${result.unit}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Duration Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Stored:</strong></td><td>${result.stored_duration} ${result.unit}</td></tr>
+                    <tr><td><strong>Calculated:</strong></td><td>${result.calculated_duration} ${result.unit}</td></tr>
+                    <tr><td><strong>Difference:</strong></td><td>${result.difference} ${result.unit}</td></tr>
+                    <tr><td><strong>Needs Update:</strong></td><td>${result.needs_update ? 'Yes' : 'No'}</td></tr>
+                </table>
+            </div>
+        </div>
+        ${result.course_count !== undefined ? `<p><strong>Courses:</strong> ${result.course_count}</p>` : ''}
+        ${result.exercise_count !== undefined ? `<p><strong>Exercises:</strong> ${result.exercise_count}</p>` : ''}
+        ${result.qcm_count !== undefined ? `<p><strong>QCMs:</strong> ${result.qcm_count}</p>` : ''}
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    modal.show();
+}
+</script>
+{% endblock %}
