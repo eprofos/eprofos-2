@@ -28,22 +28,15 @@
 
 | Document Type | URL | Access Condition |
 |---------------|-----|------------------|
-| **Student Info Hub** | `/informations-stagiaires` | Always accessible |
-| **Règlement intérieur** | `/reglement-interieur` | Published document exists |
-| **Livret d'accueil** | `/livret-accueil-stagiaire` | Published document exists |
-| **Conditions formation** | `/conditions-generales-formation` | Published document exists |
-| **Politique accessibilité** | `/politique-accessibilite` | Published document exists |
-| **Procédures accessibilité** | `/procedures-accessibilite` | Published document exists |
-| **FAQ Accessibilité** | `/faq-accessibilite` | Published document exists |
+| **Legal Notices** | `/mentions-legales` | Always accessible |
+| **Privacy Policy** | `/politique-de-confidentialite` | Always accessible |
+| **Terms of Service** | `/conditions-generales` | Always accessible |
+| **Cookies Policy** | `/politique-cookies` | Always accessible |
 
-### Legacy/Special URLs
-| Purpose | URL | Access Condition |
-|---------|-----|------------------|
-| **Accessibility Hub** | `/accessibilite-handicap` | Any accessibility doc published |
-| **Download Center** | `/documents-telechargement` | Any published document |
-| **Download All ZIP** | `/documents-telechargement/tout` | Published docs with files |
-| **Document by Type** | `/documents/{type}` | Valid type + published doc |
-| **Document Receipt** | `/documents/accuse-reception/{token}` | Valid token |
+### Notes
+- Legal documents managed by the LegalDocument entity are now **admin-only**
+- Public access to training documents has been removed
+- All legal documents are accessible only through the admin interface
 
 ---
 

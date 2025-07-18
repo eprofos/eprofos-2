@@ -364,7 +364,7 @@ class ContactController extends AbstractController
                 foreach ($errors as $error) {
                     $this->addFlash('error', $error->getMessage());
                 }
-                return $this->redirectToRoute('app_legal_accessibility');
+                return $this->redirectToRoute('app_contact_index');
             }
 
             // Save the contact request
@@ -393,7 +393,7 @@ class ContactController extends AbstractController
             $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer.');
         }
 
-        return $this->redirectToRoute('app_legal_accessibility');
+        return $this->redirectToRoute('app_contact_index');
     }
 
     /**

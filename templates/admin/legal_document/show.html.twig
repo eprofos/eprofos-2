@@ -101,16 +101,8 @@
                                     {% endif %}
                                 </div>
                                 <div class="col-md-6">
-                                    <h6 class="text-muted">Fichier PDF</h6>
-                                    {% if document.hasFile %}
-                                        <a href="{{ document.fileUrl }}" 
-                                           target="_blank" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download"></i> Télécharger le PDF
-                                        </a>
-                                    {% else %}
-                                        <span class="text-muted">Aucun fichier</span>
-                                    {% endif %}
+                                    <h6 class="text-muted">Dernière modification</h6>
+                                    <span class="text-muted">{{ document.updatedAt|date('d/m/Y à H:i') }}</span>
                                 </div>
                             </div>
 
@@ -168,24 +160,15 @@
                                 <div class="card bg-success bg-opacity-10 mt-3">
                                     <div class="card-header">
                                         <h6 class="card-title mb-0">
-                                            <i class="fas fa-globe"></i> Accès public
+                                            <i class="fas fa-check-circle"></i> Document publié
                                         </h6>
                                     </div>
                                     <div class="card-body">
-                                        <p class="mb-2">Ce document est accessible publiquement :</p>
-                                        {% if document.type == 'internal_regulation' or document.type == 'student_handbook' or document.type == 'training_terms' %}
-                                            <a href="{{ path('app_legal_student_information') }}" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-success">
-                                                <i class="fas fa-external-link-alt"></i> Page stagiaires
-                                            </a>
-                                        {% elseif document.type starts with 'accessibility_' %}
-                                            <a href="{{ path('app_legal_accessibility') }}" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-success">
-                                                <i class="fas fa-external-link-alt"></i> Page accessibilité
-                                            </a>
-                                        {% endif %}
+                                        <p class="mb-2">Ce document est publié et disponible pour consultation interne.</p>
+                                        <p class="small text-muted mb-0">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Les documents légaux sont maintenant accessibles uniquement via l'interface d'administration.
+                                        </p>
                                     </div>
                                 </div>
                             {% endif %}
@@ -203,14 +186,6 @@
                                            class="btn btn-outline-warning btn-sm">
                                             <i class="fas fa-edit"></i> Modifier le document
                                         </a>
-                                        
-                                        {% if document.hasFile %}
-                                            <a href="{{ document.fileUrl }}" 
-                                               target="_blank" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-download"></i> Télécharger le PDF
-                                            </a>
-                                        {% endif %}
                                         
                                         <a href="{{ path('admin_legal_document_index') }}" 
                                            class="btn btn-outline-secondary btn-sm">

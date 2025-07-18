@@ -65,9 +65,6 @@ class LegalDocument
     #[Assert\NotBlank(message: 'Le contenu est obligatoire.')]
     private ?string $content = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $filePath = null;
-
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'La version est obligatoire.')]
     private ?string $version = null;
@@ -129,17 +126,6 @@ class LegalDocument
     public function setContent(string $content): static
     {
         $this->content = $content;
-        return $this;
-    }
-
-    public function getFilePath(): ?string
-    {
-        return $this->filePath;
-    }
-
-    public function setFilePath(?string $filePath): static
-    {
-        $this->filePath = $filePath;
         return $this;
     }
 
@@ -242,38 +228,6 @@ class LegalDocument
     {
         $this->publishedAt = null;
         return $this;
-    }
-
-    /**
-     * Get the file URL for download
-     */
-    public function getFileUrl(): ?string
-    {
-        if (!$this->filePath) {
-            return null;
-        }
-
-        return '/uploads/legal/' . $this->filePath;
-    }
-
-    /**
-     * Get the absolute file path on disk
-     */
-    public function getAbsoluteFilePath(): ?string
-    {
-        if (!$this->filePath) {
-            return null;
-        }
-
-        return $_SERVER['DOCUMENT_ROOT'] . '/uploads/legal/' . $this->filePath;
-    }
-
-    /**
-     * Check if document has a PDF file
-     */
-    public function hasFile(): bool
-    {
-        return !empty($this->filePath);
     }
 
     /**

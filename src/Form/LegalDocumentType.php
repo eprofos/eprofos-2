@@ -7,12 +7,10 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
 
 /**
  * Form type for LegalDocument entity
@@ -53,25 +51,6 @@ class LegalDocumentType extends AbstractType
                     'placeholder' => 'Ex: 1.0, 2.1, etc.'
                 ],
                 'help' => 'Numéro de version du document'
-            ])
-            ->add('file', FileType::class, [
-                'label' => 'Fichier PDF (optionnel)',
-                'mapped' => false,
-                'required' => false,
-                'constraints' => [
-                    new File([
-                        'maxSize' => '10M',
-                        'mimeTypes' => [
-                            'application/pdf',
-                        ],
-                        'mimeTypesMessage' => 'Veuillez télécharger un fichier PDF valide',
-                    ])
-                ],
-                'attr' => [
-                    'class' => 'form-control',
-                    'accept' => '.pdf'
-                ],
-                'help' => 'Fichier PDF optionnel à télécharger (max 10MB)'
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Document actif',

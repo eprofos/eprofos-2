@@ -10,10 +10,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
  * Admin Legal Document Controller
@@ -26,8 +24,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class LegalDocumentController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger,
-        private SluggerInterface $slugger
+        private LoggerInterface $logger
     ) {
     }
 
@@ -205,15 +202,6 @@ class LegalDocumentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload
-            $file = $form->get('file')->getData();
-            if ($file) {
-                $fileName = $this->handleFileUpload($file);
-                if ($fileName) {
-                    $document->setFilePath($fileName);
-                }
-            }
-
             $entityManager->persist($document);
             $entityManager->flush();
 
@@ -250,15 +238,6 @@ class LegalDocumentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload
-            $file = $form->get('file')->getData();
-            if ($file) {
-                $fileName = $this->handleFileUpload($file);
-                if ($fileName) {
-                    $document->setFilePath($fileName);
-                }
-            }
-
             $entityManager->flush();
 
             $this->logger->info('Legal document updated', [
@@ -336,43 +315,5 @@ class LegalDocumentController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
-    }
-
-    /**
-     * Handle file upload
-     */
-    private function handleFileUpload($file): ?string
-    {
-        if (!$file) {
-            return null;
-        }
-
-        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = $this->slugger->slug($originalFilename);
-        $fileName = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
-
-        try {
-            $uploadDir = $this->getParameter('kernel.project_dir').'/public/uploads/legal';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            
-            $file->move($uploadDir, $fileName);
-            
-            $this->logger->info('Legal document file uploaded', [
-                'filename' => $fileName,
-                'original_filename' => $file->getClientOriginalName()
-            ]);
-            
-            return $fileName;
-        } catch (FileException $e) {
-            $this->logger->error('Failed to upload legal document file', [
-                'error' => $e->getMessage(),
-                'filename' => $fileName
-            ]);
-            
-            $this->addFlash('error', 'Erreur lors du téléchargement du fichier.');
-            return null;
-        }
     }
 }
