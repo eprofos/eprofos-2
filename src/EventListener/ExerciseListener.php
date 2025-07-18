@@ -13,10 +13,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Exercise duration synchronization
+ * DISABLED: Using DurationUpdateListener instead
  */
-#[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Exercise::class)]
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Exercise::class)]
-#[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Exercise::class)]
+// #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Exercise::class)]
+// #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Exercise::class)]
+// #[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Exercise::class)]
 class ExerciseListener
 {
     public function __construct(
@@ -57,6 +58,11 @@ class ExerciseListener
 
     private function updateCourseDuration(Exercise $exercise, string $operation): void
     {
+        // Skip if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            return;
+        }
+        
         try {
             $course = $exercise->getCourse();
             

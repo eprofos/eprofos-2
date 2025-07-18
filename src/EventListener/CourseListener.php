@@ -16,10 +16,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Course duration synchronization
+ * DISABLED: Using DurationUpdateListener instead
  */
-#[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Course::class)]
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Course::class)]
-#[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Course::class)]
+// #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Course::class)]
+// #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Course::class)]
+// #[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Course::class)]
 class CourseListener
 {
     private array $scheduledUpdates = [];
@@ -78,6 +79,12 @@ class CourseListener
 
     private function processScheduledUpdates(): void
     {
+        // Skip if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            $this->scheduledUpdates = [];
+            return;
+        }
+        
         foreach ($this->scheduledUpdates as $key => $update) {
             try {
                 $course = $update['entity'];

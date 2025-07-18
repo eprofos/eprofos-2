@@ -253,6 +253,12 @@ class DurationUpdateListener
             return;
         }
         
+        // Skip processing if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            $this->pendingUpdates = [];
+            return;
+        }
+        
         $this->isProcessing = true;
         
         try {

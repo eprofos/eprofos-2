@@ -13,10 +13,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Chapter duration synchronization
+ * DISABLED: Using DurationUpdateListener instead
  */
-#[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Chapter::class)]
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Chapter::class)]
-#[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Chapter::class)]
+// #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Chapter::class)]
+// #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Chapter::class)]
+// #[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Chapter::class)]
 class ChapterListener
 {
     public function __construct(
@@ -57,6 +58,11 @@ class ChapterListener
 
     private function updateModuleDuration(Chapter $chapter, string $operation): void
     {
+        // Skip if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            return;
+        }
+        
         try {
             $module = $chapter->getModule();
             

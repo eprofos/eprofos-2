@@ -13,10 +13,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Module duration synchronization
+ * DISABLED: Using DurationUpdateListener instead
  */
-#[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Module::class)]
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Module::class)]
-#[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Module::class)]
+// #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Module::class)]
+// #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Module::class)]
+// #[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: Module::class)]
 class ModuleListener
 {
     public function __construct(
@@ -57,6 +58,11 @@ class ModuleListener
 
     private function updateFormationDuration(Module $module, string $operation): void
     {
+        // Skip if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            return;
+        }
+        
         try {
             $formation = $module->getFormation();
             

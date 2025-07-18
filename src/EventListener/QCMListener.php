@@ -13,10 +13,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for QCM duration synchronization
+ * DISABLED: Using DurationUpdateListener instead
  */
-#[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: QCM::class)]
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: QCM::class)]
-#[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: QCM::class)]
+// #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: QCM::class)]
+// #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: QCM::class)]
+// #[AsEntityListener(event: Events::postRemove, method: 'postRemove', entity: QCM::class)]
 class QCMListener
 {
     public function __construct(
@@ -57,6 +58,11 @@ class QCMListener
 
     private function updateCourseDuration(QCM $qcm, string $operation): void
     {
+        // Skip if we're in sync mode to prevent circular updates
+        if ($this->durationService->isSyncMode()) {
+            return;
+        }
+        
         try {
             $course = $qcm->getCourse();
             

@@ -26,11 +26,38 @@ class DurationCalculationService
     private const CACHE_TTL = 3600; // 1 hour
     private const CACHE_PREFIX = 'duration_';
     
+    private bool $isSyncMode = false;
+    private array $processingEntities = [];
+    
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CacheInterface $cache,
         private LoggerInterface $logger
     ) {
+    }
+
+    /**
+     * Enable sync mode to prevent recursive updates
+     */
+    public function enableSyncMode(): void
+    {
+        $this->isSyncMode = true;
+    }
+
+    /**
+     * Disable sync mode
+     */
+    public function disableSyncMode(): void
+    {
+        $this->isSyncMode = false;
+    }
+
+    /**
+     * Check if we're in sync mode
+     */
+    public function isSyncMode(): bool
+    {
+        return $this->isSyncMode;
     }
 
     /**
@@ -204,6 +231,16 @@ class DurationCalculationService
      */
     public function updateEntityDuration(object $entity): void
     {
+        // Generate entity key for tracking
+        $entityKey = get_class($entity) . '_' . (method_exists($entity, 'getId') ? $entity->getId() : spl_object_id($entity));
+        
+        // Prevent recursive updates
+        if (isset($this->processingEntities[$entityKey])) {
+            return;
+        }
+        
+        $this->processingEntities[$entityKey] = true;
+        
         try {
             switch (get_class($entity)) {
                 case Course::class:
@@ -229,6 +266,9 @@ class DurationCalculationService
                 'entity_id' => method_exists($entity, 'getId') ? $entity->getId() : null,
                 'error' => $e->getMessage()
             ]);
+        } finally {
+            // Always remove from processing list
+            unset($this->processingEntities[$entityKey]);
         }
     }
 
