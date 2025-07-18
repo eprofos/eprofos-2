@@ -6,11 +6,14 @@ use App\Entity\LegalDocument;
 use App\Form\LegalDocumentType;
 use App\Repository\LegalDocumentRepository;
 use App\Service\LegalDocumentService;
+use App\Service\LegalPdfGenerationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -26,7 +29,9 @@ class LegalDocumentController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private LegalDocumentService $legalDocumentService
+        private LegalDocumentService $legalDocumentService,
+        private LegalPdfGenerationService $pdfGenerationService,
+        private EntityManagerInterface $entityManager
     ) {
     }
 
@@ -296,16 +301,21 @@ class LegalDocumentController extends AbstractController
                 }
             } else {
                 // Normal save without publish logic
-                $entityManager->flush();
+                $result = $this->legalDocumentService->updateDocument($document);
                 
-                $this->logger->info('Legal document updated', [
-                    'document_id' => $document->getId(),
-                    'type' => $document->getType(),
-                    'status' => $document->getStatus(),
-                    'user' => $this->getUser()?->getUserIdentifier()
-                ]);
+                if ($result['success']) {
+                    $this->logger->info('Legal document updated', [
+                        'document_id' => $document->getId(),
+                        'type' => $document->getType(),
+                        'status' => $document->getStatus(),
+                        'user' => $this->getUser()?->getUserIdentifier()
+                    ]);
 
-                $this->addFlash('success', 'Le document légal a été modifié avec succès.');
+                    $this->addFlash('success', 'Le document légal a été modifié avec succès.');
+                } else {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la modification : ' . $result['error']);
+                    return $this->redirectToRoute('admin_legal_document_edit', ['id' => $document->getId()]);
+                }
             }
 
             return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
@@ -387,6 +397,75 @@ class LegalDocumentController extends AbstractController
                         $this->addFlash('error', 'Erreur lors de la publication : ' . $result['error']);
                     }
                 }
+            }
+        }
+
+        return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
+    }
+
+    /**
+     * Download PDF for a legal document
+     */
+    #[Route('/{id}/download-pdf', name: 'download_pdf', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function downloadPdf(LegalDocument $document): Response
+    {
+        $this->logger->info('Admin downloading PDF for legal document', [
+            'document_id' => $document->getId(),
+            'user' => $this->getUser()?->getUserIdentifier()
+        ]);
+
+        // Check if document has a PDF
+        if (!$this->pdfGenerationService->hasPdf($document)) {
+            $this->addFlash('error', 'Aucun fichier PDF n\'est disponible pour ce document.');
+            return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
+        }
+
+        $pdfInfo = $this->pdfGenerationService->getPdfInfo($document);
+        if (!$pdfInfo) {
+            $this->addFlash('error', 'Le fichier PDF n\'est plus disponible.');
+            return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
+        }
+
+        $filename = $pdfInfo['filename'];
+        $filepath = $this->getParameter('kernel.project_dir') . '/public/' . $pdfInfo['filepath'];
+
+        if (!file_exists($filepath)) {
+            $this->addFlash('error', 'Le fichier PDF n\'existe plus sur le serveur.');
+            return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
+        }
+
+        $response = new BinaryFileResponse($filepath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $filename
+        );
+
+        return $response;
+    }
+
+    /**
+     * Generate PDF for a legal document
+     */
+    #[Route('/{id}/generate-pdf', name: 'generate_pdf', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function generatePdf(Request $request, LegalDocument $document): Response
+    {
+        if ($this->isCsrfTokenValid('generate_pdf'.$document->getId(), $request->getPayload()->get('_token'))) {
+            
+            $this->logger->info('Admin generating PDF for legal document', [
+                'document_id' => $document->getId(),
+                'user' => $this->getUser()?->getUserIdentifier()
+            ]);
+
+            $result = $this->pdfGenerationService->generatePdf($document);
+            
+            if ($result['success']) {
+                // Update document with PDF metadata
+                $this->entityManager->persist($document);
+                $this->entityManager->flush();
+                
+                $this->addFlash('success', 'Le fichier PDF a été généré avec succès.');
+            } else {
+                $this->addFlash('error', 'Erreur lors de la génération du PDF : ' . $result['error']);
             }
         }
 

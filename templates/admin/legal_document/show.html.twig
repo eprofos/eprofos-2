@@ -116,8 +116,78 @@
                         </div>
 
                         <div class="col-md-4">
-                            {# Metadata #}
+                            {# PDF Information #}
                             <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-file-pdf"></i> Document PDF
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    {% set pdfInfo = document.metadata.pdf ?? null %}
+                                    {% if pdfInfo %}
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">{{ pdfInfo.filename }}</div>
+                                                <small class="text-muted">
+                                                    {{ (pdfInfo.file_size / 1024) | round(2) }} Ko
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <small class="text-muted">Généré le :</small><br>
+                                            <span class="small">{{ pdfInfo.generated_at|date('d/m/Y à H:i') }}</span>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <a href="{{ path('admin_legal_document_download_pdf', {id: document.id}) }}" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-download"></i> Télécharger le PDF
+                                            </a>
+                                            
+                                            <form method="post" 
+                                                  action="{{ path('admin_legal_document_generate_pdf', {id: document.id}) }}" 
+                                                  class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('generate_pdf' ~ document.id) }}">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                                                    <i class="fas fa-sync"></i> Régénérer le PDF
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-3">
+                                            <i class="fas fa-file-pdf text-muted mb-2" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-3">Aucun fichier PDF disponible</p>
+                                            
+                                            {% if document.isPublished %}
+                                                <div class="alert alert-info small" role="alert">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Un PDF devrait être automatiquement généré pour les documents publiés.
+                                                </div>
+                                            {% else %}
+                                                <div class="alert alert-warning small" role="alert">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                    Publiez le document pour générer automatiquement un PDF.
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <form method="post" 
+                                                  action="{{ path('admin_legal_document_generate_pdf', {id: document.id}) }}" 
+                                                  class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('generate_pdf' ~ document.id) }}">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-file-pdf"></i> Générer le PDF
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Metadata #}
+                            <div class="card bg-light mt-3">
                                 <div class="card-header">
                                     <h6 class="card-title mb-0">
                                         <i class="fas fa-info-circle"></i> Métadonnées
@@ -141,16 +211,6 @@
                                             <td class="text-muted">Type :</td>
                                             <td>{{ document.type }}</td>
                                         </tr>
-                                        {% if document.metadata %}
-                                        <tr>
-                                            <td class="text-muted">Métadonnées :</td>
-                                            <td>
-                                                <small class="text-muted">
-                                                    {{ document.metadata|json_encode(constant('JSON_PRETTY_PRINT'))|nl2br }}
-                                                </small>
-                                            </td>
-                                        </tr>
-                                        {% endif %}
                                     </table>
                                 </div>
                             </div>

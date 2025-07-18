@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	gettext \
 	git \
+	wkhtmltopdf \
+	xvfb \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -31,6 +33,7 @@ RUN set -eux; \
 		intl \
 		opcache \
 		zip \
+		gd \
 	;
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser

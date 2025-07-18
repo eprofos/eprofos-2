@@ -18,7 +18,8 @@ class LegalDocumentService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private LegalDocumentRepository $legalDocumentRepository,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private LegalPdfGenerationService $pdfGenerationService
     ) {
     }
 
@@ -58,8 +59,17 @@ class LegalDocumentService
             // Publish the current document
             $document->publish();
 
+            // Generate PDF for the published document
+            $pdfResult = $this->pdfGenerationService->generatePdf($document);
+            if (!$pdfResult['success']) {
+                throw new \Exception('Failed to generate PDF: ' . $pdfResult['error']);
+            }
+
             // Archive other documents of the same type
             $archivedCount = $this->legalDocumentRepository->archiveOtherDocumentsOfType($type, $documentId);
+
+            // Delete PDFs for archived documents
+            $this->deleteArchivedDocumentsPdfs($otherPublishedDocuments);
 
             // Persist changes
             $this->entityManager->persist($document);
@@ -116,6 +126,10 @@ class LegalDocumentService
 
         try {
             $document->unpublish();
+            
+            // Delete PDF when unpublishing
+            $this->pdfGenerationService->deletePdf($document);
+            
             $this->entityManager->persist($document);
             $this->entityManager->flush();
 
@@ -161,6 +175,10 @@ class LegalDocumentService
 
         try {
             $document->archive();
+            
+            // Delete PDF when archiving
+            $this->pdfGenerationService->deletePdf($document);
+            
             $this->entityManager->persist($document);
             $this->entityManager->flush();
 
@@ -185,6 +203,77 @@ class LegalDocumentService
                 'success' => false,
                 'error' => $e->getMessage()
             ];
+        }
+    }
+
+    /**
+     * Update a document and regenerate PDF if published
+     * 
+     * @param LegalDocument $document The document to update
+     * @return array Information about the operation
+     */
+    public function updateDocument(LegalDocument $document): array
+    {
+        $documentId = $document->getId();
+        $type = $document->getType();
+        
+        $this->logger->info('Updating legal document', [
+            'document_id' => $documentId,
+            'type' => $type
+        ]);
+
+        try {
+            // If document is published, regenerate PDF
+            if ($document->isPublished()) {
+                $pdfResult = $this->pdfGenerationService->generatePdf($document);
+                if (!$pdfResult['success']) {
+                    throw new \Exception('Failed to regenerate PDF: ' . $pdfResult['error']);
+                }
+            }
+            
+            $this->entityManager->persist($document);
+            $this->entityManager->flush();
+
+            $this->logger->info('Successfully updated document', [
+                'document_id' => $documentId,
+                'type' => $type
+            ]);
+
+            return [
+                'success' => true,
+                'updated_document' => $document
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to update document', [
+                'document_id' => $documentId,
+                'type' => $type,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Delete PDFs for archived documents
+     * 
+     * @param array $documents Array of LegalDocument objects
+     */
+    private function deleteArchivedDocumentsPdfs(array $documents): void
+    {
+        foreach ($documents as $document) {
+            try {
+                $this->pdfGenerationService->deletePdf($document);
+            } catch (\Exception $e) {
+                $this->logger->warning('Failed to delete PDF for archived document', [
+                    'document_id' => $document->getId(),
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
     }
 
