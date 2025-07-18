@@ -50,6 +50,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
      * 12. SessionFixtures (depend on formations, will create prospects via service)
      * 13. NeedsAnalysisFixtures (depend on users and formations, will create prospects via service)
      * 14. LegalDocumentFixtures (no dependencies, required for Qualiopi compliance)
+     * 15. StudentFixtures (student authentication data)
      */
     public function getDependencies(): array
     {
@@ -70,6 +71,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             SessionFixtures::class,
             NeedsAnalysisFixtures::class,
             LegalDocumentFixtures::class,
+            StudentFixtures::class,
         ];
     }
 }

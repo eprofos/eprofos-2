@@ -1,0 +1,486 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des étudiants{% endblock %}
+
+{% block body %}
+<div class="page-wrapper">
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        <i class="ti ti-users me-2"></i>
+                        Gestion des étudiants
+                    </h2>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_student_export', app.request.query.all) }}" class="btn btn-outline-primary">
+                            <i class="ti ti-file-export me-2"></i>
+                            Exporter CSV
+                        </a>
+                        <a href="{{ path('admin_student_new') }}" class="btn btn-primary">
+                            <i class="ti ti-plus me-2"></i>
+                            Nouvel étudiant
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <!-- Statistics Cards -->
+            <div class="row row-deck row-cards mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="bg-primary text-white avatar">
+                                        <i class="ti ti-users"></i>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">
+                                        {{ statistics.total }}
+                                    </div>
+                                    <div class="text-muted">
+                                        Total étudiants
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="bg-success text-white avatar">
+                                        <i class="ti ti-user-check"></i>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">
+                                        {{ statistics.active }}
+                                    </div>
+                                    <div class="text-muted">
+                                        Actifs
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="bg-info text-white avatar">
+                                        <i class="ti ti-mail-check"></i>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">
+                                        {{ statistics.verified }}
+                                    </div>
+                                    <div class="text-muted">
+                                        Emails vérifiés
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="bg-warning text-white avatar">
+                                        <i class="ti ti-user-plus"></i>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">
+                                        {{ statistics.recent }}
+                                    </div>
+                                    <div class="text-muted">
+                                        Récents (7j)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <form method="get" class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Filtres</h4>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label">Recherche</label>
+                                    <input type="text" name="search" class="form-control" placeholder="Nom, prénom, email..." value="{{ filters.search|default('') }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Statut</label>
+                                    <select name="status" class="form-select">
+                                        <option value="">Tous</option>
+                                        <option value="active" {{ (filters.status|default('')) == 'active' ? 'selected' : '' }}>Actifs</option>
+                                        <option value="inactive" {{ (filters.status|default('')) == 'inactive' ? 'selected' : '' }}>Inactifs</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Email vérifié</label>
+                                    <select name="email_verified" class="form-select">
+                                        <option value="">Tous</option>
+                                        <option value="verified" {{ (filters.email_verified|default('')) == 'verified' ? 'selected' : '' }}>Vérifiés</option>
+                                        <option value="unverified" {{ (filters.email_verified|default('')) == 'unverified' ? 'selected' : '' }}>Non vérifiés</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Ville</label>
+                                    <select name="city" class="form-select">
+                                        <option value="">Toutes</option>
+                                        {% for city in cities|default([]) %}
+                                            <option value="{{ city.city }}" {{ (filters.city|default('')) == city.city ? 'selected' : '' }}>{{ city.city }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Période</label>
+                                    <select name="registration_period" class="form-select">
+                                        <option value="">Toutes</option>
+                                        <option value="today" {{ (filters.registration_period|default('')) == 'today' ? 'selected' : '' }}>Aujourd'hui</option>
+                                        <option value="week" {{ (filters.registration_period|default('')) == 'week' ? 'selected' : '' }}>Cette semaine</option>
+                                        <option value="month" {{ (filters.registration_period|default('')) == 'month' ? 'selected' : '' }}>Ce mois</option>
+                                        <option value="year" {{ (filters.registration_period|default('')) == 'year' ? 'selected' : '' }}>Cette année</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ti ti-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <form method="post" action="{{ path('admin_student_bulk_action') }}" id="bulk-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('bulk_action') }}">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="select-all">
+                                            <label class="form-check-label" for="select-all">
+                                                Sélectionner tout
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select name="bulk_action" class="form-select" id="bulk-action">
+                                            <option value="">Actions groupées</option>
+                                            <option value="activate">Activer</option>
+                                            <option value="deactivate">Désactiver</option>
+                                            <option value="verify_email">Vérifier emails</option>
+                                            <option value="send_password_reset">Envoyer lien réinitialisation</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-primary" id="bulk-submit" disabled>
+                                            Exécuter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Étudiant</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Ville</th>
+                                        <th>Statut</th>
+                                        <th>Email vérifié</th>
+                                        <th>Inscription</th>
+                                        <th>Dernière connexion</th>
+                                        <th class="w-1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input student-checkbox" 
+                                                       name="student_ids[]" value="{{ student.id }}" form="bulk-form">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-2">{{ student.initials }}</span>
+                                                <div>
+                                                    <div class="font-weight-medium">{{ student.fullName }}</div>
+                                                    {% if student.profession %}
+                                                        <div class="text-muted">{{ student.profession }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>{{ student.email }}</div>
+                                        </td>
+                                        <td>
+                                            {{ student.phone|default('—') }}
+                                        </td>
+                                        <td>
+                                            {{ student.city|default('—') }}
+                                        </td>
+                                        <td>
+                                            {% if student.isActive %}
+                                                <span class="badge bg-success">Actif</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactif</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if student.isEmailVerified %}
+                                                <span class="badge bg-success">
+                                                    <i class="ti ti-check"></i> Vérifié
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="ti ti-alert-triangle"></i> Non vérifié
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="text-muted">{{ student.createdAt|date('d/m/Y') }}</div>
+                                            <div class="text-muted">{{ student.createdAt|date('H:i') }}</div>
+                                        </td>
+                                        <td>
+                                            {% if student.lastLoginAt %}
+                                                <div class="text-muted">{{ student.lastLoginAt|date('d/m/Y') }}</div>
+                                                <div class="text-muted">{{ student.lastLoginAt|date('H:i') }}</div>
+                                            {% else %}
+                                                <span class="text-muted">Jamais</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ path('admin_student_show', {id: student.id}) }}">
+                                                            <i class="ti ti-eye me-2"></i>
+                                                            Voir
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ path('admin_student_edit', {id: student.id}) }}">
+                                                            <i class="ti ti-edit me-2"></i>
+                                                            Modifier
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="post" action="{{ path('admin_student_toggle_active', {id: student.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ student.id) }}">
+                                                            <button type="submit" class="dropdown-item">
+                                                                {% if student.isActive %}
+                                                                    <i class="ti ti-user-off me-2"></i>
+                                                                    Désactiver
+                                                                {% else %}
+                                                                    <i class="ti ti-user-check me-2"></i>
+                                                                    Activer
+                                                                {% endif %}
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    {% if not student.isEmailVerified %}
+                                                    <li>
+                                                        <form method="post" action="{{ path('admin_student_verify_email', {id: student.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('verify_email' ~ student.id) }}">
+                                                            <button type="submit" class="dropdown-item">
+                                                                <i class="ti ti-mail-check me-2"></i>
+                                                                Vérifier email
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    <li>
+                                                        <button type="button" class="dropdown-item" 
+                                                                onclick="sendPasswordReset({{ student.id }})">
+                                                            <i class="ti ti-key me-2"></i>
+                                                            Envoyer lien réinitialisation
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item" 
+                                                                onclick="generatePassword({{ student.id }})">
+                                                            <i class="ti ti-password me-2"></i>
+                                                            Générer nouveau mot de passe
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted py-4">
+                                            Aucun étudiant trouvé
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if total_pages > 1 %}
+                        <div class="card-footer d-flex align-items-center">
+                            <p class="m-0 text-muted">
+                                Affichage de {{ ((current_page - 1) * 20) + 1 }} à {{ ((current_page - 1) * 20) + students|length }} sur {{ total_students }} étudiants
+                            </p>
+                            <ul class="pagination m-0 ms-auto">
+                                {% if current_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_student_index', app.request.query.all|merge({page: current_page - 1})) }}">
+                                        <i class="ti ti-chevron-left"></i>
+                                        Précédent
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+                                <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ path('admin_student_index', app.request.query.all|merge({page: page})) }}">
+                                        {{ page }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+
+                                {% if current_page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_student_index', app.request.query.all|merge({page: current_page + 1})) }}">
+                                        Suivant
+                                        <i class="ti ti-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bulk actions
+document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateBulkActions();
+});
+
+document.querySelectorAll('.student-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', updateBulkActions);
+});
+
+document.getElementById('bulk-action').addEventListener('change', updateBulkActions);
+
+function updateBulkActions() {
+    const selectedCount = document.querySelectorAll('.student-checkbox:checked').length;
+    const bulkAction = document.getElementById('bulk-action').value;
+    const submitBtn = document.getElementById('bulk-submit');
+    
+    submitBtn.disabled = selectedCount === 0 || bulkAction === '';
+}
+
+// AJAX actions
+function sendPasswordReset(studentId) {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/admin/students/${studentId}/reset-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `_token=${token}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email de réinitialisation envoyé avec succès.');
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'envoi de l\'email.');
+    });
+}
+
+function generatePassword(studentId) {
+    if (!confirm('Êtes-vous sûr de vouloir générer un nouveau mot de passe pour cet étudiant ?')) {
+        return;
+    }
+    
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/admin/students/${studentId}/verify-email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `_token=${token}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Nouveau mot de passe généré et envoyé par email.');
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la génération du mot de passe.');
+    });
+}
+</script>
+{% endblock %}

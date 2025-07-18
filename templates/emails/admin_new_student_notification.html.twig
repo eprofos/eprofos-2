@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau compte étudiant créé</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .actions-box {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Nouveau compte étudiant</div>
+            <p style="color: #6c757d; margin: 0;">EPROFOS - Administration</p>
+        </div>
+        
+        <h2 style="color: #495057; margin-top: 0;">Bonjour,</h2>
+        
+        <p>
+            Un nouveau compte étudiant a été créé sur la plateforme EPROFOS.
+        </p>
+        
+        <div class="info-box">
+            <h3 style="color: #495057; margin-top: 0; font-size: 18px;">Informations de l'étudiant</h3>
+            <p style="margin: 10px 0;"><strong>Nom complet :</strong> {{ student.fullName }}</p>
+            <p style="margin: 10px 0;"><strong>Email :</strong> {{ student.email }}</p>
+            <p style="margin: 10px 0;"><strong>Téléphone :</strong> {{ student.phone|default('Non renseigné') }}</p>
+            <p style="margin: 10px 0;"><strong>Ville :</strong> {{ student.city|default('Non renseignée') }}</p>
+            <p style="margin: 10px 0;"><strong>Profession :</strong> {{ student.profession|default('Non renseignée') }}</p>
+            <p style="margin: 10px 0;"><strong>Date d'inscription :</strong> {{ student.createdAt|date('d/m/Y à H:i') }}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ admin_url }}" class="btn">
+                Voir le profil complet
+            </a>
+        </div>
+        
+        <div class="actions-box">
+            <h3 style="color: #495057; margin-top: 0; font-size: 18px;">Actions possibles</h3>
+            <ul style="color: #6c757d;">
+                <li>Vérifier les informations de l'étudiant</li>
+                <li>Valider ou modifier le statut du compte</li>
+                <li>Envoyer un email de bienvenue</li>
+                <li>Assigner des formations</li>
+            </ul>
+        </div>
+        
+        <p style="font-size: 14px;">
+            Cordialement,<br>
+            Système EPROFOS
+        </p>
+        
+        <div class="footer">
+            <p>Ce message vous a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        </div>
+    </div>
+</body>
+</html>

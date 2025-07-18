@@ -1,0 +1,265 @@
+{% extends 'student/base.html.twig' %}
+
+{% block title %}{{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Tableau de bord
+                    </h2>
+                    <div class="page-subtitle">
+                        Bienvenue {{ student.firstName }}, voici un aperçu de vos formations
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_courses') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                <circle cx="12" cy="14" r="2"/>
+                                <path d="m14 4l0 4l-6 0l0 -4"/>
+                            </svg>
+                            Mes Formations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Statistics Cards -->
+        <div class="row row-deck row-cards">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Formations inscrites</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.enrolled_courses }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-1">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 75%" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                        <span class="visually-hidden">75% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-secondary">75%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Formations terminées</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.completed_courses }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-1">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: 100%" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                        <span class="visually-hidden">100% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-secondary">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Heures d'étude</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.hours_studied }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-1">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: 60%" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                                        <span class="visually-hidden">60% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-secondary">60%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Certificats obtenus</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.certificates_earned }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-1">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 40%" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">
+                                        <span class="visually-hidden">40% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-secondary">40%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row row-deck row-cards mt-4">
+            <!-- Recent Activities -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Activités récentes</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_activities is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune activité">
+                                </div>
+                                <p class="empty-title">Aucune activité récente</p>
+                                <p class="empty-subtitle text-muted">
+                                    Vos activités d'apprentissage apparaîtront ici.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for activity in recent_activities %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="status-dot status-dot-animated bg-green d-block"></span>
+                                            </div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block">{{ activity.title }}</a>
+                                                <div class="d-block text-muted text-truncate mt-n1">
+                                                    {{ activity.description }}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <span class="text-muted">{{ activity.createdAt|date('H:i') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Sessions -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Prochaines sessions</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_sessions is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune session">
+                                </div>
+                                <p class="empty-title">Aucune session programmée</p>
+                                <p class="empty-subtitle text-muted">
+                                    Vos prochaines sessions de formation apparaîtront ici.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for session in upcoming_sessions %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm">{{ session.formation.title|slice(0, 2)|upper }}</span>
+                                            </div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block">{{ session.formation.title }}</a>
+                                                <div class="d-block text-muted text-truncate mt-n1">
+                                                    {{ session.startDate|date('d/m/Y H:i') }} - {{ session.endDate|date('d/m/Y H:i') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Courses -->
+        <div class="row row-deck row-cards mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Formations disponibles</h3>
+                        <div class="card-actions">
+                            <a href="{{ path('student_courses') }}" class="btn btn-primary">
+                                Voir toutes les formations
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if available_courses is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune formation">
+                                </div>
+                                <p class="empty-title">Aucune formation disponible</p>
+                                <p class="empty-subtitle text-muted">
+                                    De nouvelles formations seront bientôt disponibles.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="row g-3">
+                                {% for course in available_courses %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card card-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar me-3">{{ course.title|slice(0, 2)|upper }}</span>
+                                                    <div>
+                                                        <div class="font-weight-medium">{{ course.title }}</div>
+                                                        <div class="text-muted">{{ course.description|slice(0, 50) }}...</div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3">
+                                                    <a href="#" class="btn btn-primary btn-sm">
+                                                        S'inscrire
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

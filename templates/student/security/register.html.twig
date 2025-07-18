@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - EPROFOS Étudiant</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Inscription à la plateforme d'apprentissage EPROFOS pour étudiants">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    
+    {{ importmap('private') }}
+</head>
+<body class="d-flex flex-column">    
+    <div class="page page-center">
+        <div class="container container-normal py-4">
+            <div class="text-center mb-4">
+                <a href="{{ path('app_home') }}" class="navbar-brand navbar-brand-autodark">
+                    <img src="{{ asset('images/logo.svg') }}" height="36" alt="EPROFOS" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span style="display: none; font-size: 1.5rem; font-weight: bold;">EPROFOS</span>
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Créer un compte étudiant</h2>
+                    
+                    {% for flash_error in app.flashes('error') %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    {{ flash_error }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(registrationForm) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.firstName) }}
+                                    {{ form_widget(registrationForm.firstName) }}
+                                    {{ form_errors(registrationForm.firstName) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.lastName) }}
+                                    {{ form_widget(registrationForm.lastName) }}
+                                    {{ form_errors(registrationForm.lastName) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.email) }}
+                            {{ form_widget(registrationForm.email) }}
+                            {{ form_errors(registrationForm.email) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.phone) }}
+                                    {{ form_widget(registrationForm.phone) }}
+                                    {{ form_errors(registrationForm.phone) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.birthDate) }}
+                                    {{ form_widget(registrationForm.birthDate) }}
+                                    {{ form_errors(registrationForm.birthDate) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.address) }}
+                            {{ form_widget(registrationForm.address) }}
+                            {{ form_errors(registrationForm.address) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.postalCode) }}
+                                    {{ form_widget(registrationForm.postalCode) }}
+                                    {{ form_errors(registrationForm.postalCode) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.city) }}
+                                    {{ form_widget(registrationForm.city) }}
+                                    {{ form_errors(registrationForm.city) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.country) }}
+                                    {{ form_widget(registrationForm.country) }}
+                                    {{ form_errors(registrationForm.country) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.educationLevel) }}
+                                    {{ form_widget(registrationForm.educationLevel) }}
+                                    {{ form_errors(registrationForm.educationLevel) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.profession) }}
+                                    {{ form_widget(registrationForm.profession) }}
+                                    {{ form_errors(registrationForm.profession) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.company) }}
+                            {{ form_widget(registrationForm.company) }}
+                            {{ form_errors(registrationForm.company) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.plainPassword.first) }}
+                                    {{ form_widget(registrationForm.plainPassword.first) }}
+                                    {{ form_errors(registrationForm.plainPassword.first) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(registrationForm.plainPassword.second) }}
+                                    {{ form_widget(registrationForm.plainPassword.second) }}
+                                    {{ form_errors(registrationForm.plainPassword.second) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form_widget(registrationForm.agreeTerms) }}
+                                {{ form_label(registrationForm.agreeTerms) }}
+                            </label>
+                            {{ form_errors(registrationForm.agreeTerms) }}
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary w-100">Créer mon compte</button>
+                        </div>
+                    {{ form_end(registrationForm) }}
+                    
+                    <div class="text-center text-muted mt-3">
+                        Déjà un compte ? <a href="{{ path('student_login') }}" tabindex="-1">Se connecter</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Support</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Aide</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Conditions d'utilisation</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            © {{ 'now'|date('Y') }} 
+                            <a href="{{ path('app_home') }}" class="link-secondary">EPROFOS</a>
+                            Tous droits réservés.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

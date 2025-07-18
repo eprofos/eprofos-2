@@ -1,0 +1,268 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier l'étudiant{% endblock %}
+
+{% block body %}
+<div class="page-wrapper">
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Admin</a></li>
+                                <li class="breadcrumb-item"><a href="{{ path('admin_student_index') }}">Étudiants</a></li>
+                                <li class="breadcrumb-item"><a href="{{ path('admin_student_show', {id: student.id}) }}">{{ student.fullName }}</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <h2 class="page-title">
+                        <i class="ti ti-edit me-2"></i>
+                        Modifier {{ student.fullName }}
+                    </h2>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <a href="{{ path('admin_student_show', {id: student.id}) }}" class="btn btn-outline-primary">
+                        <i class="ti ti-arrow-left me-2"></i>
+                        Retour aux détails
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards">
+                <div class="col-12">
+                    {{ form_start(form, {attr: {class: 'card'}}) }}
+                        <div class="card-header">
+                            <h3 class="card-title">Informations de l'étudiant</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.firstName) }}
+                                        {{ form_widget(form.firstName) }}
+                                        {{ form_errors(form.firstName) }}
+                                        {% if form.firstName.vars.help %}
+                                            <div class="form-text">{{ form.firstName.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.lastName) }}
+                                        {{ form_widget(form.lastName) }}
+                                        {{ form_errors(form.lastName) }}
+                                        {% if form.lastName.vars.help %}
+                                            <div class="form-text">{{ form.lastName.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.email) }}
+                                        {{ form_widget(form.email) }}
+                                        {{ form_errors(form.email) }}
+                                        {% if form.email.vars.help %}
+                                            <div class="form-text">{{ form.email.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.phone) }}
+                                        {{ form_widget(form.phone) }}
+                                        {{ form_errors(form.phone) }}
+                                        {% if form.phone.vars.help %}
+                                            <div class="form-text">{{ form.phone.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.birthDate) }}
+                                        {{ form_widget(form.birthDate) }}
+                                        {{ form_errors(form.birthDate) }}
+                                        {% if form.birthDate.vars.help %}
+                                            <div class="form-text">{{ form.birthDate.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.educationLevel) }}
+                                        {{ form_widget(form.educationLevel) }}
+                                        {{ form_errors(form.educationLevel) }}
+                                        {% if form.educationLevel.vars.help %}
+                                            <div class="form-text">{{ form.educationLevel.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.profession) }}
+                                        {{ form_widget(form.profession) }}
+                                        {{ form_errors(form.profession) }}
+                                        {% if form.profession.vars.help %}
+                                            <div class="form-text">{{ form.profession.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.company) }}
+                                        {{ form_widget(form.company) }}
+                                        {{ form_errors(form.company) }}
+                                        {% if form.company.vars.help %}
+                                            <div class="form-text">{{ form.company.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-header">
+                            <h3 class="card-title">Adresse</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.address) }}
+                                        {{ form_widget(form.address) }}
+                                        {{ form_errors(form.address) }}
+                                        {% if form.address.vars.help %}
+                                            <div class="form-text">{{ form.address.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.postalCode) }}
+                                        {{ form_widget(form.postalCode) }}
+                                        {{ form_errors(form.postalCode) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.city) }}
+                                        {{ form_widget(form.city) }}
+                                        {{ form_errors(form.city) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.country) }}
+                                        {{ form_widget(form.country) }}
+                                        {{ form_errors(form.country) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if form.plainPassword is defined %}
+                        <div class="card-header">
+                            <h3 class="card-title">Changement de mot de passe</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.plainPassword) }}
+                                        {{ form_widget(form.plainPassword) }}
+                                        {{ form_errors(form.plainPassword) }}
+                                        {% if form.plainPassword.vars.help %}
+                                            <div class="form-text">{{ form.plainPassword.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Actions rapides</label>
+                                        <div>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="generateRandomPassword()">
+                                                <i class="ti ti-refresh me-2"></i>
+                                                Générer un mot de passe
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Génère automatiquement un mot de passe sécurisé</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-header">
+                            <h3 class="card-title">Paramètres du compte</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.isActive) }}
+                                            {{ form_label(form.isActive) }}
+                                        </div>
+                                        {{ form_errors(form.isActive) }}
+                                        {% if form.isActive.vars.help %}
+                                            <div class="form-text">{{ form.isActive.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.emailVerified) }}
+                                            {{ form_label(form.emailVerified) }}
+                                        </div>
+                                        {{ form_errors(form.emailVerified) }}
+                                        {% if form.emailVerified.vars.help %}
+                                            <div class="form-text">{{ form.emailVerified.vars.help }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer text-end">
+                            <div class="d-flex">
+                                <a href="{{ path('admin_student_show', {id: student.id}) }}" class="btn btn-outline-secondary me-auto">
+                                    <i class="ti ti-arrow-left me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-device-floppy me-2"></i>
+                                    Enregistrer les modifications
+                                </button>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateRandomPassword() {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    
+    // Try to find password field (may have different name in edit mode)
+    const passwordField = document.querySelector('input[type="password"]');
+    if (passwordField) {
+        passwordField.value = password;
+    }
+}
+</script>
+{% endblock %}

@@ -4,13 +4,20 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
         App\Entity\User:
             algorithm: auto
+        App\Entity\Student:
+            algorithm: auto
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        # used to reload user from session & other features (e.g. switch_user)
+        # used to reload admin user from session & other features (e.g. switch_user)
         app_user_provider:
             entity:
                 class: App\Entity\User
+                property: email
+        # used to reload student user from session
+        app_student_provider:
+            entity:
+                class: App\Entity\Student
                 property: email
 
     firewalls:
@@ -36,16 +43,39 @@ security:
                 delete_cookies:
                     PHPSESSID: { path: /, domain: ~ }
 
+        # Student firewall for /student routes
+        student:
+            pattern: ^/student
+            lazy: true
+            provider: app_student_provider
+            form_login:
+                login_path: student_login
+                check_path: student_login
+                default_target_path: student_dashboard
+                always_use_default_target_path: true
+                enable_csrf: true
+            logout:
+                path: student_logout
+                target: student_login
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: { path: /, domain: ~ }
+
         # Main firewall for public routes
         main:
             lazy: true
-            provider: app_user_provider
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/student/login, roles: PUBLIC_ACCESS }
+        - { path: ^/student/register, roles: PUBLIC_ACCESS }
+        - { path: ^/student/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/student/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/student/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/student, roles: ROLE_STUDENT }
 
 when@test:
     security:
@@ -64,4 +94,7 @@ when@test:
             # Test firewall to allow loginUser() in tests
             admin:
                 pattern: ^/admin
+                security: false
+            student:
+                pattern: ^/student
                 security: false

@@ -1,0 +1,397 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails de l'étudiant{% endblock %}
+
+{% block body %}
+<div class="page-wrapper">
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Admin</a></li>
+                                <li class="breadcrumb-item"><a href="{{ path('admin_student_index') }}">Étudiants</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">{{ student.fullName }}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <h2 class="page-title">
+                        <i class="ti ti-user me-2"></i>
+                        {{ student.fullName }}
+                    </h2>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_student_edit', {id: student.id}) }}" class="btn btn-primary">
+                            <i class="ti ti-edit me-2"></i>
+                            Modifier
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form method="post" action="{{ path('admin_student_toggle_active', {id: student.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ student.id) }}">
+                                        <button type="submit" class="dropdown-item">
+                                            {% if student.isActive %}
+                                                <i class="ti ti-user-off me-2"></i>
+                                                Désactiver le compte
+                                            {% else %}
+                                                <i class="ti ti-user-check me-2"></i>
+                                                Activer le compte
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                {% if not student.isEmailVerified %}
+                                <li>
+                                    <form method="post" action="{{ path('admin_student_verify_email', {id: student.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('verify_email' ~ student.id) }}">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="ti ti-mail-check me-2"></i>
+                                            Vérifier l'email manuellement
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" onclick="sendEmailVerification({{ student.id }})">
+                                        <i class="ti ti-mail-forward me-2"></i>
+                                        Envoyer lien de vérification
+                                    </button>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    <button type="button" class="dropdown-item" onclick="sendPasswordReset({{ student.id }})">
+                                        <i class="ti ti-key me-2"></i>
+                                        Envoyer lien réinitialisation
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" onclick="generatePassword({{ student.id }})">
+                                        <i class="ti ti-password me-2"></i>
+                                        Générer nouveau mot de passe
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards">
+                <!-- Profile Card -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="avatar avatar-xl mb-3">{{ student.initials }}</div>
+                            <h3 class="card-title mb-1">{{ student.fullName }}</h3>
+                            <p class="text-muted">{{ student.email }}</p>
+                            
+                            <div class="mt-3">
+                                {% if student.isActive %}
+                                    <span class="badge bg-success">Compte actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Compte inactif</span>
+                                {% endif %}
+                                
+                                {% if student.isEmailVerified %}
+                                    <span class="badge bg-success">Email vérifié</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Email non vérifié</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Statistiques rapides</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="h1 m-0">{{ student.createdAt|date('d/m/Y') }}</div>
+                                        <div class="text-muted">Inscription</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="h1 m-0">
+                                            {% if student.lastLoginAt %}
+                                                {{ student.lastLoginAt|date('d/m/Y') }}
+                                            {% else %}
+                                                Jamais
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-muted">Dernière connexion</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Details Card -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations personnelles</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Prénom</label>
+                                        <div class="form-control-plaintext">{{ student.firstName }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nom</label>
+                                        <div class="form-control-plaintext">{{ student.lastName }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <div class="form-control-plaintext">
+                                            {{ student.email }}
+                                            {% if student.isEmailVerified %}
+                                                <span class="badge bg-success ms-2">Vérifié</span>
+                                            {% else %}
+                                                <span class="badge bg-warning ms-2">Non vérifié</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Téléphone</label>
+                                        <div class="form-control-plaintext">{{ student.phone|default('Non renseigné') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Date de naissance</label>
+                                        <div class="form-control-plaintext">
+                                            {% if student.birthDate %}
+                                                {{ student.birthDate|date('d/m/Y') }}
+                                            {% else %}
+                                                Non renseignée
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Niveau d'études</label>
+                                        <div class="form-control-plaintext">{{ student.educationLevel|default('Non renseigné') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Profession</label>
+                                        <div class="form-control-plaintext">{{ student.profession|default('Non renseignée') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Entreprise</label>
+                                        <div class="form-control-plaintext">{{ student.company|default('Non renseignée') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Adresse</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if student.address or student.postalCode or student.city or student.country %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Adresse complète</label>
+                                            <div class="form-control-plaintext">
+                                                {% if student.address %}
+                                                    {{ student.address }}<br>
+                                                {% endif %}
+                                                {% if student.postalCode or student.city %}
+                                                    {{ student.postalCode }} {{ student.city }}<br>
+                                                {% endif %}
+                                                {% if student.country %}
+                                                    {{ student.country }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <i class="ti ti-map-pin"></i>
+                                    </div>
+                                    <p class="empty-title">Aucune adresse renseignée</p>
+                                    <p class="empty-subtitle text-muted">
+                                        L'étudiant n'a pas fourni d'informations d'adresse.
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Security Information -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations de sécurité</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Statut du compte</label>
+                                        <div class="form-control-plaintext">
+                                            {% if student.isActive %}
+                                                <span class="badge bg-success">Actif</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactif</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email vérifié</label>
+                                        <div class="form-control-plaintext">
+                                            {% if student.isEmailVerified %}
+                                                <span class="badge bg-success">Oui</span>
+                                                {% if student.emailVerifiedAt %}
+                                                    <div class="text-muted mt-1">
+                                                        Le {{ student.emailVerifiedAt|date('d/m/Y à H:i') }}
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning">Non</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Dernière connexion</label>
+                                        <div class="form-control-plaintext">
+                                            {% if student.lastLoginAt %}
+                                                {{ student.lastLoginAt|date('d/m/Y à H:i') }}
+                                            {% else %}
+                                                <span class="text-muted">Jamais connecté</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if student.passwordResetToken %}
+                                <div class="alert alert-info">
+                                    <i class="ti ti-info-circle me-2"></i>
+                                    <strong>Demande de réinitialisation de mot de passe en cours</strong><br>
+                                    Expire le {{ student.passwordResetTokenExpiresAt|date('d/m/Y à H:i') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendPasswordReset(studentId) {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/admin/students/${studentId}/reset-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `_token=${token}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email de réinitialisation envoyé avec succès.');
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'envoi de l\'email.');
+    });
+}
+
+function sendEmailVerification(studentId) {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/admin/students/${studentId}/verify-email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `_token=${token}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email de vérification envoyé avec succès.');
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'envoi de l\'email.');
+    });
+}
+
+function generatePassword(studentId) {
+    if (!confirm('Êtes-vous sûr de vouloir générer un nouveau mot de passe pour cet étudiant ?')) {
+        return;
+    }
+    
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // This function was removed as we're using the reset-password endpoint instead
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `_token=${token}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Nouveau mot de passe généré et envoyé par email.');
+            // Optionally refresh the page to update security info
+            window.location.reload();
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la génération du mot de passe.');
+    });
+}
+</script>
+{% endblock %}

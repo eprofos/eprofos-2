@@ -1,0 +1,195 @@
+{% extends 'student/base.html.twig' %}
+
+{% block title %}{{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Mes Formations
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos inscriptions et explorez de nouvelles formations
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-enrolled" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="M12 3v9l4 2"/>
+                                    </svg>
+                                    En cours
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-available" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                        <circle cx="12" cy="14" r="2"/>
+                                        <path d="m14 4l0 4l-6 0l0 -4"/>
+                                    </svg>
+                                    Disponibles
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-completed" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="m9 12l2 2l4 -4"/>
+                                    </svg>
+                                    Terminées
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- Enrolled Courses Tab -->
+                            <div class="tab-pane active show" id="tabs-enrolled" role="tabpanel">
+                                <h4>Formations en cours</h4>
+                                {% if enrolled_courses is empty %}
+                                    <div class="empty">
+                                        <div class="empty-img">
+                                            <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune formation">
+                                        </div>
+                                        <p class="empty-title">Aucune formation en cours</p>
+                                        <p class="empty-subtitle text-muted">
+                                            Explorez les formations disponibles et inscrivez-vous pour commencer votre apprentissage.
+                                        </p>
+                                        <div class="empty-action">
+                                            <a href="#tabs-available" class="btn btn-primary" data-bs-toggle="tab">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                                </svg>
+                                                Voir les formations disponibles
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="row g-3">
+                                        {% for course in enrolled_courses %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h3 class="card-title">{{ course.title }}</h3>
+                                                        <p class="text-muted">{{ course.description|slice(0, 100) }}...</p>
+                                                        <div class="progress mb-3">
+                                                            <div class="progress-bar" style="width: {{ course.progress ?? 0 }}%" role="progressbar"></div>
+                                                        </div>
+                                                        <div class="btn-list">
+                                                            <a href="#" class="btn btn-primary">Continuer</a>
+                                                            <a href="#" class="btn">Détails</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Available Courses Tab -->
+                            <div class="tab-pane" id="tabs-available" role="tabpanel">
+                                <h4>Formations disponibles</h4>
+                                {% if available_courses is empty %}
+                                    <div class="empty">
+                                        <div class="empty-img">
+                                            <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune formation">
+                                        </div>
+                                        <p class="empty-title">Aucune formation disponible pour le moment</p>
+                                        <p class="empty-subtitle text-muted">
+                                            De nouvelles formations seront bientôt disponibles. Revenez régulièrement pour découvrir de nouveaux contenus.
+                                        </p>
+                                    </div>
+                                {% else %}
+                                    <div class="row g-3">
+                                        {% for course in available_courses %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h3 class="card-title">{{ course.title }}</h3>
+                                                        <p class="text-muted">{{ course.description|slice(0, 100) }}...</p>
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <div class="me-3">
+                                                                <small class="text-muted">Durée:</small>
+                                                                <strong>{{ course.duration ?? 'Non définie' }}</strong>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted">Niveau:</small>
+                                                                <strong>{{ course.level ?? 'Débutant' }}</strong>
+                                                            </div>
+                                                        </div>
+                                                        <div class="btn-list">
+                                                            <a href="#" class="btn btn-success">S'inscrire</a>
+                                                            <a href="#" class="btn">Détails</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Completed Courses Tab -->
+                            <div class="tab-pane" id="tabs-completed" role="tabpanel">
+                                <h4>Formations terminées</h4>
+                                {% if completed_courses is empty %}
+                                    <div class="empty">
+                                        <div class="empty-img">
+                                            <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucune formation">
+                                        </div>
+                                        <p class="empty-title">Aucune formation terminée</p>
+                                        <p class="empty-subtitle text-muted">
+                                            Vos formations terminées et vos certificats obtenus apparaîtront ici.
+                                        </p>
+                                    </div>
+                                {% else %}
+                                    <div class="row g-3">
+                                        {% for course in completed_courses %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h3 class="card-title">{{ course.title }}</h3>
+                                                        <p class="text-muted">{{ course.description|slice(0, 100) }}...</p>
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="9"/>
+                                                                <path d="m9 12l2 2l4 -4"/>
+                                                            </svg>
+                                                            <span class="text-success">Terminé le {{ course.completedAt|date('d/m/Y') }}</span>
+                                                        </div>
+                                                        <div class="btn-list">
+                                                            <a href="#" class="btn btn-outline-primary">Certificat</a>
+                                                            <a href="#" class="btn">Revoir</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - EPROFOS Étudiant</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Connexion à la plateforme d'apprentissage EPROFOS pour étudiants">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    
+    {{ importmap('private') }}
+</head>
+<body class="d-flex flex-column">    
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="text-center mb-4">
+                <a href="{{ path('app_home') }}" class="navbar-brand navbar-brand-autodark">
+                    <img src="{{ asset('images/logo.svg') }}" height="36" alt="EPROFOS" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span style="display: none; font-size: 1.5rem; font-weight: bold;">EPROFOS</span>
+                </a>
+            </div>
+            
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Connexion Étudiant</h2>
+                    
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% for flash_error in app.flashes('error') %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    {{ flash_error }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {% for flash_success in app.flashes('success') %}
+                        <div class="alert alert-success" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="m9 12 2 2 4 -4"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    {{ flash_success }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <form method="post" action="{{ path('student_login') }}">
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="_username" value="{{ last_username }}" required autofocus>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="password">
+                                Mot de passe
+                                <span class="form-label-description">
+                                    <a href="{{ path('student_forgot_password') }}">Mot de passe oublié ?</a>
+                                </span>
+                            </label>
+                            <input type="password" class="form-control" id="password" name="_password" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-check">
+                                <input type="checkbox" class="form-check-input" name="_remember_me"/>
+                                <span class="form-check-label">Se souvenir de moi</span>
+                            </label>
+                        </div>
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center text-muted mt-3">
+                        Pas encore de compte ? <a href="{{ path('student_register') }}" tabindex="-1">Créer un compte</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Support</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Aide</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Conditions d'utilisation</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            © {{ 'now'|date('Y') }} 
+                            <a href="{{ path('app_home') }}" class="link-secondary">EPROFOS</a>
+                            Tous droits réservés.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

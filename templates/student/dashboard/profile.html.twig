@@ -1,0 +1,168 @@
+{% extends 'student/base.html.twig' %}
+
+{% block title %}{{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Mon Profil
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos informations personnelles et préférences
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <span class="avatar avatar-xl mb-3" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                            {{ student.initials }}
+                        </span>
+                        <h3 class="m-0 mb-1">{{ student.fullName }}</h3>
+                        <div class="text-muted">{{ student.email }}</div>
+                        {% if not student.emailVerified %}
+                            <div class="mt-3">
+                                <span class="badge bg-warning">Email non vérifié</span>
+                            </div>
+                        {% else %}
+                            <div class="mt-3">
+                                <span class="badge bg-success">Email vérifié</span>
+                            </div>
+                        {% endif %}
+                        <div class="mt-3">
+                            <button class="btn btn-primary">
+                                Modifier la photo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations personnelles</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" value="{{ student.firstName }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom</label>
+                                    <input type="text" class="form-control" value="{{ student.lastName }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ student.email }}" readonly>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="text" class="form-control" value="{{ student.phone ?? 'Non renseigné' }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Date de naissance</label>
+                                    <input type="text" class="form-control" value="{{ student.birthDate ? student.birthDate|date('d/m/Y') : 'Non renseigné' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Adresse complète</label>
+                            <input type="text" class="form-control" value="{{ student.completeAddress ?: 'Non renseigné' }}" readonly>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Niveau d'études</label>
+                                    <input type="text" class="form-control" value="{{ student.educationLevel ?? 'Non renseigné' }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Profession</label>
+                                    <input type="text" class="form-control" value="{{ student.profession ?? 'Non renseigné' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Entreprise</label>
+                            <input type="text" class="form-control" value="{{ student.company ?? 'Non renseigné' }}" readonly>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent mt-auto">
+                            <div class="btn-list justify-content-end">
+                                <button class="btn btn-primary">
+                                    Modifier mes informations
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row row-cards mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations sur le compte</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Compte créé le</label>
+                                    <input type="text" class="form-control" value="{{ student.createdAt|date('d/m/Y à H:i') }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Dernière connexion</label>
+                                    <input type="text" class="form-control" value="{{ student.lastLoginAt ? student.lastLoginAt|date('d/m/Y à H:i') : 'Jamais' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Statut du compte</label>
+                                    <input type="text" class="form-control" value="{{ student.isActive ? 'Actif' : 'Inactif' }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Vérification email</label>
+                                    <input type="text" class="form-control" value="{{ student.emailVerified ? 'Vérifié le ' ~ student.emailVerifiedAt|date('d/m/Y') : 'Non vérifié' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
