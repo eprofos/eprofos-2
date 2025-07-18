@@ -226,7 +226,11 @@
             {% endif %}
             <tr>
                 <th>Dernière modification</th>
-                <td>{{ document.updatedAt|date('d/m/Y à H:i') }}</td>
+                    <td>
+                        {% if document.updatedAt != document.publishedAt %}
+                            {{ document.updatedAt|date('d/m/Y à H:i') }}
+                        {% endif %}
+                    </td>
             </tr>
             <tr>
                 <th>Document généré le</th>

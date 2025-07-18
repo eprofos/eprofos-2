@@ -21,3 +21,5 @@
 
 mcp_settings.json
 .vscode/mcp.json
+
+/public/uploads/legal_documents/pdf
