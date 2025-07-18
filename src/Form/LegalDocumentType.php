@@ -6,7 +6,6 @@ use App\Entity\LegalDocument;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -22,7 +21,7 @@ class LegalDocumentType extends AbstractType
         $builder
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de document',
-                'choices' => LegalDocument::TYPES,
+                'choices' => array_flip(LegalDocument::TYPES),
                 'attr' => [
                     'class' => 'form-select'
                 ],
@@ -52,6 +51,14 @@ class LegalDocumentType extends AbstractType
                 ],
                 'help' => 'Numéro de version du document'
             ])
+            ->add('status', ChoiceType::class, [
+                'label' => 'Statut',
+                'choices' => array_flip(LegalDocument::STATUSES),
+                'attr' => [
+                    'class' => 'form-select'
+                ],
+                'help' => 'Statut du document (brouillon, publié, archivé)'
+            ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Document actif',
                 'required' => false,
@@ -59,15 +66,6 @@ class LegalDocumentType extends AbstractType
                     'class' => 'form-check-input'
                 ],
                 'help' => 'Les documents inactifs ne sont pas visibles publiquement'
-            ])
-            ->add('publishedAt', DateTimeType::class, [
-                'label' => 'Date de publication',
-                'required' => false,
-                'widget' => 'single_text',
-                'attr' => [
-                    'class' => 'form-control'
-                ],
-                'help' => 'Laissez vide pour enregistrer en brouillon'
             ]);
     }
 

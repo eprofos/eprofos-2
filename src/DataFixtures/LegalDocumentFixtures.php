@@ -70,6 +70,28 @@ class LegalDocumentFixtures extends Fixture
                 'content' => $this->getInternalRegulationContent() . "\n\n<!-- Version en cours de révision -->",
                 'published' => false,
             ],
+            // Archived documents (old versions)
+            [
+                'type' => LegalDocument::TYPE_INTERNAL_REGULATION,
+                'title' => 'Règlement intérieur des stagiaires EPROFOS - Version 2024',
+                'version' => '2.0',
+                'content' => $this->getInternalRegulationContent() . "\n\n<!-- Version archivée -->",
+                'archived' => true,
+            ],
+            [
+                'type' => LegalDocument::TYPE_STUDENT_HANDBOOK,
+                'title' => 'Livret d\'accueil stagiaire 2024',
+                'version' => '1.2',
+                'content' => $this->getStudentHandbookContent() . "\n\n<!-- Version archivée -->",
+                'archived' => true,
+            ],
+            [
+                'type' => LegalDocument::TYPE_TRAINING_TERMS,
+                'title' => 'Conditions générales de formation - Version 2024',
+                'version' => '2.1',
+                'content' => $this->getTrainingTermsContent() . "\n\n<!-- Version archivée -->",
+                'archived' => true,
+            ],
         ];
 
         foreach ($documents as $docData) {
@@ -80,14 +102,21 @@ class LegalDocumentFixtures extends Fixture
                      ->setContent($docData['content'])
                      ->setIsActive(true);
 
-            if ($docData['published']) {
-                $document->publish();
+            // Set status based on document type
+            if (isset($docData['archived']) && $docData['archived']) {
+                $document->setStatus(LegalDocument::STATUS_ARCHIVED);
+                $document->setPublishedAt(new \DateTime('-' . rand(60, 365) . ' days'));
+            } elseif (isset($docData['published']) && $docData['published']) {
+                $document->setStatus(LegalDocument::STATUS_PUBLISHED);
+                $document->setPublishedAt(new \DateTime('-' . rand(1, 30) . ' days'));
+            } else {
+                $document->setStatus(LegalDocument::STATUS_DRAFT);
             }
 
             // Set metadata
             $metadata = [
                 'created_by' => 'system',
-                'approval_status' => $docData['published'] ? 'approved' : 'pending',
+                'approval_status' => $document->getStatus() === LegalDocument::STATUS_PUBLISHED ? 'approved' : 'pending',
                 'compliance_level' => 'qualiopi',
             ];
             $document->setMetadata($metadata);

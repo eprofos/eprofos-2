@@ -31,10 +31,12 @@ class LegalDocumentRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('ld')
             ->where('ld.type = :type')
+            ->andWhere('ld.status = :status')
             ->andWhere('ld.isActive = :active')
             ->andWhere('ld.publishedAt IS NOT NULL')
             ->andWhere('ld.publishedAt <= :now')
             ->setParameter('type', $type)
+            ->setParameter('status', LegalDocument::STATUS_PUBLISHED)
             ->setParameter('active', true)
             ->setParameter('now', new \DateTime())
             ->orderBy('ld.version', 'DESC')
@@ -60,9 +62,11 @@ class LegalDocumentRepository extends ServiceEntityRepository
     public function findAllPublished(): array
     {
         return $this->createQueryBuilder('ld')
-            ->where('ld.isActive = :active')
+            ->where('ld.status = :status')
+            ->andWhere('ld.isActive = :active')
             ->andWhere('ld.publishedAt IS NOT NULL')
             ->andWhere('ld.publishedAt <= :now')
+            ->setParameter('status', LegalDocument::STATUS_PUBLISHED)
             ->setParameter('active', true)
             ->setParameter('now', new \DateTime())
             ->orderBy('ld.type', 'ASC')
@@ -95,15 +99,16 @@ class LegalDocumentRepository extends ServiceEntityRepository
         if (!empty($filters['status'])) {
             switch ($filters['status']) {
                 case 'published':
-                    $qb->andWhere('ld.isActive = :active')
-                       ->andWhere('ld.publishedAt IS NOT NULL')
-                       ->andWhere('ld.publishedAt <= :now')
-                       ->setParameter('active', true)
-                       ->setParameter('now', new \DateTime());
+                    $qb->andWhere('ld.status = :status')
+                       ->setParameter('status', LegalDocument::STATUS_PUBLISHED);
                     break;
                 case 'draft':
-                    $qb->andWhere('ld.publishedAt IS NULL OR ld.publishedAt > :now')
-                       ->setParameter('now', new \DateTime());
+                    $qb->andWhere('ld.status = :status')
+                       ->setParameter('status', LegalDocument::STATUS_DRAFT);
+                    break;
+                case 'archived':
+                    $qb->andWhere('ld.status = :status')
+                       ->setParameter('status', LegalDocument::STATUS_ARCHIVED);
                     break;
                 case 'inactive':
                     $qb->andWhere('ld.isActive = :active')
@@ -158,18 +163,22 @@ class LegalDocumentRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('ld');
         $publishedDocuments = $qb->select('COUNT(ld.id)')
-            ->where('ld.isActive = :active')
-            ->andWhere('ld.publishedAt IS NOT NULL')
-            ->andWhere('ld.publishedAt <= :now')
-            ->setParameter('active', true)
-            ->setParameter('now', new \DateTime())
+            ->where('ld.status = :status')
+            ->setParameter('status', LegalDocument::STATUS_PUBLISHED)
             ->getQuery()
             ->getSingleScalarResult();
 
         $qb = $this->createQueryBuilder('ld');
         $draftDocuments = $qb->select('COUNT(ld.id)')
-            ->where('ld.publishedAt IS NULL OR ld.publishedAt > :now')
-            ->setParameter('now', new \DateTime())
+            ->where('ld.status = :status')
+            ->setParameter('status', LegalDocument::STATUS_DRAFT)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $qb = $this->createQueryBuilder('ld');
+        $archivedDocuments = $qb->select('COUNT(ld.id)')
+            ->where('ld.status = :status')
+            ->setParameter('status', LegalDocument::STATUS_ARCHIVED)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -177,6 +186,7 @@ class LegalDocumentRepository extends ServiceEntityRepository
             'total' => $totalDocuments,
             'published' => $publishedDocuments,
             'drafts' => $draftDocuments,
+            'archived' => $archivedDocuments,
             'types' => $this->countByTypes(),
         ];
     }
@@ -197,21 +207,27 @@ class LegalDocumentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('ld');
         $publishedDocuments = $qb->select('COUNT(ld.id)')
             ->where('ld.type = :type')
-            ->andWhere('ld.isActive = :active')
-            ->andWhere('ld.publishedAt IS NOT NULL')
-            ->andWhere('ld.publishedAt <= :now')
+            ->andWhere('ld.status = :status')
             ->setParameter('type', $type)
-            ->setParameter('active', true)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('status', LegalDocument::STATUS_PUBLISHED)
             ->getQuery()
             ->getSingleScalarResult();
 
         $qb = $this->createQueryBuilder('ld');
         $draftDocuments = $qb->select('COUNT(ld.id)')
             ->where('ld.type = :type')
-            ->andWhere('ld.publishedAt IS NULL OR ld.publishedAt > :now')
+            ->andWhere('ld.status = :status')
             ->setParameter('type', $type)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('status', LegalDocument::STATUS_DRAFT)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $qb = $this->createQueryBuilder('ld');
+        $archivedDocuments = $qb->select('COUNT(ld.id)')
+            ->where('ld.type = :type')
+            ->andWhere('ld.status = :status')
+            ->setParameter('type', $type)
+            ->setParameter('status', LegalDocument::STATUS_ARCHIVED)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -223,8 +239,64 @@ class LegalDocumentRepository extends ServiceEntityRepository
             'total' => $totalDocuments,
             'published' => $publishedDocuments,
             'drafts' => $draftDocuments,
+            'archived' => $archivedDocuments,
             'latest_published' => $latestPublished,
         ];
+    }
+
+    /**
+     * Archive all documents of a specific type except the provided one
+     * 
+     * This ensures only one document of each type can be published at a time
+     */
+    public function archiveOtherDocumentsOfType(string $type, ?int $excludeId = null): int
+    {
+        $qb = $this->createQueryBuilder('ld')
+            ->update()
+            ->set('ld.status', ':archivedStatus')
+            ->where('ld.type = :type')
+            ->andWhere('ld.status = :publishedStatus')
+            ->setParameter('type', $type)
+            ->setParameter('publishedStatus', LegalDocument::STATUS_PUBLISHED)
+            ->setParameter('archivedStatus', LegalDocument::STATUS_ARCHIVED);
+
+        if ($excludeId !== null) {
+            $qb->andWhere('ld.id != :excludeId')
+               ->setParameter('excludeId', $excludeId);
+        }
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
+     * @deprecated Use archiveOtherDocumentsOfType instead
+     */
+    public function unpublishOtherDocumentsOfType(string $type, ?int $excludeId = null): int
+    {
+        return $this->archiveOtherDocumentsOfType($type, $excludeId);
+    }
+
+    /**
+     * Find all published documents of a specific type except the provided one
+     * 
+     * @return LegalDocument[]
+     */
+    public function findOtherPublishedDocumentsOfType(string $type, ?int $excludeId = null): array
+    {
+        $qb = $this->createQueryBuilder('ld')
+            ->where('ld.type = :type')
+            ->andWhere('ld.status = :status')
+            ->setParameter('type', $type)
+            ->setParameter('status', LegalDocument::STATUS_PUBLISHED);
+
+        if ($excludeId !== null) {
+            $qb->andWhere('ld.id != :excludeId')
+               ->setParameter('excludeId', $excludeId);
+        }
+
+        return $qb->orderBy('ld.publishedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

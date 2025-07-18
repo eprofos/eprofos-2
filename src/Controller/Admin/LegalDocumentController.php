@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\LegalDocument;
 use App\Form\LegalDocumentType;
 use App\Repository\LegalDocumentRepository;
+use App\Service\LegalDocumentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +25,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class LegalDocumentController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private LegalDocumentService $legalDocumentService
     ) {
     }
 
@@ -173,8 +175,16 @@ class LegalDocumentController extends AbstractController
             'user' => $this->getUser()?->getUserIdentifier()
         ]);
 
+        // Get publication status for this document type
+        $typeStatus = $this->legalDocumentService->getTypePublicationStatus($document->getType());
+        
+        // Check if document can be published
+        $publishValidation = $this->legalDocumentService->canPublish($document);
+
         return $this->render('admin/legal_document/show.html.twig', [
             'document' => $document,
+            'type_status' => $typeStatus,
+            'publish_validation' => $publishValidation,
             'page_title' => 'Document: ' . $document->getTitle(),
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
@@ -202,16 +212,39 @@ class LegalDocumentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($document);
-            $entityManager->flush();
+            // Check if document is being created as published
+            if ($document->getStatus() === LegalDocument::STATUS_PUBLISHED) {
+                // Handle automatic archiving of other documents of the same type
+                $result = $this->legalDocumentService->publishDocument($document);
+                
+                if ($result['success']) {
+                    $archivedCount = $result['archived_count'];
+                    if ($archivedCount > 0) {
+                        $this->addFlash('success', sprintf(
+                            'Le document légal a été créé et publié avec succès. %d document(s) précédent(s) ont été archivé(s).',
+                            $archivedCount
+                        ));
+                    } else {
+                        $this->addFlash('success', 'Le document légal a été créé et publié avec succès.');
+                    }
+                } else {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la publication : ' . $result['error']);
+                    return $this->redirectToRoute('admin_legal_document_new');
+                }
+            } else {
+                // Normal save without publish logic
+                $entityManager->persist($document);
+                $entityManager->flush();
+                
+                $this->logger->info('Legal document created', [
+                    'document_id' => $document->getId(),
+                    'type' => $document->getType(),
+                    'status' => $document->getStatus(),
+                    'user' => $this->getUser()?->getUserIdentifier()
+                ]);
 
-            $this->logger->info('Legal document created', [
-                'document_id' => $document->getId(),
-                'type' => $document->getType(),
-                'user' => $this->getUser()?->getUserIdentifier()
-            ]);
-
-            $this->addFlash('success', 'Le document légal a été créé avec succès.');
+                $this->addFlash('success', 'Le document légal a été créé avec succès.');
+            }
 
             return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
         }
@@ -234,19 +267,46 @@ class LegalDocumentController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, LegalDocument $document, EntityManagerInterface $entityManager): Response
     {
+        $originalStatus = $document->getStatus();
+        
         $form = $this->createForm(LegalDocumentType::class, $document);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $currentStatus = $document->getStatus();
+            
+            // Check if document transitioned to published status
+            if ($originalStatus !== LegalDocument::STATUS_PUBLISHED && $currentStatus === LegalDocument::STATUS_PUBLISHED) {
+                // Handle automatic archiving of other documents of the same type
+                $result = $this->legalDocumentService->publishDocument($document);
+                
+                if ($result['success']) {
+                    $archivedCount = $result['archived_count'];
+                    if ($archivedCount > 0) {
+                        $this->addFlash('success', sprintf(
+                            'Le document légal a été modifié et publié avec succès. %d document(s) précédent(s) ont été archivé(s).',
+                            $archivedCount
+                        ));
+                    } else {
+                        $this->addFlash('success', 'Le document légal a été modifié et publié avec succès.');
+                    }
+                } else {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la publication : ' . $result['error']);
+                    return $this->redirectToRoute('admin_legal_document_edit', ['id' => $document->getId()]);
+                }
+            } else {
+                // Normal save without publish logic
+                $entityManager->flush();
+                
+                $this->logger->info('Legal document updated', [
+                    'document_id' => $document->getId(),
+                    'type' => $document->getType(),
+                    'status' => $document->getStatus(),
+                    'user' => $this->getUser()?->getUserIdentifier()
+                ]);
 
-            $this->logger->info('Legal document updated', [
-                'document_id' => $document->getId(),
-                'type' => $document->getType(),
-                'user' => $this->getUser()?->getUserIdentifier()
-            ]);
-
-            $this->addFlash('success', 'Le document légal a été modifié avec succès.');
+                $this->addFlash('success', 'Le document légal a été modifié avec succès.');
+            }
 
             return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);
         }
@@ -290,28 +350,44 @@ class LegalDocumentController extends AbstractController
      * Publish/unpublish a legal document
      */
     #[Route('/{id}/toggle-publish', name: 'toggle_publish', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function togglePublish(Request $request, LegalDocument $document, EntityManagerInterface $entityManager): Response
+    public function togglePublish(Request $request, LegalDocument $document): Response
     {
         if ($this->isCsrfTokenValid('publish'.$document->getId(), $request->getPayload()->get('_token'))) {
-            if ($document->isPublished()) {
-                $document->unpublish();
-                $action = 'unpublished';
-                $message = 'Le document a été dépublié avec succès.';
+            
+            if ($document->getStatus() === LegalDocument::STATUS_PUBLISHED) {
+                // Unpublish the document (set to draft)
+                $result = $this->legalDocumentService->unpublishDocument($document);
+                
+                if ($result['success']) {
+                    $this->addFlash('success', 'Le document a été dépublié avec succès.');
+                } else {
+                    $this->addFlash('error', 'Erreur lors de la dépublication : ' . $result['error']);
+                }
             } else {
-                $document->publish();
-                $action = 'published';
-                $message = 'Le document a été publié avec succès.';
+                // Check if document can be published
+                $validation = $this->legalDocumentService->canPublish($document);
+                
+                if (!$validation['can_publish']) {
+                    $this->addFlash('error', 'Impossible de publier le document : ' . implode(', ', $validation['issues']));
+                } else {
+                    // Publish the document (this will automatically archive other documents of the same type)
+                    $result = $this->legalDocumentService->publishDocument($document);
+                    
+                    if ($result['success']) {
+                        $archivedCount = $result['archived_count'];
+                        if ($archivedCount > 0) {
+                            $this->addFlash('success', sprintf(
+                                'Le document a été publié avec succès. %d document(s) précédent(s) ont été archivé(s).',
+                                $archivedCount
+                            ));
+                        } else {
+                            $this->addFlash('success', 'Le document a été publié avec succès.');
+                        }
+                    } else {
+                        $this->addFlash('error', 'Erreur lors de la publication : ' . $result['error']);
+                    }
+                }
             }
-
-            $entityManager->flush();
-
-            $this->logger->info('Legal document publish status changed', [
-                'document_id' => $document->getId(),
-                'action' => $action,
-                'user' => $this->getUser()?->getUserIdentifier()
-            ]);
-
-            $this->addFlash('success', $message);
         }
 
         return $this->redirectToRoute('admin_legal_document_show', ['id' => $document->getId()]);

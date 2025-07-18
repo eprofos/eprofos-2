@@ -34,6 +34,16 @@ class LegalDocument
         self::TYPE_ACCESSIBILITY_FAQ => 'FAQ Accessibilité',
     ];
 
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PUBLISHED = 'published';
+    public const STATUS_ARCHIVED = 'archived';
+
+    public const STATUSES = [
+        self::STATUS_DRAFT => 'Brouillon',
+        self::STATUS_PUBLISHED => 'Publié',
+        self::STATUS_ARCHIVED => 'Archivé',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -41,14 +51,10 @@ class LegalDocument
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Le type de document est obligatoire.')]
-    #[Assert\Choice(choices: [
-        self::TYPE_INTERNAL_REGULATION,
-        self::TYPE_STUDENT_HANDBOOK,
-        self::TYPE_TRAINING_TERMS,
-        self::TYPE_ACCESSIBILITY_POLICY,
-        self::TYPE_ACCESSIBILITY_PROCEDURES,
-        self::TYPE_ACCESSIBILITY_FAQ,
-    ], message: 'Type de document invalide.')]
+    #[Assert\Choice(
+        callback: 'getValidTypes',
+        message: 'Type de document invalide.'
+    )]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
@@ -68,6 +74,14 @@ class LegalDocument
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'La version est obligatoire.')]
     private ?string $version = null;
+
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    #[Assert\Choice(
+        callback: 'getValidStatuses',
+        message: 'Statut invalide.'
+    )]
+    private string $status = self::STATUS_DRAFT;
 
     #[ORM\Column]
     private bool $isActive = true;
@@ -140,6 +154,17 @@ class LegalDocument
         return $this;
     }
 
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function isActive(): bool
     {
         return $this->isActive;
@@ -204,11 +229,38 @@ class LegalDocument
     }
 
     /**
+     * Get the status label for display
+     */
+    public function getStatusLabel(): string
+    {
+        return self::STATUSES[$this->status] ?? $this->status;
+    }
+
+    /**
      * Check if document is published
      */
     public function isPublished(): bool
     {
-        return $this->isActive && $this->publishedAt !== null && $this->publishedAt <= new \DateTime();
+        return $this->status === self::STATUS_PUBLISHED 
+            && $this->isActive 
+            && $this->publishedAt !== null 
+            && $this->publishedAt <= new \DateTime();
+    }
+
+    /**
+     * Check if document is draft
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === self::STATUS_DRAFT;
+    }
+
+    /**
+     * Check if document is archived
+     */
+    public function isArchived(): bool
+    {
+        return $this->status === self::STATUS_ARCHIVED;
     }
 
     /**
@@ -216,16 +268,27 @@ class LegalDocument
      */
     public function publish(): static
     {
+        $this->status = self::STATUS_PUBLISHED;
         $this->publishedAt = new \DateTime();
         $this->isActive = true;
         return $this;
     }
 
     /**
-     * Unpublish the document
+     * Archive the document
+     */
+    public function archive(): static
+    {
+        $this->status = self::STATUS_ARCHIVED;
+        return $this;
+    }
+
+    /**
+     * Unpublish the document (set to draft)
      */
     public function unpublish(): static
     {
+        $this->status = self::STATUS_DRAFT;
         $this->publishedAt = null;
         return $this;
     }
@@ -250,5 +313,13 @@ class LegalDocument
     public static function getValidTypes(): array
     {
         return array_keys(self::TYPES);
+    }
+
+    /**
+     * Get all valid document statuses
+     */
+    public static function getValidStatuses(): array
+    {
+        return array_keys(self::STATUSES);
     }
 }

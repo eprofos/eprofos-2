@@ -52,6 +52,7 @@
                                             <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type) }}">Tous</a>
                                             <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type, {status: 'published'}) }}">Publiés</a>
                                             <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type, {status: 'draft'}) }}">Brouillons</a>
+                                            <a class="dropdown-item" href="{{ path('admin_legal_document_' ~ type, {status: 'archived'}) }}">Archivés</a>
                                         </div>
                                     </div>
                                 </div>
@@ -83,6 +84,19 @@
                                 </div>
                             </div>
                             <div class="h1 mb-3 text-warning">{{ type_statistics.drafts }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Archivés</div>
+                                <div class="ms-auto lh-1">
+                                    <span class="badge bg-secondary">Archivés</span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3 text-secondary">{{ type_statistics.archived }}</div>
                         </div>
                     </div>
                 </div>
@@ -131,6 +145,7 @@
                                         <option value="">Tous les statuts</option>
                                         <option value="published" {{ filters.status == 'published' ? 'selected' : '' }}>Publiés</option>
                                         <option value="draft" {{ filters.status == 'draft' ? 'selected' : '' }}>Brouillons</option>
+                                        <option value="archived" {{ filters.status == 'archived' ? 'selected' : '' }}>Archivés</option>
                                         <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inactifs</option>
                                     </select>
                                 </div>
@@ -188,10 +203,12 @@
                                                 <span class="badge bg-blue">{{ document.version }}</span>
                                             </td>
                                             <td>
-                                                {% if document.isPublished %}
+                                                {% if document.status == 'published' %}
                                                     <span class="badge bg-success">Publié</span>
-                                                {% else %}
+                                                {% elseif document.status == 'draft' %}
                                                     <span class="badge bg-warning">Brouillon</span>
+                                                {% elseif document.status == 'archived' %}
+                                                    <span class="badge bg-secondary">Archivé</span>
                                                 {% endif %}
                                                 {% if not document.isActive %}
                                                     <span class="badge bg-danger ms-1">Inactif</span>
