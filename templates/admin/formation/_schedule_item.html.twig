@@ -1,0 +1,123 @@
+{% set isSplit = scheduleService.isSplitItem(item) %}
+{% set isContinuation = scheduleService.isContinuationSegment(item) %}
+{% set originalDuration = scheduleService.getOriginalDuration(item) %}
+
+<div class="d-flex align-items-center mb-3 schedule-item {{ scheduleService.getContinuationClass(item) }}">
+    <div class="me-3">
+        <span class="avatar avatar-sm {{ scheduleService.getItemTypeClass(item.type) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                {% if item.type == 'module' %}
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M19 4v16l-12 -7l12 -9z"/>
+                {% elseif item.type == 'chapter' %}
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                {% else %}
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M7 4v16l13 -8z"/>
+                {% endif %}
+            </svg>
+        </span>
+    </div>
+    <div class="flex-fill">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-fill">
+                <h5 class="mb-1">
+                    {{ scheduleService.getDisplayTitle(item) }}
+                    {% if isSplit %}
+                        <small class="ms-2">
+                            {% if isContinuation %}
+                                <span class="badge badge-continuation">Suite</span>
+                            {% else %}
+                                <span class="badge badge-segment">{{ scheduleService.getSegmentInfo(item) }}</span>
+                            {% endif %}
+                        </small>
+                    {% endif %}
+                </h5>
+                {% if item.description %}
+                    <p class="text-muted mb-1 small">{{ item.description|length > 120 ? item.description|slice(0, 120) ~ '...' : item.description }}</p>
+                {% endif %}
+                <div class="d-flex align-items-center gap-1 mb-2">
+                    <span class="badge {{ scheduleService.getItemTypeClass(item.type) }} text-white">{{ scheduleService.getItemTypeLabel(item.type) }}</span>
+                    {% if item.type == 'course' and item.courseType %}
+                        <span class="badge bg-secondary">{{ item.courseType }}</span>
+                    {% endif %}
+                    {% if item.moduleTitle and item.type != 'module' %}
+                        <span class="text-muted small">{{ item.moduleTitle }}</span>
+                    {% endif %}
+                    {% if item.chapterTitle and item.type == 'course' %}
+                        <span class="text-muted small"> › {{ item.chapterTitle }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-end ms-3">
+                <div class="h4 mb-0 text-primary">{{ scheduleService.formatDuration(item.durationMinutes) }}</div>
+                {% if isSplit %}
+                    <small class="text-muted">
+                        Total: {{ scheduleService.formatDuration(originalDuration) }}
+                        <br>
+                        <span class="segment-info">{{ scheduleService.getSegmentCompletionPercentage(item) }}% de l'élément</span>
+                    </small>
+                {% endif %}
+                {% if item.type == 'course' %}
+                    {% set totalEvaluations = (item.exerciseCount|default(0)) + (item.qcmCount|default(0)) %}
+                    {% if totalEvaluations > 0 %}
+                        <div class="text-muted small mt-1">
+                            {% if item.exerciseCount > 0 %}
+                                <span class="badge bg-warning text-dark">{{ item.exerciseCount }} ex.</span>
+                            {% endif %}
+                            {% if item.qcmCount > 0 %}
+                                <span class="badge bg-info">{{ item.qcmCount }} QCM</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if isSplit %}
+            <div class="segment-progress mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-muted">Progression de l'élément</small>
+                    <small class="text-primary fw-bold">{{ scheduleService.getSegmentCompletionPercentage(item) }}%</small>
+                </div>
+                <div class="progress progress-sm">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                         style="width: {{ scheduleService.getSegmentCompletionPercentage(item) }}%"
+                         aria-valuenow="{{ scheduleService.getSegmentCompletionPercentage(item) }}" 
+                         aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Learning objectives for modules and chapters -->
+        {% if item.learningObjectives and (item.type == 'module' or item.type == 'chapter') and item.learningObjectives|length > 0 %}
+            <div class="mt-2">
+                <details>
+                    <summary class="text-muted small cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 7l6 0"/>
+                            <path d="M9 12l6 0"/>
+                            <path d="M9 17l6 0"/>
+                            <path d="M5 7l0 .01"/>
+                            <path d="M5 12l0 .01"/>
+                            <path d="M5 17l0 .01"/>
+                        </svg>
+                        Objectifs pédagogiques ({{ item.learningObjectives|length }})
+                    </summary>
+                    <ul class="small text-muted mt-1 mb-0 ps-3">
+                        {% for objective in item.learningObjectives|slice(0, 5) %}
+                            <li>{{ objective }}</li>
+                        {% endfor %}
+                        {% if item.learningObjectives|length > 5 %}
+                            <li class="text-info">... et {{ item.learningObjectives|length - 5 }} autres</li>
+                        {% endif %}
+                    </ul>
+                </details>
+            </div>
+        {% endif %}
+    </div>
+</div>
