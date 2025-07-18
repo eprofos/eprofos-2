@@ -63,4 +63,22 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	echo 'PHP app ready!'
 fi
 
+# Start supervisor if the command is frankenphp
+if [ "$1" = 'frankenphp' ]; then
+	# Start supervisor for message workers if enabled
+	if [ "$APP_ENV" = "prod" ] || [ "${ENABLE_MESSENGER_WORKERS:-1}" = "1" ]; then
+		echo 'Starting Supervisor for Symfony Messenger workers...'
+		
+		# Create required directories
+		mkdir -p /var/log /var/run
+		
+		# Start supervisor in the background
+		/usr/bin/supervisord -c /etc/supervisor/supervisord.conf &
+		
+		echo 'Supervisor started for Symfony messenger workers'
+	else
+		echo 'Messenger workers disabled (ENABLE_MESSENGER_WORKERS=0)'
+	fi
+fi
+
 exec docker-php-entrypoint "$@"
