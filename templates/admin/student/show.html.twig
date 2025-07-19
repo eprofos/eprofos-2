@@ -3,7 +3,15 @@
 {% block title %}Détails de l'étudiant{% endblock %}
 
 {% block body %}
-<div class="page-wrapper">
+<div class="page-wrapper" 
+     data-controller="student-admin"
+     data-student-admin-id-value="{{ student.id }}"
+     data-student-admin-reset-password-url-value="{{ path('admin_student_send_password_reset', {id: student.id}) }}"
+     data-student-admin-verify-email-url-value="{{ path('admin_student_send_email_verification', {id: student.id}) }}"
+     data-student-admin-generate-password-url-value="{{ path('admin_student_generate_password', {id: student.id}) }}"
+     data-student-admin-reset-password-token-value="{{ csrf_token('send_password_reset' ~ student.id) }}"
+     data-student-admin-verify-email-token-value="{{ csrf_token('send_email_verification' ~ student.id) }}"
+     data-student-admin-generate-password-token-value="{{ csrf_token('generate_password' ~ student.id) }}">
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
@@ -58,20 +66,20 @@
                                     </form>
                                 </li>
                                 <li>
-                                    <button type="button" class="dropdown-item" onclick="sendEmailVerification({{ student.id }})">
+                                    <button type="button" class="dropdown-item" data-action="click->student-admin#sendEmailVerification">
                                         <i class="ti ti-mail-forward me-2"></i>
                                         Envoyer lien de vérification
                                     </button>
                                 </li>
                                 {% endif %}
                                 <li>
-                                    <button type="button" class="dropdown-item" onclick="sendPasswordReset({{ student.id }})">
+                                    <button type="button" class="dropdown-item" data-action="click->student-admin#sendPasswordReset">
                                         <i class="ti ti-key me-2"></i>
                                         Envoyer lien réinitialisation
                                     </button>
                                 </li>
                                 <li>
-                                    <button type="button" class="dropdown-item" onclick="generatePassword({{ student.id }})">
+                                    <button type="button" class="dropdown-item" data-action="click->student-admin#generatePassword">
                                         <i class="ti ti-password me-2"></i>
                                         Générer nouveau mot de passe
                                     </button>
@@ -333,81 +341,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function sendPasswordReset(studentId) {
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    fetch(`/admin/students/${studentId}/reset-password`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `_token=${token}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Email de réinitialisation envoyé avec succès.');
-        } else {
-            alert('Erreur: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de l\'envoi de l\'email.');
-    });
-}
-
-function sendEmailVerification(studentId) {
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    fetch(`/admin/students/${studentId}/verify-email`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `_token=${token}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Email de vérification envoyé avec succès.');
-        } else {
-            alert('Erreur: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de l\'envoi de l\'email.');
-    });
-}
-
-function generatePassword(studentId) {
-    if (!confirm('Êtes-vous sûr de vouloir générer un nouveau mot de passe pour cet étudiant ?')) {
-        return;
-    }
-    
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // This function was removed as we're using the reset-password endpoint instead
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `_token=${token}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Nouveau mot de passe généré et envoyé par email.');
-            // Optionally refresh the page to update security info
-            window.location.reload();
-        } else {
-            alert('Erreur: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de la génération du mot de passe.');
-    });
-}
-</script>
 {% endblock %}
