@@ -313,7 +313,7 @@
                                                     </li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
-                                                        <form method="post" action="{{ path('admin_student_toggle_active', {id: student.id}) }}" class="d-inline">
+                                                        <form method="post" action="{{ path('admin_student_toggle_status', {id: student.id}) }}" class="d-inline">
                                                             <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ student.id) }}">
                                                             <button type="submit" class="dropdown-item">
                                                                 {% if student.isActive %}
