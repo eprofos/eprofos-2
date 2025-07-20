@@ -1,0 +1,309 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier métadonnée - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">Modifier la métadonnée</h1>
+                    <p class="text-muted">{{ document_metadata.displayName ?: document_metadata.metaKey }}</p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_document_metadata_show', {id: document_metadata.id}) }}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-eye me-2"></i>Voir
+                    </a>
+                    <a href="{{ path('admin_document_metadata_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Form Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-edit me-2"></i>Modification de la métadonnée
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form) }}
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.document) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.metaKey) }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ form_row(form.displayName) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.dataType) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.metaValue) }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ form_row(form.description) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            {{ form_widget(form.isRequired) }}
+                                            {{ form_label(form.isRequired) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            {{ form_widget(form.isSearchable) }}
+                                            {{ form_label(form.isSearchable) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.sortOrder) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            {{ form_widget(form.isEditable) }}
+                                            {{ form_label(form.isEditable) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="{{ path('admin_document_metadata_index') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                                    </button>
+                                </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Current Value Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Valeur actuelle
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Type :</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-secondary">{{ document_metadata.dataType }}</span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Valeur :</dt>
+                                <dd class="col-sm-8">
+                                    {% set typed_value = document_metadata.typedValue %}
+                                    {% if document_metadata.dataType == 'boolean' %}
+                                        {% if typed_value %}
+                                            <span class="badge bg-success">Oui</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Non</span>
+                                        {% endif %}
+                                    {% elseif document_metadata.dataType == 'date' or document_metadata.dataType == 'datetime' %}
+                                        {% if document_metadata.dataType == 'datetime' %}
+                                            {{ typed_value|date('d/m/Y H:i') }}
+                                        {% else %}
+                                            {{ typed_value|date('d/m/Y') }}
+                                        {% endif %}
+                                    {% elseif document_metadata.dataType == 'json' %}
+                                        <pre class="small mb-0">{{ typed_value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                    {% elseif document_metadata.dataType == 'url' %}
+                                        <a href="{{ typed_value }}" target="_blank" class="text-decoration-none">
+                                            <i class="fas fa-external-link-alt me-1"></i>{{ typed_value }}
+                                        </a>
+                                    {% elseif document_metadata.dataType == 'text' %}
+                                        <div class="mt-2 p-3 bg-light rounded">
+                                            {{ typed_value|nl2br }}
+                                        </div>
+                                    {% elseif document_metadata.dataType == 'file' %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-file me-1"></i>{{ typed_value }}
+                                        </span>
+                                    {% else %}
+                                        {{ typed_value }}
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Requis :</dt>
+                                <dd class="col-sm-8">
+                                    {% if document_metadata.isRequired %}
+                                        <span class="badge bg-warning">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Non</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Recherchable :</dt>
+                                <dd class="col-sm-8">
+                                    {% if document_metadata.isSearchable %}
+                                        <span class="badge bg-info">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Non</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Help Card -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle me-2"></i>Aide
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de valeurs supportés :</h6>
+                            <ul class="list-unstyled small">
+                                <li><strong>string</strong> : Texte libre</li>
+                                <li><strong>text</strong> : Texte long</li>
+                                <li><strong>integer</strong> : Nombre entier</li>
+                                <li><strong>float</strong> : Nombre décimal</li>
+                                <li><strong>boolean</strong> : Vrai/Faux</li>
+                                <li><strong>date</strong> : Date (YYYY-MM-DD)</li>
+                                <li><strong>datetime</strong> : Date et heure</li>
+                                <li><strong>json</strong> : Données JSON</li>
+                                <li><strong>file</strong> : Fichier</li>
+                                <li><strong>url</strong> : URL valide</li>
+                            </ul>
+
+                            <hr>
+
+                            <h6>Attention :</h6>
+                            <ul class="small text-muted">
+                                <li>Changer le type peut affecter la validation</li>
+                                <li>La clé ne devrait pas être modifiée si utilisée ailleurs</li>
+                                <li>Les modifications sont immédiates</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="card shadow-sm mt-3" id="preview-card" style="display: none;">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-eye me-2"></i>Aperçu de la nouvelle valeur
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="value-preview" class="p-3 bg-light rounded">
+                                <!-- Preview will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const valueTypeSelect = document.querySelector('#document_metadata_dataType');
+    const valueInput = document.querySelector('#document_metadata_metaValue');
+    const previewCard = document.getElementById('preview-card');
+    const previewDiv = document.getElementById('value-preview');
+
+    function updateValueInput() {
+        const type = valueTypeSelect.value;
+        
+        // Update input attributes based on type
+        switch(type) {
+            case 'integer':
+                valueInput.type = 'number';
+                valueInput.step = '1';
+                break;
+            case 'float':
+                valueInput.type = 'number';
+                valueInput.step = 'any';
+                break;
+            case 'date':
+                valueInput.type = 'date';
+                break;
+            case 'datetime':
+                valueInput.type = 'datetime-local';
+                break;
+            case 'url':
+                valueInput.type = 'url';
+                break;
+            case 'file':
+                valueInput.type = 'text';
+                break;
+            default:
+                valueInput.type = 'text';
+                valueInput.step = '';
+        }
+    }
+
+    function updatePreview() {
+        const value = valueInput.value;
+        const type = valueTypeSelect.value;
+        const originalValue = '{{ document_metadata.metaValue|e('js') }}';
+        
+        if (!value || value === originalValue) {
+            previewCard.style.display = 'none';
+            return;
+        }
+
+        let preview = '';
+        try {
+            switch(type) {
+                case 'boolean':
+                    const boolValue = value.toLowerCase() === 'true';
+                    preview = '<span class="badge bg-' + (boolValue ? 'success' : 'danger') + '">' + 
+                             (boolValue ? 'Oui' : 'Non') + '</span>';
+                    break;
+                case 'json':
+                    const jsonValue = JSON.parse(value);
+                    preview = '<pre class="mb-0">' + JSON.stringify(jsonValue, null, 2) + '</pre>';
+                    break;
+                case 'url':
+                    preview = '<a href="' + value + '" target="_blank" class="text-decoration-none">' +
+                             '<i class="fas fa-external-link-alt me-1"></i>' + value + '</a>';
+                    break;
+                case 'file':
+                    preview = '<span class="text-muted">' +
+                             '<i class="fas fa-file me-1"></i>' + value + '</span>';
+                    break;
+                default:
+                    preview = '<span class="text-dark">' + value + '</span>';
+            }
+            
+            previewDiv.innerHTML = preview;
+            previewCard.style.display = 'block';
+        } catch (e) {
+            if (type === 'json') {
+                previewDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>JSON invalide</span>';
+                previewCard.style.display = 'block';
+            } else {
+                previewCard.style.display = 'none';
+            }
+        }
+    }
+
+    // Event listeners
+    valueTypeSelect.addEventListener('change', function() {
+        updateValueInput();
+        updatePreview();
+    });
+
+    valueInput.addEventListener('input', updatePreview);
+
+    // Initial setup
+    updateValueInput();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,316 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau composant - {{ parent() }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for crumb in breadcrumb %}
+                {% if crumb.url %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+    
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouveau composant
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.name) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.type) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.zone) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.sortOrder) }}
+                        </div>
+                    </div>
+                    
+                    {{ form_row(form.content) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.cssClass) }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                {{ form_widget(form.isRequired) }}
+                                {{ form_label(form.isRequired) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if form.isConditional is defined %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    {{ form_widget(form.isConditional) }}
+                                    {{ form_label(form.isConditional) }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Actions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            Créer le composant
+                        </button>
+                        
+                        <a href="{{ path('admin_document_ui_component_index', {templateId: template.id}) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Modèle parent
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">{{ template.name }}</h6>
+                    {% if template.description %}
+                        <p class="text-muted small">{{ template.description }}</p>
+                    {% endif %}
+                    <div class="small">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Type :</span>
+                            <span>
+                                {% if template.isGlobal %}
+                                    <span class="badge bg-info">Global</span>
+                                {% else %}
+                                    {{ template.documentType ? template.documentType.name : 'Non défini' }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Composants existants :</span>
+                            <span>{{ template.components|length }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer p-2">
+                    <a href="{{ path('admin_document_ui_template_show', {id: template.id}) }}" 
+                       class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Voir le modèle
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Component Types Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Types de composants
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2"><strong>Types disponibles :</strong></p>
+                        <div class="row">
+                            {% for type_key, type_label in component_types %}
+                                <div class="col-6 mb-1">
+                                    <span class="badge bg-light text-dark">{{ type_label }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zones Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-th-large me-2"></i>
+                        Zones du document
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2"><strong>Zones disponibles :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            {% for zone_key, zone_label in zones %}
+                                <li class="mb-1">
+                                    <span class="badge bg-info">{{ zone_label }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Aide
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2"><strong>Variables utilisables :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            <li><code>{{ '{{ title }}' }}</code> - Titre du document</li>
+                            <li><code>{{ '{{ content }}' }}</code> - Contenu principal</li>
+                            <li><code>{{ '{{ author }}' }}</code> - Auteur</li>
+                            <li><code>{{ '{{ date }}' }}</code> - Date actuelle</li>
+                            <li><code>{{ '{{ organization }}' }}</code> - Organisation</li>
+                        </ul>
+                        
+                        <p class="mb-2 mt-3"><strong>Classes CSS recommandées :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            <li><code>text-center</code> - Centrer le texte</li>
+                            <li><code>fw-bold</code> - Texte en gras</li>
+                            <li><code>text-muted</code> - Texte en gris</li>
+                            <li><code>mb-3</code> - Marge en bas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+            
+            // Type-specific field management
+            const typeField = document.querySelector('#{{ form.type.vars.id }}');
+            const contentField = document.querySelector('#{{ form.content.vars.id }}');
+            const nameField = document.querySelector('#{{ form.name.vars.id }}');
+            
+            if (typeField && contentField) {
+                function updateFieldsByType() {
+                    const selectedType = typeField.value;
+                    const contentLabel = contentField.closest('.mb-3').querySelector('label');
+                    
+                    // Auto-suggest name based on type if name is empty
+                    if (nameField && !nameField.value.trim()) {
+                        const typeLabel = typeField.options[typeField.selectedIndex].text;
+                        nameField.value = typeLabel;
+                    }
+                    
+                    // Update content field placeholder and label based on type
+                    switch (selectedType) {
+                        case 'text':
+                            contentField.placeholder = 'Contenu textuel du composant...';
+                            if (contentLabel) contentLabel.textContent = 'Contenu texte';
+                            break;
+                        case 'image':
+                            contentField.placeholder = 'URL de l\'image ou chemin relatif...';
+                            if (contentLabel) contentLabel.textContent = 'Source de l\'image';
+                            break;
+                        case 'logo':
+                            contentField.placeholder = 'Chemin vers le logo (ex: /images/logo.png)...';
+                            if (contentLabel) contentLabel.textContent = 'Source du logo';
+                            break;
+                        case 'table':
+                            contentField.placeholder = 'Configuration du tableau ou données...';
+                            if (contentLabel) contentLabel.textContent = 'Configuration du tableau';
+                            break;
+                        case 'list':
+                            contentField.placeholder = 'Éléments de la liste, un par ligne...';
+                            if (contentLabel) contentLabel.textContent = 'Éléments de la liste';
+                            break;
+                        case 'signature':
+                            contentField.placeholder = 'Nom du signataire...';
+                            if (contentLabel) contentLabel.textContent = 'Nom du signataire';
+                            break;
+                        case 'date':
+                            contentField.placeholder = 'Format de date (optionnel)...';
+                            if (contentLabel) contentLabel.textContent = 'Format de date';
+                            break;
+                        case 'custom_html':
+                            contentField.placeholder = 'Code HTML personnalisé...';
+                            if (contentLabel) contentLabel.textContent = 'Code HTML';
+                            break;
+                        default:
+                            contentField.placeholder = 'Contenu du composant...';
+                            if (contentLabel) contentLabel.textContent = 'Contenu';
+                    }
+                }
+                
+                // Initial setup
+                updateFieldsByType();
+                
+                // Listen for type changes
+                typeField.addEventListener('change', updateFieldsByType);
+            }
+            
+            // Zone quick selection based on URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const zoneParam = urlParams.get('zone');
+            const zoneField = document.querySelector('#{{ form.zone.vars.id }}');
+            
+            if (zoneParam && zoneField) {
+                zoneField.value = zoneParam;
+            }
+        });
+    </script>
+{% endblock %}

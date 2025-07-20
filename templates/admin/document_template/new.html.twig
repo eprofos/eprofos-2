@@ -1,0 +1,253 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ page_title }}</h1>
+                    <p class="text-muted">Créer un nouveau modèle de document réutilisable</p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_document_template_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Informations du modèle</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    {{ form_row(form.name, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form_row(form.slug, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                            </div>
+
+                            {{ form_row(form.description, {
+                                'row_attr': {'class': 'mb-3'}
+                            }) }}
+
+                            {{ form_row(form.documentType, {
+                                'row_attr': {'class': 'mb-3'}
+                            }) }}
+
+                            {{ form_row(form.templateContent, {
+                                'row_attr': {'class': 'mb-3'}
+                            }) }}
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form_row(form.icon, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form_row(form.color, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    {{ form_row(form.sortOrder, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form_row(form.isActive, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form_row(form.isDefault, {
+                                        'row_attr': {'class': 'mb-3'}
+                                    }) }}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Créer le modèle
+                                </button>
+                                <a href="{{ path('admin_document_template_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Annuler
+                                </a>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Aide
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Placeholders disponibles</h6>
+                            <p class="text-muted small">Utilisez ces placeholders dans le contenu du modèle :</p>
+                            <ul class="list-unstyled small">
+                                <li><code>{{'{{'}}date{{'}}'}}</code> - Date actuelle</li>
+                                <li><code>{{'{{'}}datetime{{'}}'}}</code> - Date et heure actuelles</li>
+                                <li><code>{{'{{'}}year{{'}}'}}</code> - Année actuelle</li>
+                                <li><code>{{'{{'}}month{{'}}'}}</code> - Mois actuel</li>
+                                <li><code>{{'{{'}}day{{'}}'}}</code> - Jour actuel</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Modèle par défaut</h6>
+                            <p class="text-muted small">
+                                Un seul modèle peut être défini comme "par défaut" pour chaque type de document. 
+                                Il sera automatiquement sélectionné lors de la création de nouveaux documents.
+                            </p>
+                            
+                            <hr>
+                            
+                            <h6>Ordre de tri</h6>
+                            <p class="text-muted small">
+                                Les modèles sont triés par ordre croissant. Un ordre plus petit 
+                                signifie que le modèle apparaîtra en premier dans les listes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-eye me-2"></i>Aperçu
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="template-preview" class="border p-3 bg-light">
+                                <p class="text-muted text-center">
+                                    <i class="fas fa-file-alt fa-2x mb-2"></i><br>
+                                    L'aperçu apparaîtra ici lors de la saisie du contenu
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-generate slug from name
+            const nameInput = document.getElementById('document_template_name');
+            const slugInput = document.getElementById('document_template_slug');
+            
+            if (nameInput && slugInput) {
+                nameInput.addEventListener('input', function() {
+                    const slug = this.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim('-');
+                    slugInput.value = slug;
+                });
+            }
+
+            // Live preview of template content
+            const contentInput = document.getElementById('document_template_templateContent');
+            const previewDiv = document.getElementById('template-preview');
+            
+            if (contentInput && previewDiv) {
+                function updatePreview() {
+                    let content = contentInput.value;
+                    if (content.trim() === '') {
+                        previewDiv.innerHTML = '<p class="text-muted text-center">' +
+                            '<i class="fas fa-file-alt fa-2x mb-2"></i><br>' +
+                            'L\'aperçu apparaîtra ici lors de la saisie du contenu' +
+                            '</p>';
+                        return;
+                    }
+                    
+                    // Replace placeholders for preview
+                    const now = new Date();
+                    const placeholders = {
+                        'date': now.toLocaleDateString('fr-FR'),
+                        'datetime': now.toLocaleString('fr-FR'),
+                        'year': now.getFullYear(),
+                        'month': (now.getMonth() + 1).toString().padStart(2, '0'),
+                        'day': now.getDate().toString().padStart(2, '0')
+                    };
+                    
+                    for (const [key, value] of Object.entries(placeholders)) {
+                        content = content.replace(new RegExp('{{' + key + '}}', 'g'), '<mark>' + value + '</mark>');
+                    }
+                    
+                    // Highlight remaining placeholders
+                    content = content.replace(/\{\{([^}]+)\}\}/g, function(match, group1) {
+                        return '<span class="badge bg-warning">{{' + group1 + '}}</span>';
+                    });
+                    
+                    // Convert line breaks
+                    content = content.replace(/\n/g, '<br>');
+                    
+                    previewDiv.innerHTML = content;
+                }
+                
+                contentInput.addEventListener('input', updatePreview);
+                updatePreview(); // Initial preview
+            }
+
+            // Icon preview
+            const iconSelect = document.getElementById('document_template_icon');
+            if (iconSelect) {
+                iconSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const iconClass = selectedOption.value;
+                    
+                    // Remove existing icon preview
+                    const existingPreview = this.parentNode.querySelector('.icon-preview');
+                    if (existingPreview) {
+                        existingPreview.remove();
+                    }
+                    
+                    // Add new icon preview
+                    if (iconClass) {
+                        const preview = document.createElement('span');
+                        preview.className = 'icon-preview ms-2';
+                        preview.innerHTML = '<i class="' + iconClass + '"></i>';
+                        this.parentNode.appendChild(preview);
+                    }
+                });
+                
+                // Trigger initial preview
+                iconSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+{% endblock %}

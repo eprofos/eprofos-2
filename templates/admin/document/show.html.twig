@@ -1,0 +1,412 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ document.title }} - Documents{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_document_edit', {'id': document.id}) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                <path d="M16 5l3 3"/>
+            </svg>
+            Modifier
+        </a>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Actions
+            </button>
+            <ul class="dropdown-menu">
+                {% if document.status != 'published' %}
+                    <li>
+                        <form method="post" action="{{ path('admin_document_publish', {'id': document.id}) }}" style="display: inline; width: 100%;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir publier ce document ?')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                                Publier
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
+                
+                {% if document.status == 'published' %}
+                    <li>
+                        <form method="post" action="{{ path('admin_document_archive', {'id': document.id}) }}" style="display: inline; width: 100%;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ document.id) }}">
+                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir archiver ce document ?')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/>
+                                    <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"/>
+                                    <path d="M10 12l4 0"/>
+                                </svg>
+                                Archiver
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
+                
+                <li>
+                    <form method="post" action="{{ path('admin_document_duplicate', {'id': document.id}) }}" style="display: inline; width: 100%;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ document.id) }}">
+                        <button type="submit" class="dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/>
+                                <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/>
+                            </svg>
+                            Dupliquer
+                        </button>
+                    </form>
+                </li>
+                
+                {% if document.status != 'published' %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{{ path('admin_document_delete', {'id': document.id}) }}" style="display: inline; width: 100%;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document.id) }}">
+                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M4 7l16 0"/>
+                                    <path d="M10 11l0 6"/>
+                                    <path d="M14 11l0 6"/>
+                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                </svg>
+                                Supprimer
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <!-- Document Content -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">{{ document.title }}</h3>
+                    <div class="card-actions">
+                        {% set status_class = {
+                            'draft': 'secondary',
+                            'review': 'warning',
+                            'approved': 'info',
+                            'published': 'success',
+                            'archived': 'dark',
+                            'expired': 'danger'
+                        } %}
+                        <span class="badge bg-{{ status_class[document.status] ?? 'secondary' }} me-2">
+                            {{ constant('App\\Entity\\Document\\Document::STATUSES')[document.status] ?? document.status }}
+                        </span>
+                        {% if document.isPublic %}
+                            <span class="badge bg-green-lt">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                </svg>
+                                Public
+                            </span>
+                        {% else %}
+                            <span class="badge bg-yellow-lt">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 11a7 7 0 0 1 9.648 -6.457"/>
+                                    <path d="M3 3l18 18"/>
+                                    <path d="M21 12c-.945 1.594 -2.109 2.943 -3.397 4.022"/>
+                                    <path d="M10.595 10.595a2 2 0 1 0 2.81 2.81"/>
+                                    <path d="M13.027 13.027c-.629 .472 -1.425 .973 -2.027 .973c-3.6 0 -6.6 -2 -9 -6c1.507 -2.527 3.417 -4.031 5.527 -4.031"/>
+                                </svg>
+                                Privé
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if document.description %}
+                        <div class="mb-3">
+                            <h4>Description</h4>
+                            <p class="text-muted">{{ document.description }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if document.content %}
+                        <div class="mb-3">
+                            <h4>Contenu</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ document.content|raw }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if document.tags and document.tags|length > 0 %}
+                        <div class="mb-3">
+                            <h4>Tags</h4>
+                            {% for tag in document.tags %}
+                                <span class="badge bg-blue-lt me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Versions History -->
+            {% if document.versions|length > 0 %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Historique des versions</h3>
+                        <div class="card-actions">
+                            <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="btn btn-sm btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 12a9 9 0 0 1 9 -9a9.75 9.75 0 0 1 6.74 2.74l-1.132 1.132a8.25 8.25 0 0 0 -5.608 -2.372a7.5 7.5 0 0 0 -7.5 7.5"/>
+                                    <path d="M21 12a9 9 0 0 1 -9 9a9.75 9.75 0 0 1 -6.74 -2.74l1.132 -1.132a8.25 8.25 0 0 0 5.608 2.372a7.5 7.5 0 0 0 7.5 -7.5"/>
+                                    <path d="M12 7v5l3 3"/>
+                                </svg>
+                                Gérer les versions
+                            </a>
+                        </div>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% for version in document.versions|slice(0, 5) %}
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="badge bg-blue">v{{ version.version }}</span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="d-block text-body">{{ version.title }}</div>
+                                        {% if version.changeLog %}
+                                            <div class="d-block text-muted text-truncate mt-n1">{{ version.changeLog }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="text-muted">
+                                            {{ version.createdAt|date('d/m/Y H:i') }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        {% if version.isCurrent %}
+                                            <span class="badge bg-green">Actuelle</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% if document.versions|length > 5 %}
+                            <div class="list-group-item text-center">
+                                <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="text-muted">
+                                    Voir les {{ document.versions|length - 5 }} autres versions...
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <!-- Document Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Informations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Type</div>
+                            <div class="datagrid-content">
+                                {% if document.documentType %}
+                                    <span class="badge bg-blue-lt">
+                                        {% if document.documentType.icon %}
+                                            <i class="{{ document.documentType.icon }} me-1"></i>
+                                        {% endif %}
+                                        {{ document.documentType.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Catégorie</div>
+                            <div class="datagrid-content">
+                                {% if document.category %}
+                                    {{ document.category.name }}
+                                {% else %}
+                                    <span class="text-muted">Aucune</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Slug</div>
+                            <div class="datagrid-content">
+                                <code>{{ document.slug }}</code>
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Créé par</div>
+                            <div class="datagrid-content">
+                                {% if document.createdBy %}
+                                    <div class="d-flex align-items-center">
+                                        <span class="avatar avatar-sm me-2">{{ document.createdBy.firstName|slice(0,1) }}{{ document.createdBy.lastName|slice(0,1) }}</span>
+                                        <div>
+                                            <div>{{ document.createdBy.firstName }} {{ document.createdBy.lastName }}</div>
+                                            <div class="text-muted">{{ document.createdBy.email }}</div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Créé le</div>
+                            <div class="datagrid-content">{{ document.createdAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Modifié le</div>
+                            <div class="datagrid-content">{{ document.updatedAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                        {% if document.publishedAt %}
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Publié le</div>
+                                <div class="datagrid-content">{{ document.publishedAt|date('d/m/Y à H:i') }}</div>
+                            </div>
+                        {% endif %}
+                        {% if document.expiresAt %}
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Expire le</div>
+                                <div class="datagrid-content">
+                                    <span class="{% if document.isExpired %}text-danger{% else %}text-warning{% endif %}">
+                                        {{ document.expiresAt|date('d/m/Y à H:i') }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">État du document</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if document.isActive %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Actif
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-red me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M18 6l-12 12"/>
+                                        <path d="M6 6l12 12"/>
+                                    </svg>
+                                    Inactif
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if document.isPublic %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-blue me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                    </svg>
+                                    Public
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-yellow me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 11a7 7 0 0 1 9.648 -6.457"/>
+                                        <path d="M3 3l18 18"/>
+                                        <path d="M21 12c-.945 1.594 -2.109 2.943 -3.397 4.022"/>
+                                        <path d="M10.595 10.595a2 2 0 1 0 2.81 2.81"/>
+                                        <path d="M13.027 13.027c-.629 .472 -1.425 .973 -2.027 .973c-3.6 0 -6.6 -2 -9 -6c1.507 -2.527 3.417 -4.031 5.527 -4.031"/>
+                                    </svg>
+                                    Privé
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if document.isExpired %}
+                        <div class="alert alert-warning">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v2m0 4v.01"/>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="alert-title">Document expiré</h4>
+                                    <div class="text-muted">Ce document a expiré le {{ document.expiresAt|date('d/m/Y à H:i') }}.</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Actions rapides</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_document_edit', {'id': document.id}) }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier le document
+                        </a>
+                        <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 0 1 9 -9a9.75 9.75 0 0 1 6.74 2.74l-1.132 1.132a8.25 8.25 0 0 0 -5.608 -2.372a7.5 7.5 0 0 0 -7.5 7.5"/>
+                                <path d="M21 12a9 9 0 0 1 -9 9a9.75 9.75 0 0 1 -6.74 -2.74l1.132 -1.132a8.25 8.25 0 0 0 5.608 2.372a7.5 7.5 0 0 0 7.5 -7.5"/>
+                                <path d="M12 7v5l3 3"/>
+                            </svg>
+                            Gérer les versions
+                        </a>
+                        {% if document.isPublic and document.status == 'published' %}
+                            <a href="#" class="btn btn-outline-primary" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M11 7h-5a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-5"/>
+                                    <path d="M10 14l10 -10"/>
+                                    <path d="M15 4l5 0l0 5"/>
+                                </svg>
+                                Voir en public
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

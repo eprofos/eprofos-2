@@ -1,0 +1,387 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Documents - Administration{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_document_new') }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 5l0 14"/>
+                <path d="M5 12l14 0"/>
+            </svg>
+            Nouveau document
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Statistics Cards -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Total documents</div>
+                                <div class="ms-auto">
+                                    <span class="text-green d-inline-flex align-items-center lh-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">{{ stats.total }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Publiés</div>
+                                <div class="ms-auto">
+                                    <span class="text-green d-inline-flex align-items-center lh-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">{{ stats.published }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Brouillons</div>
+                                <div class="ms-auto">
+                                    <span class="text-warning d-inline-flex align-items-center lh-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                            <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                            <path d="M3 12.5a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">{{ stats.draft }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">En révision</div>
+                                <div class="ms-auto">
+                                    <span class="text-blue d-inline-flex align-items-center lh-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                            <path d="M12 8l0 4l2 2"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="h1 mb-3">{{ stats.review }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents List -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Gestion des documents</h3>
+                    <div class="card-actions">
+                        <div class="text-muted small">
+                            {{ total_items }} document{{ total_items > 1 ? 's' : '' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card-body border-bottom py-3">
+                    <form method="GET" action="{{ path('admin_document_index') }}" class="d-flex">
+                        <div class="text-muted">
+                            Filtres :
+                            <div class="ms-2 d-inline-block">
+                                <input type="text" name="search" value="{{ filters.search }}" class="form-control form-control-sm" placeholder="Rechercher..." style="width: 200px;">
+                            </div>
+                            <div class="ms-2 d-inline-block">
+                                <select name="status" class="form-select form-select-sm" style="width: 150px;">
+                                    <option value="">Tous les statuts</option>
+                                    {% for status_key, status_label in constant('App\\Entity\\Document\\Document::STATUSES') %}
+                                        <option value="{{ status_key }}" {{ filters.status == status_key ? 'selected' : '' }}>{{ status_label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="ms-2 d-inline-block">
+                                <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+                            </div>
+                            {% if filters.search or filters.status %}
+                                <div class="ms-2 d-inline-block">
+                                    <a href="{{ path('admin_document_index') }}" class="btn btn-outline-secondary btn-sm">Réinitialiser</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+                {% if documents|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Type</th>
+                                    <th>Catégorie</th>
+                                    <th>Statut</th>
+                                    <th>Auteur</th>
+                                    <th>Création</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex py-1 align-items-center">
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">
+                                                        <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="text-reset">
+                                                            {{ document.title }}
+                                                        </a>
+                                                    </div>
+                                                    {% if document.description %}
+                                                        <div class="text-muted">{{ document.description|slice(0, 100) }}{% if document.description|length > 100 %}...{% endif %}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if document.documentType %}
+                                                <span class="badge bg-blue-lt">
+                                                    {% if document.documentType.icon %}
+                                                        <i class="{{ document.documentType.icon }} me-1"></i>
+                                                    {% endif %}
+                                                    {{ document.documentType.name }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if document.category %}
+                                                <span class="text-muted">{{ document.category.name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set status_class = {
+                                                'draft': 'secondary',
+                                                'review': 'warning',
+                                                'approved': 'info',
+                                                'published': 'success',
+                                                'archived': 'dark',
+                                                'expired': 'danger'
+                                            } %}
+                                            <span class="badge bg-{{ status_class[document.status] ?? 'secondary' }}">
+                                                {{ constant('App\\Entity\\Document\\Document::STATUSES')[document.status] ?? document.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if document.createdBy %}
+                                                <div class="d-flex py-1 align-items-center">
+                                                    <span class="avatar avatar-sm me-2">{{ document.createdBy.firstName|slice(0,1) }}{{ document.createdBy.lastName|slice(0,1) }}</span>
+                                                    <div class="flex-fill">
+                                                        <div class="font-weight-medium">{{ document.createdBy.firstName }} {{ document.createdBy.lastName }}</div>
+                                                        <div class="text-muted">{{ document.createdBy.email }}</div>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="text-muted">
+                                                {{ document.createdAt|date('d/m/Y H:i') }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-white btn-sm">
+                                                    Voir
+                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-white btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="{{ path('admin_document_edit', {'id': document.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                <path d="M16 5l3 3"/>
+                                                            </svg>
+                                                            Modifier
+                                                        </a>
+                                                        
+                                                        {% if document.status != 'published' %}
+                                                            <form method="post" action="{{ path('admin_document_publish', {'id': document.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('publish' ~ document.id) }}">
+                                                                <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir publier ce document ?')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M5 12l5 5l10 -10"/>
+                                                                    </svg>
+                                                                    Publier
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                        
+                                                        {% if document.status == 'published' %}
+                                                            <form method="post" action="{{ path('admin_document_archive', {'id': document.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ document.id) }}">
+                                                                <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir archiver ce document ?')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/>
+                                                                        <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"/>
+                                                                        <path d="M10 12l4 0"/>
+                                                                    </svg>
+                                                                    Archiver
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                        
+                                                        <form method="post" action="{{ path('admin_document_duplicate', {'id': document.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ document.id) }}">
+                                                            <button type="submit" class="dropdown-item">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/>
+                                                                    <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/>
+                                                                </svg>
+                                                                Dupliquer
+                                                            </button>
+                                                        </form>
+                                                        
+                                                        <div class="dropdown-divider"></div>
+                                                        
+                                                        {% if document.status != 'published' %}
+                                                            <form method="post" action="{{ path('admin_document_delete', {'id': document.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document.id) }}">
+                                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M4 7l16 0"/>
+                                                                        <path d="M10 11l0 6"/>
+                                                                        <path d="M14 11l0 6"/>
+                                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                    </svg>
+                                                                    Supprimer
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                        <div class="card-footer d-flex align-items-center">
+                            <p class="m-0 text-muted">
+                                Page {{ current_page }} sur {{ total_pages }}
+                                <span class="ms-2">{{ total_items }} résultat{{ total_items > 1 ? 's' : '' }}</span>
+                            </p>
+                            <ul class="pagination m-0 ms-auto">
+                                {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_document_index', filters|merge({'page': current_page - 1})) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M15 6l-6 6l6 6"/>
+                                            </svg>
+                                            prev
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+                                    <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ path('admin_document_index', filters|merge({'page': page})) }}">{{ page }}</a>
+                                    </li>
+                                {% endfor %}
+                                
+                                {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_document_index', filters|merge({'page': current_page + 1})) }}">
+                                            next
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M9 6l6 6l-6 6"/>
+                                            </svg>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="{{ asset('images/undraw_no_data.svg') }}" height="128" alt="Aucun document" onerror="this.style.display='none'">
+                            </div>
+                            <p class="empty-title">Aucun document trouvé</p>
+                            <p class="empty-subtitle text-muted">
+                                {% if filters.search or filters.status %}
+                                    Aucun document ne correspond à vos critères de recherche.
+                                {% else %}
+                                    Commencez par créer votre premier document.
+                                {% endif %}
+                            </p>
+                            <div class="empty-action">
+                                {% if filters.search or filters.status %}
+                                    <a href="{{ path('admin_document_index') }}" class="btn btn-outline-primary">
+                                        Voir tous les documents
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('admin_document_new') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Créer mon premier document
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

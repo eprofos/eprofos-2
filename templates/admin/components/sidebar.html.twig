@@ -471,35 +471,37 @@
                     </div>
                 </li>
                 
-                <!-- Legal Documents Section -->
+                <!-- Document Management Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_legal_document' ? 'active' : '' }}" href="#navbar-legal-documents" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_document' ? 'active' : '' }}" href="#navbar-document-management" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
-                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
-                                <path d="M9 9l1 0"/>
-                                <path d="M9 17l6 0"/>
+                                <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12z"/>
+                                <path d="M9 15l3 -3l3 3"/>
+                                <path d="M12 12l0 9"/>
                             </svg>
                         </span>
                         <span class="nav-link-title">
-                            Documents légaux
+                            Gestion documentaire
                         </span>
-                        <span class="badge badge-sm bg-orange text-white ms-auto">Qualiopi 3.9</span>
+                        <span class="badge badge-sm bg-purple text-white ms-auto">Nouveau</span>
                     </a>
                     <div class="dropdown-menu">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_index') }}">
+                                <a class="dropdown-item" href="{{ path('admin_document_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M9 11l3 3l8 -8"/>
-                                        <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                        <path d="M9 9l1 0"/>
+                                        <path d="M9 13l6 0"/>
+                                        <path d="M9 17l6 0"/>
                                     </svg>
                                     Tous les documents
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_new') }}">
+                                <a class="dropdown-item" href="{{ path('admin_document_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -508,34 +510,98 @@
                                     Nouveau document
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_internal_regulation') }}">
-                                    <span class="badge bg-blue text-white me-2">●</span>
-                                    Règlements intérieurs
+                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'draft'}) }}">
+                                    <span class="badge bg-secondary text-white me-2">●</span>
+                                    Brouillons
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_student_handbook') }}">
-                                    <span class="badge bg-green text-white me-2">●</span>
-                                    Livrets d'accueil
+                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'review'}) }}">
+                                    <span class="badge bg-warning text-white me-2">●</span>
+                                    En révision
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_training_terms') }}">
-                                    <span class="badge bg-purple text-white me-2">●</span>
-                                    Conditions de formation
+                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'published'}) }}">
+                                    <span class="badge bg-success text-white me-2">●</span>
+                                    Publiés
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_policy') }}">
-                                    <span class="badge bg-orange text-white me-2">♿</span>
-                                    Politiques accessibilité
+                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'archived'}) }}">
+                                    <span class="badge bg-dark text-white me-2">●</span>
+                                    Archivés
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_procedures') }}">
-                                    <span class="badge bg-yellow text-white me-2">⚙️</span>
-                                    Procédures accessibilité
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_document_type_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                        <path d="M9 7l1 0"/>
+                                        <path d="M9 13l6 0"/>
+                                        <path d="M9 17l6 0"/>
+                                    </svg>
+                                    Types de documents
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_legal_document_accessibility_faq') }}">
-                                    <span class="badge bg-cyan text-white me-2">❓</span>
-                                    FAQ Accessibilité
+                                <a class="dropdown-item" href="{{ path('admin_document_category_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 4h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/>
+                                    </svg>
+                                    Catégories
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_document_template_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 12c.552 0 1.005 -.449 .95 -.998a10 10 0 1 0 -8.953 8.953c.55 -.055 .998 -.398 .998 -.95h-.02c0 -.591 -.448 -1.068 -1.022 -1.022a8 8 0 1 1 7.072 -7.972c-.46 .045 -1.025 .43 -1.025 1z"/>
+                                    </svg>
+                                    Modèles de documents
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_document_metadata_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                        <path d="M9 12h6"/>
+                                        <path d="M9 16h6"/>
+                                    </svg>
+                                    Métadonnées
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 4h16c.55 0 1 .45 1 1s-.45 1-1 1H4c-.55 0-1-.45-1-1s.45-1 1-1z"/>
+                                        <path d="M4 12h16c.55 0 1 .45 1 1s-.45 1-1 1H4c-.55 0-1-.45-1-1s.45-1 1-1z"/>
+                                        <path d="M4 20h16c.55 0 1 .45 1 1s-.45 1-1 1H4c-.55 0-1-.45-1-1s.45-1 1-1z"/>
+                                        <path d="M2 4h20v16H2z" stroke="none" fill="none"/>
+                                        <path d="M6 8l4 4l8-8"/>
+                                    </svg>
+                                    Modèles UI
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_new') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Nouveau modèle UI
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_all_components') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7h16"/>
+                                        <path d="M4 12h16"/>
+                                        <path d="M4 17h16"/>
+                                        <path d="M2 4h20v16H2z" stroke="none" fill="none"/>
+                                        <path d="M6 6h.01"/>
+                                        <path d="M10 6h.01"/>
+                                        <path d="M14 6h.01"/>
+                                    </svg>
+                                    Composants UI
                                 </a>
                             </div>
                         </div>
                     </div>
                 </li>
+
                 
                 <!-- Divider -->
                 <li class="nav-item">

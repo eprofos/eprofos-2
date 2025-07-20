@@ -1,0 +1,8 @@
+{% set page_title = 'Nouveau modèle UI' %}
+{% set breadcrumb = [
+    {'label': 'Documents', 'url': path('admin_document_index')},
+    {'label': 'Modèles UI', 'url': path('admin_document_ui_template_index')},
+    {'label': 'Nouveau modèle'}
+] %}
+
+{% include 'admin/document_ui_template/_form.html.twig' %}

@@ -1,0 +1,271 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ page_title }}</h1>
+                    <p class="text-muted">Gestion des métadonnées structurées des documents</p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_document_metadata_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouvelle métadonnée
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="h2 text-primary mb-1">{{ statistics.total_count }}</div>
+                            <div class="text-muted small">Total métadonnées</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="h2 text-info mb-1">{{ statistics.searchable_count }}</div>
+                            <div class="text-muted small">Recherchables</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="h2 text-warning mb-1">{{ statistics.required_count }}</div>
+                            <div class="text-muted small">Obligatoires</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="h2 text-success mb-1">{{ statistics.type_distribution|length }}</div>
+                            <div class="text-muted small">Types différents</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtres
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ path('admin_document_metadata_index') }}" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="document_filter" class="form-label">Document</label>
+                            <select name="document" id="document_filter" class="form-select">
+                                <option value="">Tous les documents</option>
+                                {% for metadata in metadata_with_stats %}
+                                    {% if metadata.document_title not in used_documents|default([]) %}
+                                        {% set used_documents = used_documents|default([])|merge([metadata.document_title]) %}
+                                        <option value="{{ metadata.document_title }}" {{ filters.document == metadata.document_title ? 'selected' : '' }}>
+                                            {{ metadata.document_title }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="key_filter" class="form-label">Clé</label>
+                            <input type="text" name="key" id="key_filter" class="form-control" value="{{ filters.key }}" placeholder="Filtrer par clé...">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="type_filter" class="form-label">Type de valeur</label>
+                            <select name="value_type" id="type_filter" class="form-select">
+                                <option value="">Tous les types</option>
+                                {% for type_stat in statistics.type_distribution %}
+                                    <option value="{{ type_stat.type }}" {{ filters.value_type == type_stat.type ? 'selected' : '' }}>
+                                        {{ type_stat.type|title }} ({{ type_stat.count }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-search me-2"></i>Filtrer
+                            </button>
+                            <a href="{{ path('admin_document_metadata_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Metadata List -->
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i>Liste des métadonnées
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <a href="{{ path('admin_document_metadata_export') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-download me-1"></i>Export CSV
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if metadata_with_stats|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Document</th>
+                                        <th>Clé</th>
+                                        <th>Nom d'affichage</th>
+                                        <th>Type</th>
+                                        <th>Valeur</th>
+                                        <th>Requis</th>
+                                        <th>Recherchable</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in metadata_with_stats %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">{{ item.document_title }}</div>
+                                                <small class="text-muted">{{ item.document_type }}</small>
+                                            </td>
+                                            <td>
+                                                <code class="text-dark">{{ item.metadata.metaKey }}</code>
+                                            </td>
+                                            <td>{{ item.effective_display_name }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ item.metadata.dataType }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" 
+                                                     title="{% if item.typed_value is iterable and item.typed_value is not same as(null) %}{{ item.typed_value|json_encode }}{% elseif item.typed_value is same as(true) %}true{% elseif item.typed_value is same as(false) %}false{% elseif item.metadata.dataType == 'date' or item.metadata.dataType == 'datetime' %}{{ item.typed_value|date('d/m/Y H:i:s') }}{% else %}{{ item.typed_value }}{% endif %}">
+                                                    {% if item.metadata.dataType == 'boolean' %}
+                                                        {% if item.typed_value %}
+                                                            <span class="badge bg-success">Oui</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Non</span>
+                                                        {% endif %}
+                                                    {% elseif item.metadata.dataType == 'date' or item.metadata.dataType == 'datetime' %}
+                                                        {% if item.metadata.dataType == 'datetime' %}
+                                                            {{ item.typed_value|date('d/m/Y H:i') }}
+                                                        {% else %}
+                                                            {{ item.typed_value|date('d/m/Y') }}
+                                                        {% endif %}
+                                                    {% elseif item.metadata.dataType == 'json' %}
+                                                        {% if item.typed_value is iterable %}
+                                                            <span class="text-muted">Objet JSON ({{ item.typed_value|keys|length }} propriétés)</span>
+                                                        {% else %}
+                                                            <span class="text-muted">{{ item.typed_value|json_encode|length }} caractères</span>
+                                                        {% endif %}
+                                                    {% elseif item.metadata.dataType == 'url' %}
+                                                        <a href="{{ item.typed_value }}" target="_blank" class="text-decoration-none">
+                                                            <i class="fas fa-external-link-alt me-1"></i>Lien
+                                                        </a>
+                                                    {% elseif item.metadata.dataType == 'text' %}
+                                                        <div class="text-truncate" style="max-width: 180px;">{{ item.typed_value }}</div>
+                                                    {% elseif item.metadata.dataType == 'file' %}
+                                                        <span class="text-muted">
+                                                            <i class="fas fa-file me-1"></i>{{ item.typed_value }}
+                                                        </span>
+                                                    {% else %}
+                                                        {{ item.typed_value }}
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if item.metadata.isRequired %}
+                                                    <span class="badge bg-warning">Requis</span>
+                                                {% else %}
+                                                    <span class="badge bg-light text-dark">Optionnel</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.metadata.isSearchable %}
+                                                    <span class="badge bg-info">Recherchable</span>
+                                                {% else %}
+                                                    <span class="badge bg-light text-dark">Non</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('admin_document_metadata_show', {id: item.metadata.id}) }}" 
+                                                       class="btn btn-outline-info btn-sm" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_document_metadata_edit', {id: item.metadata.id}) }}" 
+                                                       class="btn btn-outline-primary btn-sm" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="confirmDelete({{ item.metadata.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune métadonnée trouvée</h5>
+                            <p class="text-muted">Commencez par créer une nouvelle métadonnée.</p>
+                            <a href="{{ path('admin_document_metadata_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer une métadonnée
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette métadonnée ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(metadataId) {
+    const form = document.getElementById('deleteForm');
+    const baseUrl = '{{ path('admin_document_metadata_delete', {id: 1}) }}';
+    form.action = baseUrl.replace('/1', '/' + metadataId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

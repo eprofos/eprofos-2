@@ -1,0 +1,274 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Composants : {{ template.name }} - {{ parent() }}{% endblock %}
+
+{% block page_title %}Composants : {{ template.name }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_document_index') }}">Documents</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_document_ui_template_index') }}">Modèles UI</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_document_ui_template_show', {id: template.id}) }}">{{ template.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Composants</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-puzzle-piece me-2"></i>
+                        Composants du modèle
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ path('admin_document_ui_component_new', {templateId: template.id}) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Nouveau composant
+                        </a>
+                        <a href="{{ path('admin_document_ui_template_preview', {id: template.id}) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if components is empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun composant configuré</h5>
+                            <p class="text-muted">Ajoutez des composants pour structurer votre modèle de document.</p>
+                            <a href="{{ path('admin_document_ui_component_new', {templateId: template.id}) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Créer le premier composant
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Component Types Info -->
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="fas fa-info-circle me-1"></i> Types de composants disponibles :</h6>
+                            <div class="row small">
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li><strong>text</strong> - Texte simple</li>
+                                        <li><strong>title</strong> - Titre formaté</li>
+                                        <li><strong>paragraph</strong> - Paragraphe</li>
+                                        <li><strong>image</strong> - Image</li>
+                                        <li><strong>table</strong> - Tableau</li>
+                                        <li><strong>list</strong> - Liste</li>
+                                        <li><strong>signature</strong> - Zone de signature</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li><strong>date</strong> - Date/heure</li>
+                                        <li><strong>page_number</strong> - Numéro de page</li>
+                                        <li><strong>logo</strong> - Logo de l'entreprise</li>
+                                        <li><strong>separator</strong> - Séparateur visuel</li>
+                                        <li><strong>custom_html</strong> - HTML personnalisé</li>
+                                        <li><strong>variable</strong> - Variable dynamique</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Components organized by zone -->
+                        {% set zones = {'header': [], 'body': [], 'footer': []} %}
+                        {% for component in components %}
+                            {% set zones = zones|merge({(component.zone): zones[component.zone]|merge([component])}) %}
+                        {% endfor %}
+                        
+                        {% for zoneName, zoneComponents in zones %}
+                            {% if zoneComponents is not empty %}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="text-uppercase text-muted mb-0">
+                                            <i class="fas fa-{{ zoneName == 'header' ? 'arrow-up' : (zoneName == 'footer' ? 'arrow-down' : 'align-center') }} me-2"></i>
+                                            {{ zoneName|title }}
+                                        </h5>
+                                        <a href="{{ path('admin_document_ui_component_new', {templateId: template.id, zone: zoneName}) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Ajouter en {{ zoneName }}
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        {% for component in zoneComponents %}
+                                            <div class="col-lg-6 mb-3">
+                                                <div class="card border h-100">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                            <div>
+                                                                <h6 class="card-title mb-1">
+                                                                    {{ component.name }}
+                                                                    {% if component.isRequired %}
+                                                                        <span class="badge bg-warning text-dark ms-1">Requis</span>
+                                                                    {% endif %}
+                                                                </h6>
+                                                                <span class="badge bg-secondary">{{ component.type|title }}</span>
+                                                                {% if component.isConditional %}
+                                                                    <span class="badge bg-info ms-1">Conditionnel</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <a href="{{ path('admin_document_ui_component_edit', {templateId: template.id, id: component.id}) }}" 
+                                                                   class="btn btn-outline-primary" title="Modifier">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="{{ path('admin_document_ui_component_preview', {templateId: template.id, id: component.id}) }}" 
+                                                                   class="btn btn-outline-info" title="Aperçu">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                                
+                                                                <!-- Dropdown for more actions -->
+                                                                <div class="btn-group">
+                                                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                                        <span class="visually-hidden">Plus d'actions</span>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu">
+                                                                        <li>
+                                                                            <form method="post" action="{{ path('admin_document_ui_component_duplicate', {templateId: template.id, id: component.id}) }}" class="d-inline">
+                                                                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ component.id) }}">
+                                                                                <button type="submit" class="dropdown-item">
+                                                                                    <i class="fas fa-copy me-1"></i>
+                                                                                    Dupliquer
+                                                                                </button>
+                                                                            </form>
+                                                                        </li>
+                                                                        <li><hr class="dropdown-divider"></li>
+                                                                        <li>
+                                                                            <form method="post" action="{{ path('admin_document_ui_component_delete', {templateId: template.id, id: component.id}) }}" 
+                                                                                  class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce composant ?')">
+                                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ component.id) }}">
+                                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                                    <i class="fas fa-trash me-1"></i>
+                                                                                    Supprimer
+                                                                                </button>
+                                                                            </form>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {% if component.content %}
+                                                            <div class="mb-2">
+                                                                <small class="text-muted">{{ component.content|slice(0, 100) }}{% if component.content|length > 100 %}...{% endif %}</small>
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        <div class="row small text-muted">
+                                                            <div class="col-6">
+                                                                <i class="fas fa-sort-numeric-up me-1"></i>
+                                                                Ordre: {{ component.sortOrder }}
+                                                            </div>
+                                                            {% if component.isConditional and component.conditionalDisplay %}
+                                                                <div class="col-6">
+                                                                    <i class="fas fa-code-branch me-1"></i>
+                                                                    {{ component.conditionalDisplay|length }} condition(s)
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        </div>
+                                                        
+                                                        {% if component.cssClass %}
+                                                            <div class="mt-2">
+                                                                <small class="text-info">
+                                                                    <i class="fab fa-css3-alt me-1"></i>
+                                                                    {{ component.cssClass }}
+                                                                </small>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Empty zones -->
+                        {% for zoneName in ['header', 'body', 'footer'] %}
+                            {% if zones[zoneName] is empty %}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="text-uppercase text-muted mb-0">
+                                            <i class="fas fa-{{ zoneName == 'header' ? 'arrow-up' : (zoneName == 'footer' ? 'arrow-down' : 'align-center') }} me-2"></i>
+                                            {{ zoneName|title }}
+                                        </h5>
+                                        <a href="{{ path('admin_document_ui_component_new', {templateId: template.id, zone: zoneName}) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Ajouter en {{ zoneName }}
+                                        </a>
+                                    </div>
+                                    <div class="text-center py-3 border border-dashed rounded">
+                                        <i class="fas fa-plus-circle fa-2x text-muted mb-2"></i>
+                                        <p class="text-muted mb-2">Aucun composant dans la zone {{ zoneName }}</p>
+                                        <a href="{{ path('admin_document_ui_component_new', {templateId: template.id, zone: zoneName}) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            Ajouter un composant
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                {% if components is not empty %}
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Total : {{ components|length }} composant(s)
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <a href="{{ path('admin_document_ui_template_preview', {id: template.id}) }}" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Voir l'aperçu complet
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Add confirmation for delete actions
+            document.querySelectorAll('form[action*="delete"]').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

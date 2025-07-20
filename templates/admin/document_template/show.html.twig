@@ -1,0 +1,283 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ page_title }}</h1>
+                    <p class="text-muted">Détails du modèle de document</p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_document_template_edit', {id: document_template.id}) }}" class="btn btn-primary me-2">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_document_template_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Template Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    {% if document_template.icon %}
+                                        <i class="{{ document_template.icon }} me-2" 
+                                           {% if document_template.color %}style="color: {{ document_template.color }}"{% endif %}></i>
+                                    {% endif %}
+                                    {{ document_template.name }}
+                                </h5>
+                                <div>
+                                    {% if document_template.isActive %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    {% endif %}
+                                    {% if document_template.isDefault %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-star"></i> Par défaut
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if document_template.description %}
+                                <p class="text-muted">{{ document_template.description }}</p>
+                            {% endif %}
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>Type de document :</strong>
+                                    {% if document_template.documentType %}
+                                        <span class="badge bg-light text-dark">{{ document_template.documentType.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non défini</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Slug :</strong>
+                                    <code>{{ document_template.slug }}</code>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong>Utilisations :</strong>
+                                    <span class="badge bg-info">{{ stats.usage_count }}</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Placeholders :</strong>
+                                    <span class="badge bg-light text-dark">{{ stats.placeholders_count }}</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Ordre de tri :</strong>
+                                    {{ document_template.sortOrder }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template Content -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Contenu du modèle</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if document_template.templateContent %}
+                                <div class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+                                    {{ document_template.templateContent|nl2br }}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucun contenu défini pour ce modèle</p>
+                                    <a href="{{ path('admin_document_template_edit', {id: document_template.id}) }}" class="btn btn-primary">
+                                        <i class="fas fa-edit me-2"></i>Ajouter du contenu
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Placeholders -->
+                    {% if document_template.placeholders %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Placeholders définis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Placeholder</th>
+                                                <th>Description</th>
+                                                <th>Valeur par défaut</th>
+                                                <th>Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for name, config in document_template.placeholders %}
+                                                <tr>
+                                                    <td><code>{{'{{'}}{{ name }}{{'}}'}}</code></td>
+                                                    <td>{{ config.description ?? '-' }}</td>
+                                                    <td>
+                                                        {% if config.default is defined %}
+                                                            <span class="badge bg-light text-dark">{{ config.default }}</span>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-info">{{ config.type ?? 'text' }}</span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Default Metadata -->
+                    {% if document_template.defaultMetadata %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Métadonnées par défaut</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Clé</th>
+                                                <th>Valeur</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, value in document_template.defaultMetadata %}
+                                                <tr>
+                                                    <td><strong>{{ key }}</strong></td>
+                                                    <td>{{ value }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Actions rapides</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_document_template_create_document', {id: document_template.id}) }}" 
+                                   class="btn btn-success">
+                                    <i class="fas fa-file-plus me-2"></i>Créer un document
+                                </a>
+                                
+                                <form method="post" 
+                                      action="{{ path('admin_document_template_duplicate', {id: document_template.id}) }}"
+                                      class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ document_template.id) }}">
+                                    <button class="btn btn-secondary w-100" type="submit">
+                                        <i class="fas fa-copy me-2"></i>Dupliquer
+                                    </button>
+                                </form>
+                                
+                                <form method="post" 
+                                      action="{{ path('admin_document_template_toggle_status', {id: document_template.id}) }}"
+                                      class="d-inline" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir changer le statut de ce modèle ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ document_template.id) }}">
+                                    <button class="btn btn-warning w-100" type="submit">
+                                        <i class="fas {% if document_template.isActive %}fa-pause{% else %}fa-play{% endif %} me-2"></i>
+                                        {% if document_template.isActive %}Désactiver{% else %}Activer{% endif %}
+                                    </button>
+                                </form>
+                                
+                                {% if document_template.usageCount == 0 %}
+                                    <form method="post" 
+                                          action="{{ path('admin_document_template_delete', {id: document_template.id}) }}"
+                                          class="d-inline" 
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document_template.id) }}">
+                                        <button class="btn btn-danger w-100" type="submit">
+                                            <i class="fas fa-trash me-2"></i>Supprimer
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Statistiques</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>ID :</strong></td>
+                                    <td>{{ document_template.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Créé le :</strong></td>
+                                    <td>{{ document_template.createdAt|date('d/m/Y H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modifié le :</strong></td>
+                                    <td>{{ document_template.updatedAt|date('d/m/Y H:i') }}</td>
+                                </tr>
+                                {% if document_template.createdBy %}
+                                    <tr>
+                                        <td><strong>Créé par :</strong></td>
+                                        <td>{{ document_template.createdBy.fullName }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if document_template.updatedBy %}
+                                    <tr>
+                                        <td><strong>Modifié par :</strong></td>
+                                        <td>{{ document_template.updatedBy.fullName }}</td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Configuration -->
+                    {% if document_template.configuration %}
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Configuration</h6>
+                            </div>
+                            <div class="card-body">
+                                <pre class="small">{{ document_template.configuration|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

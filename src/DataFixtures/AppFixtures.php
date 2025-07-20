@@ -49,7 +49,14 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
      * 11. ContactRequests (depend on formations and services, will create prospects via service)
      * 12. SessionFixtures (depend on formations, will create prospects via service)
      * 13. NeedsAnalysisFixtures (depend on users and formations, will create prospects via service)
-     * 14. LegalDocumentFixtures (no dependencies, required for Qualiopi compliance)
+     * 14. Document Management System fixtures:
+     *     - DocumentTypeFixtures and DocumentCategoryFixtures (no dependencies)
+     *     - DocumentFixtures (depend on types and categories)
+     *     - DocumentMetadataFixtures (depend on documents)
+     *     - DocumentVersionFixtures (depend on documents)
+     *     - DocumentTemplateFixtures (depend on document types)
+     *     - DocumentUITemplateFixtures (depend on document types and users)
+     *     - DocumentUIComponentFixtures (depend on UI templates and users)
      * 15. StudentFixtures (student authentication data)
      */
     public function getDependencies(): array
@@ -70,8 +77,19 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             ContactRequestFixtures::class,
             SessionFixtures::class,
             NeedsAnalysisFixtures::class,
-            LegalDocumentFixtures::class,
+            // Document Management System fixtures
+            DocumentTypeFixtures::class,
+            DocumentCategoryFixtures::class,
+            DocumentFixtures::class,
+            DocumentMetadataFixtures::class,
+            DocumentVersionFixtures::class,
+            DocumentTemplateFixtures::class,
+            DocumentUITemplateFixtures::class,
+            DocumentUIComponentFixtures::class,
             StudentFixtures::class,
+            CourseFixtures::class,
+            ExerciseFixtures::class,
+            QCMFixtures::class,
         ];
     }
 }

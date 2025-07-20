@@ -1,0 +1,474 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ component.name }} - {{ parent() }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for crumb in breadcrumb %}
+                {% if crumb.url %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-puzzle-piece me-2"></i>
+                        {{ component.name }}
+                        <span class="badge bg-secondary ms-2">{{ component.typeLabel }}</span>
+                        <span class="badge bg-info ms-1">{{ component.zoneLabel|title }}</span>
+                        {% if component.isRequired %}
+                            <span class="badge bg-warning text-dark ms-1">Requis</span>
+                        {% endif %}
+                        {% if not component.isActive %}
+                            <span class="badge bg-danger ms-1">Inactif</span>
+                        {% endif %}
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ path('admin_document_ui_component_preview', {templateId: template.id, id: component.id}) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </a>
+                        <a href="{{ path('admin_document_ui_component_edit', {templateId: template.id, id: component.id}) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>
+                            Modifier
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-1"></i> Informations générales</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Nom :</strong></td>
+                                    <td>{{ component.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type :</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ component.typeLabel }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Zone :</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ component.zoneLabel|title }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ordre d'affichage :</strong></td>
+                                    <td>{{ component.sortOrder }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Statut :</strong></td>
+                                    <td>
+                                        {% if component.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactif</span>
+                                        {% endif %}
+                                        {% if component.isRequired %}
+                                            <span class="badge bg-warning text-dark ms-1">Requis</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Créé le :</strong></td>
+                                    <td>{{ component.createdAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modifié le :</strong></td>
+                                    <td>{{ component.updatedAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% if component.createdBy %}
+                                <tr>
+                                    <td><strong>Créé par :</strong></td>
+                                    <td>{{ component.createdBy.firstName }} {{ component.createdBy.lastName }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if component.updatedBy %}
+                                <tr>
+                                    <td><strong>Modifié par :</strong></td>
+                                    <td>{{ component.updatedBy.firstName }} {{ component.updatedBy.lastName }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-cog me-1"></i> Configuration technique</h6>
+                            <table class="table table-sm">
+                                {% if component.cssClass %}
+                                <tr>
+                                    <td><strong>Classe CSS :</strong></td>
+                                    <td><code>{{ component.cssClass }}</code></td>
+                                </tr>
+                                {% endif %}
+                                {% if component.elementId %}
+                                <tr>
+                                    <td><strong>ID de l'élément :</strong></td>
+                                    <td><code>{{ component.elementId }}</code></td>
+                                </tr>
+                                {% endif %}
+                                {% if component.styleConfig %}
+                                <tr>
+                                    <td><strong>Configuration de style :</strong></td>
+                                    <td>
+                                        <small class="text-muted">{{ component.styleConfig|length }} propriété(s)</small>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if component.positionConfig %}
+                                <tr>
+                                    <td><strong>Configuration de position :</strong></td>
+                                    <td>
+                                        <small class="text-muted">{{ component.positionConfig|length }} propriété(s)</small>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if component.dataBinding %}
+                                <tr>
+                                    <td><strong>Liaison de données :</strong></td>
+                                    <td>
+                                        <small class="text-muted">{{ component.dataBinding|length }} variable(s)</small>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if component.conditionalDisplay %}
+                                <tr>
+                                    <td><strong>Affichage conditionnel :</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ component.conditionalDisplay|length }} condition(s)</span>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if component.content %}
+                        <h6 class="mt-4"><i class="fas fa-file-text me-1"></i> Contenu</h6>
+                        <div class="bg-light p-3 rounded">
+                            <pre class="mb-0">{{ component.content }}</pre>
+                        </div>
+                    {% endif %}
+                    
+                    {% if component.htmlContent %}
+                        <h6 class="mt-4"><i class="fab fa-html5 me-1"></i> HTML personnalisé</h6>
+                        <div class="bg-light p-3 rounded">
+                            <pre class="mb-0"><code class="language-html">{{ component.htmlContent }}</code></pre>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Style Configuration -->
+            {% if component.styleConfig %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="fab fa-css3-alt me-2"></i>
+                            Configuration de style
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Propriété</th>
+                                        <th>Valeur</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for property, value in component.styleConfig %}
+                                        <tr>
+                                            <td><code>{{ property }}</code></td>
+                                            <td><code>{{ value }}</code></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Position Configuration -->
+            {% if component.positionConfig %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-arrows-alt me-2"></i>
+                            Configuration de position
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Propriété</th>
+                                        <th>Valeur</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for property, value in component.positionConfig %}
+                                        <tr>
+                                            <td><code>{{ property }}</code></td>
+                                            <td><code>{{ value }}</code></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Data Binding -->
+            {% if component.dataBinding %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-link me-2"></i>
+                            Liaison de données
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Chemin de données</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for variable, path in component.dataBinding %}
+                                        <tr>
+                                            <td><code>{{ variable }}</code></td>
+                                            <td><code>{{ path }}</code></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Conditional Display -->
+            {% if component.conditionalDisplay %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-code-branch me-2"></i>
+                            Affichage conditionnel
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Champ</th>
+                                        <th>Opérateur</th>
+                                        <th>Valeur</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for condition in component.conditionalDisplay %}
+                                        <tr>
+                                            <td><code>{{ condition.field ?? 'N/A' }}</code></td>
+                                            <td><span class="badge bg-primary">{{ condition.operator ?? '=' }}</span></td>
+                                            <td><code>{{ condition.value ?? '' }}</code></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Actions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_document_ui_component_preview', {templateId: template.id, id: component.id}) }}" 
+                           class="btn btn-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu du composant
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_component_edit', {templateId: template.id, id: component.id}) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i>
+                            Modifier
+                        </a>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_component_duplicate', {templateId: template.id, id: component.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ component.id) }}">
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-copy me-1"></i>
+                                Dupliquer
+                            </button>
+                        </form>
+                        
+                        <hr>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_component_toggle_status', {templateId: template.id, id: component.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ component.id) }}">
+                            <button type="submit" class="btn btn-outline-{{ component.isActive ? 'danger' : 'success' }} w-100">
+                                <i class="fas fa-{{ component.isActive ? 'pause' : 'play' }} me-1"></i>
+                                {{ component.isActive ? 'Désactiver' : 'Activer' }}
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_component_delete', {templateId: template.id, id: component.id}) }}" 
+                              class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce composant ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ component.id) }}">
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash me-1"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-sitemap me-2"></i>
+                        Navigation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_document_ui_component_index', {templateId: template.id}) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>
+                            Tous les composants
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_template_show', {id: template.id}) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-layer-group me-1"></i>
+                            Retour au modèle
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_template_preview', {id: template.id}) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu du modèle complet
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Modèle parent
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">{{ template.name }}</h6>
+                    {% if template.description %}
+                        <p class="text-muted small">{{ template.description }}</p>
+                    {% endif %}
+                    <div class="small">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Type :</span>
+                            <span>
+                                {% if template.isGlobal %}
+                                    <span class="badge bg-info">Global</span>
+                                {% else %}
+                                    {{ template.documentType ? template.documentType.name : 'Non défini' }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Statut :</span>
+                            <span>
+                                {% if template.isActive %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Composants :</span>
+                            <span>{{ template.components|length }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer p-2">
+                    <a href="{{ path('admin_document_ui_template_show', {id: template.id}) }}" 
+                       class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Voir le modèle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Add confirmation for delete actions
+            document.querySelectorAll('form[action*="delete"]').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+            
+            // Syntax highlighting for code blocks
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+        });
+    </script>
+{% endblock %}

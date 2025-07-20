@@ -1,0 +1,158 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Nouveau type de document</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name) }}
+                                {{ form_errors(form.name) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.code) }}
+                                {{ form_widget(form.code) }}
+                                {{ form_errors(form.code) }}
+                                {{ form_help(form.code) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.icon) }}
+                                {{ form_widget(form.icon) }}
+                                {{ form_errors(form.icon) }}
+                                {{ form_help(form.icon) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.color) }}
+                                {{ form_widget(form.color) }}
+                                {{ form_errors(form.color) }}
+                                {{ form_help(form.color) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h4 class="card-title">Configuration du type</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.requiresApproval) }}
+                                            {{ form_label(form.requiresApproval) }}
+                                        </div>
+                                        {{ form_help(form.requiresApproval) }}
+                                        {{ form_errors(form.requiresApproval) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.allowMultiplePublished) }}
+                                            {{ form_label(form.allowMultiplePublished) }}
+                                        </div>
+                                        {{ form_help(form.allowMultiplePublished) }}
+                                        {{ form_errors(form.allowMultiplePublished) }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.hasExpiration) }}
+                                            {{ form_label(form.hasExpiration) }}
+                                        </div>
+                                        {{ form_help(form.hasExpiration) }}
+                                        {{ form_errors(form.hasExpiration) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.generatesPdf) }}
+                                            {{ form_label(form.generatesPdf) }}
+                                        </div>
+                                        {{ form_help(form.generatesPdf) }}
+                                        {{ form_errors(form.generatesPdf) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h4 class="card-title">Statuts autorisés</h4>
+                        </div>
+                        <div class="card-body">
+                            {{ form_label(form.allowedStatuses) }}
+                            {{ form_widget(form.allowedStatuses) }}
+                            {{ form_errors(form.allowedStatuses) }}
+                            {{ form_help(form.allowedStatuses) }}
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.sortOrder) }}
+                                {{ form_widget(form.sortOrder) }}
+                                {{ form_errors(form.sortOrder) }}
+                                {{ form_help(form.sortOrder) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form_widget(form.isActive) }}
+                                    {{ form_label(form.isActive) }}
+                                </div>
+                                {{ form_help(form.isActive) }}
+                                {{ form_errors(form.isActive) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_rest(form) }}
+                    
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                            Créer le type de document
+                        </button>
+                        <a href="{{ path('admin_document_type_index') }}" class="btn btn-link">
+                            Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

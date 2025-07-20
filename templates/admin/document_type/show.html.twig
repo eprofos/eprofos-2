@@ -1,0 +1,280 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_document_type_edit', {'id': document_type.id}) }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+            <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+            <path d="M16 5l3 3"/>
+        </svg>
+        Modifier
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {% if document_type.icon %}
+                            <span class="me-2" {% if document_type.color %}style="color: {{ document_type.color }}"{% endif %}>
+                                <i class="{{ document_type.icon }}"></i>
+                            </span>
+                        {% endif %}
+                        {{ document_type.name }}
+                    </h3>
+                    <div class="card-actions">
+                        <span class="badge {{ document_type.isActive ? 'bg-success' : 'bg-secondary' }}">
+                            {{ document_type.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Code</label>
+                                <div>
+                                    <code>{{ document_type.code }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Ordre de tri</label>
+                                <div>{{ document_type.sortOrder }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if document_type.description %}
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <div>{{ document_type.description }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Icône</label>
+                                <div>
+                                    {% if document_type.icon %}
+                                        <i class="{{ document_type.icon }}"></i>
+                                        <code class="ms-2">{{ document_type.icon }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Aucune icône</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Couleur</label>
+                                <div>
+                                    {% if document_type.color %}
+                                        <span class="d-inline-block rounded" style="width: 20px; height: 20px; background-color: {{ document_type.color }}"></span>
+                                        <code class="ms-2">{{ document_type.color }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Aucune couleur</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Configuration</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nécessite une approbation</label>
+                                <div>
+                                    <span class="badge {{ document_type.requiresApproval ? 'bg-yellow' : 'bg-gray' }}">
+                                        {{ document_type.requiresApproval ? 'Oui' : 'Non' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Plusieurs documents publiés</label>
+                                <div>
+                                    <span class="badge {{ document_type.allowMultiplePublished ? 'bg-blue' : 'bg-orange' }}">
+                                        {{ document_type.allowMultiplePublished ? 'Autorisé' : 'Un seul à la fois' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Documents avec expiration</label>
+                                <div>
+                                    <span class="badge {{ document_type.hasExpiration ? 'bg-orange' : 'bg-gray' }}">
+                                        {{ document_type.hasExpiration ? 'Oui' : 'Non' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Génération PDF</label>
+                                <div>
+                                    <span class="badge {{ document_type.generatesPdf ? 'bg-red' : 'bg-gray' }}">
+                                        {{ document_type.generatesPdf ? 'Activée' : 'Désactivée' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if document_type.allowedStatuses %}
+                        <div class="mb-3">
+                            <label class="form-label">Statuts autorisés</label>
+                            <div>
+                                {% for status in document_type.allowedStatuses %}
+                                    <span class="badge bg-gray me-1">{{ status }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if document_type.requiredMetadata %}
+                        <div class="mb-3">
+                            <label class="form-label">Métadonnées requises</label>
+                            <div>
+                                {% for metadata in document_type.requiredMetadata %}
+                                    <span class="badge bg-purple me-1">{{ metadata }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Total documents</span>
+                            <span class="fw-bold">{{ stats.document_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Documents publiés</span>
+                            <span class="fw-bold text-success">{{ stats.published_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Brouillons</span>
+                            <span class="fw-bold text-warning">{{ stats.draft_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Templates</span>
+                            <span class="fw-bold text-purple">{{ stats.template_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Informations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label small">Créé le</label>
+                        <div>{{ document_type.createdAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small">Modifié le</label>
+                        <div>{{ document_type.updatedAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <form method="post" action="{{ path('admin_document_type_toggle_status', {'id': document_type.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ document_type.id) }}">
+                            <button type="submit" class="btn {{ document_type.isActive ? 'btn-warning' : 'btn-success' }} w-100"
+                                    onclick="return confirm('Êtes-vous sûr de vouloir {{ document_type.isActive ? 'désactiver' : 'activer' }} ce type ?')">
+                                {% if document_type.isActive %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M6 19a2 2 0 0 1 -2 -2v-4l-1 -1l1 -1v-4a2 2 0 0 1 2 -2"/>
+                                        <path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2"/>
+                                    </svg>
+                                    Désactiver le type
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Activer le type
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <form method="post" action="{{ path('admin_document_type_duplicate', {'id': document_type.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ document_type.id) }}">
+                            <button type="submit" class="btn btn-info w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"/>
+                                    <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"/>
+                                </svg>
+                                Dupliquer le type
+                            </button>
+                        </form>
+
+                        {% if stats.document_count == 0 %}
+                            <form method="post" action="{{ path('admin_document_type_delete', {'id': document_type.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document_type.id) }}">
+                                <button type="submit" class="btn btn-danger w-100" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type de document ? Cette action est irréversible.')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7l16 0"/>
+                                        <path d="M10 11l0 6"/>
+                                        <path d="M14 11l0 6"/>
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                    </svg>
+                                    Supprimer le type
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <strong>Suppression impossible :</strong> Ce type contient {{ stats.document_count }} document{{ stats.document_count > 1 ? 's' : '' }}.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

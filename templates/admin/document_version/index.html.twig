@@ -1,0 +1,372 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Versions - {{ document.title }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 14l-4 -4l4 -4"/>
+                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+            </svg>
+            Retour au document
+        </a>
+        <a href="{{ path('admin_document_version_export', {'id': document.id}) }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                <path d="M12 13m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                <path d="M14 13h7"/>
+                <path d="M17 10v6"/>
+            </svg>
+            Exporter l'historique
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row g-4" data-controller="version-comparison">
+        <div class="col-12">
+            <!-- Document Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                            <path d="M9 7l1 0"/>
+                            <path d="M9 13l6 0"/>
+                            <path d="M9 17l6 0"/>
+                        </svg>
+                        {{ document.title }}
+                    </h3>
+                    <div class="card-actions">
+                        {% set status_class = {
+                            'draft': 'secondary',
+                            'review': 'warning',
+                            'approved': 'info',
+                            'published': 'success',
+                            'archived': 'dark',
+                            'expired': 'danger'
+                        } %}
+                        <span class="badge bg-{{ status_class[document.status] ?? 'secondary' }}">
+                            {{ constant('App\\Entity\\Document\\Document::STATUSES')[document.status] ?? document.status }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <strong>Type:</strong> 
+                                {% if document.documentType %}
+                                    <span class="badge bg-blue-lt">{{ document.documentType.name }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Catégorie:</strong> 
+                                {% if document.category %}
+                                    {{ document.category.name }}
+                                {% else %}
+                                    <span class="text-muted">Aucune</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <strong>Version actuelle:</strong> 
+                                <span class="badge bg-green">v{{ document.version }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Total des versions:</strong> 
+                                <span class="badge bg-blue">{{ versions|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Versions History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M3 12a9 9 0 0 1 9 -9a9.75 9.75 0 0 1 6.74 2.74l-1.132 1.132a8.25 8.25 0 0 0 -5.608 -2.372a7.5 7.5 0 0 0 -7.5 7.5"/>
+                            <path d="M21 12a9 9 0 0 1 -9 9a9.75 9.75 0 0 1 -6.74 -2.74l1.132 -1.132a8.25 8.25 0 0 0 5.608 2.372a7.5 7.5 0 0 0 7.5 -7.5"/>
+                            <path d="M12 7v5l3 3"/>
+                        </svg>
+                        Historique des versions ({{ versions|length }})
+                    </h3>
+                </div>
+                {% if versions|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Version</th>
+                                    <th>Titre</th>
+                                    <th>Modifications</th>
+                                    <th>Taille</th>
+                                    <th>Créé par</th>
+                                    <th>Date</th>
+                                    <th>État</th>
+                                    <th width="1%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for version in versions %}
+                                    <tr class="{% if version.isCurrent %}table-success{% endif %}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-{% if version.isCurrent %}green{% else %}blue{% endif %} me-2">
+                                                    v{{ version.version }}
+                                                </span>
+                                                {% if version.isCurrent %}
+                                                    <span class="badge bg-green-lt">Actuelle</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 200px;">
+                                                <a href="{{ path('admin_document_version_show', {'id': version.id}) }}" class="text-reset">
+                                                    {{ version.title }}
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if version.changeLog %}
+                                                <div class="text-truncate text-muted" style="max-width: 250px;" title="{{ version.changeLog }}">
+                                                    {{ version.shortChangeLog }}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ version.formattedFileSize }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-2 bg-secondary-lt">
+                                                    {{ version.createdByName|slice(0,2)|upper }}
+                                                </span>
+                                                <div>
+                                                    <div class="text-truncate">{{ version.createdByName }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-muted">
+                                                {{ version.createdAt|date('d/m/Y') }}<br>
+                                                <small>{{ version.createdAt|date('H:i') }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if version.verifyIntegrity %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M5 12l5 5l10 -10"/>
+                                                    </svg>
+                                                    <span class="text-green">Intègre</span>
+                                                {% else %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-red me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M18 6l-12 12"/>
+                                                        <path d="M6 6l12 12"/>
+                                                    </svg>
+                                                    <span class="text-red">Corrompue</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ path('admin_document_version_show', {'id': version.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                    </svg>
+                                                </a>
+                                                
+                                                {% if not version.isCurrent %}
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Actions
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            {% if versions|length > 1 and not version.isCurrent %}
+                                                                {% set currentVersion = null %}
+                                                                {% for v in versions %}
+                                                                    {% if v.isCurrent %}
+                                                                        {% set currentVersion = v %}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                                {% if currentVersion %}
+                                                                <li>
+                                                                    <button type="button" class="dropdown-item"
+                                                                            data-action="click->version-comparison#quickCompare"
+                                                                            data-version-comparison-version1-param="{{ version.id }}"
+                                                                            data-version-comparison-version2-param="{{ currentVersion.id }}">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                                                            <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                                                            <path d="M9 12l2 2l4 -4"/>
+                                                                        </svg>
+                                                                        Comparer avec la version actuelle
+                                                                    </button>
+                                                                </li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            <li>
+                                                                <form method="post" action="{{ path('admin_document_version_rollback', {'id': version.id}) }}" style="display: inline; width: 100%;">
+                                                                    <input type="hidden" name="_token" value="{{ csrf_token('rollback' ~ version.id) }}">
+                                                                    <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir restaurer cette version ? Une nouvelle version sera créée.')">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M9 14l-4 -4l4 -4"/>
+                                                                            <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                                                                        </svg>
+                                                                        Restaurer
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                            {% if versions|length > 1 %}
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <form method="post" action="{{ path('admin_document_version_delete', {'id': version.id}) }}" style="display: inline; width: 100%;">
+                                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ version.id) }}">
+                                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette version ? Cette action est irréversible.')">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                                <path d="M4 7l16 0"/>
+                                                                                <path d="M10 11l0 6"/>
+                                                                                <path d="M14 11l0 6"/>
+                                                                                <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                                <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                            </svg>
+                                                                            Supprimer
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                            {% endif %}
+                                                        </ul>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="{{ asset('images/undraw_files_6b3d.svg') }}" height="128" alt="">
+                            </div>
+                            <p class="empty-title">Aucune version</p>
+                            <p class="empty-subtitle text-muted">
+                                Ce document n'a pas encore d'historique de versions.
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Version Comparison -->
+            {% if versions|length > 1 %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                            </svg>
+                            Comparaison rapide
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form data-version-comparison-target="form"
+                              data-action="submit->version-comparison#submit">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Version 1 (ancienne)</label>
+                                    <select name="version1" class="form-select"
+                                            data-version-comparison-target="version1"
+                                            data-action="change->version-comparison#versionChanged">
+                                        <option value="">Sélectionner une version...</option>
+                                        {% for version in versions %}
+                                            <option value="{{ version.id }}">v{{ version.version }} - {{ version.title|slice(0, 30) }}{% if version.title|length > 30 %}...{% endif %} ({{ version.createdAt|date('d/m/Y') }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="pt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M17 7l-10 10"/>
+                                            <path d="M8 7l9 0l0 9"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Version 2 (récente)</label>
+                                    <select name="version2" class="form-select"
+                                            data-version-comparison-target="version2"
+                                            data-action="change->version-comparison#versionChanged">
+                                        <option value="">Sélectionner une version...</option>
+                                        {% for version in versions %}
+                                            <option value="{{ version.id }}">v{{ version.version }} - {{ version.title|slice(0, 30) }}{% if version.title|length > 30 %}...{% endif %} ({{ version.createdAt|date('d/m/Y') }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary" disabled
+                                        data-version-comparison-target="compareButton">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                    </svg>
+                                    Comparer les versions
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2"
+                                        data-action="click->version-comparison#clear">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7h16"/>
+                                        <path d="M10 11v6"/>
+                                        <path d="M14 11v6"/>
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                    </svg>
+                                    Réinitialiser
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# Version comparison functionality is now handled by Stimulus controller #}
+{% endblock %}

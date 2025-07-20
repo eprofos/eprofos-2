@@ -1,0 +1,321 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set breadcrumb = [
+    {'label': 'Documents', 'url': path('admin_document_index')},
+    {'label': 'Modèles UI', 'url': path('admin_document_ui_template_index')},
+    {'label': ui_template.name}
+] %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        {% if ui_template.icon %}
+                            <i class="{{ ui_template.icon }} me-2"></i>
+                        {% else %}
+                            <i class="fas fa-layer-group me-2"></i>
+                        {% endif %}
+                        {{ ui_template.name }}
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ path('admin_document_ui_template_preview', {id: ui_template.id}) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </a>
+                        <a href="{{ path('admin_document_ui_template_edit', {id: ui_template.id}) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>
+                            Modifier
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if ui_template.description %}
+                        <p class="text-muted">{{ ui_template.description }}</p>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Informations générales</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Type de document :</strong></td>
+                                    <td>
+                                        {% if ui_template.isGlobal %}
+                                            <span class="badge bg-info">Global (tous types)</span>
+                                        {% else %}
+                                            {{ ui_template.documentType ? ui_template.documentType.name : 'Non défini' }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Statut :</strong></td>
+                                    <td>
+                                        {% if ui_template.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactif</span>
+                                        {% endif %}
+                                        {% if ui_template.isDefault %}
+                                            <span class="badge bg-primary ms-1">Défaut</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Créé le :</strong></td>
+                                    <td>{{ ui_template.createdAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modifié le :</strong></td>
+                                    <td>{{ ui_template.updatedAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% if ui_template.createdBy %}
+                                <tr>
+                                    <td><strong>Créé par :</strong></td>
+                                    <td>{{ ui_template.createdBy.firstName }} {{ ui_template.createdBy.lastName }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Configuration de la page</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Format :</strong></td>
+                                    <td>{{ ui_template.paperSize }} {{ ui_template.orientation == 'landscape' ? 'Paysage' : 'Portrait' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Marges :</strong></td>
+                                    <td>
+                                        Haut: {{ ui_template.marginTop }}mm, 
+                                        Droite: {{ ui_template.marginRight }}mm, 
+                                        Bas: {{ ui_template.marginBottom }}mm, 
+                                        Gauche: {{ ui_template.marginLeft }}mm
+                                    </td>
+                                </tr>
+                                {% if ui_template.color %}
+                                <tr>
+                                    <td><strong>Couleur :</strong></td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ ui_template.color }}; color: white;">
+                                            {{ ui_template.color }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td><strong>Numéros de page :</strong></td>
+                                    <td>
+                                        {% if ui_template.showPageNumbers %}
+                                            <span class="badge bg-success">Oui</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Non</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if ui_template.customCss %}
+                        <h6 class="mt-4">CSS personnalisé</h6>
+                        <pre class="bg-light p-3 rounded"><code>{{ ui_template.customCss }}</code></pre>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Components -->
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-puzzle-piece me-2"></i>
+                        Composants ({{ components|length }})
+                    </h4>
+                    <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id}) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Ajouter un composant
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if components is empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-puzzle-piece fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-2">Aucun composant configuré</p>
+                            <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id}) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Ajouter le premier composant
+                            </a>
+                        </div>
+                    {% else %}
+                        {% set zones = {'header': [], 'body': [], 'footer': []} %}
+                        {% for component in components %}
+                            {% set zones = zones|merge({(component.zone): zones[component.zone]|merge([component])}) %}
+                        {% endfor %}
+                        
+                        {% for zoneName, zoneComponents in zones %}
+                            {% if zoneComponents is not empty %}
+                                <h6 class="text-uppercase text-muted mb-2">{{ zoneName|title }}</h6>
+                                <div class="row mb-3">
+                                    {% for component in zoneComponents %}
+                                        <div class="col-md-6 col-lg-4 mb-2">
+                                            <div class="card border">
+                                                <div class="card-body p-2">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="card-title mb-1">{{ component.name }}</h6>
+                                                            <small class="text-muted">{{ component.type|title }}</small>
+                                                            {% if component.isRequired %}
+                                                                <span class="badge bg-warning text-dark ms-1">Requis</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ path('admin_document_ui_component_edit', {templateId: ui_template.id, id: component.id}) }}" 
+                                                               class="btn btn-outline-primary btn-xs">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    {% if component.content %}
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">{{ component.content|slice(0, 50) }}{% if component.content|length > 50 %}...{% endif %}</small>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Actions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_document_ui_template_preview', {id: ui_template.id}) }}" 
+                           class="btn btn-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu du document
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_component_index', {templateId: ui_template.id}) }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-puzzle-piece me-1"></i>
+                            Gérer les composants
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_template_edit', {id: ui_template.id}) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i>
+                            Modifier le modèle
+                        </a>
+                        
+                        <a href="{{ path('admin_document_ui_template_export', {id: ui_template.id}) }}" 
+                           class="btn btn-success">
+                            <i class="fas fa-download me-1"></i>
+                            Exporter
+                        </a>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_template_duplicate', {id: ui_template.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ ui_template.id) }}">
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-copy me-1"></i>
+                                Dupliquer
+                            </button>
+                        </form>
+                        
+                        <hr>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_template_toggle_status', {id: ui_template.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ ui_template.id) }}">
+                            <button type="submit" class="btn btn-outline-{{ ui_template.isActive ? 'danger' : 'success' }} w-100">
+                                <i class="fas fa-{{ ui_template.isActive ? 'pause' : 'play' }} me-1"></i>
+                                {{ ui_template.isActive ? 'Désactiver' : 'Activer' }}
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{{ path('admin_document_ui_template_delete', {id: ui_template.id}) }}" 
+                              class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce modèle UI ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ui_template.id) }}">
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash me-1"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <div class="fs-4 fw-bold text-primary">{{ stats.usage_count }}</div>
+                                <small class="text-muted">Utilisations</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="fs-4 fw-bold text-info">{{ stats.component_count }}</div>
+                            <small class="text-muted">Composants</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Usage -->
+            {% if stats.recent_usage is not empty %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            Utilisations récentes
+                        </h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for usage in stats.recent_usage %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ usage.document_title }}</h6>
+                                            <small class="text-muted">{{ usage.created_at|date('d/m/Y à H:i') }}</small>
+                                        </div>
+                                        <small>{{ usage.user_name }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

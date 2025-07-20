@@ -1,0 +1,317 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div class="container-fluid">
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+    
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Informations générales
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.name, {
+                                'label': 'Nom du modèle',
+                                'attr': {'class': 'form-control', 'placeholder': 'Ex: Modèle facture standard'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.icon, {
+                                'label': 'Icône (classe CSS)',
+                                'attr': {'class': 'form-control', 'placeholder': 'Ex: fas fa-file-invoice'}
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    {{ form_row(form.description, {
+                        'label': 'Description',
+                        'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Description du modèle UI...'}
+                    }) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.documentType, {
+                                'label': 'Type de document',
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                {{ form_widget(form.isGlobal, {
+                                    'attr': {'class': 'form-check-input', 'role': 'switch'}
+                                }) }}
+                                {{ form_label(form.isGlobal, 'Modèle global (tous types)', {
+                                    'label_attr': {'class': 'form-check-label'}
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Page Configuration -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Configuration de la page
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.paperSize, {
+                                'label': 'Format papier',
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.orientation, {
+                                'label': 'Orientation',
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.color, {
+                                'label': 'Couleur principale',
+                                'attr': {'class': 'form-control', 'type': 'color'}
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-3">Marges (en mm)</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            {{ form_row(form.marginTop, {
+                                'label': 'Haut',
+                                'attr': {'class': 'form-control', 'min': 0, 'step': 0.1}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.marginRight, {
+                                'label': 'Droite',
+                                'attr': {'class': 'form-control', 'min': 0, 'step': 0.1}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.marginBottom, {
+                                'label': 'Bas',
+                                'attr': {'class': 'form-control', 'min': 0, 'step': 0.1}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.marginLeft, {
+                                'label': 'Gauche',
+                                'attr': {'class': 'form-control', 'min': 0, 'step': 0.1}
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CSS Styling -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fab fa-css3-alt me-2"></i>
+                        Styles CSS personnalisés
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.customCss, {
+                        'label': false,
+                        'attr': {
+                            'class': 'form-control font-monospace',
+                            'rows': 8,
+                            'placeholder': '/* CSS personnalisé pour ce modèle */\n.document-header {\n    background-color: #f8f9fa;\n    padding: 20px;\n}\n\n.document-title {\n    font-size: 24px;\n    font-weight: bold;\n}'
+                        }
+                    }) }}
+                    <div class="form-text">
+                        Utilisez du CSS standard pour personnaliser l'apparence du document.
+                        Les classes spéciales : .document-header, .document-body, .document-footer
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status and Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Statut et options
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        {{ form_widget(form.isActive, {
+                            'attr': {'class': 'form-check-input', 'role': 'switch'}
+                        }) }}
+                        {{ form_label(form.isActive, 'Modèle actif', {
+                            'label_attr': {'class': 'form-check-label'}
+                        }) }}
+                        <div class="form-text">Les modèles inactifs ne sont pas utilisables</div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        {{ form_widget(form.isDefault, {
+                            'attr': {'class': 'form-check-input', 'role': 'switch'}
+                        }) }}
+                        {{ form_label(form.isDefault, 'Modèle par défaut', {
+                            'label_attr': {'class': 'form-check-label'}
+                        }) }}
+                        <div class="form-text">Utilisé automatiquement pour ce type de document</div>
+                    </div>
+                    
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.showPageNumbers, {
+                            'attr': {'class': 'form-check-input', 'role': 'switch'}
+                        }) }}
+                        {{ form_label(form.showPageNumbers, 'Numéros de page', {
+                            'label_attr': {'class': 'form-check-label'}
+                        }) }}
+                        <div class="form-text">Afficher les numéros de page automatiquement</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Variables Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i>
+                        Variables disponibles
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2"><strong>Variables de document :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            <li><code>{{ '{{ document.title }}' }}</code></li>
+                            <li><code>{{ '{{ document.content }}' }}</code></li>
+                            <li><code>{{ '{{ document.createdAt }}' }}</code></li>
+                            <li><code>{{ '{{ document.updatedAt }}' }}</code></li>
+                        </ul>
+                        
+                        <p class="mb-2 mt-3"><strong>Variables d'utilisateur :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            <li><code>{{ '{{ user.firstName }}' }}</code></li>
+                            <li><code>{{ '{{ user.lastName }}' }}</code></li>
+                            <li><code>{{ '{{ user.email }}' }}</code></li>
+                        </ul>
+                        
+                        <p class="mb-2 mt-3"><strong>Variables de système :</strong></p>
+                        <ul class="list-unstyled ms-2">
+                            <li><code>{{ '{{ date.now }}' }}</code></li>
+                            <li><code>{{ '{{ date.today }}' }}</code></li>
+                            <li><code>{{ '{{ page.current }}' }}</code></li>
+                            <li><code>{{ '{{ page.total }}' }}</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {{ ui_template.id ? 'Mettre à jour' : 'Créer le modèle' }}
+                        </button>
+                        
+                        {% if ui_template.id %}
+                            <a href="{{ path('admin_document_ui_template_preview', {id: ui_template.id}) }}" 
+                               class="btn btn-outline-info">
+                                <i class="fas fa-eye me-1"></i>
+                                Aperçu
+                            </a>
+                            
+                            <a href="{{ path('admin_document_ui_component_index', {templateId: ui_template.id}) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-puzzle-piece me-1"></i>
+                                Gérer les composants
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{{ path('admin_document_ui_template_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle global template checkbox
+            const isGlobalCheckbox = document.querySelector('#{{ form.isGlobal.vars.id }}');
+            const documentTypeField = document.querySelector('#{{ form.documentType.vars.id }}');
+            
+            if (isGlobalCheckbox && documentTypeField) {
+                function toggleDocumentTypeField() {
+                    if (isGlobalCheckbox.checked) {
+                        documentTypeField.disabled = true;
+                        documentTypeField.value = '';
+                    } else {
+                        documentTypeField.disabled = false;
+                    }
+                }
+                
+                // Initial state
+                toggleDocumentTypeField();
+                
+                // Listen for changes
+                isGlobalCheckbox.addEventListener('change', toggleDocumentTypeField);
+            }
+            
+            // CSS syntax highlighting (basic)
+            const cssTextarea = document.querySelector('#{{ form.customCss.vars.id }}');
+            if (cssTextarea) {
+                cssTextarea.addEventListener('input', function() {
+                    // Basic CSS validation could be added here
+                });
+                
+                // Add tab support
+                cssTextarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        const start = this.selectionStart;
+                        const end = this.selectionEnd;
+                        this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                        this.selectionStart = this.selectionEnd = start + 4;
+                    }
+                });
+            }
+            
+            // Form validation
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+        });
+    </script>
+{% endblock %}

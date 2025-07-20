@@ -1,0 +1,304 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ document_metadata.displayName ?: document_metadata.metadataKey }} - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ document_metadata.displayName ?: document_metadata.metaKey }}</h1>
+                    <p class="text-muted">Détails de la métadonnée</p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_document_metadata_edit', {id: document_metadata.id}) }}" class="btn btn-primary me-2">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_document_metadata_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Main Info Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tag me-2"></i>Informations de la métadonnée
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-3">Document :</dt>
+                                <dd class="col-sm-9">
+                                    <div class="fw-medium">{{ document_metadata.document.title }}</div>
+                                    <small class="text-muted">{{ document_metadata.document.documentType.name }}</small>
+                                </dd>
+                                
+                                <dt class="col-sm-3">Clé :</dt>
+                                <dd class="col-sm-9">
+                                    <code class="text-dark">{{ document_metadata.metaKey }}</code>
+                                </dd>
+                                
+                                <dt class="col-sm-3">Nom d'affichage :</dt>
+                                <dd class="col-sm-9">{{ document_metadata.displayName ?: document_metadata.metaKey }}</dd>
+                                
+                                <dt class="col-sm-3">Description :</dt>
+                                <dd class="col-sm-9">
+                                    {% if document_metadata.description %}
+                                        {{ document_metadata.description }}
+                                    {% else %}
+                                        <span class="text-muted fst-italic">Aucune description</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Value Card -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-database me-2"></i>Valeur et type
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-3">Type :</dt>
+                                <dd class="col-sm-9">
+                                    <span class="badge bg-secondary">{{ document_metadata.dataType }}</span>
+                                </dd>
+                                
+                                <dt class="col-sm-3">Valeur brute :</dt>
+                                <dd class="col-sm-9">
+                                    <code class="text-dark">{{ document_metadata.metaValue }}</code>
+                                </dd>
+                                
+                                <dt class="col-sm-3">Valeur formatée :</dt>
+                                <dd class="col-sm-9">
+                                    {% set typed_value = document_metadata.typedValue %}
+                                    {% if document_metadata.dataType == 'boolean' %}
+                                        {% if typed_value %}
+                                            <span class="badge bg-success fs-6">
+                                                <i class="fas fa-check me-1"></i>Oui
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger fs-6">
+                                                <i class="fas fa-times me-1"></i>Non
+                                            </span>
+                                        {% endif %}
+                                    {% elseif document_metadata.dataType == 'date' or document_metadata.dataType == 'datetime' %}
+                                        {% if document_metadata.dataType == 'datetime' %}
+                                            <span class="fs-6">
+                                                <i class="fas fa-clock me-1"></i>{{ typed_value|date('d/m/Y H:i') }}
+                                            </span>
+                                        {% else %}
+                                            <span class="fs-6">
+                                                <i class="fas fa-calendar me-1"></i>{{ typed_value|date('d/m/Y') }}
+                                            </span>
+                                        {% endif %}
+                                    {% elseif document_metadata.dataType == 'json' %}
+                                        <div class="mt-2">
+                                            <pre class="bg-light p-3 rounded">{{ typed_value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                        </div>
+                                    {% elseif document_metadata.dataType == 'url' %}
+                                        <a href="{{ typed_value }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>{{ typed_value }}
+                                        </a>
+                                    {% elseif document_metadata.dataType == 'text' %}
+                                        <div class="mt-2 p-3 bg-light rounded">
+                                            {{ typed_value|nl2br }}
+                                        </div>
+                                    {% elseif document_metadata.dataType == 'file' %}
+                                        <span class="fs-6">
+                                            <i class="fas fa-file me-1"></i>{{ typed_value }}
+                                        </span>
+                                    {% else %}
+                                        <span class="fs-6">{{ typed_value }}</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Related Documents (if any) -->
+                    {% if document_metadata.document.documentType.documents|length > 1 %}
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-files-o me-2"></i>Documents associés
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for doc in document_metadata.document.documentType.documents %}
+                                    {% if doc.id != document_metadata.document.id %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-file-alt text-muted me-2"></i>
+                                                <span>{{ doc.title }}</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Properties Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cog me-2"></i>Propriétés
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-6">Requis :</dt>
+                                <dd class="col-sm-6">
+                                    {% if document_metadata.isRequired %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Oui
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-check me-1"></i>Non
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-6">Recherchable :</dt>
+                                <dd class="col-sm-6">
+                                    {% if document_metadata.isSearchable %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-search me-1"></i>Oui
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-times me-1"></i>Non
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+
+                            <hr>
+
+                            <h6>Dates de suivi :</h6>
+                            <dl class="row small">
+                                <dt class="col-sm-6">Créé le :</dt>
+                                <dd class="col-sm-6">{{ document_metadata.createdAt|date('d/m/Y H:i') }}</dd>
+                                
+                                <dt class="col-sm-6">Mis à jour :</dt>
+                                <dd class="col-sm-6">{{ document_metadata.updatedAt|date('d/m/Y H:i') }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Actions Card -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tools me-2"></i>Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_document_metadata_edit', {id: document_metadata.id}) }}" class="btn btn-primary">
+                                    <i class="fas fa-edit me-2"></i>Modifier cette métadonnée
+                                </a>
+                                
+                                <a href="{{ path('admin_document_show', {id: document_metadata.document.id}) }}" class="btn btn-outline-info">
+                                    <i class="fas fa-file-alt me-2"></i>Voir le document
+                                </a>
+                                
+                                <hr class="my-2">
+                                
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Type Info Card -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Type de valeur
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% set type_info = {
+                                'string': {'icon': 'fas fa-font', 'desc': 'Chaîne de caractères'},
+                                'text': {'icon': 'fas fa-align-left', 'desc': 'Texte long'},
+                                'integer': {'icon': 'fas fa-hashtag', 'desc': 'Nombre entier'},
+                                'float': {'icon': 'fas fa-calculator', 'desc': 'Nombre décimal'},
+                                'boolean': {'icon': 'fas fa-toggle-on', 'desc': 'Vrai ou faux'},
+                                'date': {'icon': 'fas fa-calendar', 'desc': 'Date'},
+                                'datetime': {'icon': 'fas fa-clock', 'desc': 'Date et heure'},
+                                'json': {'icon': 'fas fa-code', 'desc': 'Données JSON'},
+                                'file': {'icon': 'fas fa-file', 'desc': 'Fichier'},
+                                'url': {'icon': 'fas fa-link', 'desc': 'URL'}
+                            } %}
+                            
+                            {% set current_type = type_info[document_metadata.dataType] %}
+                            {% if current_type %}
+                                <div class="text-center">
+                                    <i class="{{ current_type.icon }} fa-2x text-muted mb-2"></i>
+                                    <div class="fw-medium">{{ document_metadata.dataType|title }}</div>
+                                    <div class="text-muted small">{{ current_type.desc }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette métadonnée ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action est irréversible.
+                </div>
+                <p class="text-muted small">
+                    <strong>Métadonnée :</strong> {{ document_metadata.displayName ?: document_metadata.metaKey }}<br>
+                    <strong>Document :</strong> {{ document_metadata.document.title }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ path('admin_document_metadata_delete', {id: document_metadata.id}) }}" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document_metadata.id) }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

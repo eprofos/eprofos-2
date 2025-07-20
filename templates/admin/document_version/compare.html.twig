@@ -1,0 +1,401 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Comparaison: v{{ version1.version }} vs v{{ version2.version }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 14l-4 -4l4 -4"/>
+                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+            </svg>
+            Retour aux versions
+        </a>
+        <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+            </svg>
+            Voir le document
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row g-4">
+        <div class="col-12">
+            <!-- Comparison Header -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                            <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                            <path d="M9 12l2 2l4 -4"/>
+                        </svg>
+                        Comparaison de versions
+                    </h3>
+                    <div class="card-actions">
+                        <span class="badge bg-blue">{{ document.title }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-blue me-2">v{{ version1.version }}</span>
+                                <strong>Version {{ version1.version }}</strong>
+                            </div>
+                            <div class="text-muted">
+                                Créée le {{ version1.createdAt|date('d/m/Y à H:i') }}
+                                {% if version1.createdBy %}
+                                    par {{ version1.createdByName }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-{% if version2.isCurrent %}green{% else %}blue{% endif %} me-2">v{{ version2.version }}</span>
+                                <strong>Version {{ version2.version }}</strong>
+                                {% if version2.isCurrent %}
+                                    <span class="badge bg-green-lt ms-2">Actuelle</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted">
+                                Créée le {{ version2.createdAt|date('d/m/Y à H:i') }}
+                                {% if version2.createdBy %}
+                                    par {{ version2.createdByName }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Résumé des différences</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if version1.title != version2.title %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-warning me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v2m0 4v.01"/>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                    </svg>
+                                    <span class="text-warning">Titre modifié</span>
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    <span class="text-green">Titre identique</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if version1.content != version2.content %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-warning me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v2m0 4v.01"/>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                    </svg>
+                                    <span class="text-warning">Contenu modifié</span>
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    <span class="text-green">Contenu identique</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-blue me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M4 7h3a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1z"/>
+                                    <path d="M17 7h3a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1z"/>
+                                    <path d="M12 20v-13"/>
+                                    <path d="M9 7l3 -3l3 3"/>
+                                </svg>
+                                <span class="text-blue">
+                                    {% set sizeDiff = version2.contentLength - version1.contentLength %}
+                                    {% if sizeDiff > 0 %}
+                                        +{{ sizeDiff }} caractères
+                                    {% elseif sizeDiff < 0 %}
+                                        {{ sizeDiff }} caractères
+                                    {% else %}
+                                        Même taille
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                    <path d="M12 7v5l3 3"/>
+                                </svg>
+                                <span class="text-muted">
+                                    {% set timeDiff = (version2.createdAt.timestamp - version1.createdAt.timestamp) / 3600 %}
+                                    {% if timeDiff < 24 %}
+                                        {{ timeDiff|round(1) }} heures d'écart
+                                    {% else %}
+                                        {{ (timeDiff / 24)|round(1) }} jours d'écart
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title Comparison -->
+            {% if version1.title != version2.title %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Comparaison des titres</h3>
+                    </div>
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="card-body border-end">
+                                <h4 class="text-muted mb-2">Version {{ version1.version }}</h4>
+                                <div class="bg-red-lt p-3 rounded">
+                                    {{ version1.title }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <h4 class="text-muted mb-2">Version {{ version2.version }}</h4>
+                                <div class="bg-green-lt p-3 rounded">
+                                    {{ version2.title }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Content Comparison -->
+            <div class="card mb-4" data-controller="version-comparison-view">
+                <div class="card-header">
+                    <h3 class="card-title">Comparaison du contenu</h3>
+                    <div class="card-actions">
+                        <div class="btn-group" role="group" aria-label="Affichage">
+                            <input type="radio" class="btn-check" name="display-mode" id="side-by-side" autocomplete="off" checked
+                                   data-action="change->version-comparison-view#showSideBySide">
+                            <label class="btn btn-sm btn-outline-primary" for="side-by-side">Côte à côte</label>
+
+                            <input type="radio" class="btn-check" name="display-mode" id="unified" autocomplete="off"
+                                   data-action="change->version-comparison-view#showUnified">
+                            <label class="btn btn-sm btn-outline-primary" for="unified">Unifié</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Side by Side View -->
+                <div data-version-comparison-view-target="sideBySideView" class="comparison-view">
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="card-body border-end">
+                                <h4 class="text-muted mb-3">
+                                    Version {{ version1.version }}
+                                    <span class="badge bg-red-lt ms-2">{{ version1.contentLength }} caractères</span>
+                                </h4>
+                                <div class="bg-light p-3 rounded" style="height: 400px; overflow-y: auto;">
+                                    {% if version1.content %}
+                                        <div class="content-comparison content-old">
+                                            {{ version1.content|striptags|slice(0, 2000) }}
+                                            {% if version1.content|length > 2000 %}
+                                                <div class="text-muted mt-2">
+                                                    <em>... contenu tronqué ({{ version1.contentLength - 2000 }} caractères restants)</em>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="empty">
+                                            <p class="empty-title">Aucun contenu</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <h4 class="text-muted mb-3">
+                                    Version {{ version2.version }}
+                                    <span class="badge bg-green-lt ms-2">{{ version2.contentLength }} caractères</span>
+                                </h4>
+                                <div class="bg-light p-3 rounded" style="height: 400px; overflow-y: auto;">
+                                    {% if version2.content %}
+                                        <div class="content-comparison content-new">
+                                            {{ version2.content|striptags|slice(0, 2000) }}
+                                            {% if version2.content|length > 2000 %}
+                                                <div class="text-muted mt-2">
+                                                    <em>... contenu tronqué ({{ version2.contentLength - 2000 }} caractères restants)</em>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="empty">
+                                            <p class="empty-title">Aucun contenu</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified View -->
+                <div data-version-comparison-view-target="unifiedView" class="comparison-view" style="display: none;">
+                    <div class="card-body">
+                        <div class="bg-light p-3 rounded">
+                            <div class="alert alert-info">
+                                <div class="d-flex">
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-title">Comparaison textuelle avancée</h4>
+                                        <div class="text-muted">
+                                            Une comparaison détaillée caractère par caractère serait disponible avec des outils de diff avancés.
+                                            Pour l'instant, vous pouvez comparer visuellement les deux versions côte à côte.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Logs Comparison -->
+            {% if version1.changeLog or version2.changeLog %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Journaux des modifications</h3>
+                    </div>
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="card-body border-end">
+                                <h4 class="text-muted mb-2">Version {{ version1.version }}</h4>
+                                {% if version1.changeLog %}
+                                    <div class="bg-light p-3 rounded">
+                                        {{ version1.changeLog|nl2br }}
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted fst-italic">Aucun journal de modifications</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <h4 class="text-muted mb-2">Version {{ version2.version }}</h4>
+                                {% if version2.changeLog %}
+                                    <div class="bg-light p-3 rounded">
+                                        {{ version2.changeLog|nl2br }}
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted fst-italic">Aucun journal de modifications</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{{ path('admin_document_version_show', {'id': version1.id}) }}" class="btn btn-outline-primary w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                </svg>
+                                Voir version {{ version1.version }}
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ path('admin_document_version_show', {'id': version2.id}) }}" class="btn btn-outline-primary w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                    <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                </svg>
+                                Voir version {{ version2.version }}
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            {% if not version1.isCurrent %}
+                                <form method="post" action="{{ path('admin_document_version_rollback', {'id': version1.id}) }}" style="display: inline; width: 100%;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('rollback' ~ version1.id) }}">
+                                    <button type="submit" class="btn btn-warning w-100" onclick="return confirm('Êtes-vous sûr de vouloir restaurer la version {{ version1.version }} ? Une nouvelle version sera créée.')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 14l-4 -4l4 -4"/>
+                                            <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                                        </svg>
+                                        Restaurer v{{ version1.version }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# View switching functionality is now handled by Stimulus controller #}
+    
+    <style>
+        .content-comparison {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        
+        .content-old {
+            background-color: #ffeaea;
+            border-left: 4px solid #dc3545;
+            padding-left: 10px;
+        }
+        
+        .content-new {
+            background-color: #eafaf1;
+            border-left: 4px solid #198754;
+            padding-left: 10px;
+        }
+        
+        .comparison-view {
+            transition: all 0.3s ease;
+        }
+    </style>
+{% endblock %}

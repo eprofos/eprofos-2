@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\SessionRegistration;
-use App\Entity\LegalDocument;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;

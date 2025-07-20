@@ -1,0 +1,259 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau document - Administration{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Créer un nouveau document</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-document-form': 'true'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Main Content -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Contenu principal</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.title) }}
+                                        {{ form_widget(form.title) }}
+                                        {{ form_errors(form.title) }}
+                                        {{ form_help(form.title) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.slug) }}
+                                        {{ form_widget(form.slug) }}
+                                        {{ form_errors(form.slug) }}
+                                        {{ form_help(form.slug) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.description) }}
+                                        {{ form_widget(form.description) }}
+                                        {{ form_errors(form.description) }}
+                                        {{ form_help(form.description) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.content) }}
+                                        {{ form_widget(form.content) }}
+                                        {{ form_errors(form.content) }}
+                                        {{ form_help(form.content) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Metadata Fields -->
+                            {% for field_name, field in form %}
+                                {% if field_name starts with 'meta_' %}
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h4 class="card-title">Métadonnées personnalisées</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                {{ form_label(field) }}
+                                                {{ form_widget(field) }}
+                                                {{ form_errors(field) }}
+                                                {{ form_help(field) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Publication Settings -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Paramètres de publication</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.documentType) }}
+                                        {{ form_widget(form.documentType) }}
+                                        {{ form_errors(form.documentType) }}
+                                        {{ form_help(form.documentType) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.category) }}
+                                        {{ form_widget(form.category) }}
+                                        {{ form_errors(form.category) }}
+                                        {{ form_help(form.category) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.status) }}
+                                        {{ form_widget(form.status) }}
+                                        {{ form_errors(form.status) }}
+                                        {{ form_help(form.status) }}
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-check form-switch">
+                                                {{ form_widget(form.isActive) }}
+                                                {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                                {{ form_errors(form.isActive) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-check form-switch">
+                                                {{ form_widget(form.isPublic) }}
+                                                {{ form_label(form.isPublic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                                {{ form_errors(form.isPublic) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Options -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h4 class="card-title">Options avancées</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {{ form_label(form.tags) }}
+                                        {{ form_widget(form.tags) }}
+                                        {{ form_errors(form.tags) }}
+                                        {{ form_help(form.tags) }}
+                                    </div>
+
+                                    {% if form.expiresAt is defined %}
+                                        <div class="mb-3">
+                                            {{ form_label(form.expiresAt) }}
+                                            {{ form_widget(form.expiresAt) }}
+                                            {{ form_errors(form.expiresAt) }}
+                                            {{ form_help(form.expiresAt) }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" name="action" value="save" class="btn btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                                <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                                <path d="M14 4l0 4l-6 0l0 -4"/>
+                                            </svg>
+                                            Enregistrer
+                                        </button>
+                                        <button type="submit" name="action" value="save_and_continue" class="btn btn-outline-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                                <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                                <path d="M14 4l0 4l-6 0l0 -4"/>
+                                            </svg>
+                                            Enregistrer et continuer
+                                        </button>
+                                        <a href="{{ path('admin_document_index') }}" class="btn btn-outline-secondary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1"/>
+                                            </svg>
+                                            Annuler
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-generate slug from title
+            const titleField = document.getElementById('document_title');
+            const slugField = document.getElementById('document_slug');
+            
+            if (titleField && slugField) {
+                titleField.addEventListener('input', function() {
+                    if (!slugField.value || slugField.dataset.autoGenerated === 'true') {
+                        const slug = this.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-+|-+$/g, '');
+                        
+                        slugField.value = slug;
+                        slugField.dataset.autoGenerated = 'true';
+                    }
+                });
+                
+                slugField.addEventListener('input', function() {
+                    this.dataset.autoGenerated = 'false';
+                });
+            }
+
+            // Initialize rich text editor if present
+            const editorField = document.querySelector('[data-editor="true"]');
+            if (editorField && typeof tinymce !== 'undefined') {
+                tinymce.init({
+                    target: editorField,
+                    height: 400,
+                    menubar: false,
+                    plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | blocks | ' +
+                        'bold italic backcolor | alignleft aligncenter ' +
+                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                        'removeformat | help',
+                    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px }'
+                });
+            }
+
+            // Initialize tags input if present
+            const tagsField = document.querySelector('[data-tags="true"]');
+            if (tagsField) {
+                // Simple tags implementation - can be enhanced with a proper library
+                tagsField.addEventListener('input', function() {
+                    // Basic validation for tags format
+                    const value = this.value;
+                    if (value && !value.match(/^[\w\s,]+$/)) {
+                        this.setCustomValidity('Les tags ne peuvent contenir que des lettres, chiffres, espaces et virgules.');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Document type change handler for dynamic fields
+            const documentTypeField = document.getElementById('document_documentType');
+            if (documentTypeField) {
+                documentTypeField.addEventListener('change', function() {
+                    // In a real implementation, you might want to reload the form
+                    // or make an AJAX call to get type-specific fields
+                    console.log('Document type changed to:', this.value);
+                });
+            }
+        });
+    </script>
+{% endblock %}

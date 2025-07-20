@@ -1,0 +1,278 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Version {{ version.version }} - {{ version.title }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 14l-4 -4l4 -4"/>
+                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+            </svg>
+            Retour aux versions
+        </a>
+        {% if not version.isCurrent %}
+            <form method="post" action="{{ path('admin_document_version_rollback', {'id': version.id}) }}" style="display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('rollback' ~ version.id) }}">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Êtes-vous sûr de vouloir restaurer cette version ? Une nouvelle version sera créée.')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M9 14l-4 -4l4 -4"/>
+                        <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                    </svg>
+                    Restaurer cette version
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <!-- Version Content -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="badge bg-{% if version.isCurrent %}green{% else %}blue{% endif %} me-2">
+                            v{{ version.version }}
+                        </span>
+                        {{ version.title }}
+                    </h3>
+                    <div class="card-actions">
+                        {% if version.isCurrent %}
+                            <span class="badge bg-green">Version actuelle</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Version archivée</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if version.changeLog %}
+                        <div class="mb-4">
+                            <h4>Journal des modifications</h4>
+                            <div class="alert alert-info">
+                                <div class="d-flex">
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        {{ version.changeLog|nl2br }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if version.content %}
+                        <div class="mb-4">
+                            <h4>Contenu de la version</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ version.content|raw }}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty">
+                            <p class="empty-title">Aucun contenu</p>
+                            <p class="empty-subtitle text-muted">
+                                Cette version ne contient pas de contenu textuel.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <!-- Version Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Informations de la version</h3>
+                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Numéro de version</div>
+                            <div class="datagrid-content">
+                                <span class="badge bg-{% if version.isCurrent %}green{% else %}blue{% endif %}">
+                                    v{{ version.version }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">État</div>
+                            <div class="datagrid-content">
+                                {% if version.isCurrent %}
+                                    <span class="badge bg-green">Actuelle</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Archivée</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Taille du contenu</div>
+                            <div class="datagrid-content">
+                                <span class="text-muted">{{ version.contentLength }} caractères</span>
+                            </div>
+                        </div>
+                        {% if version.fileSize %}
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Taille fichier</div>
+                                <div class="datagrid-content">
+                                    <span class="text-muted">{{ version.formattedFileSize }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Intégrité</div>
+                            <div class="datagrid-content">
+                                {% if version.verifyIntegrity %}
+                                    <span class="badge bg-green-lt">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Vérifiée
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-red-lt">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M18 6l-12 12"/>
+                                            <path d="M6 6l12 12"/>
+                                        </svg>
+                                        Corrompue
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if version.checksum %}
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Checksum</div>
+                                <div class="datagrid-content">
+                                    <code class="text-muted">{{ version.checksum|slice(0, 12) }}...</code>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Créé par</div>
+                            <div class="datagrid-content">
+                                {% if version.createdBy %}
+                                    <div class="d-flex align-items-center">
+                                        <span class="avatar avatar-sm me-2">{{ version.createdBy.firstName|slice(0,1) }}{{ version.createdBy.lastName|slice(0,1) }}</span>
+                                        <div>
+                                            <div>{{ version.createdBy.firstName }} {{ version.createdBy.lastName }}</div>
+                                            <div class="text-muted">{{ version.createdBy.email }}</div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Système</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Date de création</div>
+                            <div class="datagrid-content">
+                                <div>{{ version.createdAt|date('d/m/Y à H:i') }}</div>
+                                <div class="text-muted">Il y a {{ ((date().timestamp - version.createdAt.timestamp) / 3600)|round }} heures</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Document parent</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-blue" width="32" height="32" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                <path d="M9 7l1 0"/>
+                                <path d="M9 13l6 0"/>
+                                <path d="M9 17l6 0"/>
+                            </svg>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="font-weight-medium">{{ document.title }}</div>
+                            <div class="text-muted">
+                                {% if document.documentType %}
+                                    {{ document.documentType.name }}
+                                {% else %}
+                                    Type non défini
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                            </svg>
+                            Voir le document
+                        </a>
+                        <a href="{{ path('admin_document_version_index', {'id': document.id}) }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 0 1 9 -9a9.75 9.75 0 0 1 6.74 2.74l-1.132 1.132a8.25 8.25 0 0 0 -5.608 -2.372a7.5 7.5 0 0 0 -7.5 7.5"/>
+                                <path d="M21 12a9 9 0 0 1 -9 9a9.75 9.75 0 0 1 -6.74 -2.74l1.132 -1.132a8.25 8.25 0 0 0 5.608 2.372a7.5 7.5 0 0 0 7.5 -7.5"/>
+                                <path d="M12 7v5l3 3"/>
+                            </svg>
+                            Toutes les versions
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Version Navigation -->
+            {% set otherVersions = document.versions|filter(v => v.id != version.id)|slice(0, 5) %}
+            {% if otherVersions|length > 0 %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Autres versions</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% for otherVersion in otherVersions %}
+                            <a href="{{ path('admin_document_version_show', {'id': otherVersion.id}) }}" class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="badge bg-{% if otherVersion.isCurrent %}green{% else %}blue{% endif %}">
+                                            v{{ otherVersion.version }}
+                                        </span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="text-body">{{ otherVersion.title|slice(0, 30) }}{% if otherVersion.title|length > 30 %}...{% endif %}</div>
+                                        <div class="d-block text-muted text-truncate mt-n1">
+                                            {{ otherVersion.createdAt|date('d/m/Y H:i') }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        {% if otherVersion.isCurrent %}
+                                            <span class="badge bg-green-lt">Actuelle</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
