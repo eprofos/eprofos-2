@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Module entity representing a learning module within a formation
@@ -16,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: ModuleRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Module
 {
     #[ORM\Id]
@@ -24,12 +26,15 @@ class Module
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     /**
@@ -39,6 +44,7 @@ class Module
      * by completing this specific module.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $learningObjectives = null;
 
     /**
@@ -47,18 +53,21 @@ class Module
      * Knowledge, skills, or experience required before starting this module.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $prerequisites = null;
 
     /**
      * Duration in hours for this module (required by Qualiopi)
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $durationHours = null;
 
     /**
      * Order/position of this module within the formation
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     /**
@@ -67,6 +76,7 @@ class Module
      * How learning outcomes are assessed within this module.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $evaluationMethods = null;
 
     /**
@@ -75,6 +85,7 @@ class Module
      * Pedagogical approaches and methodologies employed.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $teachingMethods = null;
 
     /**
@@ -83,6 +94,7 @@ class Module
      * Educational resources, documents, tools, and materials used.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $resources = null;
 
     /**
@@ -91,9 +103,11 @@ class Module
      * Measurable indicators that demonstrate successful module completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successCriteria = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -18,6 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
 #[ORM\Table(name: 'sessions')]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Session
 {
     #[ORM\Id]
@@ -33,9 +35,11 @@ class Session
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
     )]
+    #[Gedmo\Versioned]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -44,6 +48,7 @@ class Session
         'today',
         message: 'La date de début doit être ultérieure à aujourd\'hui.'
     )]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -52,6 +57,7 @@ class Session
         propertyPath: 'startDate',
         message: 'La date de fin doit être postérieure à la date de début.'
     )]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -59,29 +65,36 @@ class Session
         propertyPath: 'startDate',
         message: 'La date limite d\'inscription doit être antérieure à la date de début.'
     )]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $registrationDeadline = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le lieu est obligatoire.')]
+    #[Gedmo\Versioned]
     private ?string $location = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $address = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'La capacité maximale est obligatoire.')]
     #[Assert\Positive(message: 'La capacité doit être un nombre positif.')]
+    #[Gedmo\Versioned]
     private ?int $maxCapacity = null;
 
     #[ORM\Column]
     #[Assert\PositiveOrZero(message: 'La capacité minimum ne peut pas être négative.')]
+    #[Gedmo\Versioned]
     private int $minCapacity = 0;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private int $currentRegistrations = 0;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le prix ne peut pas être négatif.')]
+    #[Gedmo\Versioned]
     private ?string $price = null;
 
     #[ORM\Column(length: 50)]
@@ -90,18 +103,23 @@ class Session
         choices: ['planned', 'open', 'confirmed', 'cancelled', 'completed'],
         message: 'Statut invalide.'
     )]
+    #[Gedmo\Versioned]
     private string $status = 'planned';
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private bool $isActive = true;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $instructor = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $notes = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $additionalInfo = null;
 
     #[ORM\Column]

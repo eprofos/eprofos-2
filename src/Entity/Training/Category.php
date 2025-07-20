@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
@@ -17,6 +18,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  */
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Category
 {
     #[ORM\Id]
@@ -25,18 +27,23 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $icon = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]

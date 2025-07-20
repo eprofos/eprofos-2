@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Course entity representing a course within a chapter
@@ -16,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Course
 {
     #[ORM\Id]
@@ -24,12 +26,15 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     /**
@@ -39,6 +44,7 @@ class Course
      * by completing this specific course.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $learningObjectives = null;
 
     /**
@@ -47,6 +53,7 @@ class Course
      * Structured content plan with key topics and subtopics covered.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $contentOutline = null;
 
     /**
@@ -55,6 +62,7 @@ class Course
      * Knowledge or skills required before starting this course.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $prerequisites = null;
 
     /**
@@ -63,6 +71,7 @@ class Course
      * What participants should know or be able to do after completing this course.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $learningOutcomes = null;
 
     /**
@@ -71,6 +80,7 @@ class Course
      * Pedagogical approaches and methodologies employed.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $teachingMethods = null;
 
     /**
@@ -79,6 +89,7 @@ class Course
      * Educational resources, documents, tools, and materials used.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $resources = null;
 
     /**
@@ -87,6 +98,7 @@ class Course
      * How learning is evaluated within this course.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $assessmentMethods = null;
 
     /**
@@ -95,27 +107,33 @@ class Course
      * Measurable indicators that demonstrate successful course completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successCriteria = null;
 
     /**
      * Course content (text, video, documents, etc.)
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $content = null;
 
     /**
      * Course type (lesson, video, document, interactive, etc.)
      */
     #[ORM\Column(length: 50)]
+    #[Gedmo\Versioned]
     private ?string $type = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $durationMinutes = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]

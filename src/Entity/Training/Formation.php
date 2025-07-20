@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Formation entity representing a training course
@@ -17,6 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Formation
 {
     #[ORM\Id]
@@ -25,15 +27,19 @@ class Formation
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $objectives = null;
 
     /**
@@ -43,6 +49,7 @@ class Formation
      * will be able to do after completing the training.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $operationalObjectives = null;
 
     /**
@@ -52,6 +59,7 @@ class Formation
      * criteria and success indicators.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $evaluableObjectives = null;
 
     /**
@@ -61,6 +69,7 @@ class Formation
      * have been achieved by participants.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $evaluationCriteria = null;
 
     /**
@@ -70,27 +79,35 @@ class Formation
      * training objectives.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successIndicators = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $prerequisites = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $durationHours = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Gedmo\Versioned]
     private ?string $price = null;
 
     #[ORM\Column(length: 50)]
+    #[Gedmo\Versioned]
     private ?string $level = null;
 
     #[ORM\Column(length: 50)]
+    #[Gedmo\Versioned]
     private ?string $format = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isFeatured = false;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -112,6 +129,7 @@ class Formation
      * (e.g., employees, job seekers, students, professionals, etc.)
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $targetAudience = null;
 
     /**
@@ -121,6 +139,7 @@ class Formation
      * including registration deadlines, prerequisites validation, etc.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $accessModalities = null;
 
     /**
@@ -130,6 +149,7 @@ class Formation
      * for participants with disabilities or special needs.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $handicapAccessibility = null;
 
     /**
@@ -139,6 +159,7 @@ class Formation
      * employed during the training (e.g., lectures, workshops, case studies, etc.)
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $teachingMethods = null;
 
     /**
@@ -148,6 +169,7 @@ class Formation
      * throughout and at the end of the training program.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $evaluationMethods = null;
 
     /**
@@ -157,6 +179,7 @@ class Formation
      * reference person for the training program.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $contactInfo = null;
 
     /**
@@ -166,6 +189,7 @@ class Formation
      * addresses, online platforms, or hybrid arrangements.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $trainingLocation = null;
 
     /**
@@ -175,6 +199,7 @@ class Formation
      * company funding, personal payment, etc.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $fundingModalities = null;
 
     #[ORM\ManyToOne(inversedBy: 'formations')]

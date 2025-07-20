@@ -5,6 +5,7 @@ namespace App\Entity\Training;
 use App\Repository\ExerciseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Exercise entity representing a practical exercise within a course
@@ -14,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: ExerciseRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Exercise
 {
     #[ORM\Id]
@@ -22,12 +24,15 @@ class Exercise
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     /**
@@ -36,6 +41,7 @@ class Exercise
      * Clear, detailed instructions for completing the exercise.
      */
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $instructions = null;
 
     /**
@@ -44,6 +50,7 @@ class Exercise
      * What participants should achieve or produce by completing this exercise.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $expectedOutcomes = null;
 
     /**
@@ -52,6 +59,7 @@ class Exercise
      * How the exercise completion will be evaluated and graded.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $evaluationCriteria = null;
 
     /**
@@ -60,6 +68,7 @@ class Exercise
      * Materials, tools, or resources required to complete the exercise.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $resources = null;
 
     /**
@@ -68,6 +77,7 @@ class Exercise
      * Knowledge or skills required before attempting this exercise.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $prerequisites = null;
 
     /**
@@ -76,42 +86,50 @@ class Exercise
      * Measurable indicators that demonstrate successful exercise completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successCriteria = null;
 
     /**
      * Exercise type (individual, group, practical, theoretical, etc.)
      */
     #[ORM\Column(length: 50)]
+    #[Gedmo\Versioned]
     private ?string $type = null;
 
     /**
      * Difficulty level of the exercise
      */
     #[ORM\Column(length: 50)]
+    #[Gedmo\Versioned]
     private ?string $difficulty = null;
 
     /**
      * Estimated time to complete the exercise in minutes
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $estimatedDurationMinutes = null;
 
     /**
      * Maximum points/score for this exercise
      */
     #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
     private ?int $maxPoints = null;
 
     /**
      * Minimum points required to pass this exercise
      */
     #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
     private ?int $passingPoints = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]

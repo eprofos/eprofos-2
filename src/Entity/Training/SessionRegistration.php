@@ -6,6 +6,7 @@ use App\Entity\Prospect;
 use App\Repository\SessionRegistrationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -16,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: SessionRegistrationRepository::class)]
 #[ORM\Table(name: 'session_registrations')]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class SessionRegistration
 {
     #[ORM\Id]
@@ -35,6 +37,7 @@ class SessionRegistration
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
         message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
     )]
+    #[Gedmo\Versioned]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 100)]
@@ -49,6 +52,7 @@ class SessionRegistration
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
         message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
     )]
+    #[Gedmo\Versioned]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 180)]
@@ -58,6 +62,7 @@ class SessionRegistration
         max: 180,
         maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
     )]
+    #[Gedmo\Versioned]
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -65,6 +70,7 @@ class SessionRegistration
         pattern: '/^(?:\+33|0)[1-9](?:[0-9]{8})$/',
         message: 'Veuillez saisir un numéro de téléphone français valide.'
     )]
+    #[Gedmo\Versioned]
     private ?string $phone = null;
 
     #[ORM\Column(length: 150, nullable: true)]
@@ -72,6 +78,7 @@ class SessionRegistration
         max: 150,
         maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.'
     )]
+    #[Gedmo\Versioned]
     private ?string $company = null;
 
     #[ORM\Column(length: 100, nullable: true)]
@@ -79,6 +86,7 @@ class SessionRegistration
         max: 100,
         maxMessage: 'Le poste ne peut pas dépasser {{ limit }} caractères.'
     )]
+    #[Gedmo\Versioned]
     private ?string $position = null;
 
     #[ORM\Column(length: 50)]
@@ -87,15 +95,19 @@ class SessionRegistration
         choices: ['pending', 'confirmed', 'cancelled', 'attended', 'no_show'],
         message: 'Statut invalide.'
     )]
+    #[Gedmo\Versioned]
     private string $status = 'pending';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $notes = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $specialRequirements = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $additionalData = null;
 
     #[ORM\Column]

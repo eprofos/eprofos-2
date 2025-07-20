@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Chapter entity representing a chapter within a module
@@ -16,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: ChapterRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Chapter
 {
     #[ORM\Id]
@@ -24,12 +26,15 @@ class Chapter
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     /**
@@ -39,6 +44,7 @@ class Chapter
      * by completing this specific chapter.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $learningObjectives = null;
 
     /**
@@ -47,6 +53,7 @@ class Chapter
      * Structured content plan with key topics and subtopics covered.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $contentOutline = null;
 
     /**
@@ -55,6 +62,7 @@ class Chapter
      * Knowledge or skills required before starting this chapter.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $prerequisites = null;
 
     /**
@@ -63,6 +71,7 @@ class Chapter
      * What participants should know or be able to do after completing this chapter.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $learningOutcomes = null;
 
     /**
@@ -71,6 +80,7 @@ class Chapter
      * Pedagogical approaches and methodologies employed.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $teachingMethods = null;
 
     /**
@@ -79,6 +89,7 @@ class Chapter
      * Educational resources, documents, tools, and materials used.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $resources = null;
 
     /**
@@ -87,6 +98,7 @@ class Chapter
      * How learning is evaluated within this chapter.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $assessmentMethods = null;
 
     /**
@@ -95,15 +107,19 @@ class Chapter
      * Measurable indicators that demonstrate successful chapter completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successCriteria = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $durationMinutes = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]

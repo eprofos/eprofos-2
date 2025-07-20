@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * QCM entity representing a multiple choice questionnaire within a course
@@ -16,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: QCMRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class QCM
 {
     #[ORM\Id]
@@ -24,12 +26,15 @@ class QCM
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Gedmo\Versioned]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Gedmo\Versioned]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     /**
@@ -38,6 +43,7 @@ class QCM
      * Clear instructions for participants on how to complete the questionnaire.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
     private ?string $instructions = null;
 
     /**
@@ -47,6 +53,7 @@ class QCM
      * and explanations for each question.
      */
     #[ORM\Column(type: Types::JSON)]
+    #[Gedmo\Versioned]
     private ?array $questions = null;
 
     /**
@@ -55,6 +62,7 @@ class QCM
      * How the QCM results will be evaluated and graded.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $evaluationCriteria = null;
 
     /**
@@ -63,60 +71,71 @@ class QCM
      * Measurable indicators that demonstrate successful QCM completion.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
     private ?array $successCriteria = null;
 
     /**
      * Time limit for completing the QCM in minutes
      */
     #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
     private ?int $timeLimitMinutes = null;
 
     /**
      * Maximum score for this QCM
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $maxScore = null;
 
     /**
      * Minimum score required to pass this QCM
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $passingScore = null;
 
     /**
      * Number of attempts allowed for this QCM
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $maxAttempts = 1;
 
     /**
      * Whether to show correct answers after completion
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $showCorrectAnswers = true;
 
     /**
      * Whether to show explanations after completion
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $showExplanations = true;
 
     /**
      * Whether to randomize question order
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $randomizeQuestions = false;
 
     /**
      * Whether to randomize answer order
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $randomizeAnswers = false;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?bool $isActive = true;
 
     #[ORM\Column]
