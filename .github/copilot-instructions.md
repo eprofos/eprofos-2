@@ -1,22 +1,27 @@
 # EPROFOS AI Coding Agent Instructions
 
 ## Project Overview
-EPROFOS is a Symfony 7.3/PHP 8.3 Learning Management System (LMS) for professional training with public catalog and admin interface. Built with Docker/FrankenPHP, PostgreSQL, Bootstrap 5, and Stimulus for interactivity. **Critical**: Must satisfy Qualiopi certification requirements for French training quality standards.
+EPROFOS is a Symfony 7.3/PHP 8.4 Learning Management System (LMS) for professional training with public catalog, admin interface, and CRM features. Built with Docker/FrankenPHP, PostgreSQL, Bootstrap 5, and Stimulus for interactivity. **Critical**: Must satisfy Qualiopi certification requirements for French training quality standards.
 
 ## Essential Architecture
 
 ### Core Entity Relationships
-- `Formation` (training courses) → `Category` (technical/transversal)
-- `Formation` → `Module` → `Chapter` (3-level pedagogical hierarchy)
+- `Training\Formation` (training courses) → `Training\Category` (technical/transversal)
+- `Formation` → `Module` → `Chapter` → `Course` → `Exercise`/`QCM` (5-level pedagogical hierarchy)
 - `Service` → `ServiceCategory` (conseil, accompagnement, certifications, sur-mesure)
 - `ContactRequest` with specialized forms (quote, advice, info, quick registration)
 - `NeedsAnalysisRequest` with company/individual variants
+- `Prospect` → `ProspectNote` (CRM system for lead management)
+- `User` → `Student` (authentication and enrollment system)
+- `Document` system with versioning, metadata, and UI components
 
 ### Hierarchical Program Structure
-**Critical Pattern**: Training content uses a 3-level hierarchy:
+**Critical Pattern**: Training content uses a 5-level hierarchy:
 - **Formation**: Overall training course with Qualiopi-compliant fields
 - **Module**: Learning modules within formations (2-5 per formation)
 - **Chapter**: Detailed content within modules (3-8 per module)
+- **Course**: Individual course sessions within chapters
+- **Exercise/QCM**: Interactive exercises and assessments within courses
 
 Each level has dedicated fields for learning objectives, evaluation methods, and success criteria to meet Qualiopi requirements.
 
@@ -25,6 +30,7 @@ Each level has dedicated fields for learning objectives, evaluation methods, and
 src/Controller/
 ├── Public/     # Public-facing controllers (FormationController, ContactController, etc.)
 ├── Admin/      # Admin interface controllers
+└── Student/    # Student dashboard controllers
 ```
 
 **Key Pattern**: Public controllers use repository methods like `findCategoriesWithActiveFormations()`, `createCatalogQueryBuilder()` for filtering.
@@ -87,10 +93,11 @@ if ($request->isXmlHttpRequest()) {
 ### Qualiopi Compliance Fields
 Each entity (Formation, Module, Chapter) includes structured fields for:
 - `operationalObjectives` / `learningObjectives` (JSON arrays)
+- `evaluableObjectives` / `evaluationCriteria` (JSON arrays)  
 - `evaluationMethods` / `assessmentMethods` (TEXT)
 - `teachingMethods` (TEXT)
-- `successCriteria` (JSON arrays)
-- `resources` (JSON arrays)
+- `successIndicators` / `successCriteria` (JSON arrays)
+- `targetAudience` / `accessModalities` / `handicapAccessibility` (TEXT)
 
 These fields are required for French training quality certification.
 
@@ -109,6 +116,21 @@ addItem(event) {
     // Add to collection with remove button
 }
 ```
+
+### CRM Prospect Management Pattern
+**Critical**: Prospects are automatically created from ContactRequest, SessionRegistration, and NeedsAnalysisRequest:
+- `Prospect` entity tracks 7 statuses: new, contacted, qualified, proposal_sent, negotiation, converted, lost
+- `ProspectNote` supports 6 types: note, call, email, meeting, task, reminder
+- Use `ProspectService` for automatic prospect creation and deduplication
+- Admin interface provides full CRM functionality with filtering and assignment
+
+### Needs Analysis Pattern (Qualiopi 2.4)
+**Critical**: Token-based secure forms for collecting training needs:
+- `NeedsAnalysisRequest` with unique UUID tokens for security
+- Company and Individual variants with specialized forms
+- Email-based invitation system with expiration dates
+- Admin can generate analysis links for prospects
+- Comprehensive data collection for compliance reporting
 
 ### Repository Query Methods
 Use descriptive method names like:
@@ -133,6 +155,7 @@ templates/
 - Reference constants like `Formation::LEVELS` for consistent data
 - `AppFixtures` orchestrates all fixtures - acts as dependency coordinator
 - Context-aware data generation (chapter titles match module topics)
+- Comprehensive entity coverage: Training, CRM, Documents, Users, Services
 
 ### Asset Management
 - Asset Mapper configuration in `importmap.php`
@@ -145,11 +168,22 @@ templates/
 - Symfony Mailer configuration in `config/packages/mailer.yaml`
 - Email sending in specialized service classes
 
+### Document Generation System
+**Critical**: PHPOffice integration for document generation:
+- PHPWord and PHPSpreadsheet for programmatic document creation
+- Document templates with metadata and versioning
+- UI components for dynamic document layouts
+- Export functionality for training materials and reports
+- KnpSnappyBundle integration for PDF generation
+
 ## Key Files to Understand
-- `src/Entity/Formation.php` - Core training entity with validation & auto-generated program
-- `src/Entity/Module.php` - Learning module with Qualiopi fields
-- `src/Entity/Chapter.php` - Detailed chapter content structure
+- `src/Entity/Training/Formation.php` - Core training entity with validation & auto-generated program
+- `src/Entity/Training/Module.php` - Learning module with Qualiopi fields
+- `src/Entity/Training/Chapter.php` - Detailed chapter content structure
+- `src/Entity/Prospect.php` - CRM prospect management with status tracking
+- `src/Entity/NeedsAnalysisRequest.php` - Qualiopi 2.4 compliance for needs analysis
 - `src/Controller/Public/FormationController.php` - Ajax filtering implementation
+- `src/Controller/Admin/ProspectController.php` - CRM prospect management interface
 - `assets/controllers/formation_filter_controller.js` - Frontend filtering with debounce
 - `templates/base.html.twig` - Main layout structure
 - `src/DataFixtures/AppFixtures.php` - Test data orchestration
