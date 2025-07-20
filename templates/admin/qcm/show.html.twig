@@ -9,6 +9,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>{{ qcm.title }}</h1>
                 <div>
+                    {% include 'admin/components/audit_history_button.html.twig' with { entity: qcm, variant: 'btn-sm' } %}
                     <a href="{{ path('admin_qcm_preview', {'id': qcm.id}) }}" class="btn btn-info">
                         <i class="fas fa-play"></i> Prévisualiser
                     </a>

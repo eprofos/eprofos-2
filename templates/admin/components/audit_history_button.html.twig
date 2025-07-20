@@ -1,0 +1,20 @@
+{#
+    Audit History Button Component
+    
+    Usage: {% include 'admin/components/audit_history_button.html.twig' with { entity: entity, variant: 'btn-sm' } %}
+    
+    Parameters:
+    - entity: The entity to show audit history for (required)
+    - variant: Button CSS classes (optional, default: 'btn-sm')
+    - text: Button text (optional, default: 'Voir l'historique')
+    - icon: Button icon (optional, default: 'fas fa-history')
+#}
+
+{% if is_entity_loggable(entity) %}
+    <a href="{{ audit_history_url(entity) }}" 
+       class="btn btn-outline-info {{ variant|default('btn-sm') }}" 
+       title="Voir l'historique des modifications">
+        <i class="{{ icon|default('fas fa-history') }} me-1"></i>
+        {{ text|default('Voir l\'historique') }}
+    </a>
+{% endif %}

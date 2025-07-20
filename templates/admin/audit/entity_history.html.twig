@@ -1,0 +1,300 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Historique de {{ entityDisplayName }} - Administration{% endblock %}
+
+{% block page_title %}Historique des modifications{% endblock %}
+{% block page_subtitle %}{{ entityDisplayName }}{% endblock %}
+
+{% block body %}
+<div class="container-xl">
+    <!-- Header with entity info and actions -->
+    <div class="page-header d-print-none">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    Audit trail pour
+                </div>
+                <h2 class="page-title">
+                    {{ entityDisplayName }}
+                </h2>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-auto">
+                            <span class="avatar avatar-lg bg-primary">
+                                <i class="fas fa-history"></i>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <h3 class="card-title mb-1">{{ totalChanges }} modification{{ totalChanges > 1 ? 's' : '' }}</h3>
+                            <p class="text-muted mb-0">
+                                Historique complet des changements pour cette entité
+                            </p>
+                        </div>
+                        <div class="col-auto">
+                            {% if changes|length > 0 %}
+                                <div class="text-end">
+                                    <div class="text-muted">Dernière modification</div>
+                                    <div class="fw-bold">{{ changes[0].loggedAt|date('d/m/Y à H:i') }}</div>
+                                    <div class="text-muted">par {{ changes[0].username }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Changes timeline -->
+    <div class="row">
+        <div class="col-12">
+            {% if changes|length > 0 %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-timeline me-2"></i>
+                            Historique des modifications
+                        </h3>
+                        {% if totalPages > 1 %}
+                            <div class="card-actions">
+                                <span class="text-muted">
+                                    Page {{ currentPage }} sur {{ totalPages }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="timeline">
+                            {% for change in changes %}
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        {% if change.action == 'create' %}
+                                            <span class="avatar avatar-sm bg-success">
+                                                <i class="fas fa-plus"></i>
+                                            </span>
+                                        {% elseif change.action == 'update' %}
+                                            <span class="avatar avatar-sm bg-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        {% elseif change.action == 'remove' %}
+                                            <span class="avatar avatar-sm bg-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                        {% else %}
+                                            <span class="avatar avatar-sm bg-info">
+                                                <i class="fas fa-info"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <div class="timeline-title">
+                                                {% if change.action == 'create' %}
+                                                    <span class="badge bg-success me-2">Création</span>
+                                                {% elseif change.action == 'update' %}
+                                                    <span class="badge bg-warning me-2">Modification</span>
+                                                {% elseif change.action == 'remove' %}
+                                                    <span class="badge bg-danger me-2">Suppression</span>
+                                                {% else %}
+                                                    <span class="badge bg-info me-2">{{ change.action|title }}</span>
+                                                {% endif %}
+                                                Version {{ change.version }}
+                                            </div>
+                                            <div class="timeline-subtitle text-muted">
+                                                {{ change.loggedAt|date('d/m/Y à H:i:s') }} par 
+                                                <span class="fw-bold">{{ change.username }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if change.fieldChanges|length > 0 %}
+                                            <div class="timeline-body">
+                                                <div class="accordion" id="accordion-{{ loop.index }}">
+                                                    <div class="accordion-item">
+                                                        <h2 class="accordion-header" id="heading-{{ loop.index }}">
+                                                            <button class="accordion-button collapsed" type="button" 
+                                                                    data-bs-toggle="collapse" 
+                                                                    data-bs-target="#collapse-{{ loop.index }}" 
+                                                                    aria-expanded="false" 
+                                                                    aria-controls="collapse-{{ loop.index }}">
+                                                                <i class="fas fa-list me-2"></i>
+                                                                {{ change.fieldChanges|length }} champ{{ change.fieldChanges|length > 1 ? 's' : '' }} modifié{{ change.fieldChanges|length > 1 ? 's' : '' }}
+                                                            </button>
+                                                        </h2>
+                                                        <div id="collapse-{{ loop.index }}" 
+                                                             class="accordion-collapse collapse" 
+                                                             aria-labelledby="heading-{{ loop.index }}" 
+                                                             data-bs-parent="#accordion-{{ loop.index }}">
+                                                            <div class="accordion-body">
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-sm">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Champ</th>
+                                                                                <th>Ancienne valeur</th>
+                                                                                <th>Nouvelle valeur</th>
+                                                                                <th>Type</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for fieldName, fieldChange in change.fieldChanges %}
+                                                                                <tr>
+                                                                                    <td class="fw-bold">
+                                                                                        {{ fieldChange.humanName }}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {% if fieldChange.old is not null %}
+                                                                                            <div class="text-muted">
+                                                                                                {{ fieldChange.formattedOld|raw }}
+                                                                                            </div>
+                                                                                        {% else %}
+                                                                                            <em class="text-muted">vide</em>
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {% if fieldChange.new is not null %}
+                                                                                            <div>
+                                                                                                {{ fieldChange.formattedNew|raw }}
+                                                                                            </div>
+                                                                                        {% else %}
+                                                                                            <em class="text-muted">vide</em>
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {% if fieldChange.type == 'added' %}
+                                                                                            <span class="badge bg-success">Ajouté</span>
+                                                                                        {% elseif fieldChange.type == 'modified' %}
+                                                                                            <span class="badge bg-warning">Modifié</span>
+                                                                                        {% elseif fieldChange.type == 'removed' %}
+                                                                                            <span class="badge bg-danger">Supprimé</span>
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if change.action == 'create' and change.data|length > 0 %}
+                                            <div class="timeline-body">
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Entité créée avec {{ change.data|length }} champ{{ change.data|length > 1 ? 's' : '' }} initial{{ change.data|length > 1 ? 'aux' : '' }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {% if totalPages > 1 %}
+                    <nav aria-label="Pagination de l'historique" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if currentPage > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_audit_entity_history', {
+                                        'entityClass': (entityClass|base64_encode),
+                                        'entityId': entity.id,
+                                        'page': currentPage - 1
+                                    }) }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                        Précédent
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for page in 1..totalPages %}
+                                {% if page == currentPage %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page }}</span>
+                                    </li>
+                                {% elseif page <= 3 or page > totalPages - 3 or (page >= currentPage - 1 and page <= currentPage + 1) %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_audit_entity_history', {
+                                            'entityClass': (entityClass|base64_encode),
+                                            'entityId': entity.id,
+                                            'page': page
+                                        }) }}">{{ page }}</a>
+                                    </li>
+                                {% elseif (page == 4 and currentPage > 6) or (page == totalPages - 3 and currentPage < totalPages - 5) %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if currentPage < totalPages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('admin_audit_entity_history', {
+                                        'entityClass': (entityClass|base64_encode),
+                                        'entityId': entity.id,
+                                        'page': currentPage + 1
+                                    }) }}">
+                                        Suivant
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="empty">
+                    <div class="empty-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <p class="empty-title">Aucun historique disponible</p>
+                    <p class="empty-subtitle text-muted">
+                        Cette entité n'a pas encore d'historique de modifications.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-expand first accordion if there are less than 3 changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const accordions = document.querySelectorAll('.accordion-collapse');
+            if (accordions.length <= 3) {
+                accordions.forEach(function(accordion) {
+                    accordion.classList.add('show');
+                    const button = accordion.parentElement.querySelector('.accordion-button');
+                    if (button) {
+                        button.classList.remove('collapsed');
+                        button.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

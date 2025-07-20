@@ -12,6 +12,7 @@
                     {{ module.title }}
                 </h1>
                 <div class="btn-group">
+                    {% include 'admin/components/audit_history_button.html.twig' with { entity: module, variant: 'btn-sm' } %}
                     <a href="{{ path('admin_modules_edit', {id: module.id}) }}" class="btn btn-primary">
                         <i class="fas fa-edit me-2"></i>Modifier
                     </a>

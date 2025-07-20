@@ -9,6 +9,7 @@
 
 {% block page_actions %}
     <div class="btn-list">
+        {% include 'admin/components/audit_history_button.html.twig' with { entity: registration, variant: 'btn-sm' } %}
         {% if registration.status == 'pending' %}
             <form method="post" action="{{ path('admin_session_registration_confirm', {id: registration.id}) }}" class="d-inline">
                 <input type="hidden" name="_token" value="{{ csrf_token('confirm_registration' ~ registration.id) }}">

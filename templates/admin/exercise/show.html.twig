@@ -1,0 +1,170 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ exercise.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ exercise.title }}</h1>
+                <div>
+                    {% include 'admin/components/audit_history_button.html.twig' with { entity: exercise, variant: 'btn-sm' } %}
+                    <a href="{{ path('admin_exercise_edit', {'id': exercise.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ path('admin_exercise_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Informations de l'exercice</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Type :</strong> <span class="badge bg-info">{{ exercise.typeLabel }}</span></p>
+                                    <p><strong>Difficulté :</strong> <span class="badge bg-secondary">{{ exercise.difficultyLabel }}</span></p>
+                                    <p><strong>Durée estimée :</strong> {{ exercise.formattedDuration }}</p>
+                                    <p><strong>Ordre :</strong> {{ exercise.orderIndex }}</p>
+                                    <p><strong>Statut :</strong> 
+                                        {% if exercise.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if exercise.maxPoints %}
+                                        <p><strong>Points :</strong> {{ exercise.passingPoints }}/{{ exercise.maxPoints }}</p>
+                                        {% if exercise.passingPercentage %}
+                                            <p><strong>Seuil de réussite :</strong> {{ exercise.passingPercentage|number_format(1) }}%</p>
+                                        {% endif %}
+                                    {% endif %}
+                                    <p><strong>Cours :</strong> 
+                                        {% if exercise.course %}
+                                            <a href="{{ path('admin_course_show', {'id': exercise.course.id}) }}">{{ exercise.course.title }}</a>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Chapitre :</strong> 
+                                        {% if exercise.course and exercise.course.chapter %}
+                                            {{ exercise.course.chapter.title }}
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Formation :</strong> 
+                                        {% if exercise.course and exercise.course.chapter and exercise.course.chapter.module and exercise.course.chapter.module.formation %}
+                                            <a href="{{ path('admin_formation_show', {'id': exercise.course.chapter.module.formation.id}) }}">
+                                                {{ exercise.course.chapter.module.formation.title }}
+                                            </a>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6>Description</h6>
+                            <p>{{ exercise.description|nl2br }}</p>
+                            
+                            <h6>Instructions</h6>
+                            <div class="border p-3 bg-light">
+                                {{ exercise.instructions|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if exercise.prerequisites %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Prérequis</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ exercise.prerequisites|nl2br }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    {% if exercise.expectedOutcomes %}
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Résultats attendus (Qualiopi)</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for outcome in exercise.expectedOutcomes %}
+                                        <li>{{ outcome }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if exercise.evaluationCriteria %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Critères d'évaluation</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for criteria in exercise.evaluationCriteria %}
+                                        <li>{{ criteria }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if exercise.successCriteria %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Critères de réussite</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for criteria in exercise.successCriteria %}
+                                        <li>{{ criteria }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if exercise.resources %}
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Ressources nécessaires</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    {% for resource in exercise.resources %}
+                                        <li>{{ resource }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Métadonnées</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Créé le :</strong> {{ exercise.createdAt|date('d/m/Y H:i') }}</p>
+                            <p><strong>Modifié le :</strong> {{ exercise.updatedAt|date('d/m/Y H:i') }}</p>
+                            <p><strong>Slug :</strong> <code>{{ exercise.slug }}</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

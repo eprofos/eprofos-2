@@ -1,0 +1,118 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Journal d'audit - Administration{% endblock %}
+
+{% block page_title %}Journal d'audit{% endblock %}
+{% block page_subtitle %}Suivi des modifications des entités{% endblock %}
+
+{% block body %}
+<div class="container-xl">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history me-2"></i>
+                        Entités auditables
+                    </h3>
+                    <div class="card-actions">
+                        <span class="badge bg-info">{{ entityStats|length }} types d'entités</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for entity in entityStats %}
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="card card-sm">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="bg-primary text-white avatar">
+                                                    {% if entity.shortName == 'Formation' %}
+                                                        <i class="fas fa-graduation-cap"></i>
+                                                    {% elseif entity.shortName == 'Category' %}
+                                                        <i class="fas fa-folder"></i>
+                                                    {% elseif entity.shortName == 'Module' %}
+                                                        <i class="fas fa-puzzle-piece"></i>
+                                                    {% elseif entity.shortName == 'Chapter' %}
+                                                        <i class="fas fa-book-open"></i>
+                                                    {% elseif entity.shortName == 'Course' %}
+                                                        <i class="fas fa-chalkboard-teacher"></i>
+                                                    {% elseif entity.shortName == 'Session' %}
+                                                        <i class="fas fa-calendar-alt"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-cube"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="font-weight-medium">
+                                                    {{ entity.displayName }}
+                                                </div>
+                                                <div class="text-muted">
+                                                    {{ entity.count }} enregistrement{{ entity.count > 1 ? 's' : '' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <small class="text-muted">{{ entity.shortName }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        À propos du journal d'audit
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Fonctionnalités</h4>
+                            <ul>
+                                <li><strong>Suivi des modifications</strong> : Chaque changement est enregistré avec l'utilisateur et la date</li>
+                                <li><strong>Historique complet</strong> : Accès à toutes les versions précédentes d'une entité</li>
+                                <li><strong>Comparaison</strong> : Visualisation des différences entre les versions</li>
+                                <li><strong>Traçabilité</strong> : Identification de qui a modifié quoi et quand</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Comment accéder à l'historique</h4>
+                            <div class="steps">
+                                <div class="step-item">
+                                    <div class="step-counter">1</div>
+                                    <div class="step-body">
+                                        <div class="step-title">Naviguez vers une entité</div>
+                                        <div class="step-content">Accédez à la page de détail d'une formation, catégorie, module, etc.</div>
+                                    </div>
+                                </div>
+                                <div class="step-item">
+                                    <div class="step-counter">2</div>
+                                    <div class="step-body">
+                                        <div class="step-title">Cliquez sur "Historique"</div>
+                                        <div class="step-content">Utilisez le bouton "Voir l'historique" pour accéder au journal d'audit</div>
+                                    </div>
+                                </div>
+                                <div class="step-item">
+                                    <div class="step-counter">3</div>
+                                    <div class="step-body">
+                                        <div class="step-title">Consultez les modifications</div>
+                                        <div class="step-content">Visualisez toutes les modifications avec les détails des changements</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
