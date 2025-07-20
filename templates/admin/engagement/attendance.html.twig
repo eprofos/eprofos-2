@@ -1,0 +1,371 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Suivi d\'Assiduité' %}
+{% set breadcrumb = [
+    { label: 'Dashboard', url: path('admin_dashboard') },
+    { label: 'Engagement', url: path('admin_engagement_dashboard') },
+    { label: 'Assiduité' }
+] %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_engagement_dashboard') }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 14l-4 -4l4 -4"/>
+                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+            </svg>
+            Retour au dashboard
+        </a>
+        <div class="btn-group">
+            <a href="{{ path('admin_engagement_export', {format: 'pdf'}) }}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                </svg>
+                Exporter PDF
+            </a>
+            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'excel'}) }}">Excel</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'csv'}) }}">CSV</a></li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Attendance Statistics Overview -->
+    <div class="row row-deck row-cards mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                            <path d="M12 7v5l3 3"/>
+                        </svg>
+                        Vue d'ensemble de l'assiduité
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-success text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 12l5 5l10 -10"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ attendance_stats.overall_attendance_rate|number_format(1) }}%
+                                            </div>
+                                            <div class="text-muted">
+                                                Taux d'assiduité global
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-info text-white avatar">{{ attendance_stats.present_count }}</span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ attendance_stats.present_percentage|number_format(1) }}%
+                                            </div>
+                                            <div class="text-muted">
+                                                Présents
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-danger text-white avatar">{{ attendance_stats.absent_count }}</span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ attendance_stats.absent_percentage|number_format(1) }}%
+                                            </div>
+                                            <div class="text-muted">
+                                                Absents
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-warning text-white avatar">{{ attendance_stats.late_count }}</span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium">
+                                                {{ attendance_stats.late_percentage|number_format(1) }}%
+                                            </div>
+                                            <div class="text-muted">
+                                                Retards
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-deck row-cards">
+        <!-- Students with Poor Attendance -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-danger" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 9v2m0 4v.01"/>
+                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                        </svg>
+                        Assiduité insuffisante (&lt; 70%)
+                    </h3>
+                    <div class="card-actions">
+                        <span class="badge bg-danger">{{ poor_attendance_students|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if poor_attendance_students|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for student in poor_attendance_students %}
+                                <div class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="avatar avatar-sm" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                                                {{ student.firstName|first }}{{ student.lastName|first }}
+                                            </span>
+                                        </div>
+                                        <div class="col text-truncate">
+                                            <a href="#" class="text-reset d-block">{{ student.firstName }} {{ student.lastName }}</a>
+                                            <div class="d-block text-muted text-truncate mt-n1">{{ student.email }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="badge bg-danger">{{ student.attendance_rate|number_format(1) }}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty">
+                            <div class="empty-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Excellente assiduité !</p>
+                            <p class="empty-subtitle text-muted">
+                                Aucun étudiant n'a d'assiduité insuffisante.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Frequent Absentees -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-warning" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 8l0 4l2 2"/>
+                            <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>
+                        </svg>
+                        Absences répétées (≥ 3)
+                    </h3>
+                    <div class="card-actions">
+                        <span class="badge bg-warning">{{ frequent_absentees|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if frequent_absentees|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for student in frequent_absentees %}
+                                <div class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="avatar avatar-sm" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                                                {{ student.firstName|first }}{{ student.lastName|first }}
+                                            </span>
+                                        </div>
+                                        <div class="col text-truncate">
+                                            <a href="#" class="text-reset d-block">{{ student.firstName }} {{ student.lastName }}</a>
+                                            <div class="d-block text-muted text-truncate mt-n1">{{ student.email }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="badge bg-warning">{{ student.absence_count }} absences</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty">
+                            <div class="empty-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Excellent suivi !</p>
+                            <p class="empty-subtitle text-muted">
+                                Aucun étudiant n'a d'absences répétées.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Absentees -->
+    {% if recent_absentees|length > 0 %}
+        <div class="row row-deck row-cards mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-info" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 8l0 4l2 2"/>
+                                <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>
+                            </svg>
+                            Absences récentes (7 derniers jours)
+                        </h3>
+                        <div class="card-actions">
+                            <span class="badge bg-info">{{ recent_absentees|length }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-mobile-md card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Étudiant</th>
+                                        <th>Email</th>
+                                        <th>Session</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th class="w-1">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for absentee in recent_absentees %}
+                                        <tr>
+                                            <td data-label="Étudiant">
+                                                <div class="d-flex py-1 align-items-center">
+                                                    <span class="avatar me-2" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                                                        {{ absentee.student.firstName|first }}{{ absentee.student.lastName|first }}
+                                                    </span>
+                                                    <div class="flex-fill">
+                                                        <div class="font-weight-medium">{{ absentee.student.firstName }} {{ absentee.student.lastName }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Email">
+                                                <div class="text-muted">{{ absentee.student.email }}</div>
+                                            </td>
+                                            <td data-label="Session">
+                                                {% if absentee.session %}
+                                                    {{ absentee.session.formation.title }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-label="Date">
+                                                {% if absentee.session %}
+                                                    {{ absentee.session.startDate|date('d/m/Y H:i') }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-label="Statut">
+                                                {% if absentee.excused %}
+                                                    <span class="badge bg-secondary">Absence justifiée</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Absence non justifiée</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-list flex-nowrap">
+                                                    <button class="btn btn-sm btn-outline-secondary" title="Contacter l'étudiant">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                                            <path d="M3 7l9 6l9 -6"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Compliance Note -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <div class="me-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                        <path d="M12 9h.01"/>
+                        <path d="M11 12h1v4h1"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="alert-title">Conformité Qualiopi - Critère 12</h4>
+                    <div class="text-muted">
+                        Ce suivi d'assiduité répond aux exigences du critère 12 de Qualiopi concernant l'accompagnement des bénéficiaires 
+                        et la lutte contre les abandons. Les données d'assiduité sont automatiquement collectées et analysées pour 
+                        identifier les apprenants à risque de décrochage.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

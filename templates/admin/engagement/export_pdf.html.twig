@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .meta-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .meta-info h2 {
+            color: #495057;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .stats-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            flex: 1;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .stat-box h3 {
+            color: #007bff;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .stat-box p {
+            color: #666;
+            font-size: 11px;
+            margin: 5px 0 0 0;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #495057;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .table th {
+            background-color: #007bff;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 10px;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .risk-high {
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+        
+        .risk-medium {
+            background-color: #fff3cd !important;
+            color: #856404;
+        }
+        
+        .risk-low {
+            background-color: #d1edff !important;
+            color: #0c5460;
+        }
+        
+        .engagement-low {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .engagement-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .engagement-high {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        .qualiopi-badge {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .recommendations {
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+        
+        .recommendations h4 {
+            color: #007bff;
+            margin: 0 0 5px 0;
+            font-size: 12px;
+        }
+        
+        .no-break {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <p class="subtitle">Rapport généré le {{ generated_at|date('d/m/Y à H:i') }}</p>
+        <span class="qualiopi-badge">CRITÈRE QUALIOPI 12</span>
+    </div>
+
+    <div class="meta-info">
+        <h2>Informations du Rapport</h2>
+        <p><strong>Période d'analyse :</strong> {{ data.metadata.period ?? 'Derniers 30 jours' }}</p>
+        <p><strong>Nombre total d'étudiants :</strong> {{ data.summary_stats.total_students ?? 0 }}</p>
+        <p><strong>Étudiants à risque :</strong> {{ data.summary_stats.at_risk_count ?? 0 }}</p>
+        <p><strong>Taux de rétention global :</strong> {{ data.compliance_indicators.retention_rate ?? 0 }}%</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h3>{{ data.compliance_indicators.retention_rate ?? 0 }}%</h3>
+            <p>Taux de Rétention</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ data.summary_stats.average_attendance ?? 0 }}%</h3>
+            <p>Assiduité Moyenne</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ data.summary_stats.avg_engagement ?? 0 }}/100</h3>
+            <p>Score d'Engagement</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ data.summary_stats.at_risk_count ?? 0 }}</h3>
+            <p>Étudiants à Risque</p>
+        </div>
+    </div>
+
+    {% if data.at_risk_students is defined and data.at_risk_students|length > 0 %}
+    <div class="section no-break">
+        <h2>Étudiants à Risque de Décrochage</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Nom</th>
+                    <th style="width: 20%;">Formation</th>
+                    <th style="width: 8%;">Risque</th>
+                    <th style="width: 8%;">Engagement</th>
+                    <th style="width: 8%;">Completion</th>
+                    <th style="width: 8%;">Assiduité</th>
+                    <th style="width: 12%;">Dernière Activité</th>
+                    <th style="width: 21%;">Recommandations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in data.at_risk_students %}
+                <tr class="{% if student.risk_score > 70 %}risk-high{% elseif student.risk_score > 40 %}risk-medium{% else %}risk-low{% endif %}">
+                    <td><strong>{{ student.student_name }}</strong></td>
+                    <td>{{ student.formation }}</td>
+                    <td style="text-align: center;">{{ student.risk_score }}/100</td>
+                    <td style="text-align: center;" class="{% if student.engagement_score < 40 %}engagement-low{% elseif student.engagement_score < 70 %}engagement-medium{% else %}engagement-high{% endif %}">
+                        {{ student.engagement_score }}/100
+                    </td>
+                    <td style="text-align: center;">{{ student.completion_percentage|round(1) }}%</td>
+                    <td style="text-align: center;">{{ student.attendance_rate|round(1) }}%</td>
+                    <td style="text-align: center;">{{ student.last_activity }}</td>
+                    <td style="font-size: 9px;">{{ student.recommendations|slice(0, 100) }}{% if student.recommendations|length > 100 %}...{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if data.summary_stats.risk_rate is defined and data.summary_stats.risk_rate > 0 %}
+    <div class="section no-break">
+        <h2>Signaux de Difficulté Détectés</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Type de Signal</th>
+                    <th style="width: 15%;">Taux d'Occurrence</th>
+                    <th style="width: 65%;">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Engagement Faible</strong></td>
+                    <td style="text-align: center;">{{ data.summary_stats.avg_engagement < 40 ? 'Élevé' : 'Modéré' }}</td>
+                    <td>Score d'engagement moyen de {{ data.summary_stats.avg_engagement }}/100</td>
+                </tr>
+                <tr>
+                    <td><strong>Assiduité Insuffisante</strong></td>
+                    <td style="text-align: center;">{{ data.summary_stats.average_attendance < 70 ? 'Élevé' : 'Faible' }}</td>
+                    <td>Taux d'assiduité moyen de {{ data.summary_stats.average_attendance }}%</td>
+                </tr>
+                <tr>
+                    <td><strong>Risque de Décrochage</strong></td>
+                    <td style="text-align: center;">{{ data.summary_stats.risk_rate }}%</td>
+                    <td>{{ data.summary_stats.at_risk_count }} étudiants identifiés à risque</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="section no-break">
+        <h2>Mesures de Prévention du Décrochage</h2>
+        <div class="recommendations">
+            <h4>Actions Recommandées</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+                {% if data.compliance_indicators.retention_rate < 80 %}
+                <li>Mettre en place un suivi individualisé renforcé pour les étudiants à risque</li>
+                {% endif %}
+                {% if data.summary_stats.average_attendance < 75 %}
+                <li>Analyser les causes d'absentéisme et adapter les modalités pédagogiques</li>
+                {% endif %}
+                {% if data.summary_stats.avg_engagement < 60 %}
+                <li>Diversifier les méthodes pédagogiques pour améliorer l'engagement</li>
+                {% endif %}
+                {% if data.summary_stats.at_risk_count > 5 %}
+                <li>Organiser des entretiens de régulation avec les étudiants en difficulté</li>
+                {% endif %}
+                <li>Planifier des enquêtes de satisfaction à mi-parcours</li>
+                <li>Renforcer la communication avec les entreprises pour les formations en alternance</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section no-break">
+        <h2>Conformité Qualiopi - Critère 12</h2>
+        <p><strong>Exigence :</strong> Le prestataire décrit et met en œuvre les mesures pour favoriser l'engagement des bénéficiaires et prévenir les ruptures de parcours.</p>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
+            <h4 style="margin: 0 0 10px 0; color: #495057;">Éléments de Preuve :</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 11px;">
+                <li>✓ Suivi systématique de l'assiduité et de l'engagement</li>
+                <li>✓ Détection automatique des signaux de décrochage</li>
+                <li>✓ Mesures d'accompagnement individualisé</li>
+                <li>✓ Analyse des causes de rupture et actions correctives</li>
+                <li>✓ Traçabilité des interventions pédagogiques</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Ce rapport a été généré automatiquement par le système EPROFOS</p>
+        <p>Conforme aux exigences Qualiopi pour le critère 12 - Engagement et prévention du décrochage</p>
+        <p><strong>Date de génération :</strong> {{ generated_at|date('d/m/Y à H:i:s') }}</p>
+    </div>
+</body>
+</html>

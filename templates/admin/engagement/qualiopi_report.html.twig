@@ -1,0 +1,530 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Qualiopi - Critère 12{% endblock %}
+
+{% block body %}
+<div class="container-xl">
+    <div class="page-header d-print-none">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    <i class="ti ti-shield-check me-2 text-primary"></i>
+                    Rapport de Conformité Qualiopi - Critère 12
+                </h2>
+                <div class="text-muted">
+                    Suivi de l'engagement et prévention de l'abandon des apprenants
+                </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="{{ path('admin_engagement_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-arrow-left me-1"></i>
+                        Retour au tableau de bord
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>
+                            Exporter le rapport
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'pdf'}) }}">
+                                <i class="ti ti-file-type-pdf me-2"></i>PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'excel'}) }}">
+                                <i class="ti ti-file-type-xls me-2"></i>Excel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'csv'}) }}">
+                                <i class="ti ti-file-type-csv me-2"></i>CSV
+                            </a></li>
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="window.print()">
+                        <i class="ti ti-printer me-1"></i>
+                        Imprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Score Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Score de Conformité Global</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-{{ compliance_score.level == 'Excellent' ? 'green' : (compliance_score.level == 'Satisfaisant' ? 'blue' : (compliance_score.level == 'Acceptable' ? 'yellow' : 'red')) }} badge-lg">
+                            {{ compliance_score.level }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="display-1 font-weight-bold text-{{ compliance_score.percentage >= 85 ? 'green' : (compliance_score.percentage >= 75 ? 'blue' : (compliance_score.percentage >= 65 ? 'yellow' : 'red')) }}">
+                                    {{ compliance_score.percentage|number_format(1) }}%
+                                </div>
+                                <div class="text-muted">Score Global</div>
+                                <div class="small">{{ compliance_score.total_score }}/{{ compliance_score.max_score }} points</div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                {% for criterion_name, criterion in compliance_score.criteria %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>
+                                                {% if criterion_name == 'retention' %}
+                                                    <i class="ti ti-users me-1"></i>Rétention
+                                                {% elseif criterion_name == 'attendance' %}
+                                                    <i class="ti ti-calendar-check me-1"></i>Assiduité
+                                                {% elseif criterion_name == 'engagement' %}
+                                                    <i class="ti ti-heart me-1"></i>Engagement
+                                                {% else %}
+                                                    <i class="ti ti-tool me-1"></i>Intervention
+                                                {% endif %}
+                                            </span>
+                                            <span class="font-weight-medium">{{ criterion.score }}/{{ criterion.max }}</span>
+                                        </div>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar" style="width: {{ (criterion.score / criterion.max * 100) }}%" role="progressbar"></div>
+                                        </div>
+                                        <div class="small text-muted">{{ criterion.rate|number_format(1) }}%</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Formations Actives</div>
+                    </div>
+                    <div class="h1 mb-3">{{ report.total_formations }}</div>
+                    <div class="text-muted">Programmes en cours</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Apprenants Inscrits</div>
+                    </div>
+                    <div class="h1 mb-3">{{ report.total_students }}</div>
+                    <div class="text-muted">Total des inscriptions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux de Rétention</div>
+                    </div>
+                    <div class="h1 mb-3 text-{{ (100 - report.risk_rate) >= 85 ? 'green' : ((100 - report.risk_rate) >= 75 ? 'blue' : 'red') }}">
+                        {{ (100 - report.risk_rate)|number_format(1) }}%
+                    </div>
+                    <div class="text-muted">Objectif Qualiopi: ≥85%</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux d'Assiduité</div>
+                    </div>
+                    <div class="h1 mb-3 text-{{ report.average_attendance >= 85 ? 'green' : (report.average_attendance >= 75 ? 'blue' : 'red') }}">
+                        {{ report.average_attendance|number_format(1) }}%
+                    </div>
+                    <div class="text-muted">Objectif Qualiopi: ≥75%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Analyse Détaillée de l'Engagement</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Indicateurs de Performance</h5>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Engagement Moyen</span>
+                                    <span class="badge bg-{{ report.avg_engagement >= 70 ? 'green' : (report.avg_engagement >= 60 ? 'yellow' : 'red') }}">
+                                        {{ report.avg_engagement|number_format(1) }}/100
+                                    </span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Taux de Complétion</span>
+                                    <span class="badge bg-{{ report.completion_rate >= 80 ? 'green' : (report.completion_rate >= 60 ? 'yellow' : 'red') }}">
+                                        {{ report.completion_rate|number_format(1) }}%
+                                    </span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Apprenants à Risque</span>
+                                    <span class="badge bg-{{ report.at_risk_count <= 5 ? 'green' : (report.at_risk_count <= 10 ? 'yellow' : 'red') }}">
+                                        {{ report.at_risk_count }} / {{ report.total_students }}
+                                    </span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Taux de Risque</span>
+                                    <span class="badge bg-{{ report.risk_rate <= 15 ? 'green' : (report.risk_rate <= 25 ? 'yellow' : 'red') }}">
+                                        {{ report.risk_rate|number_format(1) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Statistiques d'Assiduité</h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Présents</span>
+                                    <span class="text-green">{{ report.attendance_stats.present_percentage|number_format(1) }}%</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-green" style="width: {{ report.attendance_stats.present_percentage }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Retards</span>
+                                    <span class="text-yellow">{{ report.attendance_stats.late_percentage|number_format(1) }}%</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-yellow" style="width: {{ report.attendance_stats.late_percentage }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Absents</span>
+                                    <span class="text-red">{{ report.attendance_stats.absent_percentage|number_format(1) }}%</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-red" style="width: {{ report.attendance_stats.absent_percentage }}%"></div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <span><strong>Participation Moyenne</strong></span>
+                                <span><strong>{{ report.attendance_stats.average_participation|number_format(1) }}/10</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Conformité Qualiopi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <span>Critère 12.1 - Suivi</span>
+                                <i class="ti ti-check text-green"></i>
+                            </div>
+                            <div class="small text-muted">Système de suivi opérationnel</div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <span>Critère 12.2 - Prévention</span>
+                                <i class="ti ti-{{ report.at_risk_count > 0 ? 'check text-green' : 'x text-red' }}"></i>
+                            </div>
+                            <div class="small text-muted">Détection des difficultés</div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <span>Critère 12.3 - Adaptation</span>
+                                <i class="ti ti-{{ report.avg_engagement >= 60 ? 'check text-green' : 'x text-red' }}"></i>
+                            </div>
+                            <div class="small text-muted">Adaptation pédagogique</div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <span>Critère 12.4 - Accompagnement</span>
+                                <i class="ti ti-{{ report.average_attendance >= 75 ? 'check text-green' : 'x text-red' }}"></i>
+                            </div>
+                            <div class="small text-muted">Accompagnement individualisé</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <div class="badge bg-{{ compliance_score.percentage >= 85 ? 'green' : (compliance_score.percentage >= 75 ? 'blue' : (compliance_score.percentage >= 65 ? 'yellow' : 'red')) }} badge-lg mb-2">
+                            {{ compliance_score.level }}
+                        </div>
+                        <div class="small text-muted">Niveau de conformité</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- At-Risk Students Summary -->
+    {% if report.at_risk_count > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Apprenants Nécessitant une Intervention</h3>
+                    <div class="card-actions">
+                        <a href="{{ path('admin_engagement_at_risk') }}" class="btn btn-sm btn-warning">
+                            <i class="ti ti-eye me-1"></i>
+                            Voir le détail
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for student_data in report.at_risk_students|slice(0, 6) %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border border-{{ student_data.riskScore >= 90 ? 'red' : (student_data.riskScore >= 70 ? 'orange' : 'yellow') }}">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <span class="avatar me-2 bg-{{ student_data.riskScore >= 90 ? 'red' : (student_data.riskScore >= 70 ? 'orange' : 'yellow') }}">
+                                                {{ student_data.student.firstName|first }}{{ student_data.student.lastName|first }}
+                                            </span>
+                                            <div class="flex-fill">
+                                                <div class="font-weight-medium">{{ student_data.student.fullName }}</div>
+                                                <div class="small text-muted">{{ student_data.formation.title }}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="h4 m-0 text-{{ student_data.riskScore >= 90 ? 'red' : (student_data.riskScore >= 70 ? 'orange' : 'yellow') }}">
+                                                    {{ student_data.riskScore|number_format(0) }}%
+                                                </div>
+                                                <div class="small text-muted">Risque</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="small">
+                                                {% for factor, value in student_data.riskFactors %}
+                                                    {% if loop.index <= 2 %}
+                                                        <span class="badge bg-red-lt me-1">
+                                                            {% if factor == 'low_engagement' %}
+                                                                Engagement faible
+                                                            {% elseif factor == 'prolonged_inactivity' %}
+                                                                Inactivité ({{ value }}j)
+                                                            {% elseif factor == 'poor_attendance' %}
+                                                                Assiduité ({{ value }}%)
+                                                            {% elseif factor == 'slow_progress' %}
+                                                                Progression lente
+                                                            {% elseif factor == 'frequent_absences' %}
+                                                                Absences ({{ value }})
+                                                            {% endif %}
+                                                        </span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if report.at_risk_students|length > 6 %}
+                        <div class="text-center">
+                            <a href="{{ path('admin_engagement_at_risk') }}" class="btn btn-outline-primary">
+                                Voir les {{ report.at_risk_students|length - 6 }} autres apprenants à risque
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dropout Patterns Analysis -->
+    {% if dropout_patterns.common_signals is not empty or dropout_patterns.formation_analysis is not empty %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Analyse des Patterns d'Abandon</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if dropout_patterns.common_signals is not empty %}
+                        <div class="col-md-6">
+                            <h5>Signaux de Difficulté les Plus Fréquents</h5>
+                            <div class="list-group list-group-flush">
+                                {% for signal, count in dropout_patterns.common_signals|slice(0, 5) %}
+                                    <div class="list-group-item d-flex justify-content-between">
+                                        <span>{{ signal|replace('_', ' ')|title }}</span>
+                                        <span class="badge bg-red">{{ count }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if dropout_patterns.formation_analysis is not empty %}
+                        <div class="col-md-6">
+                            <h5>Formations à Risque Élevé</h5>
+                            <div class="list-group list-group-flush">
+                                {% for formation_id, count in dropout_patterns.formation_analysis|slice(0, 5) %}
+                                    <div class="list-group-item d-flex justify-content-between">
+                                        <span>Formation #{{ formation_id }}</span>
+                                        <span class="badge bg-orange">{{ count }} cas</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if dropout_patterns.average_days_before_risk is defined %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-info-circle text-blue me-2"></i>
+                            <strong>Délai Moyen de Détection des Risques:</strong>
+                            <span class="ms-2">{{ dropout_patterns.average_days_before_risk|number_format(0) }} jours après le début de formation</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recommandations Qualiopi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Actions Prioritaires</h5>
+                            <ul class="list-unstyled">
+                                {% if compliance_score.percentage < 85 %}
+                                    <li class="mb-2">
+                                        <i class="ti ti-arrow-right text-red me-2"></i>
+                                        Améliorer le score de conformité global (actuellement {{ compliance_score.percentage|number_format(1) }}%)
+                                    </li>
+                                {% endif %}
+                                {% if (100 - report.risk_rate) < 85 %}
+                                    <li class="mb-2">
+                                        <i class="ti ti-arrow-right text-red me-2"></i>
+                                        Renforcer les actions de rétention (objectif: 85%, actuel: {{ (100 - report.risk_rate)|number_format(1) }}%)
+                                    </li>
+                                {% endif %}
+                                {% if report.average_attendance < 75 %}
+                                    <li class="mb-2">
+                                        <i class="ti ti-arrow-right text-red me-2"></i>
+                                        Améliorer l'assiduité des apprenants (objectif: 75%, actuel: {{ report.average_attendance|number_format(1) }}%)
+                                    </li>
+                                {% endif %}
+                                {% if report.avg_engagement < 70 %}
+                                    <li class="mb-2">
+                                        <i class="ti ti-arrow-right text-red me-2"></i>
+                                        Renforcer l'engagement des apprenants (objectif: 70, actuel: {{ report.avg_engagement|number_format(1) }})
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Mesures Préventives</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="ti ti-check text-green me-2"></i>
+                                    Maintenir le système de détection automatique des risques
+                                </li>
+                                <li class="mb-2">
+                                    <i class="ti ti-check text-green me-2"></i>
+                                    Poursuivre les entretiens individuels réguliers
+                                </li>
+                                <li class="mb-2">
+                                    <i class="ti ti-check text-green me-2"></i>
+                                    Continuer l'adaptation pédagogique personnalisée
+                                </li>
+                                <li class="mb-2">
+                                    <i class="ti ti-check text-green me-2"></i>
+                                    Renforcer la communication avec les apprenants à risque
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Footer -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <div class="text-muted">
+                        <div>Rapport généré le {{ report.report_generated_at|date('d/m/Y à H:i') }}</div>
+                        <div class="small mt-1">
+                            Conformément au Critère Qualiopi 12 - Engagement des apprenants et prévention de l'abandon
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .page-header .btn-list,
+    .card-actions {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        break-inside: avoid;
+    }
+    
+    .row {
+        break-inside: avoid;
+    }
+}
+
+.space-y-3 > * + * {
+    margin-top: 1rem;
+}
+
+.badge-lg {
+    font-size: 0.875em;
+    padding: 0.5rem 0.75rem;
+}
+
+.display-1 {
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 1.2;
+}
+</style>
+{% endblock %}

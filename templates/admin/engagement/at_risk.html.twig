@@ -1,0 +1,356 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Étudiants à Risque - Critère Qualiopi 12{% endblock %}
+
+{% block body %}
+<div class="container-xl" 
+     data-controller="at-risk" 
+     data-at-risk-export-url-value="{{ path('admin_engagement_export', {format: 'csv'}) }}"
+     data-at-risk-analyze-url-value="{{ path('admin_engagement_api_analyze_risks') }}"
+     data-at-risk-recommendations-value="{{ at_risk_students|json_encode }}">
+    <div class="page-header d-print-none">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    Étudiants à Risque d'Abandon
+                </h2>
+                <div class="text-muted">
+                    Suivi et prévention de l'abandon scolaire - Critère Qualiopi 12
+                </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="{{ path('admin_engagement_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Retour au tableau de bord
+                    </a>
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            data-action="click->at-risk#exportAtRiskStudents">
+                        <i class="fas fa-download me-1"></i>
+                        Exporter la liste
+                    </button>
+                    <button type="button" 
+                            class="btn btn-success" 
+                            data-at-risk-target="refreshButton"
+                            data-action="click->at-risk#refreshRiskAnalysis">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Actualiser l'analyse
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Total à Risque</div>
+                    </div>
+                    <div class="h1 mb-3 text-warning">{{ total_count }}</div>
+                    <div class="text-muted">Étudiants nécessitant une intervention</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Risque Critique</div>
+                    </div>
+                    <div class="h1 mb-3 text-danger">{{ critical_risk_students|length }}</div>
+                    <div class="text-muted">Intervention immédiate requise</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux de Risque</div>
+                    </div>
+                    <div class="h1 mb-3">{{ ((total_count / (total_count + 50)) * 100)|number_format(1) }}%</div>
+                    <div class="text-muted">Du total des étudiants actifs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Dernière Analyse</div>
+                    </div>
+                    <div class="h1 mb-3 text-muted">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="text-muted">{{ "now"|date('d/m/Y H:i') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if total_count > 0 %}
+    <!-- At Risk Students List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Liste des Étudiants à Risque</h3>
+                    <div class="card-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-filter me-1"></i>
+                                Filtrer
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item active" 
+                                   href="#" 
+                                   data-risk-level="all"
+                                   data-action="click->at-risk#filterByRisk">
+                                    <i class="fas fa-list me-2"></i>Tous
+                                </a>
+                                <a class="dropdown-item" 
+                                   href="#" 
+                                   data-risk-level="critical"
+                                   data-action="click->at-risk#filterByRisk">
+                                    <i class="fas fa-exclamation-circle me-2 text-danger"></i>Risque critique
+                                </a>
+                                <a class="dropdown-item" 
+                                   href="#" 
+                                   data-risk-level="high"
+                                   data-action="click->at-risk#filterByRisk">
+                                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Risque élevé
+                                </a>
+                                <a class="dropdown-item" 
+                                   href="#" 
+                                   data-risk-level="medium"
+                                   data-action="click->at-risk#filterByRisk">
+                                    <i class="fas fa-exclamation me-2 text-info"></i>Risque modéré
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Formation</th>
+                                    <th>Score de Risque</th>
+                                    <th>Facteurs de Risque</th>
+                                    <th>Recommandations</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for risk_data in at_risk_students %}
+                                    {% set student = risk_data.student %}
+                                    {% set formation = risk_data.formation %}
+                                    {% set progress = risk_data.progress %}
+                                    {% set risk_score = risk_data.riskScore %}
+                                    {% set risk_factors = risk_data.riskFactors %}
+                                    {% set recommendations = risk_data.recommendations %}
+                                    
+                                    <tr class="risk-row" 
+                                        data-risk-level="{{ risk_score >= 90 ? 'critical' : (risk_score >= 70 ? 'high' : 'medium') }}"
+                                        data-at-risk-target="riskRow">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar me-3 {{ risk_score >= 90 ? 'bg-danger' : (risk_score >= 70 ? 'bg-warning' : 'bg-info') }}">
+                                                    {{ student.firstName|first }}{{ student.lastName|first }}
+                                                </span>
+                                                <div>
+                                                    <div class="font-weight-medium">{{ student.fullName }}</div>
+                                                    <div class="text-muted">{{ student.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="font-weight-medium">{{ formation.title }}</div>
+                                                <div class="text-muted">{{ formation.category.name }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2">
+                                                    <div class="progress" style="width: 60px;">
+                                                        <div class="progress-bar {{ risk_score >= 90 ? 'bg-danger' : (risk_score >= 70 ? 'bg-warning' : 'bg-info') }}" 
+                                                             style="width: {{ risk_score }}%" role="progressbar">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="font-weight-medium {{ risk_score >= 90 ? 'text-danger' : (risk_score >= 70 ? 'text-warning' : 'text-info') }}">
+                                                    {{ risk_score|number_format(1) }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-sm">
+                                                {% if risk_factors.low_engagement is defined and risk_factors.low_engagement > 15 %}
+                                                    <span class="badge bg-danger bg-opacity-25 text-danger me-1">Faible engagement ({{ risk_factors.low_engagement }}j)</span>
+                                                {% endif %}
+                                                {% if risk_factors.prolonged_inactivity is defined and risk_factors.prolonged_inactivity > 14 %}
+                                                    <span class="badge bg-warning bg-opacity-25 text-dark me-1">Inactivité prolongée ({{ risk_factors.prolonged_inactivity }}j)</span>
+                                                {% endif %}
+                                                {% if risk_factors.poor_attendance is defined and risk_factors.poor_attendance < 75 %}
+                                                    <span class="badge bg-info bg-opacity-25 text-dark me-1">Assiduité faible ({{ risk_factors.poor_attendance|number_format(1) }}%)</span>
+                                                {% endif %}
+                                                {% if risk_factors.slow_progress is defined %}
+                                                    <span class="badge bg-primary bg-opacity-25 text-primary me-1">Progression lente ({{ risk_factors.slow_progress.current|number_format(1) }}%)</span>
+                                                {% endif %}
+                                                {% if risk_factors.frequent_absences is defined and risk_factors.frequent_absences > 3 %}
+                                                    <span class="badge bg-secondary bg-opacity-25 text-dark me-1">Absences fréquentes ({{ risk_factors.frequent_absences }})</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-sm">
+                                                {% for recommendation in recommendations|slice(0, 3) %}
+                                                    <div class="mb-1">
+                                                        <i class="fas fa-circle text-muted" style="font-size: 0.5rem;"></i>
+                                                        {{ recommendation }}
+                                                    </div>
+                                                {% endfor %}
+                                                {% if recommendations|length > 3 %}
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-primary" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#recommendationsModal"
+                                                            data-index="{{ loop.index0 }}"
+                                                            data-action="click->at-risk#showAllRecommendations">
+                                                        +{{ recommendations|length - 3 }} autres
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="{{ path('admin_student_show', {id: student.id}) }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="Voir le profil">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-success" 
+                                                        data-student-id="{{ student.id }}"
+                                                        data-action="click->at-risk#contactStudent" 
+                                                        title="Contacter">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-warning" 
+                                                        data-student-id="{{ student.id }}"
+                                                        data-action="click->at-risk#createIntervention" 
+                                                        title="Planifier intervention">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No at-risk students message -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="empty">
+                        <div class="empty-img">
+                            <i class="fas fa-shield-alt" style="font-size: 5rem; color: #28a745;"></i>
+                        </div>
+                        <p class="empty-title">Aucun étudiant à risque détecté</p>
+                        <p class="empty-subtitle text-muted">
+                            Tous les étudiants présentent des indicateurs satisfaisants pour la rétention.
+                        </p>
+                        <div class="empty-action">
+                            <a href="{{ path('admin_engagement_dashboard') }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Retour au tableau de bord
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recommendations Modal -->
+<div class="modal modal-blur fade" 
+     id="recommendationsModal" 
+     tabindex="-1" 
+     aria-hidden="true"
+     data-at-risk-target="recommendationsModal">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Recommandations Complètes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-recommendations-content" data-at-risk-target="modalContent">
+                    <!-- Content will be populated by Stimulus controller -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" 
+                        class="btn btn-primary" 
+                        data-action="click->at-risk#implementRecommendations">
+                    <i class="fas fa-check me-1"></i>
+                    Mettre en œuvre
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.risk-row[data-risk-level="critical"] {
+    border-left: 4px solid #dc3545;
+}
+
+.risk-row[data-risk-level="high"] {
+    border-left: 4px solid #fd7e14;
+}
+
+.risk-row[data-risk-level="medium"] {
+    border-left: 4px solid #ffc107;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-list .btn {
+    margin-right: 0.25rem;
+}
+
+.progress {
+    height: 6px;
+}
+
+.dropdown-item.active {
+    background-color: var(--bs-primary);
+    color: white;
+}
+</style>
+{% endblock %}

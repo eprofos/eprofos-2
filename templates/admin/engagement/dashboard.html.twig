@@ -1,0 +1,438 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de Bord Engagement - Critère Qualiopi 12{% endblock %}
+
+{% block body %}
+<div class="container-xl">
+    <div class="page-header d-print-none">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    <i class="ti ti-chart-dots me-2"></i>
+                    Suivi de l'Engagement - Critère Qualiopi 12
+                </h2>
+                <div class="text-muted">
+                    Surveillance de l'engagement des apprenants et prévention de l'abandon
+                </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <a href="{{ path('admin_engagement_at_risk') }}" class="btn btn-warning">
+                        <i class="ti ti-alert-triangle me-1"></i>
+                        Étudiants à risque ({{ at_risk_count }})
+                    </a>
+                    <a href="{{ path('admin_engagement_qualiopi_report') }}" class="btn btn-primary">
+                        <i class="ti ti-file-report me-1"></i>
+                        Rapport Qualiopi
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>
+                            Exporter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'pdf'}) }}">
+                                <i class="ti ti-file-type-pdf me-2"></i>PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'excel'}) }}">
+                                <i class="ti ti-file-type-xls me-2"></i>Excel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'csv'}) }}">
+                                <i class="ti ti-file-type-csv me-2"></i>CSV
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    {% if alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for alert in alerts %}
+                <div class="alert alert-{{ alert.level == 'critical' ? 'danger' : (alert.level == 'warning' ? 'warning' : 'info') }} d-flex" role="alert">
+                    <div class="me-3">
+                        {% if alert.level == 'critical' %}
+                            <i class="ti ti-alert-circle"></i>
+                        {% elseif alert.level == 'warning' %}
+                            <i class="ti ti-alert-triangle"></i>
+                        {% else %}
+                            <i class="ti ti-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="alert-title">{{ alert.message }}</h4>
+                        <div class="text-muted">{{ alert.action }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux de Rétention</div>
+                        <div class="ms-auto lh-1">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown">
+                                    <i class="ti ti-dots-vertical"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="{{ path('admin_engagement_attendance') }}">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h1 mb-3">{{ (100 - retention_stats.dropoutRate)|number_format(1) }}%</div>
+                    <div class="d-flex mb-2">
+                        <div>Objectif Qualiopi: 85%</div>
+                        <div class="ms-auto">
+                            {% set retention_rate = 100 - retention_stats.dropoutRate %}
+                            {% if retention_rate >= 85 %}
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-up"></i>
+                                </span>
+                            {% else %}
+                                <span class="text-red d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-down"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar" style="width: {{ retention_rate }}%" role="progressbar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Engagement Moyen</div>
+                    </div>
+                    <div class="h1 mb-3">{{ engagement_metrics.averageEngagement|number_format(1) }}/100</div>
+                    <div class="d-flex mb-2">
+                        <div>Objectif: 70/100</div>
+                        <div class="ms-auto">
+                            {% if engagement_metrics.averageEngagement >= 70 %}
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-up"></i>
+                                </span>
+                            {% else %}
+                                <span class="text-yellow d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-down"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar" style="width: {{ engagement_metrics.averageEngagement }}%" role="progressbar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux d'Assiduité</div>
+                    </div>
+                    <div class="h1 mb-3">{{ attendance_stats.overall_attendance_rate|number_format(1) }}%</div>
+                    <div class="d-flex mb-2">
+                        <div>Objectif: 75%</div>
+                        <div class="ms-auto">
+                            {% if attendance_stats.overall_attendance_rate >= 75 %}
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-up"></i>
+                                </span>
+                            {% else %}
+                                <span class="text-red d-inline-flex align-items-center lh-1">
+                                    <i class="ti ti-trending-down"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar" style="width: {{ attendance_stats.overall_attendance_rate }}%" role="progressbar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Étudiants à Risque</div>
+                    </div>
+                    <div class="h1 mb-3 text-{{ at_risk_count > 5 ? 'red' : (at_risk_count > 2 ? 'yellow' : 'green') }}">
+                        {{ at_risk_count }}
+                    </div>
+                    <div class="d-flex mb-2">
+                        <div>Total actifs: {{ engagement_metrics.totalActivePrograms }}</div>
+                        <div class="ms-auto">
+                            <a href="{{ path('admin_engagement_at_risk') }}" class="btn btn-sm btn-outline-primary">
+                                Voir tout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Répartition de l'Engagement</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <span class="bg-green text-white avatar">
+                                        {{ engagement_metrics.highEngagement }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-weight-medium">Engagement Élevé (80-100)</div>
+                                    <div class="text-muted">
+                                        {{ ((engagement_metrics.highEngagement / engagement_metrics.totalActivePrograms) * 100)|number_format(1) }}% des étudiants
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <span class="bg-yellow text-white avatar">
+                                        {{ engagement_metrics.mediumEngagement }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-weight-medium">Engagement Moyen (60-79)</div>
+                                    <div class="text-muted">
+                                        {{ ((engagement_metrics.mediumEngagement / engagement_metrics.totalActivePrograms) * 100)|number_format(1) }}% des étudiants
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <span class="bg-red text-white avatar">
+                                        {{ engagement_metrics.lowEngagement }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-weight-medium">Engagement Faible (&lt;60)</div>
+                                    <div class="text-muted">
+                                        {{ ((engagement_metrics.lowEngagement / engagement_metrics.totalActivePrograms) * 100)|number_format(1) }}% des étudiants
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <span class="bg-orange text-white avatar">
+                                        {{ engagement_metrics.atRiskCount }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-weight-medium">Risque d'Abandon</div>
+                                    <div class="text-muted">
+                                        {{ ((engagement_metrics.atRiskCount / engagement_metrics.totalActivePrograms) * 100)|number_format(1) }}% des étudiants
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques d'Assiduité</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Présents</span>
+                            <span class="text-green">{{ attendance_stats.present_percentage|number_format(1) }}%</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-green" style="width: {{ attendance_stats.present_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Retards</span>
+                            <span class="text-yellow">{{ attendance_stats.late_percentage|number_format(1) }}%</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-yellow" style="width: {{ attendance_stats.late_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Présence partielle</span>
+                            <span class="text-info">{{ attendance_stats.partial_percentage|number_format(1) }}%</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-info" style="width: {{ attendance_stats.partial_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Absents</span>
+                            <span class="text-red">{{ attendance_stats.absent_percentage|number_format(1) }}%</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-red" style="width: {{ attendance_stats.absent_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <span><strong>Score Participation Moyen</strong></span>
+                        <span><strong>{{ attendance_stats.average_participation|number_format(1) }}/10</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Actions Rapides</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100 mb-2" onclick="analyzeRisks()">
+                                <i class="ti ti-refresh me-1"></i>
+                                Analyser les Risques
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ path('admin_engagement_attendance') }}" class="btn btn-outline-info w-100 mb-2">
+                                <i class="ti ti-calendar-check me-1"></i>
+                                Gérer l'Assiduité
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ path('admin_engagement_qualiopi_report') }}" class="btn btn-outline-success w-100 mb-2">
+                                <i class="ti ti-file-report me-1"></i>
+                                Rapport Complet
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeRisks() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-loader-2 me-1 rotating"></i>Analyse en cours...';
+    btn.disabled = true;
+    
+    fetch('{{ path('admin_engagement_api_analyze_risks') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // Show success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible';
+        alertDiv.innerHTML = `
+            <div class="d-flex">
+                <div class="me-3">
+                    <i class="ti ti-check-circle"></i>
+                </div>
+                <div>
+                    <h4 class="alert-title">Analyse terminée</h4>
+                    <div class="text-muted">${data.message}. Étudiants à risque détectés: ${data.at_risk_count}</div>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert alert at the top of the page
+        const container = document.querySelector('.container-xl');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+        
+        // Optionally reload the page to show updated data
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    })
+    .catch(error => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        console.error('Error:', error);
+        
+        // Show error message
+        alert('Erreur lors de l\'analyse des risques. Veuillez réessayer.');
+    });
+}
+</script>
+
+<style>
+.rotating {
+    animation: rotation 1s infinite linear;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}
+</style>
+{% endblock %}
