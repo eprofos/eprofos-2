@@ -10,6 +10,9 @@
                 <h1>{{ course.title }}</h1>
                 <div>
                     {% include 'admin/components/audit_history_button.html.twig' with { entity: course, variant: 'btn-sm' } %}
+                    <a href="{{ path('admin_course_pdf', {'id': course.id}) }}" class="btn btn-danger" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Télécharger PDF
+                    </a>
                     <a href="{{ path('admin_course_edit', {'id': course.id}) }}" class="btn btn-primary">
                         <i class="fas fa-edit"></i> Modifier
                     </a>

@@ -6,6 +6,8 @@ use App\Entity\Training\Course;
 use App\Entity\Training\Chapter;
 use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +19,8 @@ class CourseController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private Pdf $pdf
     ) {}
 
     #[Route('/', name: 'admin_course_index', methods: ['GET'])]
@@ -118,6 +121,37 @@ class CourseController extends AbstractController
         return $this->render('admin/course/show.html.twig', [
             'course' => $course,
         ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'admin_course_pdf', methods: ['GET'])]
+    public function downloadPdf(Course $course): Response
+    {
+        $html = $this->renderView('admin/course/pdf.html.twig', [
+            'course' => $course,
+        ]);
+
+        $filename = sprintf(
+            'cours-%s-%s.pdf',
+            $course->getSlug(),
+            (new \DateTime())->format('Y-m-d')
+        );
+
+        return new PdfResponse(
+            $this->pdf->getOutputFromHtml($html, [
+                'page-size' => 'A4',
+                'margin-top' => '20mm',
+                'margin-right' => '20mm',
+                'margin-bottom' => '20mm',
+                'margin-left' => '20mm',
+                'encoding' => 'UTF-8',
+                'print-media-type' => true,
+                'no-background' => false,
+                'lowquality' => false,
+                'enable-javascript' => false,
+                'disable-smart-shrinking' => true,
+            ]),
+            $filename
+        );
     }
 
     #[Route('/{id}/edit', name: 'admin_course_edit', methods: ['GET', 'POST'])]

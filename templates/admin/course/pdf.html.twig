@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} - Fiche de cours</title>
+    <style>
+        /* PDF-specific styles */
+        @page {
+            margin: 0.75in;
+            size: A4;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0d6efd;
+        }
+        
+        .header h1 {
+            color: #0d6efd;
+            font-size: 24px;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .header .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .course-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .course-summary h2 {
+            color: #0d6efd;
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+        }
+        
+        .course-summary .description {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .summary-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .summary-item .label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item .value {
+            color: #0d6efd;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .badge.success { background: #d4edda; color: #155724; }
+        .badge.info { background: #d1ecf1; color: #0c5460; }
+        .badge.warning { background: #fff3cd; color: #856404; }
+        .badge.secondary { background: #e2e3e5; color: #41464b; }
+        
+        .hierarchy-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .hierarchy-info h3 {
+            color: #0d6efd;
+            font-size: 16px;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+        }
+        
+        .hierarchy-path {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .hierarchy-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .hierarchy-arrow {
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .content-section {
+            background: white;
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .objective-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .objective-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .objective-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .objective-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .objective-text {
+            color: #495057;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        .resource-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .resource-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .resource-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .resource-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background: #17a2b8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            flex-shrink: 0;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .resource-text {
+            color: #495057;
+            font-size: 11px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .exercises-qcms {
+            background: #fff5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .exercises-qcms h3 {
+            color: #dc3545;
+            font-size: 16px;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+        }
+        
+        .activity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .activity-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .activity-card h4 {
+            color: #495057;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .activity-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border-left: 3px solid #6f42c1;
+        }
+        
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .activity-title {
+            font-weight: bold;
+            color: #495057;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .activity-meta {
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        .text-content {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .text-content h4 {
+            color: #0d6efd;
+            font-size: 14px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .text-content h4:first-child {
+            margin-top: 0;
+        }
+        
+        .empty-content {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        /* Page breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Avoid orphans */
+        .content-section {
+            orphans: 2;
+            widows: 2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>{{ course.title }}</h1>
+        <p class="subtitle">Fiche détaillée du cours</p>
+    </div>
+
+    <!-- Course Summary -->
+    <div class="course-summary">
+        <h2>Informations générales</h2>
+        <div class="description">{{ course.description }}</div>
+        
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="label">Type de cours</div>
+                <div class="value">{{ course.typeLabel }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Durée</div>
+                <div class="value">{{ course.formattedDuration }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Ordre</div>
+                <div class="value">#{{ course.orderIndex }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Statut</div>
+                <div class="value">
+                    {% if course.isActive %}
+                        <span class="badge success">Actif</span>
+                    {% else %}
+                        <span class="badge secondary">Inactif</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hierarchy Information -->
+    <div class="hierarchy-info">
+        <h3>Positionnement dans la formation</h3>
+        <div class="hierarchy-path">
+            <div class="hierarchy-item">
+                <strong>Formation:</strong> {{ course.chapter.module.formation.title }}
+            </div>
+            <div class="hierarchy-arrow">→</div>
+            <div class="hierarchy-item">
+                <strong>Module:</strong> {{ course.chapter.module.title }}
+            </div>
+            <div class="hierarchy-arrow">→</div>
+            <div class="hierarchy-item">
+                <strong>Chapitre:</strong> {{ course.chapter.title }}
+            </div>
+            <div class="hierarchy-arrow">→</div>
+            <div class="hierarchy-item">
+                <strong>Cours:</strong> {{ course.title }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Objectives -->
+    {% if course.learningObjectives and course.learningObjectives|length > 0 %}
+        <div class="content-section">
+            <div class="section-header">
+                🎯 Objectifs d'apprentissage
+            </div>
+            <div class="section-content">
+                <ul class="objective-list">
+                    {% for objective in course.learningObjectives %}
+                        <li class="objective-item">
+                            <div class="objective-icon">{{ loop.index }}</div>
+                            <div class="objective-text">{{ objective }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Content and Outline -->
+    <div class="content-section">
+        <div class="section-header">
+            📚 Contenu du cours
+        </div>
+        <div class="section-content">
+            {% if course.contentOutline %}
+                <div class="text-content">
+                    <h4>Plan détaillé</h4>
+                    {{ course.contentOutline|nl2br }}
+                </div>
+            {% endif %}
+            
+            {% if course.content %}
+                <div class="text-content">
+                    <h4>Contenu principal</h4>
+                    {{ course.content|nl2br }}
+                </div>
+            {% endif %}
+            
+            {% if not course.contentOutline and not course.content %}
+                <div class="empty-content">
+                    Aucun contenu détaillé disponible
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Prerequisites and Outcomes -->
+    <div class="two-column">
+        {% if course.prerequisites %}
+            <div class="content-section">
+                <div class="section-header">
+                    📋 Prérequis
+                </div>
+                <div class="section-content">
+                    <div class="text-content">
+                        {{ course.prerequisites|nl2br }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if course.learningOutcomes and course.learningOutcomes|length > 0 %}
+            <div class="content-section">
+                <div class="section-header">
+                    🏆 Résultats d'apprentissage
+                </div>
+                <div class="section-content">
+                    <ul class="objective-list">
+                        {% for outcome in course.learningOutcomes %}
+                            <li class="objective-item">
+                                <div class="objective-icon">✓</div>
+                                <div class="objective-text">{{ outcome }}</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Teaching and Assessment Methods -->
+    <div class="two-column">
+        {% if course.teachingMethods %}
+            <div class="content-section">
+                <div class="section-header">
+                    👨‍🏫 Méthodes pédagogiques
+                </div>
+                <div class="section-content">
+                    <div class="text-content">
+                        {{ course.teachingMethods|nl2br }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if course.assessmentMethods %}
+            <div class="content-section">
+                <div class="section-header">
+                    📊 Méthodes d'évaluation
+                </div>
+                <div class="section-content">
+                    <div class="text-content">
+                        {{ course.assessmentMethods|nl2br }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Resources -->
+    {% if course.resources and course.resources|length > 0 %}
+        <div class="content-section">
+            <div class="section-header">
+                📁 Ressources et matériaux
+            </div>
+            <div class="section-content">
+                <ul class="resource-list">
+                    {% for resource in course.resources %}
+                        <li class="resource-item">
+                            <div class="resource-icon">R</div>
+                            <div class="resource-text">{{ resource }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Success Criteria -->
+    {% if course.successCriteria and course.successCriteria|length > 0 %}
+        <div class="content-section">
+            <div class="section-header">
+                ✅ Critères de réussite
+            </div>
+            <div class="section-content">
+                <ul class="objective-list">
+                    {% for criteria in course.successCriteria %}
+                        <li class="objective-item">
+                            <div class="objective-icon">✓</div>
+                            <div class="objective-text">{{ criteria }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Exercises and QCMs -->
+    {% if course.exercises|length > 0 or course.qcms|length > 0 %}
+        <div class="exercises-qcms">
+            <h3>Exercices et évaluations</h3>
+            <div class="activity-grid">
+                <div class="activity-card">
+                    <h4>Exercices ({{ course.exercises|length }})</h4>
+                    {% if course.exercises|length > 0 %}
+                        {% for exercise in course.exercises %}
+                            <div class="activity-item">
+                                <div class="activity-title">{{ exercise.title }}</div>
+                                <div class="activity-meta">{{ exercise.typeLabel }} - {{ exercise.difficultyLabel }}</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-content">Aucun exercice</div>
+                    {% endif %}
+                </div>
+                
+                <div class="activity-card">
+                    <h4>QCM ({{ course.qcms|length }})</h4>
+                    {% if course.qcms|length > 0 %}
+                        {% for qcm in course.qcms %}
+                            <div class="activity-item">
+                                <div class="activity-title">{{ qcm.title }}</div>
+                                <div class="activity-meta">{{ qcm.questionCount }} questions</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-content">Aucun QCM</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Fiche générée le {{ "now"|date("d/m/Y à H:i") }} - EPROFOS Learning Management System</p>
+        <p>Cours créé le {{ course.createdAt|date("d/m/Y") }} - Dernière modification le {{ course.updatedAt|date("d/m/Y") }}</p>
+    </div>
+</body>
+</html>
