@@ -14,7 +14,7 @@ src/
 │   ├── Admin/LegalDocumentController.php  # Admin CRUD + type pages
 │   └── Public/LegalController.php         # Public document display
 ├── Form/LegalDocumentType.php             # Admin form handling
-└── Service/EmailNotificationService.php   # Document delivery notifications
+└── Service/AnalysisEmailNotificationService.php   # Document delivery notifications
 ```
 
 ---

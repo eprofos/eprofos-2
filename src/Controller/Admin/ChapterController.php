@@ -2,9 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Chapter;
-use App\Entity\Module;
-use App\Form\ChapterType;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Module;
+use App\Form\Training\ChapterType;
 use App\Repository\ChapterRepository;
 use App\Repository\ModuleRepository;
 use Doctrine\ORM\EntityManagerInterface;

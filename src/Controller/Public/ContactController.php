@@ -3,7 +3,7 @@
 namespace App\Controller\Public;
 
 use App\Entity\ContactRequest;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Repository\ContactRequestRepository;
 use App\Repository\FormationRepository;
 use App\Service\ProspectManagementService;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Training;
 
 use App\Repository\ChapterRepository;
 use Doctrine\Common\Collections\ArrayCollection;

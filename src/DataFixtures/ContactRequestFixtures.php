@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\ContactRequest;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\Service;
 use App\Service\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;

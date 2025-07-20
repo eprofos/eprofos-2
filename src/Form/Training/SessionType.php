@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Training;
 
-use App\Entity\Session;
-use App\Entity\Formation;
+use App\Entity\Training\Session;
+use App\Entity\Training\Formation;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

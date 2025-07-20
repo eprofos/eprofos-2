@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\Questionnaire;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

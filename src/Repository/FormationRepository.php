@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\Formation;
-use App\Entity\Category;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;

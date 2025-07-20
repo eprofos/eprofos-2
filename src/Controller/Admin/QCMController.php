@@ -2,8 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\QCM;
-use App\Entity\Course;
+use App\Entity\Training\QCM;
+use App\Entity\Training\Course;
 use App\Repository\QCMRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

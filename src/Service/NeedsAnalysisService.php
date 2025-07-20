@@ -6,7 +6,7 @@ use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
 use App\Entity\User;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Repository\CompanyNeedsAnalysisRepository;
 use App\Repository\IndividualNeedsAnalysisRepository;
@@ -28,7 +28,7 @@ class NeedsAnalysisService
         private CompanyNeedsAnalysisRepository $companyNeedsAnalysisRepository,
         private IndividualNeedsAnalysisRepository $individualNeedsAnalysisRepository,
         private TokenGeneratorService $tokenGeneratorService,
-        private EmailNotificationService $emailNotificationService,
+        private AnalysisEmailNotificationService $emailNotificationService,
         private LoggerInterface $logger
     ) {
     }

@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\Question;
 use App\Entity\Questionnaire;
 use App\Entity\QuestionnaireResponse;

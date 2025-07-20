@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Training\Formation;
 use App\Repository\QuestionnaireRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

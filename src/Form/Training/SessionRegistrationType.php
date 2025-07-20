@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Training;
 
-use App\Entity\SessionRegistration;
+use App\Entity\Training\SessionRegistration;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;

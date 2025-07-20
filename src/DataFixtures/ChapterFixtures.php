@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Chapter;
-use App\Entity\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Module;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

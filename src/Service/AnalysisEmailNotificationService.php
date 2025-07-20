@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\NeedsAnalysisRequest;
-use App\Entity\SessionRegistration;
+use App\Entity\Training\SessionRegistration;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -11,12 +11,12 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Email Notification Service
+ * Analysis Email Notification Service
  * 
  * Handles all email notifications related to needs analysis requests.
  * Manages template rendering, email sending, and notification tracking.
  */
-class EmailNotificationService
+class AnalysisEmailNotificationService
 {
     public function __construct(
         private MailerInterface $mailer,

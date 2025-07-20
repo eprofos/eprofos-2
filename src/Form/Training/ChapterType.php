@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Training;
 
-use App\Entity\Chapter;
-use App\Entity\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Module;
 use App\Repository\ModuleRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;

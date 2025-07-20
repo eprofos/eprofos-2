@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 
 /**
  * Service for validating Qualiopi compliance

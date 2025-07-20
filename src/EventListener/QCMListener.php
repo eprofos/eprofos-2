@@ -2,7 +2,7 @@
 
 namespace App\EventListener;
 
-use App\Entity\QCM;
+use App\Entity\Training\QCM;
 use App\Service\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;

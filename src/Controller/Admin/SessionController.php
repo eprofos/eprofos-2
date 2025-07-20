@@ -2,8 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Session;
-use App\Form\SessionType;
+use App\Entity\Training\Session;
+use App\Form\Training\SessionType;
 use App\Repository\SessionRepository;
 use App\Repository\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;

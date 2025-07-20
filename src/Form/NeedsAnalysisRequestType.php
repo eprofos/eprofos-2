@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\NeedsAnalysisRequest;
 use App\Repository\FormationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;

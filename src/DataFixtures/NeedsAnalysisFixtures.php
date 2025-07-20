@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\CompanyNeedsAnalysis;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\IndividualNeedsAnalysis;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\User;

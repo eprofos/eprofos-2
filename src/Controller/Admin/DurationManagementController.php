@@ -3,10 +3,10 @@
 namespace App\Controller\Admin;
 
 use App\Service\DurationCalculationService;
-use App\Entity\Formation;
-use App\Entity\Module;
-use App\Entity\Chapter;
-use App\Entity\Course;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

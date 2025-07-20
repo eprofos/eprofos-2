@@ -2,9 +2,9 @@
 
 namespace App\Controller\Public;
 
-use App\Entity\Session;
-use App\Entity\SessionRegistration;
-use App\Form\SessionRegistrationType;
+use App\Entity\Training\Session;
+use App\Entity\Training\SessionRegistration;
+use App\Form\Training\SessionRegistrationType;
 use App\Repository\SessionRepository;
 use App\Repository\SessionRegistrationRepository;
 use App\Service\ProspectManagementService;

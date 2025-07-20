@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Questionnaire;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\QuestionnaireResponse;
 use App\Repository\QuestionnaireRepository;
 use App\Repository\FormationRepository;

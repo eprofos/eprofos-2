@@ -2,7 +2,7 @@
 
 namespace App\Controller\Public;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Repository\FormationRepository;
 use App\Repository\CategoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

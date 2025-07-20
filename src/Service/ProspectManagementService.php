@@ -4,9 +4,9 @@ namespace App\Service;
 
 use App\Entity\Prospect;
 use App\Entity\ContactRequest;
-use App\Entity\SessionRegistration;
+use App\Entity\Training\SessionRegistration;
 use App\Entity\NeedsAnalysisRequest;
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Entity\Service;
 use App\Repository\ProspectRepository;
 use Doctrine\ORM\EntityManagerInterface;

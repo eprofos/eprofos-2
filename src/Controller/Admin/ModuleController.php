@@ -2,9 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Module;
-use App\Entity\Formation;
-use App\Form\ModuleType;
+use App\Entity\Training\Module;
+use App\Entity\Training\Formation;
+use App\Form\Training\ModuleType;
 use App\Repository\ModuleRepository;
 use App\Repository\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;

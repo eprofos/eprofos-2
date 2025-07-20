@@ -2,10 +2,10 @@
 
 namespace App\Command;
 
-use App\Entity\Formation;
-use App\Entity\Module;
-use App\Entity\Chapter;
-use App\Entity\Course;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
 use App\Service\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\SessionRegistration;
+use App\Entity\Training\SessionRegistration;
 use App\Repository\SessionRegistrationRepository;
 use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;

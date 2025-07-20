@@ -2,12 +2,12 @@
 
 namespace App\Service;
 
-use App\Entity\Formation;
-use App\Entity\Module;
-use App\Entity\Chapter;
-use App\Entity\Course;
-use App\Entity\Exercise;
-use App\Entity\QCM;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
+use App\Entity\Training\Exercise;
+use App\Entity\Training\QCM;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;

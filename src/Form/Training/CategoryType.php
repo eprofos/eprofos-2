@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Training;
 
-use App\Entity\Category;
+use App\Entity\Training\Category;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;

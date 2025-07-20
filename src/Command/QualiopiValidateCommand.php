@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\Formation;
+use App\Entity\Training\Formation;
 use App\Repository\FormationRepository;
 use App\Service\QualiopiValidationService;
 use Symfony\Component\Console\Attribute\AsCommand;

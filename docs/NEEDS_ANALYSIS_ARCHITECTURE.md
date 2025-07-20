@@ -154,7 +154,7 @@ src/Controller/
 src/Service/NeedsAnalysis/
 ├── NeedsAnalysisService.php        # Service principal
 ├── TokenGeneratorService.php       # Génération tokens sécurisés
-├── EmailNotificationService.php    # Envoi emails avec templates
+├── AnalysisEmailNotificationService.php    # Envoi emails avec templates
 ├── FormValidationService.php       # Validation spécialisée
 ├── ExpirationManagerService.php    # Gestion expiration liens
 └── ReportGeneratorService.php      # Génération rapports Qualiopi
@@ -190,12 +190,12 @@ class TokenGeneratorService
 }
 ```
 
-#### EmailNotificationService
+#### AnalysisEmailNotificationService
 ```php
 /**
  * Gestion des notifications email avec templates
  */
-class EmailNotificationService
+class AnalysisEmailNotificationService
 {
     public function sendAnalysisInvitation(NeedsAnalysisRequest $request): void;
     public function sendCompletionNotification(NeedsAnalysisRequest $request): void;

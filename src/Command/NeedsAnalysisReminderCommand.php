@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Repository\NeedsAnalysisRequestRepository;
-use App\Service\EmailNotificationService;
+use App\Service\AnalysisEmailNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -29,7 +29,7 @@ class NeedsAnalysisReminderCommand extends Command
 {
     public function __construct(
         private readonly NeedsAnalysisRequestRepository $requestRepository,
-        private readonly EmailNotificationService $emailService,
+        private readonly AnalysisEmailNotificationService $emailService,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger
     ) {

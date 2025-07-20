@@ -190,7 +190,7 @@ src/Service/
 │   └── FormationCatalogService.php # Gestion catalogue
 ├── Contact/
 │   ├── ContactRequestService.php   # Gestion demandes contact
-│   ├── EmailNotificationService.php # Notifications email
+│   ├── AnalysisEmailNotificationService.php # Notifications email
 │   └── FormValidationService.php   # Validation formulaires
 └── Content/
     ├── ContentService.php          # Gestion contenu statique

@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Formation;
-use App\Entity\Module;
-use App\Entity\Chapter;
-use App\Entity\Course;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
+use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
 
 /**
  * Service for calculating and organizing formation schedules
