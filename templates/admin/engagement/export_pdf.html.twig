@@ -154,7 +154,7 @@
             padding-top: 15px;
         }
         
-        .qualiopi-badge {
+    .reglementaire-badge {
             display: inline-block;
             background-color: #28a745;
             color: white;
@@ -188,7 +188,7 @@
     <div class="header">
         <h1>{{ title }}</h1>
         <p class="subtitle">Rapport généré le {{ generated_at|date('d/m/Y à H:i') }}</p>
-        <span class="qualiopi-badge">CRITÈRE QUALIOPI 12</span>
+    <span class="reglementaire-badge">CRITÈRE RÉGLEMENTAIRE</span>
     </div>
 
     <div class="meta-info">
@@ -310,7 +310,7 @@
     </div>
 
     <div class="section no-break">
-        <h2>Conformité Qualiopi - Critère 12</h2>
+    <h2>Conformité réglementaire</h2>
         <p><strong>Exigence :</strong> Le prestataire décrit et met en œuvre les mesures pour favoriser l'engagement des bénéficiaires et prévenir les ruptures de parcours.</p>
         
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
@@ -327,7 +327,7 @@
 
     <div class="footer">
         <p>Ce rapport a été généré automatiquement par le système EPROFOS</p>
-        <p>Conforme aux exigences Qualiopi pour le critère 12 - Engagement et prévention du décrochage</p>
+    <p>Conforme aux exigences réglementaires - Engagement et prévention du décrochage</p>
         <p><strong>Date de génération :</strong> {{ generated_at|date('d/m/Y à H:i:s') }}</p>
     </div>
 </body>

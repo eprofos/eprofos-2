@@ -97,7 +97,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Generate Qualiopi compliance report
      */
-    #[Route('/qualiopi-report', name: 'qualiopi_report')]
+    #[Route('/qualiopi-report', name: 'quality_report')]
     public function qualiopiReport(): Response
     {
         $retentionReport = $this->dropoutService->generateRetentionReport();

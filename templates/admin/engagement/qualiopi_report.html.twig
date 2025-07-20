@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Rapport Qualiopi - Critère 12{% endblock %}
+{% block title %}Rapport de conformité{% endblock %}
 
 {% block body %}
 <div class="container-xl">
@@ -9,7 +9,7 @@
             <div class="col">
                 <h2 class="page-title">
                     <i class="ti ti-shield-check me-2 text-primary"></i>
-                    Rapport de Conformité Qualiopi - Critère 12
+                    Rapport de conformité réglementaire
                 </h2>
                 <div class="text-muted">
                     Suivi de l'engagement et prévention de l'abandon des apprenants
@@ -135,7 +135,7 @@
                     <div class="h1 mb-3 text-{{ (100 - report.risk_rate) >= 85 ? 'green' : ((100 - report.risk_rate) >= 75 ? 'blue' : 'red') }}">
                         {{ (100 - report.risk_rate)|number_format(1) }}%
                     </div>
-                    <div class="text-muted">Objectif Qualiopi: ≥85%</div>
+                    <div class="text-muted">Objectif réglementaire: ≥85%</div>
                 </div>
             </div>
         </div>
@@ -148,7 +148,7 @@
                     <div class="h1 mb-3 text-{{ report.average_attendance >= 85 ? 'green' : (report.average_attendance >= 75 ? 'blue' : 'red') }}">
                         {{ report.average_attendance|number_format(1) }}%
                     </div>
-                    <div class="text-muted">Objectif Qualiopi: ≥75%</div>
+                    <div class="text-muted">Objectif réglementaire: ≥75%</div>
                 </div>
             </div>
         </div>
@@ -235,7 +235,7 @@
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Conformité Qualiopi</h3>
+                    <h3 class="card-title">Conformité réglementaire</h3>
                 </div>
                 <div class="card-body">
                     <div class="space-y-3">
@@ -418,7 +418,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Recommandations Qualiopi</h3>
+                    <h3 class="card-title">Recommandations réglementaires</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -486,7 +486,7 @@
                     <div class="text-muted">
                         <div>Rapport généré le {{ report.report_generated_at|date('d/m/Y à H:i') }}</div>
                         <div class="small mt-1">
-                            Conformément au Critère Qualiopi 12 - Engagement des apprenants et prévention de l'abandon
+                            Conformément au Critère réglementaire 12 - Engagement des apprenants et prévention de l'abandon
                         </div>
                     </div>
                 </div>

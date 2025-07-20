@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Tableau de Bord Engagement - Critère Qualiopi 12{% endblock %}
+{% block title %}Tableau de Bord Engagement - Critère réglementaire{% endblock %}
 
 {% block body %}
 <div class="container-xl">
@@ -9,7 +9,7 @@
             <div class="col">
                 <h2 class="page-title">
                     <i class="ti ti-chart-dots me-2"></i>
-                    Suivi de l'Engagement - Critère Qualiopi 12
+                    Suivi de l'Engagement - Critère réglementaire
                 </h2>
                 <div class="text-muted">
                     Surveillance de l'engagement des apprenants et prévention de l'abandon
@@ -21,9 +21,9 @@
                         <i class="ti ti-alert-triangle me-1"></i>
                         Étudiants à risque ({{ at_risk_count }})
                     </a>
-                    <a href="{{ path('admin_engagement_qualiopi_report') }}" class="btn btn-primary">
+                    <a href="{{ path('admin_engagement_quality_report') }}" class="btn btn-primary">
                         <i class="ti ti-file-report me-1"></i>
-                        Rapport Qualiopi
+                        Rapport réglementaire
                     </a>
                     <div class="dropdown">
                         <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -94,7 +94,7 @@
                     </div>
                     <div class="h1 mb-3">{{ (100 - retention_stats.dropoutRate)|number_format(1) }}%</div>
                     <div class="d-flex mb-2">
-                        <div>Objectif Qualiopi: 85%</div>
+                        <div>Objectif réglementaire: 85%</div>
                         <div class="ms-auto">
                             {% set retention_rate = 100 - retention_stats.dropoutRate %}
                             {% if retention_rate >= 85 %}
@@ -349,7 +349,7 @@
                             </a>
                         </div>
                         <div class="col-md-4">
-                            <a href="{{ path('admin_engagement_qualiopi_report') }}" class="btn btn-outline-success w-100 mb-2">
+                            <a href="{{ path('admin_engagement_quality_report') }}" class="btn btn-outline-success w-100 mb-2">
                                 <i class="ti ti-file-report me-1"></i>
                                 Rapport Complet
                             </a>
