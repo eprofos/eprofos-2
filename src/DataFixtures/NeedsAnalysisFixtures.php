@@ -6,7 +6,7 @@ use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\Training\Formation;
 use App\Entity\IndividualNeedsAnalysis;
 use App\Entity\NeedsAnalysisRequest;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Service\ProspectManagementService;
 use App\Service\TokenGeneratorService;
 use Doctrine\Bundle\FixturesBundle\Fixture;

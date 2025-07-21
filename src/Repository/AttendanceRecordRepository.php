@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AttendanceRecord;
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Session;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

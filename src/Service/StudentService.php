@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Repository\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

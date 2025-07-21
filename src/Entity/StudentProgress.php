@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;
+use App\Entity\User\Student;
 use App\Repository\StudentProgressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

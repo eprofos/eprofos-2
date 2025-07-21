@@ -5,7 +5,7 @@ namespace App\Form;
 use App\Entity\Training\Formation;
 use App\Entity\Prospect;
 use App\Entity\Service;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\FormationRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\UserRepository;

@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\Document\DocumentUITemplateRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

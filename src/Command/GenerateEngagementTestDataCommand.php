@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Entity\StudentProgress;
 use App\Entity\AttendanceRecord;
 use App\Entity\Training\Formation;

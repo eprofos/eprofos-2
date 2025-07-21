@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\Document\DocumentUIComponentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

@@ -7,7 +7,7 @@ namespace App\Tests\Functional;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
 use App\Service\TokenGeneratorService;
@@ -401,7 +401,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->entityManager->createQuery('DELETE FROM App\Entity\CompanyNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\IndividualNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\NeedsAnalysisRequest')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\User')->execute();
+        $this->entityManager->createQuery('DELETE FROM App\Entity\User\User')->execute();
         
         $this->entityManager->clear();
     }

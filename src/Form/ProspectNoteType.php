@@ -4,7 +4,7 @@ namespace App\Form;
 
 use App\Entity\Prospect;
 use App\Entity\ProspectNote;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;

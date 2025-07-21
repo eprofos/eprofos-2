@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentType;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Repository\Document\DocumentRepository;
 use App\Repository\Document\DocumentTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;

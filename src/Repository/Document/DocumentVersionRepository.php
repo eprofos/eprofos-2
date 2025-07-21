@@ -4,7 +4,7 @@ namespace App\Repository\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User;
+use App\Entity\User\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

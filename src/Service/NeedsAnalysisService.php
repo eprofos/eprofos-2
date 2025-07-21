@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
-use App\Entity\User;
+use App\Entity\User\User;
 use App\Entity\Training\Formation;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Repository\CompanyNeedsAnalysisRepository;

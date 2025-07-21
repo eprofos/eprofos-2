@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Entity\StudentProgress;
 use App\Entity\Training\Formation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

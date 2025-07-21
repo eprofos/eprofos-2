@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
+use App\Entity\User\User;
 use App\Repository\ProspectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

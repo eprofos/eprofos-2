@@ -2,7 +2,7 @@
 
 namespace App\Controller\Student;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

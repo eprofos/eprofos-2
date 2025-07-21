@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Training\Formation;
+use App\Entity\User\User;
 use App\Repository\NeedsAnalysisRequestRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

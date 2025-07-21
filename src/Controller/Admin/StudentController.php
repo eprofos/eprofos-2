@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Form\StudentType;
 use App\Repository\StudentRepository;
 use App\Service\StudentService;

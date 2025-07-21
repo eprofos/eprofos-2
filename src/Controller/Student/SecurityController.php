@@ -2,7 +2,7 @@
 
 namespace App\Controller\Student;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Form\StudentRegistrationFormType;
 use App\Repository\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;

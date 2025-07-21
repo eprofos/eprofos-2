@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Student;
+use App\Entity\User\Student;
 use App\Entity\AttendanceRecord;
 use App\Entity\Training\Session;
 use App\Entity\StudentProgress;

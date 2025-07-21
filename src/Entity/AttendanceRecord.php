@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Training\Session;
+use App\Entity\User\Student;
 use App\Repository\AttendanceRecordRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
