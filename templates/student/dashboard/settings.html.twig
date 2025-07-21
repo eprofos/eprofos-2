@@ -1,0 +1,402 @@
+{% extends 'student/base.html.twig' %}
+
+{% block title %}{{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Paramètres
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos préférences et paramètres de sécurité
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <!-- Sécurité du compte -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/>
+                            </svg>
+                            Sécurité du compte
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Email de connexion</label>
+                            <div class="input-group">
+                                <input type="email" class="form-control" value="{{ student.email }}" readonly>
+                                <span class="input-group-text">
+                                    {% if student.emailVerified %}
+                                        <span class="badge bg-success-lt">Vérifié</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-lt">Non vérifié</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if not student.emailVerified %}
+                                <small class="form-hint text-warning">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-inline" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v2m0 4v.01"/>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                    </svg>
+                                    Votre email n'est pas encore vérifié. Vérifiez vos emails.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" value="••••••••••••" readonly>
+                                <button class="btn btn-outline-primary" type="button">
+                                    Modifier
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Dernière connexion</label>
+                            <input type="text" class="form-control" value="{{ student.lastLoginAt ? student.lastLoginAt|date('d/m/Y à H:i') : 'Jamais' }}" readonly>
+                        </div>
+                        
+                        <div class="text-muted">
+                            <small>Compte créé le {{ student.createdAt|date('d/m/Y à H:i') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paramètres de confidentialité -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v6"/>
+                                <path d="M21 12h-6m-6 0H3"/>
+                            </svg>
+                            Confidentialité
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="privacy_profile" value="public" class="form-selectgroup-input" checked>
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Profil visible aux formateurs</strong>
+                                        <div class="text-muted">Les formateurs peuvent voir vos informations de base</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="privacy_progress" value="visible" class="form-selectgroup-input" checked>
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Partager ma progression</strong>
+                                        <div class="text-muted">Permettre aux formateurs de voir votre avancement</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="privacy_certificates" value="public" class="form-selectgroup-input">
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Certificats publics</strong>
+                                        <div class="text-muted">Rendre mes certificats visibles publiquement</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                            </svg>
+                            Notifications
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="notif_email" value="enabled" class="form-selectgroup-input" checked>
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Notifications par email</strong>
+                                        <div class="text-muted">Recevoir des emails pour les mises à jour importantes</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="notif_courses" value="enabled" class="form-selectgroup-input" checked>
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Nouveaux cours</strong>
+                                        <div class="text-muted">M'informer des nouveaux cours disponibles</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="notif_reminders" value="enabled" class="form-selectgroup-input" checked>
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Rappels de formation</strong>
+                                        <div class="text-muted">Recevoir des rappels pour continuer ma formation</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="checkbox" name="notif_marketing" value="enabled" class="form-selectgroup-input">
+                                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <div class="me-3">
+                                        <span class="form-selectgroup-check"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Communications commerciales</strong>
+                                        <div class="text-muted">Recevoir des informations sur nos offres et actualités</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Préférences d'affichage -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Préférences d'affichage
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Thème</label>
+                            <div class="form-selectgroup">
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="theme" value="light" class="form-selectgroup-input" checked>
+                                    <span class="form-selectgroup-label">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="4"/>
+                                            <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>
+                                        </svg>
+                                        Clair
+                                    </span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="theme" value="dark" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                        </svg>
+                                        Sombre
+                                    </span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="theme" value="auto" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                            <path d="M6 6h6l4 4v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                            <path d="M14 10l-4 -4v4h4"/>
+                                        </svg>
+                                        Auto
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Langue</label>
+                            <select class="form-select">
+                                <option value="fr" selected>Français</option>
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Fuseau horaire</label>
+                            <select class="form-select">
+                                <option value="Europe/Paris" selected>Paris (UTC+1)</option>
+                                <option value="Europe/London">Londres (UTC+0)</option>
+                                <option value="America/New_York">New York (UTC-5)</option>
+                                <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions sur le compte -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                                <path d="M21 12c-1 0 -3 0 -3 3s2 3 3 3s3 0 3 -3s-2 -3 -3 -3"/>
+                                <path d="M10 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0z"/>
+                                <path d="M14 4h7"/>
+                                <path d="M14 8h7"/>
+                                <path d="M14 12h4"/>
+                            </svg>
+                            Actions sur le compte
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h4 class="card-title">Exporter mes données</h4>
+                                    <p class="text-muted">Téléchargez une copie de toutes vos données personnelles et de progression.</p>
+                                    <button class="btn btn-outline-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                                            <polyline points="7,11 12,16 17,11"/>
+                                            <line x1="12" y1="4" x2="12" y2="16"/>
+                                        </svg>
+                                        Exporter mes données
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h4 class="card-title text-danger">Désactiver mon compte</h4>
+                                    <p class="text-muted">Désactivez temporairement votre compte. Vous pourrez le réactiver à tout moment.</p>
+                                    <button class="btn btn-outline-danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 13l3 3l3 -3"/>
+                                            <path d="M12 10v6"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                        </svg>
+                                        Désactiver le compte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-footer bg-transparent mt-auto">
+                        <div class="btn-list justify-content-end">
+                            <button type="button" class="btn btn-secondary">
+                                Annuler
+                            </button>
+                            <button type="button" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-save functionality for settings
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const radios = document.querySelectorAll('input[type="radio"]');
+            const selects = document.querySelectorAll('select');
+            
+            function saveSettings() {
+                // Simulate auto-save functionality
+                console.log('Settings auto-saved');
+                
+                // Show temporary success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'alert alert-success alert-dismissible position-fixed';
+                successMessage.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                successMessage.innerHTML = `
+                    <div class="d-flex">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                        </div>
+                        <div>
+                            Paramètres sauvegardés automatiquement
+                        </div>
+                    </div>
+                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                `;
+                
+                document.body.appendChild(successMessage);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    successMessage.remove();
+                }, 3000);
+            }
+            
+            // Add event listeners for auto-save
+            [...checkboxes, ...radios, ...selects].forEach(element => {
+                element.addEventListener('change', saveSettings);
+            });
+        });
+    </script>
+{% endblock %}
