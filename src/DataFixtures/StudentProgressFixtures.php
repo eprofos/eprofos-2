@@ -181,6 +181,7 @@ class StudentProgressFixtures extends Fixture implements DependentFixtureInterfa
         
         // Mark as completed if 100%
         if ($completion >= 100) {
+            /** @var \DateTimeImmutable $completedDate */
             $completedDate = clone $progress->getStartedAt();
             $completedDate->add(new \DateInterval("P{$daysRunning}D"));
             $progress->setCompletedAt($completedDate);
