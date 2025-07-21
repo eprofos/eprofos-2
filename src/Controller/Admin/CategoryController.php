@@ -37,7 +37,7 @@ class CategoryController extends AbstractController
     public function index(CategoryRepository $categoryRepository): Response
     {
         $this->logger->info('Admin categories list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         $categories = $categoryRepository->findBy([], ['name' => 'ASC']);

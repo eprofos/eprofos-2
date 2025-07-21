@@ -6,7 +6,7 @@ use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\Training\Formation;
 use App\Entity\IndividualNeedsAnalysis;
 use App\Entity\NeedsAnalysisRequest;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Service\ProspectManagementService;
 use App\Service\TokenGeneratorService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -109,15 +109,15 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
      */
     public function load(ObjectManager $manager): void
     {
-        // Get admin user for created_by_user field
-        $adminUser = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+    // Get admin for created_by_admin field
+    $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
         
         // Get some formations for reference
         $formations = $manager->getRepository(Formation::class)->findAll();
 
         // Create 25 needs analysis requests with various statuses
         for ($i = 0; $i < 25; $i++) {
-            $request = $this->createNeedsAnalysisRequest($adminUser, $formations);
+            $request = $this->createNeedsAnalysisRequest($admin, $formations);
             $manager->persist($request);
 
             // Create corresponding analysis if request is completed
@@ -166,7 +166,7 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
     /**
      * Create a needs analysis request with realistic data
      */
-    private function createNeedsAnalysisRequest(User $adminUser, array $formations): NeedsAnalysisRequest
+    private function createNeedsAnalysisRequest(Admin $admin, array $formations): NeedsAnalysisRequest
     {
         $request = new NeedsAnalysisRequest();
         
@@ -177,7 +177,7 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
         
         $request->setType($type);
         $request->setToken($this->tokenGenerator->generateToken());
-        $request->setCreatedByUser($adminUser);
+    $request->setCreatedByAdmin($admin);
 
         // Set recipient information based on type
         if ($type === NeedsAnalysisRequest::TYPE_COMPANY) {

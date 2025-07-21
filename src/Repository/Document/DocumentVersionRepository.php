@@ -4,7 +4,7 @@ namespace App\Repository\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -62,11 +62,11 @@ class DocumentVersionRepository extends ServiceEntityRepository
     /**
      * Find versions created by a specific user
      */
-    public function findByCreatedBy(User $user): array
+    public function findByCreatedBy(Admin $admin): array
     {
         return $this->createQueryBuilder('dv')
             ->where('dv.createdBy = :user')
-            ->setParameter('user', $user)
+            ->setParameter('user', $admin)
             ->orderBy('dv.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

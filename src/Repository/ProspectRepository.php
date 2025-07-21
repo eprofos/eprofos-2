@@ -59,18 +59,18 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find prospects assigned to a user
+     * Find prospects assigned to an admin
      * 
      * @return Prospect[]
      */
-    public function findByAssignedUser(int $userId): array
+    public function findByAssignedAdmin(int $adminId): array
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.interestedFormations', 'f')
             ->leftJoin('p.interestedServices', 's')
             ->addSelect('f', 's')
-            ->where('p.assignedTo = :userId')
-            ->setParameter('userId', $userId)
+            ->where('p.assignedTo = :adminId')
+            ->setParameter('adminId', $adminId)
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.nextFollowUpDate', 'ASC')
             ->getQuery()
@@ -280,14 +280,14 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count prospects by assigned user
+     * Count prospects by assigned admin
      * 
      * @return array<string, int>
      */
-    public function countByAssignedUser(): array
+    public function countByAssignedAdmin(): array
     {
         $result = $this->createQueryBuilder('p')
-            ->select('CONCAT(u.firstName, \' \', u.lastName) as userName', 'COUNT(p.id) as count')
+            ->select('CONCAT(u.firstName, \' \' , u.lastName) as adminName', 'COUNT(p.id) as count')
             ->leftJoin('p.assignedTo', 'u')
             ->where('p.assignedTo IS NOT NULL')
             ->groupBy('p.assignedTo')
@@ -296,7 +296,7 @@ class ProspectRepository extends ServiceEntityRepository
 
         $counts = [];
         foreach ($result as $row) {
-            $counts[$row['userName']] = (int) $row['count'];
+            $counts[$row['adminName']] = (int) $row['count'];
         }
 
         return $counts;

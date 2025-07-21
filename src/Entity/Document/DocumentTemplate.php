@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentTemplateRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -93,13 +93,13 @@ class DocumentTemplate
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $createdBy = null;
+    private ?Admin $createdBy = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $updatedBy = null;
+    private ?Admin $updatedBy = null;
 
     public function __construct()
     {
@@ -294,23 +294,23 @@ class DocumentTemplate
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getCreatedBy(): ?Admin
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;
     }
 
-    public function getUpdatedBy(): ?User
+    public function getUpdatedBy(): ?Admin
     {
         return $this->updatedBy;
     }
 
-    public function setUpdatedBy(?User $updatedBy): static
+    public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
         return $this;
@@ -375,7 +375,7 @@ class DocumentTemplate
     /**
      * Create document from this template
      */
-    public function createDocument(array $variables = [], ?User $createdBy = null): Document
+    public function createDocument(array $variables = [], ?Admin $createdBy = null): Document
     {
         $document = new Document();
         $document->setDocumentType($this->documentType)

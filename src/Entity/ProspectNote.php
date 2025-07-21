@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\ProspectNoteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -76,9 +76,9 @@ class ProspectNote
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Prospect $prospect = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $createdBy = null;
+    private ?Admin $createdBy = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $metadata = null;
@@ -407,12 +407,12 @@ class ProspectNote
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getCreatedBy(): ?Admin
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;

@@ -438,7 +438,7 @@ templates/
 $this->logger->info('Needs analysis request created', [
     'request_id' => $request->getId(),
     'type' => $request->getType(),
-    'created_by' => $user->getId()
+    'created_by' => $admin->getId()
 ]);
 
 $this->logger->warning('Invalid token access attempt', [

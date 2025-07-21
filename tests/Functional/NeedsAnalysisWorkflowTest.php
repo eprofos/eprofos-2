@@ -7,7 +7,7 @@ namespace App\Tests\Functional;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
 use App\Service\TokenGeneratorService;
@@ -27,14 +27,14 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     private ?NeedsAnalysisRequestRepository $requestRepository = null;
     private ?NeedsAnalysisService $needsAnalysisService = null;
     private ?TokenGeneratorService $tokenGenerator = null;
-    private ?User $testUser = null;
+    private ?Admin $testAdmin = null;
 
     protected function setUp(): void
     {
         parent::setUp();
         
-        // Reset test user for each test
-        $this->testUser = null;
+        // Reset test admin for each test
+        $this->testAdmin = null;
         
         // Clean database before each test
         $this->cleanDatabase();
@@ -194,7 +194,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->entityManager->flush();
 
         // Authenticate as admin user
-        $adminUser = $this->createTestUser();
+    $adminUser = $this->createTestAdmin();
         $client->loginUser($adminUser);
 
         // Access admin show page
@@ -226,22 +226,22 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     /**
      * Create a test user for needs analysis requests (singleton pattern)
      */
-    private function createTestUser(): User
+    private function createTestAdmin(): Admin
     {
-        if ($this->testUser === null) {
-            $this->testUser = new User();
-            $this->testUser->setEmail('test@eprofos.com');
-            $this->testUser->setFirstName('Test');
-            $this->testUser->setLastName('Admin');
-            $this->testUser->setPassword('$2y$13$test.password.hash'); // Dummy hash for testing
-            $this->testUser->setRoles(['ROLE_ADMIN']);
-            $this->testUser->setIsActive(true);
+        if ($this->testAdmin === null) {
+            $this->testAdmin = new Admin();
+            $this->testAdmin->setEmail('test@eprofos.com');
+            $this->testAdmin->setFirstName('Test');
+            $this->testAdmin->setLastName('Admin');
+            $this->testAdmin->setPassword('$2y$13$test.password.hash'); // Dummy hash for testing
+            $this->testAdmin->setRoles(['ROLE_ADMIN']);
+            $this->testAdmin->setIsActive(true);
 
-            $this->entityManager->persist($this->testUser);
+            $this->entityManager->persist($this->testAdmin);
             $this->entityManager->flush();
         }
 
-        return $this->testUser;
+        return $this->testAdmin;
     }
 
     /**
@@ -249,7 +249,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function createCompanyRequest(): NeedsAnalysisRequest
     {
-        $user = $this->createTestUser();
+        $admin = $this->createTestAdmin();
         
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
@@ -260,7 +260,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('sent');
         $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
         $request->setSentAt(new \DateTimeImmutable());
-        $request->setCreatedByUser($user);
+        $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -273,7 +273,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function createIndividualRequest(): NeedsAnalysisRequest
     {
-        $user = $this->createTestUser();
+        $admin = $this->createTestAdmin();
         
         $request = new NeedsAnalysisRequest();
         $request->setType('individual');
@@ -283,7 +283,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('sent');
         $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
         $request->setSentAt(new \DateTimeImmutable());
-        $request->setCreatedByUser($user);
+        $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -296,7 +296,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
      */
     private function createExpiredRequest(): NeedsAnalysisRequest
     {
-        $user = $this->createTestUser();
+        $admin = $this->createTestAdmin();
         
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
@@ -306,7 +306,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setStatus('expired');
         $request->setExpiresAt(new \DateTimeImmutable('-1 day'));
         $request->setSentAt(new \DateTimeImmutable('-31 days'));
-        $request->setCreatedByUser($user);
+        $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
@@ -401,7 +401,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->entityManager->createQuery('DELETE FROM App\Entity\CompanyNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\IndividualNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\NeedsAnalysisRequest')->execute();
-        $this->entityManager->createQuery('DELETE FROM App\Entity\User\User')->execute();
+    $this->entityManager->createQuery('DELETE FROM App\Entity\User\Admin')->execute();
         
         $this->entityManager->clear();
     }

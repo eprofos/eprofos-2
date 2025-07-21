@@ -8,7 +8,7 @@ use App\Form\ProspectType;
 use App\Form\ProspectNoteType;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectNoteRepository;
-use App\Repository\UserRepository;
+use App\Repository\AdminRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +36,7 @@ class ProspectController extends AbstractController
      * List all prospects with filtering and search
      */
     #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(Request $request, ProspectRepository $prospectRepository, UserRepository $userRepository): Response
+    public function index(Request $request, ProspectRepository $prospectRepository, AdminRepository $userRepository): Response
     {
         $this->logger->info('Admin prospects list accessed', [
             'user' => $this->getUser()?->getUserIdentifier()
@@ -160,7 +160,7 @@ class ProspectController extends AbstractController
             $this->logger->info('New prospect created', [
                 'prospect_id' => $prospect->getId(),
                 'prospect_name' => $prospect->getFullName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'Le prospect a été créé avec succès.');

@@ -5,10 +5,10 @@ namespace App\Form;
 use App\Entity\Training\Formation;
 use App\Entity\Prospect;
 use App\Entity\Service;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\FormationRepository;
 use App\Repository\ServiceRepository;
-use App\Repository\UserRepository;
+use App\Repository\AdminRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -167,23 +167,23 @@ class ProspectType extends AbstractType
             ])
             ->add('assignedTo', EntityType::class, [
                 'label' => 'Assigné à',
-                'class' => User::class,
-                'choice_label' => function (User $user) {
-                    return $user->getFullName();
+                'class' => Admin::class,
+                'choice_label' => function (Admin $admin) {
+                    return $admin->getFullName();
                 },
-                'placeholder' => 'Sélectionner un utilisateur',
+                'placeholder' => 'Sélectionner un administrateur',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-select'
                 ],
-                'query_builder' => function (UserRepository $repo) {
-                    return $repo->createQueryBuilder('u')
-                        ->where('u.isActive = :active')
+                'query_builder' => function (AdminRepository $repo) {
+                    return $repo->createQueryBuilder('a')
+                        ->where('a.isActive = :active')
                         ->setParameter('active', true)
-                        ->orderBy('u.firstName', 'ASC')
-                        ->addOrderBy('u.lastName', 'ASC');
+                        ->orderBy('a.firstName', 'ASC')
+                        ->addOrderBy('a.lastName', 'ASC');
                 },
-                'help' => 'Utilisateur responsable de ce prospect'
+                'help' => 'Administrateur responsable de ce prospect'
             ])
             ->add('interestedFormations', EntityType::class, [
                 'label' => 'Formations d\'intérêt',

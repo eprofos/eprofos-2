@@ -232,13 +232,13 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find templates created by user
+    * Find templates created by admin
      */
-    public function findByCreatedBy($user): array
+    public function findByCreatedBy($admin): array
     {
         return $this->createQueryBuilder('dut')
-            ->where('dut.createdBy = :user')
-            ->setParameter('user', $user)
+            ->where('dut.createdBy = :admin')
+            ->setParameter('admin', $admin)
             ->orderBy('dut.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

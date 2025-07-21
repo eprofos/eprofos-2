@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentUIComponent;
 use App\Entity\Document\DocumentUITemplate;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -44,7 +44,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createStandardTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::STANDARD_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -171,7 +171,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -180,7 +180,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createLetterheadTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::LETTERHEAD_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -291,7 +291,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -300,7 +300,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createCertificateTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::CERTIFICATE_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -476,7 +476,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -485,7 +485,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createLegalTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::LEGAL_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -600,7 +600,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -609,7 +609,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createHandbookTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::HANDBOOK_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -726,7 +726,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -735,7 +735,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createQualityTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::QUALITY_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -879,7 +879,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -888,7 +888,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createReportTemplateComponents(ObjectManager $manager): void
     {
         $template = $this->getReference(DocumentUITemplateFixtures::REPORT_TEMPLATE_REFERENCE, DocumentUITemplate::class);
-        $user = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class);
+        $admin = $this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class);
 
         $components = [
             [
@@ -1038,7 +1038,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
             ]
         ];
 
-        $this->createComponentsForTemplate($manager, $template, $user, $components);
+        $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
@@ -1047,7 +1047,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     private function createComponentsForTemplate(
         ObjectManager $manager,
         DocumentUITemplate $template,
-        User $user,
+        Admin $admin,
         array $componentsData
     ): void {
         foreach ($componentsData as $componentData) {
@@ -1067,7 +1067,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                      ->setCssClass($componentData['cssClass'] ?? null)
                      ->setElementId($componentData['elementId'] ?? null)
                      ->setUiTemplate($template)
-                     ->setCreatedBy($user);
+                     ->setCreatedBy($admin);
 
             $manager->persist($component);
         }

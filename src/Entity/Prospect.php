@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\ProspectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -135,9 +135,9 @@ class Prospect
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $nextFollowUpDate = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?User $assignedTo = null;
+    private ?Admin $assignedTo = null;
 
     #[ORM\ManyToMany(targetEntity: Formation::class)]
     #[ORM\JoinTable(name: 'prospect_formations')]
@@ -755,12 +755,12 @@ class Prospect
         return $this;
     }
 
-    public function getAssignedTo(): ?User
+    public function getAssignedTo(): ?Admin
     {
         return $this->assignedTo;
     }
 
-    public function setAssignedTo(?User $assignedTo): static
+    public function setAssignedTo(?Admin $assignedTo): static
     {
         $this->assignedTo = $assignedTo;
         return $this;

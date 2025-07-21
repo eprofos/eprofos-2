@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentUIComponentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -93,13 +93,13 @@ class DocumentUIComponent
     #[ORM\JoinColumn(nullable: false)]
     private ?DocumentUITemplate $uiTemplate = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $createdBy = null;
+    private ?Admin $createdBy = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $updatedBy = null;
+    private ?Admin $updatedBy = null;
 
     // Component type constants
     public const TYPE_TEXT = 'text';
@@ -343,23 +343,23 @@ class DocumentUIComponent
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getCreatedBy(): ?Admin
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;
     }
 
-    public function getUpdatedBy(): ?User
+    public function getUpdatedBy(): ?Admin
     {
         return $this->updatedBy;
     }
 
-    public function setUpdatedBy(?User $updatedBy): static
+    public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
         return $this;

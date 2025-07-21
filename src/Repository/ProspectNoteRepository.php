@@ -4,7 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ProspectNote;
 use App\Entity\Prospect;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -115,13 +115,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
      * 
      * @return ProspectNote[]
      */
-    public function findByCreatedBy(User $user): array
+    public function findByCreatedBy(Admin $admin): array
     {
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
             ->addSelect('p')
             ->where('pn.createdBy = :user')
-            ->setParameter('user', $user)
+            ->setParameter('user', $admin)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

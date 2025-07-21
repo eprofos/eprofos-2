@@ -5,7 +5,7 @@ namespace App\Repository\Document;
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentCategory;
 use App\Entity\Document\DocumentType;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -112,7 +112,7 @@ class DocumentRepository extends ServiceEntityRepository
     /**
      * Find documents by author
      */
-    public function findByAuthor(User $author): array
+    public function findByAuthor(Admin $author): array
     {
         return $this->createQueryBuilder('d')
             ->where('d.createdBy = :author')

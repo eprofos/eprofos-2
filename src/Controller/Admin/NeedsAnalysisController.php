@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\NeedsAnalysisRequest;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Form\NeedsAnalysisRequestType;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
@@ -119,7 +119,7 @@ class NeedsAnalysisController extends AbstractController
                     $needsAnalysisRequest->getRecipientEmail(),
                     $needsAnalysisRequest->getCompanyName(),
                     $needsAnalysisRequest->getFormation(),
-                    $this->getUser(),
+                    $this->getUser(), // $admin
                     $needsAnalysisRequest->getAdminNotes()
                 );
 
@@ -128,7 +128,7 @@ class NeedsAnalysisController extends AbstractController
                 $this->logger->info('Needs analysis request created', [
                     'request_id' => $createdRequest->getId(),
                     'type' => $createdRequest->getType(),
-                    'created_by' => $this->getUser()?->getUserIdentifier(),
+                    'created_by' => $this->getUser()?->getUserIdentifier(), // $admin
                 ]);
 
                 return $this->redirectToRoute('admin_needs_analysis_show', [

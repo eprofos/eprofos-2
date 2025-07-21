@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Training\Formation;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\NeedsAnalysisRequestRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -111,9 +111,9 @@ class NeedsAnalysisRequest
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $adminNotes = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $createdByUser = null;
+    private ?Admin $createdByAdmin = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -440,14 +440,14 @@ class NeedsAnalysisRequest
         return $this;
     }
 
-    public function getCreatedByUser(): ?User
+    public function getCreatedByAdmin(): ?Admin
     {
-        return $this->createdByUser;
+        return $this->createdByAdmin;
     }
 
-    public function setCreatedByUser(?User $createdByUser): static
+    public function setCreatedByAdmin(?Admin $createdByAdmin): static
     {
-        $this->createdByUser = $createdByUser;
+        $this->createdByAdmin = $createdByAdmin;
         return $this;
     }
 

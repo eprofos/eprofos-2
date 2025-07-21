@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -10,40 +10,40 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * Repository for User entity
+ * Repository for Admin entity
  * 
- * Provides custom query methods for User entity and implements
+ * Provides custom query methods for Admin entity and implements
  * PasswordUpgraderInterface for automatic password rehashing.
  * 
- * @extends ServiceEntityRepository<User>
+ * @extends ServiceEntityRepository<Admin>
  */
-class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
+class AdminRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, User::class);
+        parent::__construct($registry, Admin::class);
     }
 
     /**
-     * Used to upgrade (rehash) the user's password automatically over time.
+     * Used to upgrade (rehash) the admin user's password automatically over time.
      */
-    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+    public function upgradePassword(PasswordAuthenticatedUserInterface $admin, string $newHashedPassword): void
     {
-        if (!$user instanceof User) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
+        if (!$admin instanceof Admin) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $admin::class));
         }
 
-        $user->setPassword($newHashedPassword);
-        $this->getEntityManager()->persist($user);
+        $admin->setPassword($newHashedPassword);
+        $this->getEntityManager()->persist($admin);
         $this->getEntityManager()->flush();
     }
 
     /**
-     * Find active users only
+     * Find active admin users only
      * 
-     * @return User[]
+     * @return Admin[]
      */
-    public function findActiveUsers(): array
+    public function findActiveAdmins(): array
     {
         return $this->createQueryBuilder('u')
             ->andWhere('u.isActive = :active')
@@ -55,9 +55,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Find user by email (case insensitive)
+     * Find admin user by email (case insensitive)
      */
-    public function findByEmailIgnoreCase(string $email): ?User
+    public function findByEmailIgnoreCase(string $email): ?Admin
     {
         return $this->createQueryBuilder('u')
             ->andWhere('LOWER(u.email) = LOWER(:email)')
@@ -67,9 +67,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Count total active users
+     * Count total active admin users
      */
-    public function countActiveUsers(): int
+    public function countActiveAdmins(): int
     {
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
@@ -80,11 +80,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Find users who logged in recently
+     * Find admin users who logged in recently
      * 
-     * @return User[]
+     * @return Admin[]
      */
-    public function findRecentlyLoggedInUsers(int $days = 30): array
+    public function findRecentlyLoggedInAdmins(int $days = 30): array
     {
         $since = new \DateTimeImmutable(sprintf('-%d days', $days));
         
@@ -99,12 +99,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Update last login timestamp for user
+     * Update last login timestamp for admin user
      */
-    public function updateLastLogin(User $user): void
+    public function updateLastLogin(Admin $admin): void
     {
-        $user->updateLastLogin();
-        $this->getEntityManager()->persist($user);
+        $admin->updateLastLogin();
+        $this->getEntityManager()->persist($admin);
         $this->getEntityManager()->flush();
     }
 }

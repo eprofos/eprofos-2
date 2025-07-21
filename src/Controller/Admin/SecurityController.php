@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
  * Admin Security Controller
  * 
  * Handles authentication for the admin interface.
- * Provides login and logout functionality for admin users.
+ * Provides login and logout functionality for admin admins.
  */
 #[Route('/admin', name: 'admin_')]
 class SecurityController extends AbstractController
@@ -25,32 +25,33 @@ class SecurityController extends AbstractController
     /**
      * Admin login page
      * 
-     * Displays the login form for admin users using Tabler CSS.
+    * Displays the login form for admin admins using Tabler CSS.
      */
     #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // If user is already authenticated, redirect to dashboard
-        if ($this->getUser()) {
+    // If admin is already authenticated, redirect to dashboard
+    $admin = $this->getUser();
+    if ($admin) {
             return $this->redirectToRoute('admin_dashboard');
         }
 
         // Get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
         
-        // Last username entered by the user
-        $lastUsername = $authenticationUtils->getLastUsername();
+    // Last username entered by the admin
+    $lastAdminUsername = $authenticationUtils->getLastUsername();
 
         if ($error) {
             $this->logger->warning('Admin login failed', [
-                'username' => $lastUsername,
+                'adminname' => $lastAdminUsername,
                 'error' => $error->getMessage(),
                 'ip' => $this->getClientIp()
             ]);
         }
 
         return $this->render('admin/security/login.html.twig', [
-            'last_username' => $lastUsername,
+            'last_username' => $lastAdminUsername,
             'error' => $error,
             'page_title' => 'Connexion Admin'
         ]);

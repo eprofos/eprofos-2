@@ -2,23 +2,23 @@
 
 namespace App\Entity\User;
 
-use App\Repository\UserRepository;
+use App\Repository\AdminRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * User entity for admin authentication
+ * Admin entity for admin authentication
  * 
  * Represents an admin user with basic authentication capabilities.
  * Implements Symfony's UserInterface for security integration.
  */
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: 'users')]
+#[ORM\Entity(repositoryClass: AdminRepository::class)]
+#[ORM\Table(name: 'admins')]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class Admin implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -203,7 +203,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Get the full name of the user
+     * Get the full name of the admin user
      */
     public function getFullName(): string
     {
@@ -211,7 +211,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Get the initials of the user for avatar display
+     * Get the initials of the admin user for avatar display
      */
     public function getInitials(): string
     {

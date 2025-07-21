@@ -37,7 +37,7 @@ class DocumentTemplateController extends AbstractController
     public function index(DocumentTemplateRepository $documentTemplateRepository): Response
     {
         $this->logger->info('Admin document templates list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         // Get templates with statistics
@@ -62,7 +62,7 @@ class DocumentTemplateController extends AbstractController
     {
         $this->logger->info('Admin document template details viewed', [
             'template_id' => $documentTemplate->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         // Get template statistics

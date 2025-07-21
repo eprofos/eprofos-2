@@ -4,7 +4,7 @@ namespace App\Repository\Document;
 
 use App\Entity\Document\DocumentTemplate;
 use App\Entity\Document\DocumentType;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -63,11 +63,11 @@ class DocumentTemplateRepository extends ServiceEntityRepository
     /**
      * Find templates created by user
      */
-    public function findByCreatedBy(User $user): array
+    public function findByCreatedBy(Admin $admin): array
     {
         return $this->createQueryBuilder('dt')
             ->where('dt.createdBy = :user')
-            ->setParameter('user', $user)
+            ->setParameter('user', $admin)
             ->orderBy('dt.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

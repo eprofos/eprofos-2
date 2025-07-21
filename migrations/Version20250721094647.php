@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250720174613 extends AbstractMigration
+final class Version20250721094647 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,6 +20,45 @@ final class Version20250720174613 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            CREATE TABLE admins (id SERIAL NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_login_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX UNIQ_A2E0150FE7927C74 ON admins (email)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN admins.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN admins.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN admins.last_login_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE attendance_records (id SERIAL NOT NULL, student_id INT NOT NULL, session_id INT NOT NULL, status VARCHAR(20) NOT NULL, participation_score INT NOT NULL, absence_reason TEXT DEFAULT NULL, excused BOOLEAN NOT NULL, admin_notes TEXT DEFAULT NULL, arrival_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, departure_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, minutes_late INT DEFAULT NULL, minutes_early_departure INT DEFAULT NULL, metadata JSON DEFAULT NULL, recorded_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, recorded_by VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_9B5AB644CB944F1A ON attendance_records (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_9B5AB644613FECDF ON attendance_records (session_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_status ON attendance_records (status)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_recorded_at ON attendance_records (recorded_at)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX unique_student_session ON attendance_records (student_id, session_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN attendance_records.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN attendance_records.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE category (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, description TEXT DEFAULT NULL, icon VARCHAR(100) DEFAULT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
@@ -297,13 +336,13 @@ final class Version20250720174613 extends AbstractMigration
             COMMENT ON COLUMN module.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE needs_analysis_requests (id SERIAL NOT NULL, created_by_user_id INT NOT NULL, formation_id INT DEFAULT NULL, prospect_id INT DEFAULT NULL, type VARCHAR(20) NOT NULL, token VARCHAR(36) NOT NULL, recipient_email VARCHAR(180) NOT NULL, recipient_name VARCHAR(255) NOT NULL, company_name VARCHAR(255) DEFAULT NULL, status VARCHAR(20) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sent_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, expires_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_reminder_sent_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, admin_notes TEXT DEFAULT NULL, PRIMARY KEY(id))
+            CREATE TABLE needs_analysis_requests (id SERIAL NOT NULL, created_by_admin_id INT NOT NULL, formation_id INT DEFAULT NULL, prospect_id INT DEFAULT NULL, type VARCHAR(20) NOT NULL, token VARCHAR(36) NOT NULL, recipient_email VARCHAR(180) NOT NULL, recipient_name VARCHAR(255) NOT NULL, company_name VARCHAR(255) DEFAULT NULL, status VARCHAR(20) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sent_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, expires_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_reminder_sent_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, admin_notes TEXT DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE UNIQUE INDEX UNIQ_FCFD4E0C5F37A13B ON needs_analysis_requests (token)
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE INDEX IDX_FCFD4E0C7D182D95 ON needs_analysis_requests (created_by_user_id)
+            CREATE INDEX IDX_FCFD4E0C64F1F4EE ON needs_analysis_requests (created_by_admin_id)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_FCFD4E0C5200282E ON needs_analysis_requests (formation_id)
@@ -507,6 +546,36 @@ final class Version20250720174613 extends AbstractMigration
             COMMENT ON COLUMN sessions.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE student_progress (id SERIAL NOT NULL, student_id INT NOT NULL, formation_id INT NOT NULL, current_module_id INT DEFAULT NULL, current_chapter_id INT DEFAULT NULL, completion_percentage NUMERIC(5, 2) NOT NULL, module_progress JSON DEFAULT NULL, chapter_progress JSON DEFAULT NULL, last_activity TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, engagement_score INT NOT NULL, difficulty_signals JSON DEFAULT NULL, at_risk_of_dropout BOOLEAN NOT NULL, risk_score NUMERIC(5, 2) NOT NULL, total_time_spent INT NOT NULL, login_count INT NOT NULL, average_session_duration NUMERIC(8, 2) DEFAULT NULL, attendance_rate NUMERIC(5, 2) NOT NULL, missed_sessions INT NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, last_risk_assessment TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_918ABEDDCB944F1A ON student_progress (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_918ABEDD5200282E ON student_progress (formation_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_918ABEDD74E4043D ON student_progress (current_module_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_918ABEDD88248E1A ON student_progress (current_chapter_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_student_formation ON student_progress (student_id, formation_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_at_risk ON student_progress (at_risk_of_dropout)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_last_activity ON student_progress (last_activity)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN student_progress.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN student_progress.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE students (id SERIAL NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL, phone VARCHAR(20) DEFAULT NULL, birth_date DATE DEFAULT NULL, address VARCHAR(255) DEFAULT NULL, postal_code VARCHAR(10) DEFAULT NULL, city VARCHAR(100) DEFAULT NULL, country VARCHAR(100) DEFAULT NULL, education_level VARCHAR(100) DEFAULT NULL, profession VARCHAR(100) DEFAULT NULL, company VARCHAR(100) DEFAULT NULL, is_active BOOLEAN NOT NULL, email_verified BOOLEAN NOT NULL, email_verification_token VARCHAR(100) DEFAULT NULL, email_verified_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_login_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, password_reset_token VARCHAR(100) DEFAULT NULL, password_reset_token_expires_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
@@ -528,19 +597,10 @@ final class Version20250720174613 extends AbstractMigration
             COMMENT ON COLUMN students.password_reset_token_expires_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE users (id SERIAL NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_login_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
+            ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB644CB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE UNIQUE INDEX UNIQ_1483A5E9E7927C74 ON users (email)
-        SQL);
-        $this->addSql(<<<'SQL'
-            COMMENT ON COLUMN users.created_at IS '(DC2Type:datetime_immutable)'
-        SQL);
-        $this->addSql(<<<'SQL'
-            COMMENT ON COLUMN users.updated_at IS '(DC2Type:datetime_immutable)'
-        SQL);
-        $this->addSql(<<<'SQL'
-            COMMENT ON COLUMN users.last_login_at IS '(DC2Type:datetime_immutable)'
+            ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB644613FECDF FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE chapter ADD CONSTRAINT FK_F981B52EAFC2B591 FOREIGN KEY (module_id) REFERENCES module (id) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -570,34 +630,34 @@ final class Version20250720174613 extends AbstractMigration
             ALTER TABLE document_templates ADD CONSTRAINT FK_7D10552F61232A4F FOREIGN KEY (document_type_id) REFERENCES document_types (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_templates ADD CONSTRAINT FK_7D10552FB03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_templates ADD CONSTRAINT FK_7D10552FB03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_templates ADD CONSTRAINT FK_7D10552F896DBBDE FOREIGN KEY (updated_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_templates ADD CONSTRAINT FK_7D10552F896DBBDE FOREIGN KEY (updated_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE document_ui_components ADD CONSTRAINT FK_DC7FCF6E16A30F70 FOREIGN KEY (ui_template_id) REFERENCES document_ui_templates (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_ui_components ADD CONSTRAINT FK_DC7FCF6EB03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_ui_components ADD CONSTRAINT FK_DC7FCF6EB03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_ui_components ADD CONSTRAINT FK_DC7FCF6E896DBBDE FOREIGN KEY (updated_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_ui_components ADD CONSTRAINT FK_DC7FCF6E896DBBDE FOREIGN KEY (updated_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE document_ui_templates ADD CONSTRAINT FK_807E0DA261232A4F FOREIGN KEY (document_type_id) REFERENCES document_types (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_ui_templates ADD CONSTRAINT FK_807E0DA2B03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_ui_templates ADD CONSTRAINT FK_807E0DA2B03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_ui_templates ADD CONSTRAINT FK_807E0DA2896DBBDE FOREIGN KEY (updated_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_ui_templates ADD CONSTRAINT FK_807E0DA2896DBBDE FOREIGN KEY (updated_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE document_versions ADD CONSTRAINT FK_961DB18BC33F7837 FOREIGN KEY (document_id) REFERENCES documents (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE document_versions ADD CONSTRAINT FK_961DB18BB03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE document_versions ADD CONSTRAINT FK_961DB18BB03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE documents ADD CONSTRAINT FK_A2B0728861232A4F FOREIGN KEY (document_type_id) REFERENCES document_types (id) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -606,10 +666,10 @@ final class Version20250720174613 extends AbstractMigration
             ALTER TABLE documents ADD CONSTRAINT FK_A2B0728812469DE2 FOREIGN KEY (category_id) REFERENCES document_categories (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE documents ADD CONSTRAINT FK_A2B07288B03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE documents ADD CONSTRAINT FK_A2B07288B03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE documents ADD CONSTRAINT FK_A2B07288896DBBDE FOREIGN KEY (updated_by_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE documents ADD CONSTRAINT FK_A2B07288896DBBDE FOREIGN KEY (updated_by_id) REFERENCES admins (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE exercise ADD CONSTRAINT FK_AEDAD51C591CC992 FOREIGN KEY (course_id) REFERENCES course (id) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -624,7 +684,7 @@ final class Version20250720174613 extends AbstractMigration
             ALTER TABLE module ADD CONSTRAINT FK_C2426285200282E FOREIGN KEY (formation_id) REFERENCES formation (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE needs_analysis_requests ADD CONSTRAINT FK_FCFD4E0C7D182D95 FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE needs_analysis_requests ADD CONSTRAINT FK_FCFD4E0C64F1F4EE FOREIGN KEY (created_by_admin_id) REFERENCES admins (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE needs_analysis_requests ADD CONSTRAINT FK_FCFD4E0C5200282E FOREIGN KEY (formation_id) REFERENCES formation (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -636,10 +696,10 @@ final class Version20250720174613 extends AbstractMigration
             ALTER TABLE prospect_notes ADD CONSTRAINT FK_40653D66D182060A FOREIGN KEY (prospect_id) REFERENCES prospects (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE prospect_notes ADD CONSTRAINT FK_40653D66B03A8386 FOREIGN KEY (created_by_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE prospect_notes ADD CONSTRAINT FK_40653D66B03A8386 FOREIGN KEY (created_by_id) REFERENCES admins (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE prospects ADD CONSTRAINT FK_35730C06F4BD7827 FOREIGN KEY (assigned_to_id) REFERENCES users (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+            ALTER TABLE prospects ADD CONSTRAINT FK_35730C06F4BD7827 FOREIGN KEY (assigned_to_id) REFERENCES admins (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE prospect_formations ADD CONSTRAINT FK_FFB8A3F2D182060A FOREIGN KEY (prospect_id) REFERENCES prospects (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -689,6 +749,18 @@ final class Version20250720174613 extends AbstractMigration
         $this->addSql(<<<'SQL'
             ALTER TABLE sessions ADD CONSTRAINT FK_9A609D135200282E FOREIGN KEY (formation_id) REFERENCES formation (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDDCB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDD5200282E FOREIGN KEY (formation_id) REFERENCES formation (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDD74E4043D FOREIGN KEY (current_module_id) REFERENCES module (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDD88248E1A FOREIGN KEY (current_chapter_id) REFERENCES chapter (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
     }
 
     public function down(Schema $schema): void
@@ -696,6 +768,12 @@ final class Version20250720174613 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
             CREATE SCHEMA public
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB644CB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB644613FECDF
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE chapter DROP CONSTRAINT FK_F981B52EAFC2B591
@@ -779,7 +857,7 @@ final class Version20250720174613 extends AbstractMigration
             ALTER TABLE module DROP CONSTRAINT FK_C2426285200282E
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE needs_analysis_requests DROP CONSTRAINT FK_FCFD4E0C7D182D95
+            ALTER TABLE needs_analysis_requests DROP CONSTRAINT FK_FCFD4E0C64F1F4EE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE needs_analysis_requests DROP CONSTRAINT FK_FCFD4E0C5200282E
@@ -843,6 +921,24 @@ final class Version20250720174613 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE sessions DROP CONSTRAINT FK_9A609D135200282E
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDDCB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDD5200282E
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDD74E4043D
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDD88248E1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE admins
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE attendance_records
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE category
@@ -944,10 +1040,10 @@ final class Version20250720174613 extends AbstractMigration
             DROP TABLE sessions
         SQL);
         $this->addSql(<<<'SQL'
-            DROP TABLE students
+            DROP TABLE student_progress
         SQL);
         $this->addSql(<<<'SQL'
-            DROP TABLE users
+            DROP TABLE students
         SQL);
     }
 }

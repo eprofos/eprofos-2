@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentUITemplate;
 use App\Entity\Document\DocumentType;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -336,7 +336,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     ->setIsGlobal($templateData['isGlobal'])
                     ->setSortOrder($templateData['sortOrder'])
                     ->setUsageCount($templateData['usageCount'])
-                    ->setCreatedBy($this->getReference(UserFixtures::ADMIN_USER_REFERENCE, User::class));
+                    ->setCreatedBy($this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class));
 
             $manager->persist($template);
             $this->addReference($templateData['reference'], $template);

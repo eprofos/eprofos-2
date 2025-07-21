@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentType;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentRepository;
 use App\Repository\Document\DocumentTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,9 +38,9 @@ class DocumentService
     {
         try {
             // Set the current user as creator
-            if ($user = $this->security->getUser()) {
-                $document->setCreatedBy($user);
-                $document->setUpdatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $document->setCreatedBy($admin);
+                $document->setUpdatedBy($admin);
             }
 
             // Generate unique slug if not provided
@@ -112,8 +112,8 @@ class DocumentService
     {
         try {
             // Set the current user as updater
-            if ($user = $this->security->getUser()) {
-                $document->setUpdatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $document->setUpdatedBy($admin);
             }
 
             // Validate business rules
@@ -194,7 +194,7 @@ class DocumentService
             $this->logger->info('Document deleted successfully', [
                 'document_id' => $documentId,
                 'title' => $documentTitle,
-                'deleted_by' => ($user = $this->security->getUser()) instanceof User ? $user->getEmail() : null
+                'deleted_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return [
@@ -240,8 +240,8 @@ class DocumentService
 
             $document->publish();
             
-            if ($user = $this->security->getUser()) {
-                $document->setUpdatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $document->setUpdatedBy($admin);
             }
 
             $this->entityManager->flush();
@@ -249,7 +249,7 @@ class DocumentService
             $this->logger->info('Document published successfully', [
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
-                'published_by' => ($user = $this->security->getUser()) instanceof User ? $user->getEmail() : null
+                'published_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return [
@@ -280,8 +280,8 @@ class DocumentService
             $document->setStatus(Document::STATUS_ARCHIVED);
             $document->setIsActive(false);
             
-            if ($user = $this->security->getUser()) {
-                $document->setUpdatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $document->setUpdatedBy($admin);
             }
 
             $this->entityManager->flush();
@@ -289,7 +289,7 @@ class DocumentService
             $this->logger->info('Document archived successfully', [
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
-                'archived_by' => ($user = $this->security->getUser()) instanceof User ? $user->getEmail() : null
+                'archived_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return [
@@ -332,9 +332,9 @@ class DocumentService
             $slug = $this->generateUniqueSlug($duplicate->getTitle());
             $duplicate->setSlug($slug);
 
-            if ($user = $this->security->getUser()) {
-                $duplicate->setCreatedBy($user);
-                $duplicate->setUpdatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $duplicate->setCreatedBy($admin);
+                $duplicate->setUpdatedBy($admin);
             }
 
             $this->entityManager->persist($duplicate);
@@ -348,7 +348,7 @@ class DocumentService
                 'original_id' => $document->getId(),
                 'duplicate_id' => $duplicate->getId(),
                 'title' => $duplicate->getTitle(),
-                'duplicated_by' => ($user = $this->security->getUser()) instanceof User ? $user->getEmail() : null
+                'duplicated_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return [
@@ -514,8 +514,8 @@ class DocumentService
         $version->setChangeLog('Version initiale');
         $version->setIsCurrent(true);
 
-        if ($user = $this->security->getUser()) {
-            $version->setCreatedBy($user);
+        if ($admin = $this->security->getUser()) {
+            $version->setCreatedBy($admin);
         }
 
         $this->entityManager->persist($version);
@@ -565,8 +565,8 @@ class DocumentService
             $newVersion->setChangeLog($versionMessage ?: $this->getDefaultChangeLog($versionType));
             $newVersion->setIsCurrent(true);
 
-            if ($user = $this->security->getUser()) {
-                $newVersion->setCreatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $newVersion->setCreatedBy($admin);
             }
 
             // Generate checksum for content integrity
@@ -627,8 +627,8 @@ class DocumentService
         $version->setChangeLog($changeLog ?: 'Version initiale lors de la mise à jour');
         $version->setIsCurrent(true);
 
-        if ($user = $this->security->getUser()) {
-            $version->setCreatedBy($user);
+        if ($admin = $this->security->getUser()) {
+            $version->setCreatedBy($admin);
         }
 
         $version->generateChecksum();
@@ -674,8 +674,8 @@ class DocumentService
             $newVersion->setChangeLog('Mise à jour automatique');
             $newVersion->setIsCurrent(true);
 
-            if ($user = $this->security->getUser()) {
-                $newVersion->setCreatedBy($user);
+            if ($admin = $this->security->getUser()) {
+                $newVersion->setCreatedBy($admin);
             }
 
             $this->entityManager->persist($newVersion);

@@ -4,8 +4,8 @@ namespace App\Form;
 
 use App\Entity\Prospect;
 use App\Entity\ProspectNote;
-use App\Entity\User\User;
-use App\Repository\UserRepository;
+use App\Entity\User\Admin;
+use App\Repository\AdminRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -120,22 +120,22 @@ class ProspectNoteType extends AbstractType
         if ($options['show_created_by']) {
             $builder->add('createdBy', EntityType::class, [
                 'label' => 'Créé par',
-                'class' => User::class,
-                'choice_label' => function (User $user) {
-                    return $user->getFullName();
+                'class' => Admin::class,
+                'choice_label' => function (Admin $admin) {
+                    return $admin->getFullName();
                 },
                 'required' => false,
                 'attr' => [
                     'class' => 'form-select'
                 ],
-                'query_builder' => function (UserRepository $repo) {
-                    return $repo->createQueryBuilder('u')
-                        ->where('u.isActive = :active')
+                'query_builder' => function (AdminRepository $repo) {
+                    return $repo->createQueryBuilder('a')
+                        ->where('a.isActive = :active')
                         ->setParameter('active', true)
-                        ->orderBy('u.firstName', 'ASC')
-                        ->addOrderBy('u.lastName', 'ASC');
+                        ->orderBy('a.firstName', 'ASC')
+                        ->addOrderBy('a.lastName', 'ASC');
                 },
-                'help' => 'Utilisateur qui a créé cette note'
+                'help' => 'Administrateur qui a créé cette note'
             ]);
         }
     }

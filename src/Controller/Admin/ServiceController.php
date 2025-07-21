@@ -37,7 +37,7 @@ class ServiceController extends AbstractController
     public function index(ServiceRepository $serviceRepository): Response
     {
         $this->logger->info('Admin services list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         $services = $serviceRepository->createQueryBuilder('s')
@@ -65,7 +65,7 @@ class ServiceController extends AbstractController
     {
         $this->logger->info('Admin service details viewed', [
             'service_id' => $service->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         return $this->render('admin/service/show.html.twig', [
@@ -100,7 +100,7 @@ class ServiceController extends AbstractController
             $this->logger->info('New service created', [
                 'service_id' => $service->getId(),
                 'service_title' => $service->getTitle(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'Le service a été créé avec succès.');
@@ -139,7 +139,7 @@ class ServiceController extends AbstractController
             $this->logger->info('Service updated', [
                 'service_id' => $service->getId(),
                 'service_title' => $service->getTitle(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'Le service a été modifié avec succès.');
@@ -174,7 +174,7 @@ class ServiceController extends AbstractController
             $this->logger->info('Service deleted', [
                 'service_id' => $service->getId(),
                 'service_title' => $serviceTitle,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'Le service a été supprimé avec succès.');
@@ -198,7 +198,7 @@ class ServiceController extends AbstractController
                 'service_id' => $service->getId(),
                 'service_title' => $service->getTitle(),
                 'new_status' => $service->isActive(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', "Le service a été {$status} avec succès.");

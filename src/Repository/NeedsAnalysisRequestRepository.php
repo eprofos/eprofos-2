@@ -251,13 +251,13 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find requests created by a specific user
+     * Find requests created by a specific admin
      */
-    public function findByCreatedByUser($user): array
+    public function findByCreatedByAdmin($admin): array
     {
         return $this->createQueryBuilder('nar')
-            ->andWhere('nar.createdByUser = :user')
-            ->setParameter('user', $user)
+            ->andWhere('nar.createdByUser = :admin')
+            ->setParameter('admin', $admin)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

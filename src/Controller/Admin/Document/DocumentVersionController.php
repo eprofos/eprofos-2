@@ -4,7 +4,7 @@ namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentVersionRepository;
 use App\Service\DocumentService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -158,7 +158,7 @@ class DocumentVersionController extends AbstractController
                 'document_id' => $document->getId(),
                 'target_version' => $version->getVersion(),
                 'new_version' => $newVersion->getVersion(),
-                'user' => ($user = $this->getUser()) instanceof User ? $user->getEmail() : null
+                'user' => ($admin = $this->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
@@ -204,7 +204,7 @@ class DocumentVersionController extends AbstractController
                 'version_id' => $version->getId(),
                 'version_number' => $versionNumber,
                 'document_id' => $documentId,
-                'user' => ($user = $this->getUser()) instanceof User ? $user->getEmail() : null
+                'user' => ($admin = $this->getUser()) instanceof Admin ? $admin->getEmail() : null
             ]);
 
             return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
@@ -273,7 +273,7 @@ class DocumentVersionController extends AbstractController
                 ];
             }, $versions),
             'exported_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'exported_by' => ($user = $this->getUser()) instanceof User ? $user->getEmail() : null,
+            'exported_by' => ($admin = $this->getUser()) instanceof Admin ? $admin->getEmail() : null,
         ];
 
         $response = new Response(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

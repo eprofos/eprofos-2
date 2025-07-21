@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Prospect;
 use App\Entity\ProspectNote;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -24,7 +24,7 @@ class ProspectFixtures extends Fixture implements DependentFixtureInterface
         $faker = Factory::create('fr_FR');
         
         // Get existing users
-        $users = $manager->getRepository(User::class)->findAll();
+        $users = $manager->getRepository(Admin::class)->findAll();
         
         if (empty($users)) {
             echo "❌ No users found. Please create users first.\n";

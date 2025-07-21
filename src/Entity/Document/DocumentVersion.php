@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentVersionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -71,9 +71,9 @@ class DocumentVersion
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $createdBy = null;
+    private ?Admin $createdBy = null;
 
     public function __construct()
     {
@@ -195,12 +195,12 @@ class DocumentVersion
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getCreatedBy(): ?Admin
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;

@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -25,7 +25,7 @@ class TestPasswordCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $userRepository = $this->entityManager->getRepository(User::class);
+        $userRepository = $this->entityManager->getRepository(Admin::class);
         $adminUser = $userRepository->findOneBy(['email' => 'admin@eprofos.fr']);
 
         if (!$adminUser) {

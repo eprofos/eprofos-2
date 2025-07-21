@@ -36,7 +36,7 @@ class ProspectNoteController extends AbstractController
     public function index(Request $request, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Admin prospect notes list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         $type = $request->query->get('type');
@@ -109,7 +109,7 @@ class ProspectNoteController extends AbstractController
         $this->logger->info('Admin prospect note details viewed', [
             'note_id' => $note->getId(),
             'prospect_id' => $note->getProspect()?->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         return $this->render('admin/prospect_note/show.html.twig', [
@@ -165,7 +165,7 @@ class ProspectNoteController extends AbstractController
                 'note_id' => $note->getId(),
                 'prospect_id' => $note->getProspect()?->getId(),
                 'note_type' => $note->getType(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'La note a été créée avec succès.');
@@ -223,7 +223,7 @@ class ProspectNoteController extends AbstractController
             $this->logger->info('Prospect note updated', [
                 'note_id' => $note->getId(),
                 'prospect_id' => $note->getProspect()?->getId(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'La note a été modifiée avec succès.');
@@ -260,7 +260,7 @@ class ProspectNoteController extends AbstractController
             $this->logger->info('Prospect note deleted', [
                 'note_id' => $noteId,
                 'prospect_id' => $prospectId,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'La note a été supprimée avec succès.');
@@ -292,7 +292,7 @@ class ProspectNoteController extends AbstractController
                 'note_id' => $note->getId(),
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $this->addFlash('success', 'Le statut de la note a été mis à jour avec succès.');
@@ -314,7 +314,7 @@ class ProspectNoteController extends AbstractController
             $this->logger->info('Prospect note importance toggled', [
                 'note_id' => $note->getId(),
                 'is_important' => $note->isImportant(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
             ]);
 
             $message = $note->isImportant() 
@@ -334,7 +334,7 @@ class ProspectNoteController extends AbstractController
     public function pendingTasks(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Pending prospect tasks accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         $pendingNotes = $noteRepository->findPendingNotes();
@@ -361,7 +361,7 @@ class ProspectNoteController extends AbstractController
     public function important(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Important prospect notes accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         $importantNotes = $noteRepository->findImportantNotes();
@@ -429,7 +429,7 @@ class ProspectNoteController extends AbstractController
 
         $this->logger->info('Prospect notes exported', [
             'count' => count($notes),
-            'user' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier()
         ]);
 
         return $response;

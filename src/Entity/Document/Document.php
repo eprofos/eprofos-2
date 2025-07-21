@@ -2,7 +2,7 @@
 
 namespace App\Entity\Document;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Repository\Document\DocumentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -108,13 +108,13 @@ class Document
     #[ORM\Column(options: ['default' => 0])]
     private int $downloadCount = 0;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $createdBy = null;
+    private ?Admin $createdBy = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $updatedBy = null;
+    private ?Admin $updatedBy = null;
 
     #[ORM\OneToMany(mappedBy: 'document', targetEntity: DocumentVersion::class, cascade: ['persist', 'remove'])]
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
@@ -325,23 +325,23 @@ class Document
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getCreatedBy(): ?Admin
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;
     }
 
-    public function getUpdatedBy(): ?User
+    public function getUpdatedBy(): ?Admin
     {
         return $this->updatedBy;
     }
 
-    public function setUpdatedBy(?User $updatedBy): static
+    public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
         return $this;
@@ -553,7 +553,7 @@ class Document
     /**
      * Create a new version
      */
-    public function createVersion(string $version, ?string $changeLog = null, ?User $createdBy = null): DocumentVersion
+    public function createVersion(string $version, ?string $changeLog = null, ?Admin $createdBy = null): DocumentVersion
     {
         // Mark all existing versions as not current
         foreach ($this->versions as $existingVersion) {

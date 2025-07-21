@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\NeedsAnalysisRequest;
 use App\Entity\CompanyNeedsAnalysis;
 use App\Entity\IndividualNeedsAnalysis;
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use App\Entity\Training\Formation;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Repository\CompanyNeedsAnalysisRepository;
@@ -66,7 +66,7 @@ class NeedsAnalysisService
                 ->setRecipientEmail($recipientEmail)
                 ->setCompanyName($companyName)
                 ->setFormation($formation)
-                ->setCreatedByUser($createdBy instanceof User ? $createdBy : null)
+                ->setCreatedByAdmin($createdBy instanceof Admin ? $createdBy : null)
                 ->setToken($tokenData['token'])
                 ->setExpiresAt($tokenData['expires_at'])
                 ->setStatus(NeedsAnalysisRequest::STATUS_PENDING)

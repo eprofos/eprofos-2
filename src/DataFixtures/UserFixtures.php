@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\User\User;
+use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -27,8 +27,8 @@ class UserFixtures extends Fixture
      */
     public function load(ObjectManager $manager): void
     {
-        // Create default admin user
-        $admin = new User();
+    // Create default admin user
+    $admin = new Admin();
         $admin->setEmail('admin@eprofos.fr');
         $admin->setFirstName('Admin');
         $admin->setLastName('EPROFOS');
@@ -47,8 +47,8 @@ class UserFixtures extends Fixture
         // Add reference for other fixtures
         $this->addReference(self::ADMIN_USER_REFERENCE, $admin);
 
-        // Create a second admin user for testing
-        $testAdmin = new User();
+    // Create a second admin user for testing
+    $testAdmin = new Admin();
         $testAdmin->setEmail('test@eprofos.fr');
         $testAdmin->setFirstName('Test');
         $testAdmin->setLastName('Administrator');

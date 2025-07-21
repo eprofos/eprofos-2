@@ -279,11 +279,11 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
     /**
      * Find components created by user
      */
-    public function findByCreatedBy($user): array
+    public function findByCreatedBy($admin): array
     {
         return $this->createQueryBuilder('duc')
             ->where('duc.createdBy = :user')
-            ->setParameter('user', $user)
+            ->setParameter('user', $admin)
             ->orderBy('duc.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

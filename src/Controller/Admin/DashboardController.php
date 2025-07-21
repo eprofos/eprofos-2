@@ -38,10 +38,10 @@ class DashboardController extends AbstractController
         ]);
 
         // Get current user for display
-        $user = $this->getUser();
+        $admin = $this->getUser();
 
         return $this->render('admin/dashboard/index.html.twig', [
-            'user' => $user,
+            'user' => $admin,
             'page_title' => 'Dashboard',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => null]
