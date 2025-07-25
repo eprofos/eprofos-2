@@ -1,0 +1,209 @@
+{% extends 'teacher/layout.html.twig' %}
+
+{% block page_content %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Gestion des formations
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos formations assignées et les contenus pédagogiques
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="#" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouvelle formation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-assigned" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6l0 13"/>
+                                        <path d="M12 6l0 13"/>
+                                        <path d="M21 6l0 13"/>
+                                    </svg>
+                                    Formations assignées
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-materials" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/>
+                                    </svg>
+                                    Matériel pédagogique
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-statistics" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 7v5l3 3"/>
+                                    </svg>
+                                    Statistiques
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- Assigned Courses Tab -->
+                            <div class="tab-pane active show" id="tabs-assigned" role="tabpanel">
+                                <div class="text-center py-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-4" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6l0 13"/>
+                                        <path d="M12 6l0 13"/>
+                                        <path d="M21 6l0 13"/>
+                                    </svg>
+                                    <h4 class="text-muted">Formations assignées</h4>
+                                    <p class="text-muted mb-4">
+                                        Cette section vous permettra de gérer vos formations assignées, 
+                                        les contenus pédagogiques et les ressources d'apprentissage.
+                                    </p>
+                                    <div class="alert alert-info">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                        <strong>Fonctionnalité en développement</strong><br>
+                                        Le système de gestion des formations sera bientôt disponible.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Materials Tab -->
+                            <div class="tab-pane" id="tabs-materials" role="tabpanel">
+                                <div class="text-center py-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-4" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/>
+                                    </svg>
+                                    <h4 class="text-muted">Matériel pédagogique</h4>
+                                    <p class="text-muted mb-4">
+                                        Gérez vos supports de cours, présentations, exercices et autres ressources pédagogiques.
+                                    </p>
+                                    <div class="alert alert-info">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                        <strong>Fonctionnalité en développement</strong><br>
+                                        Le système de gestion du matériel sera bientôt disponible.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Statistics Tab -->
+                            <div class="tab-pane" id="tabs-statistics" role="tabpanel">
+                                <div class="text-center py-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-4" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 7v5l3 3"/>
+                                    </svg>
+                                    <h4 class="text-muted">Statistiques de formation</h4>
+                                    <p class="text-muted mb-4">
+                                        Consultez les statistiques de performance de vos formations et l'engagement des étudiants.
+                                    </p>
+                                    <div class="alert alert-info">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                        <strong>Fonctionnalité en développement</strong><br>
+                                        Les statistiques détaillées seront bientôt disponibles.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Preview Cards -->
+        <div class="row row-cards mt-4">
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-primary mb-3" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                            <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                            <path d="M3 6l0 13"/>
+                            <path d="M12 6l0 13"/>
+                            <path d="M21 6l0 13"/>
+                        </svg>
+                        <h3 class="card-title">Formations actives</h3>
+                        <div class="h1 mb-2">0</div>
+                        <p class="text-muted">Formations en cours</p>
+                        <span class="badge bg-yellow">Bientôt disponible</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-success mb-3" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 12l5 5l10 -10"/>
+                        </svg>
+                        <h3 class="card-title">Formations terminées</h3>
+                        <div class="h1 mb-2">0</div>
+                        <p class="text-muted">Formations complétées</p>
+                        <span class="badge bg-yellow">Bientôt disponible</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-warning mb-3" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 7v5l3 3"/>
+                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                        </svg>
+                        <h3 class="card-title">En préparation</h3>
+                        <div class="h1 mb-2">0</div>
+                        <p class="text-muted">Formations à venir</p>
+                        <span class="badge bg-yellow">Bientôt disponible</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

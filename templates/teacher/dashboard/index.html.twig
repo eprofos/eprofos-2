@@ -1,0 +1,347 @@
+{% extends 'teacher/layout.html.twig' %}
+
+{% block page_content %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Tableau de bord
+                    </h2>
+                    <div class="page-subtitle">
+                        Bienvenue dans votre espace formateur, {{ app.user.firstName }} !
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('teacher_courses') }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouvelle session
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Statistics Cards -->
+        <div class="row row-deck row-cards">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Formations assignées</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.assigned_courses ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    +12%
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 17l6 -6l4 4l8 -8"/>
+                                        <path d="M14 7l7 0l0 7"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Ce mois-ci</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Étudiants actifs</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.active_students ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-green" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    +8%
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 17l6 -6l4 4l8 -8"/>
+                                        <path d="M14 7l7 0l0 7"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">En formation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Heures enseignées</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.total_hours_taught ?? 0 }}h</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-yellow" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-yellow d-inline-flex align-items-center lh-1">
+                                    +5%
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 17l6 -6l4 4l8 -8"/>
+                                        <path d="M14 7l7 0l0 7"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Ce mois-ci</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Sessions à venir</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.upcoming_sessions ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-blue d-inline-flex align-items-center lh-1">
+                                    +3
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 17l6 -6l4 4l8 -8"/>
+                                        <path d="M14 7l7 0l0 7"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Cette semaine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row row-deck row-cards mt-4">
+            <!-- Recent Activities -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Activités récentes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-green text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Session terminée</strong> - Formation JavaScript
+                                    </div>
+                                    <div class="text-muted">Il y a 2 heures</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-blue text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Nouveau module créé</strong> - Python Avancé
+                                    </div>
+                                    <div class="text-muted">Il y a 1 jour</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-yellow text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                            <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Nouvel étudiant</strong> inscrit en React
+                                    </div>
+                                    <div class="text-muted">Il y a 2 jours</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Sessions -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sessions à venir</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-blue text-white avatar">Js</span>
+                                </div>
+                                <div class="col">
+                                    <div><strong>Formation JavaScript</strong></div>
+                                    <div class="text-muted">Aujourd'hui à 14h00</div>
+                                    <div class="text-muted">12 étudiants inscrits</div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-green">Confirmée</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-purple text-white avatar">Py</span>
+                                </div>
+                                <div class="col">
+                                    <div><strong>Python pour débutants</strong></div>
+                                    <div class="text-muted">Demain à 09h30</div>
+                                    <div class="text-muted">8 étudiants inscrits</div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-yellow">En attente</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-red text-white avatar">Re</span>
+                                </div>
+                                <div class="col">
+                                    <div><strong>React Avancé</strong></div>
+                                    <div class="text-muted">Vendredi à 10h00</div>
+                                    <div class="text-muted">15 étudiants inscrits</div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-green">Confirmée</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row row-cards mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions rapides</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_courses') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                        <path d="M3 6l0 13"/>
+                                        <path d="M12 6l0 13"/>
+                                        <path d="M21 6l0 13"/>
+                                    </svg>
+                                    Mes Formations
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_students') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                    </svg>
+                                    Mes Étudiants
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_sessions') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                        <path d="M16 3v4"/>
+                                        <path d="M8 3v4"/>
+                                        <path d="M4 11h16"/>
+                                    </svg>
+                                    Planning
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_resources') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/>
+                                    </svg>
+                                    Ressources
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_analytics') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 7v5l3 3"/>
+                                    </svg>
+                                    Statistiques
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('teacher_profile') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                        <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                    </svg>
+                                    Mon Profil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

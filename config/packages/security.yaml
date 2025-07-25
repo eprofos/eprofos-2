@@ -6,6 +6,8 @@ security:
             algorithm: auto
         App\Entity\User\Student:
             algorithm: auto
+        App\Entity\User\Teacher:
+            algorithm: auto
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
@@ -18,6 +20,11 @@ security:
         app_student_provider:
             entity:
                 class: App\Entity\User\Student
+                property: email
+        # used to reload teacher user from session
+        app_teacher_provider:
+            entity:
+                class: App\Entity\User\Teacher
                 property: email
 
     firewalls:
@@ -61,6 +68,24 @@ security:
                 delete_cookies:
                     PHPSESSID: { path: /, domain: ~ }
 
+        # Teacher firewall for /teacher routes
+        teacher:
+            pattern: ^/teacher
+            lazy: true
+            provider: app_teacher_provider
+            form_login:
+                login_path: teacher_login
+                check_path: teacher_login
+                default_target_path: teacher_dashboard
+                always_use_default_target_path: true
+                enable_csrf: true
+            logout:
+                path: teacher_logout
+                target: teacher_login
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: { path: /, domain: ~ }
+
         # Main firewall for public routes
         main:
             lazy: true
@@ -76,6 +101,12 @@ security:
         - { path: ^/student/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/student/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/student, roles: ROLE_STUDENT }
+        - { path: ^/teacher/login, roles: PUBLIC_ACCESS }
+        - { path: ^/teacher/register, roles: PUBLIC_ACCESS }
+        - { path: ^/teacher/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/teacher/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/teacher/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/teacher, roles: ROLE_TEACHER }
 
 when@test:
     security:
@@ -97,4 +128,7 @@ when@test:
                 security: false
             student:
                 pattern: ^/student
+                security: false
+            teacher:
+                pattern: ^/teacher
                 security: false

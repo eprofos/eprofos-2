@@ -58,6 +58,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
     *     - DocumentUITemplateFixtures (depend on document types and admins)
     *     - DocumentUIComponentFixtures (depend on UI templates and admins)
      * 15. StudentFixtures (student authentication data)
+     * 16. TeacherFixtures (teacher authentication data)
      */
     public function getDependencies(): array
     {
@@ -87,6 +88,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             DocumentUITemplateFixtures::class,
             DocumentUIComponentFixtures::class,
             StudentFixtures::class,
+            TeacherFixtures::class,
             CourseFixtures::class,
             ExerciseFixtures::class,
             QCMFixtures::class,
