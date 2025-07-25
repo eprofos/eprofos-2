@@ -1,0 +1,415 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = teacher.displayName %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_teacher_index') }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 6l6 6l-6 6"/>
+            </svg>
+            Retour à la liste
+        </a>
+        <a href="{{ path('admin_teacher_edit', {id: teacher.id}) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                <path d="M16 5l3 3"/>
+            </svg>
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-cards">
+        <!-- Profile Card -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <span class="avatar avatar-xl mb-3" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                        {{ teacher.initials }}
+                    </span>
+                    <h3 class="m-0 mb-1">{{ teacher.displayName }}</h3>
+                    {% if teacher.specialty %}
+                        <div class="text-muted">{{ teacher.specialty }}</div>
+                    {% endif %}
+                    {% if teacher.title %}
+                        <div class="mt-1">
+                            <span class="badge bg-blue-lt">{{ teacher.title }}</span>
+                        </div>
+                    {% endif %}
+                    {% if teacher.yearsOfExperience %}
+                        <div class="mt-2">
+                            <small class="text-muted">{{ teacher.experienceDescription }}</small>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="d-flex">
+                    {% if teacher.isActive %}
+                        <a href="#" class="card-btn" onclick="toggleStatus({{ teacher.id }}, false)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                            </svg>
+                            Actif - Cliquer pour désactiver
+                        </a>
+                    {% else %}
+                        <a href="#" class="card-btn" onclick="toggleStatus({{ teacher.id }}, true)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-danger" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 3l18 18"/>
+                                <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"/>
+                                <path d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341"/>
+                            </svg>
+                            Inactif - Cliquer pour activer
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Actions rapides</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% if not teacher.emailVerified %}
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-warning" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                        <path d="M3 7l9 6l9 -6"/>
+                                    </svg>
+                                </div>
+                                <div class="col">
+                                    <strong>Email non vérifié</strong>
+                                    <div class="text-muted">Cliquez pour vérifier</div>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-outline-warning btn-sm" onclick="verifyEmail({{ teacher.id }})">
+                                        Vérifier
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-blue" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                    <path d="M3 7l9 6l9 -6"/>
+                                </svg>
+                            </div>
+                            <div class="col">
+                                <strong>Reset password</strong>
+                                <div class="text-muted">Envoyer un email de réinitialisation</div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-primary btn-sm" onclick="sendPasswordReset({{ teacher.id }})">
+                                    Envoyer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 12l-3 -3l3 -3"/>
+                                    <path d="M6 9h14.5"/>
+                                    <path d="M15 12l3 3l-3 3"/>
+                                    <path d="M18 15h-14.5"/>
+                                </svg>
+                            </div>
+                            <div class="col">
+                                <strong>Générer mot de passe</strong>
+                                <div class="text-muted">Créer un mot de passe temporaire</div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-success btn-sm" onclick="generatePassword({{ teacher.id }})">
+                                    Générer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Card -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+                        <li class="nav-item">
+                            <a href="#tabs-profile" class="nav-link active" data-bs-toggle="tab">Profil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#tabs-activity" class="nav-link" data-bs-toggle="tab">Activité</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#tabs-courses" class="nav-link" data-bs-toggle="tab">Cours</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Profile Tab -->
+                        <div class="tab-pane active show" id="tabs-profile">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4>Informations personnelles</h4>
+                                    <table class="table table-transparent">
+                                        <tbody>
+                                            <tr>
+                                                <td class="w-50"><strong>Nom complet</strong></td>
+                                                <td>{{ teacher.fullName }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Email</strong></td>
+                                                <td>
+                                                    <a href="mailto:{{ teacher.email }}">{{ teacher.email }}</a>
+                                                    {% if teacher.emailVerified %}
+                                                        <span class="badge bg-success ms-2">Vérifié</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning ms-2">Non vérifié</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% if teacher.phone %}
+                                                <tr>
+                                                    <td><strong>Téléphone</strong></td>
+                                                    <td><a href="tel:{{ teacher.phone }}">{{ teacher.phone }}</a></td>
+                                                </tr>
+                                            {% endif %}
+                                            {% if teacher.birthDate %}
+                                                <tr>
+                                                    <td><strong>Date de naissance</strong></td>
+                                                    <td>{{ teacher.birthDate|date('d/m/Y') }}</td>
+                                                </tr>
+                                            {% endif %}
+                                            {% if teacher.completeAddress %}
+                                                <tr>
+                                                    <td><strong>Adresse</strong></td>
+                                                    <td>{{ teacher.completeAddress }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h4>Informations professionnelles</h4>
+                                    <table class="table table-transparent">
+                                        <tbody>
+                                            {% if teacher.specialty %}
+                                                <tr>
+                                                    <td class="w-50"><strong>Spécialité</strong></td>
+                                                    <td><span class="badge bg-azure">{{ teacher.specialty }}</span></td>
+                                                </tr>
+                                            {% endif %}
+                                            {% if teacher.title %}
+                                                <tr>
+                                                    <td><strong>Titre</strong></td>
+                                                    <td>{{ teacher.title }}</td>
+                                                </tr>
+                                            {% endif %}
+                                            {% if teacher.qualifications %}
+                                                <tr>
+                                                    <td><strong>Qualifications</strong></td>
+                                                    <td>{{ teacher.qualifications }}</td>
+                                                </tr>
+                                            {% endif %}
+                                            {% if teacher.yearsOfExperience %}
+                                                <tr>
+                                                    <td><strong>Expérience</strong></td>
+                                                    <td>{{ teacher.experienceDescription }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            {% if teacher.biography %}
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <h4>Biographie</h4>
+                                        <div class="text-muted">{{ teacher.biography|nl2br }}</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Activity Tab -->
+                        <div class="tab-pane" id="tabs-activity">
+                            <h4>Informations de compte</h4>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td class="w-50"><strong>Statut du compte</strong></td>
+                                        <td>
+                                            {% if teacher.isActive %}
+                                                <span class="badge bg-success">Actif</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email vérifié</strong></td>
+                                        <td>
+                                            {% if teacher.emailVerified %}
+                                                <span class="text-success">✓ Oui</span>
+                                                {% if teacher.emailVerifiedAt %}
+                                                    <small class="text-muted">({{ teacher.emailVerifiedAt|date('d/m/Y H:i') }})</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-warning">⚠ Non</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date d'inscription</strong></td>
+                                        <td>{{ teacher.createdAt|date('d/m/Y H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Dernière modification</strong></td>
+                                        <td>{{ teacher.updatedAt|date('d/m/Y H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Dernière connexion</strong></td>
+                                        <td>
+                                            {% if teacher.lastLoginAt %}
+                                                {{ teacher.lastLoginAt|date('d/m/Y H:i') }}
+                                            {% else %}
+                                                <span class="text-muted">Jamais connecté</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Courses Tab -->
+                        <div class="tab-pane" id="tabs-courses">
+                            <h4>Cours assignés</h4>
+                            <div class="text-muted">
+                                <p>Cette section affichera les cours assignés au formateur une fois le système d'assignation implémenté.</p>
+                                <!-- TODO: Implement course assignment system -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // AJAX functions for individual actions
+        async function sendPasswordReset(teacherId) {
+            if (!confirm('Envoyer un email de réinitialisation de mot de passe ?')) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function verifyEmail(teacherId) {
+            if (!confirm('Marquer cet email comme vérifié ?')) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/verify-email`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function generatePassword(teacherId) {
+            if (!confirm('Générer un nouveau mot de passe temporaire ?')) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/generate-password`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`${data.message}\nMot de passe temporaire: ${data.password}`);
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function toggleStatus(teacherId, activate) {
+            const action = activate ? 'activer' : 'désactiver';
+            if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ce formateur ?`)) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+    </script>
+{% endblock %}

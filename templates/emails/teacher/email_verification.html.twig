@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérifiez votre adresse email - EPROFOS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #28a745;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white !important;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .alert {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EPROFOS</h1>
+        <p>Plateforme de formation professionnelle</p>
+    </div>
+    
+    <div class="content">
+        <h2>Vérification de votre adresse email</h2>
+        
+        <p>Bonjour {{ teacher.displayName }},</p>
+        
+        <p>Bienvenue sur EPROFOS ! Pour finaliser votre inscription en tant que formateur, nous devons vérifier votre adresse email.</p>
+        
+        <p>Cliquez sur le bouton ci-dessous pour confirmer votre adresse email :</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ verification_url }}" class="button">Vérifier mon email</a>
+        </div>
+        
+        <div class="alert">
+            <strong>Pourquoi vérifier votre email ?</strong><br>
+            La vérification de votre email nous permet de :
+            <ul>
+                <li>Sécuriser votre compte</li>
+                <li>Vous envoyer des notifications importantes</li>
+                <li>Récupérer votre mot de passe si nécessaire</li>
+            </ul>
+        </div>
+        
+        <p>Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :</p>
+        <p style="word-break: break-all; background-color: #e9ecef; padding: 10px; border-radius: 3px;">{{ verification_url }}</p>
+        
+        <p>Si vous n'avez pas créé de compte sur EPROFOS, vous pouvez ignorer cet email.</p>
+        
+        <p>Cordialement,<br>L'équipe EPROFOS</p>
+    </div>
+    
+    <div class="footer">
+        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        <p>EPROFOS - Formation professionnelle<br>
+        Pour toute question, contactez-nous : contact@eprofos.fr</p>
+    </div>
+</body>
+</html>

@@ -471,6 +471,70 @@
                     </div>
                 </li>
                 
+                <!-- Teachers Section -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_teacher' ? 'active' : '' }}" href="#navbar-teachers" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z"/>
+                                <path d="M12 6v2a2 2 0 0 0 2 2h1"/>
+                                <path d="M3 13l18 0"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Formateurs
+                        </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                <a class="dropdown-item" href="{{ path('admin_teacher_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M17 21v-2a4 4 0 0 0 -4 -4h-6a4 4 0 0 0 -4 4v2"/>
+                                        <path d="M10 7a4 4 0 1 0 0 -8a4 4 0 0 0 0 8z"/>
+                                    </svg>
+                                    Tous les formateurs
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_teacher_new') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Nouveau formateur
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {status: 'active'}) }}">
+                                    <span class="badge bg-success text-white me-2">●</span>
+                                    Actifs
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {status: 'inactive'}) }}">
+                                    <span class="badge bg-secondary text-white me-2">●</span>
+                                    Inactifs
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {email_verified: 'unverified'}) }}">
+                                    <span class="badge bg-warning text-white me-2">⚠️</span>
+                                    Email non vérifié
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ path('admin_teacher_export') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                        <path d="M9 9l1 0"/>
+                                        <path d="M9 13l6 0"/>
+                                        <path d="M9 17l6 0"/>
+                                    </svg>
+                                    Exporter CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
                 <!-- Engagement Dashboard Section -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_engagement' ? 'active' : '' }}" href="#navbar-engagement" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
