@@ -3,6 +3,8 @@
 ## Project Overview
 EPROFOS is a Symfony 7.3/PHP 8.4 Learning Management System (LMS) for professional training with public catalog, admin interface, and CRM features. Built with Docker/FrankenPHP, PostgreSQL, Bootstrap 5, and Stimulus for interactivity. **Critical**: Must satisfy Qualiopi certification requirements for French training quality standards.
 
+**Core Technologies**: Symfony Asset Mapper (not Webpack), KnpSnappyBundle for PDFs, PHPOffice for documents, Doctrine with extensive fixtures, PostgreSQL with advanced constraints.
+
 ## Essential Architecture
 
 ### Core Entity Relationships
@@ -10,10 +12,12 @@ EPROFOS is a Symfony 7.3/PHP 8.4 Learning Management System (LMS) for profession
 - `Formation` → `Module` → `Chapter` → `Course` → `Exercise`/`QCM` (5-level pedagogical hierarchy)
 - `Service` → `ServiceCategory` (conseil, accompagnement, certifications, sur-mesure)
 - `ContactRequest` with specialized forms (quote, advice, info, quick registration)
-- `NeedsAnalysisRequest` with company/individual variants
+- `NeedsAnalysisRequest` with company/individual variants + token-based security
 - `Prospect` → `ProspectNote` (CRM system for lead management)
 - `User` → `Student` (authentication and enrollment system)
-- `Document` system with versioning, metadata, and UI components
+- `Document` system with versioning, metadata, UI components, and templates
+- `Questionnaire` → `Question` → `QuestionOption` with response tracking
+- `AttendanceRecord` for session tracking and Qualiopi compliance
 
 ### Hierarchical Program Structure
 **Critical Pattern**: Training content uses a 5-level hierarchy:
@@ -38,7 +42,9 @@ src/Controller/
 ### Database & Migrations
 - PostgreSQL with comprehensive constraints and indexes
 - Migrations in `migrations/Version*.php` - run with `doctrine:migrations:migrate`
+- Current migration: `Version20250721094647.php` with full schema
 - Fixtures load realistic test data: `doctrine:fixtures:load`
+- 30+ specialized fixture files with dependency management via `AppFixtures`
 
 ### Frontend Architecture
 - **Asset Mapper** (not Webpack Encore) - use `importmap.php` for dependencies
@@ -156,6 +162,8 @@ templates/
 - `AppFixtures` orchestrates all fixtures - acts as dependency coordinator
 - Context-aware data generation (chapter titles match module topics)
 - Comprehensive entity coverage: Training, CRM, Documents, Users, Services
+- **30+ specialized fixture files**: Each entity has dedicated fixtures with realistic data
+- Run with: `docker compose exec php php bin/console doctrine:fixtures:load`
 
 ### Asset Management
 - Asset Mapper configuration in `importmap.php`
@@ -168,6 +176,17 @@ templates/
 - Symfony Mailer configuration in `config/packages/mailer.yaml`
 - Email sending in specialized service classes
 
+### Service Architecture
+**Critical**: Comprehensive service layer for business logic:
+- `ProspectManagementService` - Automated prospect creation and CRM workflows
+- `NeedsAnalysisService` - Token-based analysis request management
+- `DocumentService` - Document generation and management workflows
+- `QualiopiValidationService` - Training quality compliance validation
+- `DurationCalculationService` - Training duration management
+- `DropoutPreventionService` - Student retention analytics
+- `AuditLogService` - Compliance and change tracking
+- Services handle complex business rules and cross-entity operations
+
 ### Document Generation System
 **Critical**: PHPOffice integration for document generation:
 - PHPWord and PHPSpreadsheet for programmatic document creation
@@ -175,6 +194,7 @@ templates/
 - UI components for dynamic document layouts
 - Export functionality for training materials and reports
 - KnpSnappyBundle integration for PDF generation
+- Comprehensive Document entity system: Document, DocumentCategory, DocumentMetadata, DocumentTemplate, DocumentType, DocumentUIComponent, DocumentUITemplate, DocumentVersion
 
 ## Key Files to Understand
 - `src/Entity/Training/Formation.php` - Core training entity with validation & auto-generated program
@@ -188,6 +208,8 @@ templates/
 - `templates/base.html.twig` - Main layout structure
 - `src/DataFixtures/AppFixtures.php` - Test data orchestration
 - `importmap.php` - Asset management configuration
+- `migrations/Version20250721094647.php` - Latest database schema
+- `docs/IMPLEMENTATION_SUMMARY.md` - Complete implementation overview
 
 ## Testing & Quality
 - PHPUnit tests in `tests/` directory
