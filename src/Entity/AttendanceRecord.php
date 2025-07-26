@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use App\Entity\Alternance\CompanyMission;
 use App\Entity\Training\Session;
+use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Repository\AttendanceRecordRepository;
 use Doctrine\DBAL\Types\Types;
@@ -116,6 +118,57 @@ class AttendanceRecord
     private ?array $metadata = null;
 
     /**
+     * Attendance location for alternance tracking
+     */
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(
+        choices: [self::LOCATION_CENTER, self::LOCATION_COMPANY],
+        message: 'Lieu de présence invalide'
+    )]
+    private ?string $attendanceLocation = null;
+
+    /**
+     * Related company mission for alternance tracking
+     */
+    #[ORM\ManyToOne(targetEntity: CompanyMission::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CompanyMission $relatedMission = null;
+
+    /**
+     * Supervising mentor for company attendance
+     */
+    #[ORM\ManyToOne(targetEntity: Mentor::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Mentor $supervisingMentor = null;
+
+    /**
+     * Company evaluation criteria for alternance
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $companyEvaluationCriteria = null;
+
+    /**
+     * Company notes for alternance tracking
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Les notes entreprise ne peuvent pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $companyNotes = null;
+
+    /**
+     * Company rating for alternance performance
+     */
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 10,
+        notInRangeMessage: 'La note entreprise doit être entre {{ min }} et {{ max }}'
+    )]
+    private ?float $companyRating = null;
+
+    /**
      * When this attendance record was created/recorded
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -138,6 +191,10 @@ class AttendanceRecord
     public const STATUS_ABSENT = 'absent';
     public const STATUS_LATE = 'late';
     public const STATUS_PARTIAL = 'partial';
+
+    // Location constants for alternance
+    public const LOCATION_CENTER = 'center';
+    public const LOCATION_COMPANY = 'company';
 
     public function __construct()
     {
@@ -283,6 +340,72 @@ class AttendanceRecord
     public function setMetadata(?array $metadata): static
     {
         $this->metadata = $metadata;
+        return $this;
+    }
+
+    public function getAttendanceLocation(): ?string
+    {
+        return $this->attendanceLocation;
+    }
+
+    public function setAttendanceLocation(?string $attendanceLocation): static
+    {
+        $this->attendanceLocation = $attendanceLocation;
+        return $this;
+    }
+
+    public function getRelatedMission(): ?CompanyMission
+    {
+        return $this->relatedMission;
+    }
+
+    public function setRelatedMission(?CompanyMission $relatedMission): static
+    {
+        $this->relatedMission = $relatedMission;
+        return $this;
+    }
+
+    public function getSupervisingMentor(): ?Mentor
+    {
+        return $this->supervisingMentor;
+    }
+
+    public function setSupervisingMentor(?Mentor $supervisingMentor): static
+    {
+        $this->supervisingMentor = $supervisingMentor;
+        return $this;
+    }
+
+    public function getCompanyEvaluationCriteria(): ?array
+    {
+        return $this->companyEvaluationCriteria ?? [];
+    }
+
+    public function setCompanyEvaluationCriteria(?array $companyEvaluationCriteria): static
+    {
+        $this->companyEvaluationCriteria = $companyEvaluationCriteria;
+        return $this;
+    }
+
+    public function getCompanyNotes(): ?string
+    {
+        return $this->companyNotes;
+    }
+
+    public function setCompanyNotes(?string $companyNotes): static
+    {
+        $this->companyNotes = $companyNotes;
+        return $this;
+    }
+
+    public function getCompanyRating(): ?float
+    {
+        return $this->companyRating;
+    }
+
+    public function setCompanyRating(?float $companyRating): static
+    {
+        $this->companyRating = $companyRating;
         return $this;
     }
 
@@ -561,8 +684,105 @@ class AttendanceRecord
             'minutesEarlyDeparture' => $this->minutesEarlyDeparture,
             'excused' => $this->excused,
             'absenceReason' => $this->absenceReason,
-            'adminNotes' => $this->adminNotes
+            'adminNotes' => $this->adminNotes,
+            'attendanceLocation' => $this->attendanceLocation,
+            'locationContext' => $this->getLocationContext(),
+            'isCompanyAttendance' => $this->isCompanyAttendance(),
+            'isCenterAttendance' => $this->isCenterAttendance(),
+            'companyRating' => $this->companyRating,
+            'companyNotes' => $this->companyNotes
         ];
+    }
+
+    /**
+     * Check if attendance is at company
+     */
+    public function isCompanyAttendance(): bool
+    {
+        return $this->attendanceLocation === self::LOCATION_COMPANY;
+    }
+
+    /**
+     * Check if attendance is at training center
+     */
+    public function isCenterAttendance(): bool
+    {
+        return $this->attendanceLocation === self::LOCATION_CENTER;
+    }
+
+    /**
+     * Get location context for display
+     */
+    public function getLocationContext(): string
+    {
+        return match ($this->attendanceLocation) {
+            self::LOCATION_CENTER => 'Centre de formation',
+            self::LOCATION_COMPANY => 'Entreprise',
+            default => 'Non spécifié'
+        };
+    }
+
+    /**
+     * Get location badge class
+     */
+    public function getLocationBadgeClass(): string
+    {
+        return match ($this->attendanceLocation) {
+            self::LOCATION_CENTER => 'bg-primary',
+            self::LOCATION_COMPANY => 'bg-info',
+            default => 'bg-secondary'
+        };
+    }
+
+    /**
+     * Set company attendance with mentor
+     */
+    public function setCompanyAttendance(Mentor $mentor, ?CompanyMission $mission = null): static
+    {
+        $this->attendanceLocation = self::LOCATION_COMPANY;
+        $this->supervisingMentor = $mentor;
+        $this->relatedMission = $mission;
+        return $this;
+    }
+
+    /**
+     * Set center attendance
+     */
+    public function setCenterAttendance(): static
+    {
+        $this->attendanceLocation = self::LOCATION_CENTER;
+        $this->supervisingMentor = null;
+        $this->relatedMission = null;
+        $this->companyRating = null;
+        $this->companyNotes = null;
+        $this->companyEvaluationCriteria = null;
+        return $this;
+    }
+
+    /**
+     * Add company evaluation criterion
+     */
+    public function addCompanyEvaluationCriterion(array $criterion): static
+    {
+        $criteria = $this->getCompanyEvaluationCriteria();
+        $criteria[] = $criterion;
+        $this->setCompanyEvaluationCriteria($criteria);
+        return $this;
+    }
+
+    /**
+     * Get combined rating (center + company for alternance)
+     */
+    public function getCombinedRating(): ?float
+    {
+        if ($this->isCompanyAttendance() && $this->companyRating !== null) {
+            // For company attendance, combine participation score and company rating
+            $participationNormalized = $this->participationScore / 10; // Normalize to 0-1
+            $companyNormalized = $this->companyRating / 10; // Normalize to 0-1
+            return (($participationNormalized + $companyNormalized) / 2) * 10; // Back to 0-10 scale
+        }
+        
+        return (float) $this->participationScore;
     }
 
     /**

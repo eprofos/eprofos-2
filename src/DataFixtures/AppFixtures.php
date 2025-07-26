@@ -102,11 +102,16 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             ExerciseFixtures::class,
             QCMFixtures::class,
             // Alternance system fixtures (order is important)
-            AlternanceFixtures::class, // Must come before others
-            MissionAssignmentFixtures::class,
+            AlternanceFixtures::class, // Must come before others - creates AlternanceContract and AlternanceProgram
+            CompanyMissionFixtures::class, // Creates CompanyMission entities
+            MissionAssignmentFixtures::class, // Depends on CompanyMission
             StudentProgressFixtures::class,
             SkillsAssessmentFixtures::class,
             ProgressAssessmentFixtures::class,
+            AttendanceRecordFixtures::class,
+            // Coordination system fixtures (depend on Students, Teachers, Mentors)
+            CoordinationMeetingFixtures::class,
+            CompanyVisitFixtures::class,
         ];
     }
 }

@@ -6,6 +6,8 @@ use App\Entity\User\Student;
 use App\Entity\AttendanceRecord;
 use App\Entity\Training\Session;
 use App\Entity\StudentProgress;
+use App\Entity\Alternance\CompanyMission;
+use App\Entity\User\Mentor;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -108,6 +110,11 @@ class AttendanceRecordFixtures extends Fixture implements DependentFixtureInterf
         // Set participation score
         $participationScore = $this->generateParticipationScore($status, $attendanceProfile, $faker);
         $attendance->setParticipationScore($participationScore);
+        
+        // Add alternance-specific fields for alternance sessions
+        if ($session->isAlternanceSession()) {
+            $this->setAlternanceSpecificData($attendance, $faker);
+        }
         
         // Set recording information
         $attendance->setRecordedBy($faker->randomElement([
@@ -296,12 +303,86 @@ class AttendanceRecordFixtures extends Fixture implements DependentFixtureInterf
         return max(0, min(10, $baseScore + $adjustment));
     }
     
+    /**
+     * Set alternance-specific data for attendance records
+     */
+    private function setAlternanceSpecificData(AttendanceRecord $attendance, $faker): void
+    {
+        // Determine if attendance is at center or company (50/50 split for alternance)
+        $isCompanyAttendance = $faker->boolean(50);
+        
+        if ($isCompanyAttendance) {
+            $attendance->setAttendanceLocation(AttendanceRecord::LOCATION_COMPANY);
+            
+            // Add company-specific data only for company attendance
+            $companyRating = $faker->numberBetween(6, 10); // Company ratings tend to be higher
+            $attendance->setCompanyRating($companyRating / 10); // Convert to 0-1 scale
+            
+            // Add company evaluation criteria
+            $evaluationCriteria = [
+                [
+                    'criterion' => 'Ponctualité et assiduité',
+                    'rating' => $faker->numberBetween(7, 10),
+                    'comment' => $faker->randomElement([
+                        'Toujours à l\'heure',
+                        'Respect des horaires',
+                        'Quelques retards occasionnels',
+                        'Excellente ponctualité'
+                    ])
+                ],
+                [
+                    'criterion' => 'Qualité du travail',
+                    'rating' => $faker->numberBetween(6, 10),
+                    'comment' => $faker->randomElement([
+                        'Travail de qualité',
+                        'Attention aux détails',
+                        'Progression notable',
+                        'Résultats satisfaisants'
+                    ])
+                ],
+                [
+                    'criterion' => 'Intégration dans l\'équipe',
+                    'rating' => $faker->numberBetween(7, 10),
+                    'comment' => $faker->randomElement([
+                        'Bonne intégration',
+                        'Collabore efficacement',
+                        'Communication positive',
+                        'Esprit d\'équipe'
+                    ])
+                ]
+            ];
+            $attendance->setCompanyEvaluationCriteria($faker->randomElements($evaluationCriteria, $faker->numberBetween(2, 3)));
+            
+            // Add company notes
+            $companyNotes = [
+                'Apprenti motivé et impliqué dans les tâches confiées',
+                'Progression constante dans l\'acquisition des compétences',
+                'Besoin d\'accompagnement sur certains aspects techniques',
+                'Excellente attitude professionnelle',
+                'Autonomie croissante dans les missions',
+                'Participation active aux projets de l\'équipe',
+                'Communication efficace avec les collègues',
+                'Respect des consignes et procédures entreprise'
+            ];
+            $attendance->setCompanyNotes($faker->randomElement($companyNotes));
+            
+            // Note: supervisingMentor and relatedMission would require fetching from database
+            // For fixtures, we'll leave these null for now, they can be set by other fixtures
+            
+        } else {
+            $attendance->setAttendanceLocation(AttendanceRecord::LOCATION_CENTER);
+            // Center attendance doesn't need company-specific fields
+        }
+    }
+    
     public function getDependencies(): array
     {
         return [
             StudentFixtures::class,
             SessionFixtures::class,
             StudentProgressFixtures::class,
+            MentorFixtures::class, // For potential supervisingMentor relationship
+            CompanyMissionFixtures::class, // For potential relatedMission relationship
         ];
     }
 }
