@@ -407,6 +407,7 @@ class AlternanceFixtures extends Fixture implements DependentFixtureInterface, F
         return [
             SessionFixtures::class,
             UserFixtures::class,
+            TeacherFixtures::class,
         ];
     }
 
