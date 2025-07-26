@@ -6,6 +6,7 @@ use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;
 use App\Entity\User\Student;
+use App\Entity\Alternance\AlternanceContract;
 use App\Repository\StudentProgressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -29,6 +30,18 @@ class StudentProgress
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    /**
+     * Available alternance status options
+     */
+    public const ALTERNANCE_STATUS_OPTIONS = [
+        'active' => 'Actif',
+        'paused' => 'En pause',
+        'completed' => 'Terminé',
+        'terminated' => 'Interrompu',
+        'at_risk' => 'À risque',
+        'needs_support' => 'Nécessite un accompagnement'
+    ];
 
     #[ORM\ManyToOne(targetEntity: Student::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -151,6 +164,48 @@ class StudentProgress
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastRiskAssessment = null;
+
+    // Alternance-specific fields
+    #[ORM\ManyToOne(targetEntity: AlternanceContract::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?AlternanceContract $alternanceContract = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le taux de completion centre doit être entre {{ min }}% et {{ max }}%'
+    )]
+    private ?string $centerCompletionRate = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le taux de completion entreprise doit être entre {{ min }}% et {{ max }}%'
+    )]
+    private ?string $companyCompletionRate = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $missionProgress = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $skillsAcquired = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: self::ALTERNANCE_STATUS_OPTIONS,
+        message: 'Statut d\'alternance invalide'
+    )]
+    private ?string $alternanceStatus = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le score de risque alternance doit être entre {{ min }} et {{ max }}'
+    )]
+    private ?int $alternanceRiskScore = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -773,6 +828,360 @@ class StudentProgress
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // Alternance-specific methods
+
+    public function getAlternanceContract(): ?AlternanceContract
+    {
+        return $this->alternanceContract;
+    }
+
+    public function setAlternanceContract(?AlternanceContract $alternanceContract): static
+    {
+        $this->alternanceContract = $alternanceContract;
+        return $this;
+    }
+
+    public function getCenterCompletionRate(): ?string
+    {
+        return $this->centerCompletionRate;
+    }
+
+    public function setCenterCompletionRate(?string $centerCompletionRate): static
+    {
+        $this->centerCompletionRate = $centerCompletionRate;
+        return $this;
+    }
+
+    public function getCompanyCompletionRate(): ?string
+    {
+        return $this->companyCompletionRate;
+    }
+
+    public function setCompanyCompletionRate(?string $companyCompletionRate): static
+    {
+        $this->companyCompletionRate = $companyCompletionRate;
+        return $this;
+    }
+
+    public function getMissionProgress(): ?array
+    {
+        return $this->missionProgress ?? [];
+    }
+
+    public function setMissionProgress(?array $missionProgress): static
+    {
+        $this->missionProgress = $missionProgress;
+        return $this;
+    }
+
+    public function getSkillsAcquired(): ?array
+    {
+        return $this->skillsAcquired ?? [];
+    }
+
+    public function setSkillsAcquired(?array $skillsAcquired): static
+    {
+        $this->skillsAcquired = $skillsAcquired;
+        return $this;
+    }
+
+    public function getAlternanceStatus(): ?string
+    {
+        return $this->alternanceStatus;
+    }
+
+    public function setAlternanceStatus(?string $alternanceStatus): static
+    {
+        $this->alternanceStatus = $alternanceStatus;
+        return $this;
+    }
+
+    public function getAlternanceRiskScore(): ?int
+    {
+        return $this->alternanceRiskScore;
+    }
+
+    public function setAlternanceRiskScore(?int $alternanceRiskScore): static
+    {
+        $this->alternanceRiskScore = $alternanceRiskScore;
+        return $this;
+    }
+
+    /**
+     * Update alternance progress from contract and missions data
+     */
+    public function updateAlternanceProgress(): void
+    {
+        if (!$this->alternanceContract) {
+            return;
+        }
+
+        // Calculate center completion rate based on formation progress
+        $this->centerCompletionRate = $this->completionPercentage;
+
+        // Calculate company completion rate based on mission progress
+        $missionProgress = $this->getMissionProgress();
+        if (!empty($missionProgress)) {
+            $totalMissions = count($missionProgress);
+            $completedMissions = 0;
+            
+            foreach ($missionProgress as $mission) {
+                if (($mission['completion_rate'] ?? 0) >= 100) {
+                    $completedMissions++;
+                }
+            }
+            
+            $this->companyCompletionRate = number_format(($completedMissions / $totalMissions) * 100, 2);
+        } else {
+            $this->companyCompletionRate = '0.00';
+        }
+
+        // Update alternance status based on progress
+        $this->updateAlternanceStatus();
+        
+        // Calculate alternance-specific risk score
+        $this->calculateAlternanceRiskScore();
+    }
+
+    /**
+     * Calculate alternance engagement score
+     */
+    public function calculateAlternanceEngagement(): int
+    {
+        $score = 0;
+        
+        // Base engagement score (50% weight)
+        $score += (int) ($this->engagementScore * 0.5);
+        
+        // Mission completion rate (30% weight)
+        $missionProgress = $this->getMissionProgress();
+        if (!empty($missionProgress)) {
+            $avgCompletionRate = 0;
+            foreach ($missionProgress as $mission) {
+                $avgCompletionRate += ($mission['completion_rate'] ?? 0);
+            }
+            $avgCompletionRate /= count($missionProgress);
+            $score += (int) (($avgCompletionRate / 100) * 30);
+        }
+        
+        // Skills acquisition progress (20% weight)
+        $skillsAcquired = $this->getSkillsAcquired();
+        if (!empty($skillsAcquired)) {
+            $skillsCount = count($skillsAcquired);
+            $masteredSkills = 0;
+            
+            foreach ($skillsAcquired as $skill) {
+                if (($skill['level'] ?? 0) >= 16) { // 80% mastery
+                    $masteredSkills++;
+                }
+            }
+            
+            $masteryRate = $skillsCount > 0 ? ($masteredSkills / $skillsCount) : 0;
+            $score += (int) ($masteryRate * 20);
+        }
+        
+        return min(100, max(0, $score));
+    }
+
+    /**
+     * Get alternance risk factors
+     */
+    public function getAlternanceRiskFactors(): array
+    {
+        $factors = [];
+        
+        // Low center completion rate
+        if ((float) ($this->centerCompletionRate ?? 0) < 50) {
+            $factors[] = [
+                'factor' => 'Retard en formation centre',
+                'severity' => 'high',
+                'description' => 'Progression en centre de formation inférieure à 50%'
+            ];
+        }
+        
+        // Low company completion rate
+        if ((float) ($this->companyCompletionRate ?? 0) < 50) {
+            $factors[] = [
+                'factor' => 'Retard en entreprise',
+                'severity' => 'high',
+                'description' => 'Progression en entreprise inférieure à 50%'
+            ];
+        }
+        
+        // Unbalanced progression
+        $centerRate = (float) ($this->centerCompletionRate ?? 0);
+        $companyRate = (float) ($this->companyCompletionRate ?? 0);
+        if (abs($centerRate - $companyRate) > 30) {
+            $factors[] = [
+                'factor' => 'Déséquilibre centre-entreprise',
+                'severity' => 'medium',
+                'description' => 'Écart important entre progression centre et entreprise'
+            ];
+        }
+        
+        // Few skills acquired
+        $skillsAcquired = $this->getSkillsAcquired();
+        if (count($skillsAcquired) < 5) {
+            $factors[] = [
+                'factor' => 'Acquisition de compétences faible',
+                'severity' => 'medium',
+                'description' => 'Nombre de compétences acquises insuffisant'
+            ];
+        }
+        
+        return $factors;
+    }
+
+    /**
+     * Get skills acquisition rate
+     */
+    public function getSkillsAcquisitionRate(): float
+    {
+        $skillsAcquired = $this->getSkillsAcquired();
+        
+        if (empty($skillsAcquired)) {
+            return 0.0;
+        }
+        
+        $totalSkills = count($skillsAcquired);
+        $masteredSkills = 0;
+        
+        foreach ($skillsAcquired as $skill) {
+            if (($skill['level'] ?? 0) >= 16) { // 80% mastery threshold
+                $masteredSkills++;
+            }
+        }
+        
+        return ($masteredSkills / $totalSkills) * 100;
+    }
+
+    /**
+     * Update alternance status based on various factors
+     */
+    private function updateAlternanceStatus(): void
+    {
+        if (!$this->alternanceContract) {
+            return;
+        }
+        
+        $centerRate = (float) ($this->centerCompletionRate ?? 0);
+        $companyRate = (float) ($this->companyCompletionRate ?? 0);
+        $overallRate = ($centerRate + $companyRate) / 2;
+        
+        // Determine status based on progress and risk factors
+        if ($overallRate >= 95) {
+            $this->alternanceStatus = 'completed';
+        } elseif ($this->alternanceRiskScore >= 70) {
+            $this->alternanceStatus = 'at_risk';
+        } elseif ($this->alternanceRiskScore >= 50) {
+            $this->alternanceStatus = 'needs_support';
+        } elseif ($overallRate < 10) {
+            $this->alternanceStatus = 'paused';
+        } else {
+            $this->alternanceStatus = 'active';
+        }
+    }
+
+    /**
+     * Calculate alternance-specific risk score
+     */
+    private function calculateAlternanceRiskScore(): void
+    {
+        $riskScore = 0;
+        
+        // Base risk from general student progress
+        $riskScore += (float) $this->riskScore;
+        
+        // Additional risk factors specific to alternance
+        $factors = $this->getAlternanceRiskFactors();
+        foreach ($factors as $factor) {
+            switch ($factor['severity']) {
+                case 'high':
+                    $riskScore += 20;
+                    break;
+                case 'medium':
+                    $riskScore += 10;
+                    break;
+                case 'low':
+                    $riskScore += 5;
+                    break;
+            }
+        }
+        
+        $this->alternanceRiskScore = (int) min(100, max(0, $riskScore));
+    }
+
+    /**
+     * Add mission progress
+     */
+    public function addMissionProgress(int $missionId, string $missionTitle, float $completionRate, ?string $status = null): static
+    {
+        $missionProgress = $this->getMissionProgress();
+        
+        $missionProgress[$missionId] = [
+            'title' => $missionTitle,
+            'completion_rate' => $completionRate,
+            'status' => $status ?? 'en_cours',
+            'last_updated' => (new \DateTime())->format('Y-m-d H:i:s')
+        ];
+        
+        $this->setMissionProgress($missionProgress);
+        $this->updateAlternanceProgress();
+        
+        return $this;
+    }
+
+    /**
+     * Add acquired skill
+     */
+    public function addAcquiredSkill(string $skillCode, string $skillName, float $level, ?string $context = null): static
+    {
+        $skillsAcquired = $this->getSkillsAcquired();
+        
+        $skillsAcquired[$skillCode] = [
+            'name' => $skillName,
+            'level' => $level,
+            'context' => $context ?? 'general',
+            'acquired_at' => (new \DateTime())->format('Y-m-d H:i:s')
+        ];
+        
+        $this->setSkillsAcquired($skillsAcquired);
+        
+        return $this;
+    }
+
+    /**
+     * Get alternance status label
+     */
+    public function getAlternanceStatusLabel(): string
+    {
+        return self::ALTERNANCE_STATUS_OPTIONS[$this->alternanceStatus] ?? $this->alternanceStatus ?? 'Non défini';
+    }
+
+    /**
+     * Get alternance status badge class
+     */
+    public function getAlternanceStatusBadgeClass(): string
+    {
+        return match ($this->alternanceStatus) {
+            'active' => 'badge-success',
+            'completed' => 'badge-primary',
+            'paused' => 'badge-warning',
+            'terminated' => 'badge-danger',
+            'at_risk' => 'badge-danger',
+            'needs_support' => 'badge-warning',
+            default => 'badge-secondary'
+        };
+    }
+
+    /**
+     * Check if student is in alternance program
+     */
+    public function isInAlternance(): bool
+    {
+        return $this->alternanceContract !== null;
     }
 
     public function __toString(): string

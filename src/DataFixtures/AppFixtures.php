@@ -44,21 +44,29 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
      * 6. Questions (depend on questionnaires)
      * 7. QuestionOptions (depend on questions)
      * 8. QuestionnaireResponses (depend on questionnaires and options)
-    * 9. Admins (for prospect assignment)
-    * 10. ProspectFixtures (independent prospects, depend on admins)
+     * 9. Admins (for prospect assignment)
+     * 10. ProspectFixtures (independent prospects, depend on admins)
      * 11. ContactRequests (depend on formations and services, will create prospects via service)
      * 12. SessionFixtures (depend on formations, will create prospects via service)
-    * 13. NeedsAnalysisFixtures (depend on admins and formations, will create prospects via service)
+     * 13. NeedsAnalysisFixtures (depend on admins and formations, will create prospects via service)
      * 14. Document Management System fixtures:
      *     - DocumentTypeFixtures and DocumentCategoryFixtures (no dependencies)
      *     - DocumentFixtures (depend on types and categories)
      *     - DocumentMetadataFixtures (depend on documents)
      *     - DocumentVersionFixtures (depend on documents)
      *     - DocumentTemplateFixtures (depend on document types)
-    *     - DocumentUITemplateFixtures (depend on document types and admins)
-    *     - DocumentUIComponentFixtures (depend on UI templates and admins)
+     *     - DocumentUITemplateFixtures (depend on document types and admins)
+     *     - DocumentUIComponentFixtures (depend on UI templates and admins)
      * 15. StudentFixtures (student authentication data)
      * 16. TeacherFixtures (teacher authentication data)
+     * 17. MentorFixtures (mentor authentication data)
+     * 18. CourseFixtures, ExerciseFixtures, QCMFixtures (pedagogical content)
+     * 19. Alternance System fixtures:
+     *     - AlternanceFixtures (alternance contracts)
+     *     - MissionAssignmentFixtures (company missions)
+     *     - StudentProgressFixtures (academic progress tracking)
+     *     - SkillsAssessmentFixtures (cross-evaluation system)
+     *     - ProgressAssessmentFixtures (global progression tracking)
      */
     public function getDependencies(): array
     {
@@ -93,6 +101,12 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             CourseFixtures::class,
             ExerciseFixtures::class,
             QCMFixtures::class,
+            // Alternance system fixtures (order is important)
+            AlternanceFixtures::class, // Must come before others
+            MissionAssignmentFixtures::class,
+            StudentProgressFixtures::class,
+            SkillsAssessmentFixtures::class,
+            ProgressAssessmentFixtures::class,
         ];
     }
 }
