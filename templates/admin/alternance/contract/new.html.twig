@@ -1,0 +1,302 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_contract_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M9 6l6 6l-6 6"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Nouveau contrat d'alternance</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                    
+                    <div class="row">
+                        <!-- Student and Session Information -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Alternant et formation</legend>
+                                
+                                <div class="mb-3">
+                                    {{ form_label(form.student, 'Alternant') }}
+                                    {{ form_widget(form.student, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.student) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.session, 'Session de formation') }}
+                                    {{ form_widget(form.session, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.session) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.contractType, 'Type de contrat') }}
+                                    {{ form_widget(form.contractType, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.contractType) }}
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <!-- Contract Duration -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Période du contrat</legend>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form_label(form.startDate, 'Date de début') }}
+                                            {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(form.startDate) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form_label(form.endDate, 'Date de fin') }}
+                                            {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(form.endDate) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Durée (en mois)</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="text-muted">Sera calculée à partir des dates</span>
+                                    </div>
+                                    <div class="form-hint">
+                                        Cette durée est calculée automatiquement à partir des dates de début et de fin.
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Company Information -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Entreprise d'accueil</legend>
+                                
+                                <div class="mb-3">
+                                    {{ form_label(form.companyName, 'Raison sociale') }}
+                                    {{ form_widget(form.companyName, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.companyName) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.companySiret, 'SIRET') }}
+                                    {{ form_widget(form.companySiret, {'attr': {'class': 'form-control', 'placeholder': '14 chiffres'}}) }}
+                                    {{ form_errors(form.companySiret) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.companyAddress, 'Adresse complète') }}
+                                    {{ form_widget(form.companyAddress, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                    {{ form_errors(form.companyAddress) }}
+                                </div>
+
+                                {% if form.companyActivity is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.companyActivity, 'Secteur d\'activité') }}
+                                        {{ form_widget(form.companyActivity, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.companyActivity) }}
+                                    </div>
+                                {% endif %}
+
+                                {% if form.companySize is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.companySize, 'Taille de l\'entreprise') }}
+                                        {{ form_widget(form.companySize, {'attr': {'class': 'form-control', 'placeholder': 'Nombre d\'employés'}}) }}
+                                        {{ form_errors(form.companySize) }}
+                                    </div>
+                                {% endif %}
+                            </fieldset>
+                        </div>
+
+                        <!-- Supervision Information -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Encadrement</legend>
+                                
+                                <div class="mb-3">
+                                    {{ form_label(form.mentor, 'Tuteur entreprise') }}
+                                    {{ form_widget(form.mentor, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.mentor) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.teacher, 'Référent pédagogique') }}
+                                    {{ form_widget(form.teacher, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.teacher) }}
+                                </div>
+
+                                {% if form.supervisionModalities is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.supervisionModalities, 'Modalités d\'encadrement') }}
+                                        {{ form_widget(form.supervisionModalities, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                        {{ form_errors(form.supervisionModalities) }}
+                                    </div>
+                                {% endif %}
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Objectives and Content -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Objectifs et contenu</legend>
+                                
+                                {% if form.objectives is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.objectives, 'Objectifs pédagogiques') }}
+                                        {{ form_widget(form.objectives, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                                        {{ form_errors(form.objectives) }}
+                                    </div>
+                                {% endif %}
+
+                                {% if form.workingConditions is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.workingConditions, 'Conditions de travail') }}
+                                        {{ form_widget(form.workingConditions, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                        {{ form_errors(form.workingConditions) }}
+                                    </div>
+                                {% endif %}
+                            </fieldset>
+                        </div>
+
+                        <!-- Working Time and Remuneration -->
+                        <div class="col-lg-6">
+                            <fieldset class="form-fieldset">
+                                <legend>Temps de travail et rémunération</legend>
+                                
+                                {% if form.weeklyHours is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.weeklyHours, 'Temps de travail hebdomadaire (heures)') }}
+                                        {{ form_widget(form.weeklyHours, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.weeklyHours) }}
+                                    </div>
+                                {% endif %}
+
+                                {% if form.workSchedule is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.workSchedule, 'Horaires de travail') }}
+                                        {{ form_widget(form.workSchedule, {'attr': {'class': 'form-control', 'rows': 2}}) }}
+                                        {{ form_errors(form.workSchedule) }}
+                                    </div>
+                                {% endif %}
+
+                                {% if form.compensation is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.compensation, 'Rémunération (€)') }}
+                                        {{ form_widget(form.compensation, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.compensation) }}
+                                    </div>
+                                {% endif %}
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    {% if form.notes is defined %}
+                        <div class="row">
+                            <div class="col-12">
+                                <fieldset class="form-fieldset">
+                                    <legend>Notes et observations</legend>
+                                    
+                                    <div class="mb-3">
+                                        {{ form_label(form.notes, 'Notes') }}
+                                        {{ form_widget(form.notes, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                                        {{ form_errors(form.notes) }}
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Status Management -->
+                    <div class="row">
+                        <div class="col-12">
+                            <fieldset class="form-fieldset">
+                                <legend>Statut du contrat</legend>
+                                
+                                <div class="mb-3">
+                                    {{ form_label(form.status, 'Statut') }}
+                                    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.status) }}
+                                    <div class="form-hint">
+                                        Sélectionnez le statut approprié pour ce contrat d'alternance.
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="btn-list">
+                            <a href="{{ path('admin_alternance_contract_index') }}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                                Créer le contrat
+                            </button>
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-calculate duration when dates change
+            const startDateInput = document.querySelector('input[name*="[startDate]"]');
+            const endDateInput = document.querySelector('input[name*="[endDate]"]');
+            const durationInput = document.querySelector('input[name*="[duration]"]');
+            
+            if (startDateInput && endDateInput && durationInput) {
+                function calculateDuration() {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+                    
+                    if (startDate && endDate && endDate > startDate) {
+                        const diffTime = Math.abs(endDate - startDate);
+                        const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
+                        durationInput.value = diffMonths;
+                    }
+                }
+                
+                startDateInput.addEventListener('change', calculateDuration);
+                endDateInput.addEventListener('change', calculateDuration);
+            }
+            
+            // Form validation
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+        });
+    </script>
+{% endblock %}

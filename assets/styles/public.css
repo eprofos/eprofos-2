@@ -997,6 +997,19 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
 }
 
+.badge-alternance {
+    background: var(--bs-warning) !important;
+    color: var(--bs-dark);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    margin-right: 0.5rem;
+}
+
 /* Modern Card Body */
 .modern-card-body {
     padding: 1.5rem;

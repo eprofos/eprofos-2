@@ -61,6 +61,17 @@
                 </div>
             </div>
 
+            <!-- Alternance Badge -->
+            {% if session.isAlternanceSession %}
+            <div class="alert alert-info d-flex align-items-center mb-4" style="border-radius: 15px; border: none; background: linear-gradient(45deg, #e3f2fd, #f3e5f5);">
+                <i class="fas fa-briefcase fa-2x text-primary me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1 fw-bold">Formation en Alternance</h5>
+                    <p class="mb-0">Cette session propose un parcours en alternance {{ session.alternanceType ? '(' ~ session.alternanceType ~ ')' : '' }}</p>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Session Details -->
             {% if session.description %}
             <div class="card info-card border-0 shadow-sm mb-4">
@@ -71,6 +82,110 @@
                     </h3>
                     <div class="text-muted" style="line-height: 1.7;">
                         {{ session.description|nl2br }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Alternance Details -->
+            {% if session.isAlternanceSession %}
+            <div class="card info-card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-3">
+                        <i class="fas fa-briefcase text-primary me-2"></i>
+                        Informations Alternance
+                    </h3>
+                    
+                    <div class="row g-4">
+                        {% if session.alternanceType %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-tag text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Type d'alternance</div>
+                                    <div class="text-muted text-capitalize">{{ session.alternanceType|replace({'_': ' '}) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if session.minimumAlternanceDuration %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-clock text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Durée minimale</div>
+                                    <div class="text-muted">{{ session.minimumAlternanceDuration }} semaines</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if session.centerPercentage and session.companyPercentage %}
+                        <div class="col-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-chart-pie text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Répartition du temps</div>
+                                    <div class="text-muted">Centre de formation / Entreprise</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
+                                        <div class="h4 fw-bold text-primary mb-0">{{ session.centerPercentage }}%</div>
+                                        <small class="text-muted">Centre de formation</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                                        <div class="h4 fw-bold text-success mb-0">{{ session.companyPercentage }}%</div>
+                                        <small class="text-muted">En entreprise</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if session.alternanceRhythm %}
+                        <div class="col-12">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Rythme d'alternance</div>
+                                    <div class="text-muted">{{ session.alternanceRhythm }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if session.alternancePrerequisites %}
+                        <div class="col-12">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3 mt-1">
+                                    <i class="fas fa-check-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold mb-2">Prérequis pour l'alternance</div>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for prerequisite in session.alternancePrerequisites %}
+                                        <li class="text-muted mb-1">
+                                            <i class="fas fa-check text-success me-2"></i>{{ prerequisite }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -118,6 +233,11 @@
                     <div class="card-body p-4 text-center">
                         <!-- Status Badge -->
                         <div class="mb-4">
+                            {% if session.isAlternanceSession %}
+                                <span class="badge bg-info fs-6 px-3 py-2 rounded-pill mb-2 d-block">
+                                    <i class="fas fa-briefcase me-1"></i>Formation en Alternance
+                                </span>
+                            {% endif %}
                             {% if session.status == 'open' %}
                                 <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
                                     <i class="fas fa-check-circle me-1"></i>Inscriptions ouvertes
@@ -195,6 +315,33 @@
                                         Catégorie : {{ session.formation.category.name }}
                                     </small>
                                 </div>
+                                {% endif %}
+                                
+                                {% if session.isAlternanceSession %}
+                                    {% if session.alternanceType %}
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-briefcase text-info me-2"></i>
+                                            Type : {{ session.alternanceType|replace({'_': ' '})|title }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if session.centerPercentage and session.companyPercentage %}
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-chart-pie text-info me-2"></i>
+                                            Répartition : {{ session.centerPercentage }}% centre / {{ session.companyPercentage }}% entreprise
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if session.minimumAlternanceDuration %}
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-week text-info me-2"></i>
+                                            Durée minimale : {{ session.minimumAlternanceDuration }} semaines
+                                        </small>
+                                    </div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>

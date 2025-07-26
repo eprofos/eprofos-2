@@ -1,0 +1,385 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('admin_alternance_contract_index') }}" class="btn btn-outline-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 6l6 6l-6 6"/>
+            </svg>
+            Retour à la liste
+        </a>
+        <a href="{{ path('admin_alternance_contract_export', {id: contract.id}) }}" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                <path d="M9 15l2 2l4 -4"/>
+            </svg>
+            Exporter PDF
+        </a>
+        <a href="{{ path('admin_alternance_contract_edit', {id: contract.id}) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                <path d="M16 5l3 3"/>
+            </svg>
+            Modifier
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Actions
+            </button>
+            <div class="dropdown-menu">
+                <h6 class="dropdown-header">Changer le statut</h6>
+                {% for status, label in constant('App\\Entity\\Alternance\\AlternanceContract::STATUSES') %}
+                    {% if status != contract.status %}
+                        <form method="post" action="{{ path('admin_alternance_contract_status', {id: contract.id}) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="{{ status }}">
+                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir changer le statut vers \"{{ label }}\" ?')">
+                                {% set statusBadgeClasses = {
+                                    'draft': 'secondary',
+                                    'pending_validation': 'warning',
+                                    'validated': 'info',
+                                    'active': 'success',
+                                    'suspended': 'warning',
+                                    'completed': 'dark',
+                                    'terminated': 'danger'
+                                } %}
+                                <span class="badge bg-{{ statusBadgeClasses[status] ?? 'secondary' }} text-white me-2">{{ label }}</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+                <form method="post" action="{{ path('admin_alternance_contract_delete', {id: contract.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contract.id) }}">
+                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ? Cette action est irréversible.')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M4 7l16 0"/>
+                            <path d="M10 11l0 6"/>
+                            <path d="M14 11l0 6"/>
+                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                        </svg>
+                        Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Validation Errors -->
+        {% if validation_errors is defined and (validation_errors.errors|default([])|length > 0 or validation_errors.warnings|default([])|length > 0) %}
+            <div class="col-12">
+                {% if validation_errors.errors|default([])|length > 0 %}
+                    <div class="alert alert-danger">
+                        <h4 class="alert-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                            Erreurs de validation
+                        </h4>
+                        <ul class="mb-0">
+                            {% for error in validation_errors.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if validation_errors.warnings|default([])|length > 0 %}
+                    <div class="alert alert-warning">
+                        <h4 class="alert-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                            Avertissements
+                        </h4>
+                        <ul class="mb-0">
+                            {% for warning in validation_errors.warnings %}
+                                <li>{{ warning }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if validation_errors.is_compliant is defined and not validation_errors.is_compliant %}
+                    <div class="alert alert-info">
+                        <h4 class="alert-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M12 9h.01"/>
+                                <path d="M11 12h1v4h1"/>
+                            </svg>
+                            Conformité Qualiopi
+                        </h4>
+                        <p class="mb-0">Ce contrat ne respecte pas entièrement les critères de conformité Qualiopi. Veuillez corriger les erreurs et avertissements ci-dessus.</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Contract Information -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations du contrat</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-{{ contract.statusBadgeClass }} text-white">{{ contract.statusLabel }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Alternant</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                        {{ contract.student.firstName|slice(0, 1)|upper }}{{ contract.student.lastName|slice(0, 1)|upper }}
+                                    </span>
+                                    <div>
+                                        <div class="fw-bold">{{ contract.student.firstName }} {{ contract.student.lastName }}</div>
+                                        <div class="text-muted small">{{ contract.student.email }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Formation</label>
+                                <div>
+                                    <div class="fw-bold">{{ contract.session.formation.title }}</div>
+                                    <div class="text-muted small">
+                                        Session: {{ contract.session.startDate|date('d/m/Y') }} - {{ contract.session.endDate|date('d/m/Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Type de contrat</label>
+                                <div>
+                                    {% set typeColors = {
+                                        'apprentissage': 'blue',
+                                        'professionnalisation': 'green'
+                                    } %}
+                                    <span class="badge bg-{{ typeColors[contract.contractType] ?? 'secondary' }} text-white">
+                                        {{ constant('App\\Entity\\Alternance\\AlternanceContract::CONTRACT_TYPES')[contract.contractType] ?? contract.contractType }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Période du contrat</label>
+                                <div>
+                                    <strong>{{ contract.startDate|date('d/m/Y') }} - {{ contract.endDate|date('d/m/Y') }}</strong>
+                                    <div class="text-muted small">
+                                        Durée: {{ contract.duration ?? contract.durationInMonths }} mois
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if contract.learningObjectives|length > 0 or contract.companyObjectives|length > 0 %}
+                        <div class="mb-3">
+                            <label class="form-label">Objectifs pédagogiques</label>
+                            {% if contract.learningObjectives|length > 0 %}
+                                <div class="text-muted">
+                                    <strong>Objectifs de formation :</strong>
+                                    <ul class="mb-2">
+                                        {% for objective in contract.learningObjectives %}
+                                            <li>{{ objective }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            {% if contract.companyObjectives|length > 0 %}
+                                <div class="text-muted">
+                                    <strong>Objectifs en entreprise :</strong>
+                                    <ul class="mb-0">
+                                        {% for objective in contract.companyObjectives %}
+                                            <li>{{ objective }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if contract.jobDescription %}
+                        <div class="mb-3">
+                            <label class="form-label">Description du poste</label>
+                            <div class="text-muted">{{ contract.jobDescription|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Status and Dates -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Statut et dates</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Statut actuel</label>
+                        <div>
+                            <span class="badge bg-{{ contract.statusBadgeClass }} text-white">{{ contract.statusLabel }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if contract.validatedAt %}
+                        <div class="mb-3">
+                            <label class="form-label">Validé le</label>
+                            <div class="text-muted">{{ contract.validatedAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Créé le</label>
+                        <div class="text-muted">{{ contract.createdAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+
+                    {% if contract.updatedAt %}
+                        <div class="mb-3">
+                            <label class="form-label">Dernière modification</label>
+                            <div class="text-muted">{{ contract.updatedAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Information -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Entreprise d'accueil</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Raison sociale</label>
+                        <div class="fw-bold">{{ contract.companyName }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SIRET</label>
+                        <div class="text-muted">{{ contract.companySiret }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adresse</label>
+                        <div class="text-muted">{{ contract.companyAddress|nl2br }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supervision Information -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Encadrement</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tuteur entreprise</label>
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-success); color: white;">
+                                {{ contract.mentor.firstName|slice(0, 1)|upper }}{{ contract.mentor.lastName|slice(0, 1)|upper }}
+                            </span>
+                            <div>
+                                <div class="fw-bold">{{ contract.mentor.firstName }} {{ contract.mentor.lastName }}</div>
+                                <div class="text-muted small">{{ contract.mentor.email }}</div>
+                                {% if contract.mentor.phone %}
+                                    <div class="text-muted small">{{ contract.mentor.phone }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Référent pédagogique</label>
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-info); color: white;">
+                                {{ contract.pedagogicalSupervisor.firstName|slice(0, 1)|upper }}{{ contract.pedagogicalSupervisor.lastName|slice(0, 1)|upper }}
+                            </span>
+                            <div>
+                                <div class="fw-bold">{{ contract.pedagogicalSupervisor.firstName }} {{ contract.pedagogicalSupervisor.lastName }}</div>
+                                <div class="text-muted small">{{ contract.pedagogicalSupervisor.email }}</div>
+                                {% if contract.pedagogicalSupervisor.phone %}
+                                    <div class="text-muted small">{{ contract.pedagogicalSupervisor.phone }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Working Time and Remuneration -->
+        {% if contract.weeklyCenterHours or contract.weeklyCompanyHours or contract.remuneration %}
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Temps de travail et rémunération</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if contract.weeklyCenterHours %}
+                            <div class="mb-3">
+                                <label class="form-label">Temps de formation hebdomadaire</label>
+                                <div class="text-muted">{{ contract.weeklyCenterHours }}h</div>
+                            </div>
+                        {% endif %}
+
+                        {% if contract.weeklyCompanyHours %}
+                            <div class="mb-3">
+                                <label class="form-label">Temps en entreprise hebdomadaire</label>
+                                <div class="text-muted">{{ contract.weeklyCompanyHours }}h</div>
+                            </div>
+                        {% endif %}
+
+                        {% if contract.remuneration %}
+                            <div class="mb-3">
+                                <label class="form-label">Rémunération</label>
+                                <div class="text-muted">{{ contract.remuneration }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Additional Information -->
+        {% if contract.notes %}
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Notes et observations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-muted">{{ contract.notes|nl2br }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

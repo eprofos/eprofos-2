@@ -1,0 +1,376 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_contract_new') }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 5l0 14"/>
+            <path d="M5 12l14 0"/>
+        </svg>
+        Nouveau contrat d'alternance
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Statistics Cards -->
+        {% if statistics is defined %}
+            <div class="col-12">
+                <div class="row row-cards">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">Total contrats</div>
+                                </div>
+                                <div class="h1 mb-3">{{ statistics.total ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">Contrats actifs</div>
+                                </div>
+                                <div class="h1 mb-3 text-success">{{ statistics.active ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">En attente</div>
+                                </div>
+                                <div class="h1 mb-3 text-warning">{{ statistics.pending ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">Terminés</div>
+                                </div>
+                                <div class="h1 mb-3 text-muted">{{ statistics.completed ?? 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Filters Card -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Filtres</h3>
+                    <div class="card-actions">
+                        <a href="{{ path('admin_alternance_contract_index') }}" class="btn btn-sm btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+                                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+                            </svg>
+                            Réinitialiser
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ path('admin_alternance_contract_index') }}" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Recherche</label>
+                            <input type="text" name="search" class="form-control" placeholder="Alternant, entreprise, SIRET..." value="{{ filters.search ?? '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Statut</label>
+                            <select name="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="draft" {{ filters.status == 'draft' ? 'selected' : '' }}>Brouillon</option>
+                                <option value="pending_validation" {{ filters.status == 'pending_validation' ? 'selected' : '' }}>En attente de validation</option>
+                                <option value="validated" {{ filters.status == 'validated' ? 'selected' : '' }}>Validé</option>
+                                <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Actif</option>
+                                <option value="suspended" {{ filters.status == 'suspended' ? 'selected' : '' }}>Suspendu</option>
+                                <option value="completed" {{ filters.status == 'completed' ? 'selected' : '' }}>Terminé</option>
+                                <option value="terminated" {{ filters.status == 'terminated' ? 'selected' : '' }}>Résilié</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                                    <path d="M21 21l-6 -6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contracts List Card -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Contrats d'alternance</h3>
+                    <div class="card-actions">
+                        <span class="text-muted">{{ contracts|length }} contrat{{ contracts|length > 1 ? 's' : '' }}</span>
+                    </div>
+                </div>
+                
+                {% if contracts|length > 0 %}
+                    <form method="POST" action="{{ path('admin_alternance_contract_bulk_status') }}" id="bulk-form">
+                        <div class="card-header border-bottom-0 pb-0">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="select-all">
+                                        <label class="form-check-label" for="select-all">
+                                            Tout sélectionner
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row g-2">
+                                        <div class="col-auto">
+                                            <select name="status" class="form-select form-select-sm" required>
+                                                <option value="">Changer le statut...</option>
+                                                <option value="pending_validation">En attente de validation</option>
+                                                <option value="validated">Validé</option>
+                                                <option value="active">Actif</option>
+                                                <option value="suspended">Suspendu</option>
+                                                <option value="completed">Terminé</option>
+                                                <option value="terminated">Résilié</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary" disabled id="bulk-submit">
+                                                Appliquer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1"></th>
+                                        <th>Alternant</th>
+                                        <th>Entreprise</th>
+                                        <th>Formation</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Statut</th>
+                                        <th>Créé le</th>
+                                        <th class="w-1">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contract in contracts %}
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input contract-checkbox" type="checkbox" name="contract_ids[]" value="{{ contract.id }}">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                                        {{ contract.student.firstName|slice(0, 1)|upper }}{{ contract.student.lastName|slice(0, 1)|upper }}
+                                                    </span>
+                                                    <div>
+                                                        <div class="fw-bold">{{ contract.student.firstName }} {{ contract.student.lastName }}</div>
+                                                        <div class="text-muted small">{{ contract.student.email }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">{{ contract.companyName }}</div>
+                                                    <div class="text-muted small">SIRET: {{ contract.companySiret }}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">{{ contract.session.formation.title }}</div>
+                                                    <div class="text-muted small">Session: {{ contract.session.startDate|date('d/m/Y') }}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% set typeColors = {
+                                                    'apprentissage': 'blue',
+                                                    'professionnalisation': 'green'
+                                                } %}
+                                                <span class="badge bg-{{ typeColors[contract.contractType] ?? 'secondary' }} text-white">
+                                                    {{ contract.contractType|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="text-muted small">
+                                                    {{ contract.startDate|date('d/m/Y') }} - {{ contract.endDate|date('d/m/Y') }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ contract.statusBadgeClass }} text-white">
+                                                    {{ contract.statusLabel }}
+                                                </span>
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ contract.createdAt|date('d/m/Y') }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-list flex-nowrap">
+                                                    <a href="{{ path('admin_alternance_contract_show', {id: contract.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                        </svg>
+                                                    </a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            Actions
+                                                        </button>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" href="{{ path('admin_alternance_contract_edit', {id: contract.id}) }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                                    <path d="M16 5l3 3"/>
+                                                                </svg>
+                                                                Modifier
+                                                            </a>
+                                                            <a class="dropdown-item" href="{{ path('admin_alternance_contract_export', {id: contract.id}) }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                                                    <path d="M9 15l2 2l4 -4"/>
+                                                                </svg>
+                                                                Exporter PDF
+                                                            </a>
+                                                            <div class="dropdown-divider"></div>
+                                                            <form method="post" action="{{ path('admin_alternance_contract_delete', {id: contract.id}) }}" style="display: inline;">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contract.id) }}">
+                                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ? Cette action est irréversible.')">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                        <path d="M4 7l16 0"/>
+                                                                        <path d="M10 11l0 6"/>
+                                                                        <path d="M14 11l0 6"/>
+                                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                                    </svg>
+                                                                    Supprimer
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                        <div class="card-footer d-flex align-items-center">
+                            <p class="m-0 text-muted">Page {{ current_page }} sur {{ total_pages }}</p>
+                            <ul class="pagination m-0 ms-auto">
+                                {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_alternance_contract_index', {page: current_page - 1}|merge(filters)) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M15 6l-6 6l6 6"/>
+                                            </svg>
+                                            Précédent
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_alternance_contract_index', {page: current_page + 1}|merge(filters)) }}">
+                                            Suivant
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M9 6l6 6l-6 6"/>
+                                            </svg>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMDQgNDBIMjRDMTkuNTggNDAgMTYgNDMuNTggMTYgNDhWODBDMTYgODQuNDIgMTkuNTggODggMjQgODhIMTA0QzEwOC40MiA4OCAxMTIgODQuNDIgMTEyIDgwVjQ4QzExMiA0My41OCAxMDguNDIgNDAgMTA0IDQwWiIgc3Ryb2tlPSIjQ0ZEOERDIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPHA+PC9wPgo8L3N2Zz4K" height="128" alt="">
+                            </div>
+                            <p class="empty-title">Aucun contrat d'alternance trouvé</p>
+                            <p class="empty-subtitle text-muted">
+                                {% if filters|length > 0 %}
+                                    Aucun contrat ne correspond aux critères de recherche.
+                                {% else %}
+                                    Commencez par créer votre premier contrat d'alternance.
+                                {% endif %}
+                            </p>
+                            <div class="empty-action">
+                                {% if filters|length > 0 %}
+                                    <a href="{{ path('admin_alternance_contract_index') }}" class="btn btn-outline-secondary">
+                                        Voir tous les contrats
+                                    </a>
+                                {% endif %}
+                                <a href="{{ path('admin_alternance_contract_new') }}" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Créer un contrat
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.contract-checkbox');
+            const bulkSubmit = document.getElementById('bulk-submit');
+            
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateBulkButton();
+            });
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateBulkButton);
+            });
+            
+            function updateBulkButton() {
+                const checkedBoxes = document.querySelectorAll('.contract-checkbox:checked');
+                bulkSubmit.disabled = checkedBoxes.length === 0;
+                selectAll.checked = checkedBoxes.length === checkboxes.length;
+                selectAll.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < checkboxes.length;
+            }
+        });
+    </script>
+{% endblock %}

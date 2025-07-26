@@ -122,6 +122,50 @@ class Session
     #[Gedmo\Versioned]
     private ?array $additionalInfo = null;
 
+    // Alternance-related fields
+    #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
+    private ?bool $isAlternanceSession = false;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: ['apprentissage', 'professionnalisation'],
+        message: 'Type d\'alternance invalide.'
+    )]
+    #[Gedmo\Versioned]
+    private ?string $alternanceType = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: 'La durée minimale doit être positive.')]
+    #[Gedmo\Versioned]
+    private ?int $minimumAlternanceDuration = null; // en semaines
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.'
+    )]
+    #[Gedmo\Versioned]
+    private ?int $centerPercentage = null; // % temps centre
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.'
+    )]
+    #[Gedmo\Versioned]
+    private ?int $companyPercentage = null; // % temps entreprise
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
+    private ?array $alternancePrerequisites = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Gedmo\Versioned]
+    private ?string $alternanceRhythm = null; // Rythme alternance
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -389,8 +433,86 @@ class Session
         return $this;
     }
 
+    // Alternance-related getters and setters
+    public function isAlternanceSession(): bool
+    {
+        return $this->isAlternanceSession ?? false;
+    }
+
+    public function setIsAlternanceSession(?bool $isAlternanceSession): static
+    {
+        $this->isAlternanceSession = $isAlternanceSession;
+        return $this;
+    }
+
+    public function getAlternanceType(): ?string
+    {
+        return $this->alternanceType;
+    }
+
+    public function setAlternanceType(?string $alternanceType): static
+    {
+        $this->alternanceType = $alternanceType;
+        return $this;
+    }
+
+    public function getMinimumAlternanceDuration(): ?int
+    {
+        return $this->minimumAlternanceDuration;
+    }
+
+    public function setMinimumAlternanceDuration(?int $minimumAlternanceDuration): static
+    {
+        $this->minimumAlternanceDuration = $minimumAlternanceDuration;
+        return $this;
+    }
+
+    public function getCenterPercentage(): ?int
+    {
+        return $this->centerPercentage;
+    }
+
+    public function setCenterPercentage(?int $centerPercentage): static
+    {
+        $this->centerPercentage = $centerPercentage;
+        return $this;
+    }
+
+    public function getCompanyPercentage(): ?int
+    {
+        return $this->companyPercentage;
+    }
+
+    public function setCompanyPercentage(?int $companyPercentage): static
+    {
+        $this->companyPercentage = $companyPercentage;
+        return $this;
+    }
+
+    public function getAlternancePrerequisites(): ?array
+    {
+        return $this->alternancePrerequisites;
+    }
+
+    public function setAlternancePrerequisites(?array $alternancePrerequisites): static
+    {
+        $this->alternancePrerequisites = $alternancePrerequisites;
+        return $this;
+    }
+
+    public function getAlternanceRhythm(): ?string
+    {
+        return $this->alternanceRhythm;
+    }
+
+    public function setAlternanceRhythm(?string $alternanceRhythm): static
+    {
+        $this->alternanceRhythm = $alternanceRhythm;
+        return $this;
+    }
+
     /**
-     * Get the number of available places
+     * Get the available places
      */
     public function getAvailablePlaces(): int
     {
@@ -528,6 +650,105 @@ class Session
     {
         $this->currentRegistrations = $this->registrations->count();
         return $this;
+    }
+
+    /**
+     * Get alternance type label for display
+     */
+    public function getAlternanceTypeLabel(): string
+    {
+        return match ($this->alternanceType) {
+            'apprentissage' => 'Contrat d\'apprentissage',
+            'professionnalisation' => 'Contrat de professionnalisation',
+            default => ''
+        };
+    }
+
+    /**
+     * Get alternance rhythm description
+     */
+    public function getAlternanceRhythmDescription(): string
+    {
+        if (!$this->alternanceRhythm) {
+            return '';
+        }
+
+        // Common rhythm patterns
+        $patterns = [
+            '1-1' => '1 semaine centre / 1 semaine entreprise',
+            '2-2' => '2 semaines centre / 2 semaines entreprise',
+            '3-1' => '3 semaines centre / 1 semaine entreprise',
+            '1-3' => '1 semaine centre / 3 semaines entreprise',
+            '2-3' => '2 semaines centre / 3 semaines entreprise',
+            '3-2' => '3 semaines centre / 2 semaines entreprise',
+        ];
+
+        return $patterns[$this->alternanceRhythm] ?? $this->alternanceRhythm;
+    }
+
+    /**
+     * Check if alternance percentages are valid (should sum to 100)
+     */
+    public function hasValidAlternancePercentages(): bool
+    {
+        if (!$this->isAlternanceSession()) {
+            return true;
+        }
+
+        if ($this->centerPercentage === null || $this->companyPercentage === null) {
+            return false;
+        }
+
+        return ($this->centerPercentage + $this->companyPercentage) === 100;
+    }
+
+    /**
+     * Get formatted alternance duration
+     */
+    public function getFormattedAlternanceDuration(): string
+    {
+        if (!$this->minimumAlternanceDuration) {
+            return '';
+        }
+
+        $weeks = $this->minimumAlternanceDuration;
+        if ($weeks === 1) {
+            return '1 semaine minimum';
+        }
+
+        if ($weeks < 52) {
+            return $weeks . ' semaines minimum';
+        }
+
+        $years = intval($weeks / 52);
+        $remainingWeeks = $weeks % 52;
+
+        if ($remainingWeeks === 0) {
+            return $years === 1 ? '1 an minimum' : $years . ' ans minimum';
+        }
+
+        $yearText = $years === 1 ? '1 an' : $years . ' ans';
+        $weekText = $remainingWeeks === 1 ? '1 semaine' : $remainingWeeks . ' semaines';
+
+        return $yearText . ' et ' . $weekText . ' minimum';
+    }
+
+    /**
+     * Get formatted alternance prerequisites as formatted list
+     */
+    public function getFormattedAlternancePrerequisites(): array
+    {
+        return $this->alternancePrerequisites ?? [];
+    }
+
+    /**
+     * Get alternance program (will be populated by service or repository)
+     * This method will be implemented when the relationship is established via service layer
+     */
+    public function getAlternanceProgram(): ?object
+    {
+        // This will be implemented in a service to avoid circular dependencies
+        return null;
     }
 
     /**

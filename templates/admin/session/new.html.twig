@@ -128,6 +128,105 @@
                         {{ form_errors(form.notes) }}
                     </div>
                     
+                    <!-- ============== ALTERNANCE SECTION ============== -->
+                    <hr class="my-4">
+                    <h5 class="alternance-section-header">
+                        <i class="fas fa-briefcase"></i>
+                        Paramètres Alternance
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form_widget(form.isAlternanceSession) }}
+                            {{ form_label(form.isAlternanceSession) }}
+                        </div>
+                        {{ form_errors(form.isAlternanceSession) }}
+                        {% if form.isAlternanceSession.vars.help %}
+                            <div class="form-text">{{ form.isAlternanceSession.vars.help }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Alternance fields - controlled by Stimulus -->
+                    <div class="alternance-fields" data-alternance-form-target="fieldsContainer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.alternanceType) }}
+                                    {{ form_widget(form.alternanceType) }}
+                                    {{ form_errors(form.alternanceType) }}
+                                    {% if form.alternanceType.vars.help %}
+                                        <div class="form-text">{{ form.alternanceType.vars.help }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.minimumAlternanceDuration) }}
+                                    {{ form_widget(form.minimumAlternanceDuration) }}
+                                    {{ form_errors(form.minimumAlternanceDuration) }}
+                                    {% if form.minimumAlternanceDuration.vars.help %}
+                                        <div class="form-text">{{ form.minimumAlternanceDuration.vars.help }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.centerPercentage) }}
+                                    <div class="input-group">
+                                        {{ form_widget(form.centerPercentage) }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {{ form_errors(form.centerPercentage) }}
+                                    {% if form.centerPercentage.vars.help %}
+                                        <div class="form-text">{{ form.centerPercentage.vars.help }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.companyPercentage) }}
+                                    <div class="input-group">
+                                        {{ form_widget(form.companyPercentage) }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {{ form_errors(form.companyPercentage) }}
+                                    {% if form.companyPercentage.vars.help %}
+                                        <div class="form-text">{{ form.companyPercentage.vars.help }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.alternanceRhythm) }}
+                            {{ form_widget(form.alternanceRhythm) }}
+                            {{ form_errors(form.alternanceRhythm) }}
+                            {% if form.alternanceRhythm.vars.help %}
+                                <div class="form-text">{{ form.alternanceRhythm.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.alternancePrerequisites) }}
+                            {{ form_widget(form.alternancePrerequisites) }}
+                            {{ form_errors(form.alternancePrerequisites) }}
+                            {% if form.alternancePrerequisites.vars.help %}
+                                <div class="form-text">{{ form.alternancePrerequisites.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Information :</strong> Une fois la session créée en mode alternance, vous pourrez créer des contrats d'alternance et un programme pédagogique associé.
+                        </div>
+                    </div>
+                    <!-- ============== END ALTERNANCE SECTION ============== -->
+                    
+                    <hr class="my-4">
+                    
                     <div class="mb-3">
                         <div class="form-check">
                             {{ form_widget(form.isActive) }}
@@ -171,6 +270,15 @@
                             <li>Définissez une capacité minimale pour pouvoir confirmer automatiquement la session</li>
                             <li>La date limite d'inscription doit être antérieure à la date de début</li>
                             <li>Si aucun prix n'est défini, le prix de la formation sera utilisé</li>
+                        </ul>
+                        
+                        <p class="mt-3"><strong>Alternance :</strong></p>
+                        <ul class="small">
+                            <li><strong>Apprentissage :</strong> 16-29 ans, diplôme du CAP au Master</li>
+                            <li><strong>Professionnalisation :</strong> 16-25 ans ou demandeurs d'emploi 26+</li>
+                            <li><strong>Stage alterné :</strong> Autre forme d'alternance</li>
+                            <li>Les pourcentages centre/entreprise doivent totaliser 100%</li>
+                            <li>La durée minimale est exprimée en semaines</li>
                         </ul>
                     </div>
                 </div>

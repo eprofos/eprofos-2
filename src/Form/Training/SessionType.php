@@ -156,6 +156,105 @@ class SessionType extends AbstractType
                     'placeholder' => 'Notes internes pour cette session'
                 ]
             ])
+            
+            // ============== ALTERNANCE FIELDS ==============
+            ->add('isAlternanceSession', CheckboxType::class, [
+                'label' => 'Session en alternance',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-check-input',
+                    'data-controller' => 'alternance-form',
+                    'data-action' => 'change->alternance-form#toggle'
+                ],
+                'help' => 'Cochez si cette session propose un parcours en alternance'
+            ])
+            ->add('alternanceType', ChoiceType::class, [
+                'label' => 'Type d\'alternance',
+                'required' => false,
+                'choices' => [
+                    'Choisir un type...' => '',
+                    'Contrat d\'apprentissage' => 'apprentissage',
+                    'Contrat de professionnalisation' => 'professionnalisation',
+                    'Stage alterné' => 'stage_alterne'
+                ],
+                'attr' => [
+                    'class' => 'form-select alternance-field',
+                    'data-alternance-form-target' => 'field'
+                ],
+                'help' => 'Type de contrat d\'alternance proposé'
+            ])
+            ->add('minimumAlternanceDuration', IntegerType::class, [
+                'label' => 'Durée minimale (en semaines)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control alternance-field',
+                    'data-alternance-form-target' => 'field',
+                    'min' => 1,
+                    'max' => 156, // 3 ans maximum
+                    'placeholder' => 'Ex: 52 pour 1 an'
+                ],
+                'help' => 'Durée minimale du contrat d\'alternance en semaines'
+            ])
+            ->add('centerPercentage', IntegerType::class, [
+                'label' => 'Pourcentage temps centre (%)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control alternance-field',
+                    'data-alternance-form-target' => 'field centerPercentage',
+                    'data-action' => 'input->alternance-form#updateCompanyPercentage',
+                    'min' => 0,
+                    'max' => 100,
+                    'placeholder' => 'Ex: 30'
+                ],
+                'help' => 'Pourcentage du temps passé en centre de formation'
+            ])
+            ->add('companyPercentage', IntegerType::class, [
+                'label' => 'Pourcentage temps entreprise (%)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control alternance-field',
+                    'data-alternance-form-target' => 'field companyPercentage',
+                    'data-action' => 'input->alternance-form#updateCenterPercentage',
+                    'min' => 0,
+                    'max' => 100,
+                    'placeholder' => 'Ex: 70'
+                ],
+                'help' => 'Pourcentage du temps passé en entreprise'
+            ])
+            ->add('alternanceRhythm', ChoiceType::class, [
+                'label' => 'Rythme d\'alternance',
+                'required' => false,
+                'choices' => [
+                    'Choisir un rythme...' => '',
+                    '1 semaine centre / 1 semaine entreprise' => '1-1',
+                    '2 semaines centre / 2 semaines entreprise' => '2-2',
+                    '3 semaines centre / 1 semaine entreprise' => '3-1',
+                    '1 semaine centre / 3 semaines entreprise' => '1-3',
+                    '2 semaines centre / 3 semaines entreprise' => '2-3',
+                    '3 semaines centre / 2 semaines entreprise' => '3-2',
+                    '4 semaines centre / 4 semaines entreprise' => '4-4',
+                    '2 jours centre / 3 jours entreprise par semaine' => '2j-3j',
+                    '3 jours centre / 2 jours entreprise par semaine' => '3j-2j',
+                    'Rythme personnalisé' => 'custom'
+                ],
+                'attr' => [
+                    'class' => 'form-select alternance-field',
+                    'data-alternance-form-target' => 'field'
+                ],
+                'help' => 'Répartition temporelle entre centre et entreprise'
+            ])
+            ->add('alternancePrerequisites', TextareaType::class, [
+                'label' => 'Prérequis spécifiques à l\'alternance',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control alternance-field',
+                    'data-alternance-form-target' => 'field',
+                    'rows' => 3,
+                    'placeholder' => 'Prérequis particuliers pour le parcours en alternance...'
+                ],
+                'help' => 'Conditions spécifiques requises pour suivre cette formation en alternance'
+            ])
+            
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Session active',
                 'required' => false,
