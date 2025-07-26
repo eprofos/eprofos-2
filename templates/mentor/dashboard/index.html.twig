@@ -1,4 +1,4 @@
-{% extends 'teacher/base.html.twig' %}
+{% extends 'mentor/base.html.twig' %}
 
 {% block body %}
     <div class="page-header d-print-none">
@@ -9,18 +9,18 @@
                         Tableau de bord
                     </h2>
                     <div class="page-subtitle">
-                        Bienvenue dans votre espace formateur, {{ app.user.firstName }} !
+                        Bienvenue dans votre espace mentor, {{ app.user.firstName }} !
                     </div>
                 </div>
                 <div class="col-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        <a href="{{ path('teacher_courses') }}" class="btn btn-primary d-none d-sm-inline-block">
+                        <a href="{{ path('mentor_apprentices_invite') }}" class="btn btn-primary d-none d-sm-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                 <path d="M12 5l0 14"/>
                                 <path d="M5 12l14 0"/>
                             </svg>
-                            Nouvelle session
+                            Inviter un apprenti
                         </a>
                     </div>
                 </div>
@@ -35,9 +35,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Formations assignées</div>
+                            <div class="subheader">Apprentis encadrés</div>
                         </div>
-                        <div class="h1 mb-3">{{ stats.assigned_courses ?? 0 }}</div>
+                        <div class="h1 mb-3">{{ apprenticesCount ?? 0 }}</div>
                         <div class="d-flex mb-2">
                             <div class="flex-fill">
                                 <div class="progress progress-sm">
@@ -63,9 +63,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Étudiants actifs</div>
+                            <div class="subheader">Missions créées</div>
                         </div>
-                        <div class="h1 mb-3">{{ stats.active_students ?? 0 }}</div>
+                        <div class="h1 mb-3">{{ missionsCount ?? 0 }}</div>
                         <div class="d-flex mb-2">
                             <div class="flex-fill">
                                 <div class="progress progress-sm">
@@ -83,7 +83,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="text-muted">En formation</div>
+                        <div class="text-muted">En cours</div>
                     </div>
                 </div>
             </div>
@@ -91,9 +91,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Heures enseignées</div>
+                            <div class="subheader">Évaluations réalisées</div>
                         </div>
-                        <div class="h1 mb-3">{{ stats.total_hours_taught ?? 0 }}h</div>
+                        <div class="h1 mb-3">{{ evaluationsCount ?? 0 }}</div>
                         <div class="d-flex mb-2">
                             <div class="flex-fill">
                                 <div class="progress progress-sm">
@@ -119,9 +119,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Sessions à venir</div>
+                            <div class="subheader">Rendez-vous planifiés</div>
                         </div>
-                        <div class="h1 mb-3">{{ stats.upcoming_sessions ?? 0 }}</div>
+                        <div class="h1 mb-3">{{ meetingsCount ?? 0 }}</div>
                         <div class="d-flex mb-2">
                             <div class="flex-fill">
                                 <div class="progress progress-sm">
@@ -154,110 +154,103 @@
                         <h3 class="card-title">Activités récentes</h3>
                     </div>
                     <div class="card-body">
-                        <div class="divide-y">
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-green text-white avatar">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M5 12l5 5l10 -10"/>
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div class="col">
-                                    <div class="text-truncate">
-                                        <strong>Session terminée</strong> - Formation JavaScript
+                        {% if recentActivities is defined and recentActivities|length > 0 %}
+                            <div class="divide-y">
+                                {% for activity in recentActivities %}
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span class="bg-{{ activity.type == 'success' ? 'green' : (activity.type == 'warning' ? 'yellow' : (activity.type == 'important' ? 'red' : 'blue')) }} text-white avatar">
+                                                {% if activity.type == 'success' %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M5 12l5 5l10 -10"/>
+                                                    </svg>
+                                                {% elseif activity.type == 'warning' %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 9v2m0 4v.01"/>
+                                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                                    </svg>
+                                                {% else %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 5l0 14"/>
+                                                        <path d="M5 12l14 0"/>
+                                                    </svg>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-truncate">
+                                                <strong>{{ activity.title }}</strong>
+                                            </div>
+                                            <div class="text-muted">{{ activity.description }}</div>
+                                            <div class="text-muted">{{ activity.createdAt|date('d/m/Y à H:i') }}</div>
+                                        </div>
                                     </div>
-                                    <div class="text-muted">Il y a 2 heures</div>
-                                </div>
+                                {% endfor %}
                             </div>
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-blue text-white avatar">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M12 5l0 14"/>
-                                            <path d="M5 12l14 0"/>
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div class="col">
-                                    <div class="text-truncate">
-                                        <strong>Nouveau module créé</strong> - Python Avancé
-                                    </div>
-                                    <div class="text-muted">Il y a 1 jour</div>
-                                </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2v-10"/>
+                                    <path d="M3 7l9 6l9 -6"/>
+                                    <path d="M3 7l9 -4l9 4"/>
+                                </svg>
+                                <p class="text-muted">Aucune activité récente pour le moment.</p>
+                                <p class="text-muted">Commencez par inviter un apprenti ou créer votre première mission !</p>
                             </div>
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-yellow text-white avatar">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <circle cx="12" cy="7" r="4"/>
-                                            <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div class="col">
-                                    <div class="text-truncate">
-                                        <strong>Nouvel étudiant</strong> inscrit en React
-                                    </div>
-                                    <div class="text-muted">Il y a 2 jours</div>
-                                </div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Upcoming Sessions -->
+            <!-- Upcoming Events -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Sessions à venir</h3>
+                        <h3 class="card-title">Prochains événements</h3>
                     </div>
                     <div class="card-body">
-                        <div class="divide-y">
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-blue text-white avatar">Js</span>
-                                </div>
-                                <div class="col">
-                                    <div><strong>Formation JavaScript</strong></div>
-                                    <div class="text-muted">Aujourd'hui à 14h00</div>
-                                    <div class="text-muted">12 étudiants inscrits</div>
-                                </div>
-                                <div class="col-auto">
-                                    <span class="badge bg-green">Confirmée</span>
-                                </div>
+                        {% if upcomingEvents is defined and upcomingEvents|length > 0 %}
+                            <div class="divide-y">
+                                {% for event in upcomingEvents %}
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span class="bg-blue text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                                    <path d="M16 3v4"/>
+                                                    <path d="M8 3v4"/>
+                                                    <path d="M4 11h16"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div><strong>{{ event.title }}</strong></div>
+                                            <div class="text-muted">{{ event.description }}</div>
+                                            <div class="text-muted">{{ event.scheduledAt|date('d/m/Y à H:i') }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge bg-green">Planifié</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-purple text-white avatar">Py</span>
-                                </div>
-                                <div class="col">
-                                    <div><strong>Python pour débutants</strong></div>
-                                    <div class="text-muted">Demain à 09h30</div>
-                                    <div class="text-muted">8 étudiants inscrits</div>
-                                </div>
-                                <div class="col-auto">
-                                    <span class="badge bg-yellow">En attente</span>
-                                </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                    <path d="M16 3v4"/>
+                                    <path d="M8 3v4"/>
+                                    <path d="M4 11h16"/>
+                                </svg>
+                                <p class="text-muted">Aucun événement planifié</p>
                             </div>
-                            <div class="row">
-                                <div class="col-auto">
-                                    <span class="bg-red text-white avatar">Re</span>
-                                </div>
-                                <div class="col">
-                                    <div><strong>React Avancé</strong></div>
-                                    <div class="text-muted">Vendredi à 10h00</div>
-                                    <div class="text-muted">15 étudiants inscrits</div>
-                                </div>
-                                <div class="col-auto">
-                                    <span class="badge bg-green">Confirmée</span>
-                                </div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -273,20 +266,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_courses') }}" class="btn btn-white w-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
-                                        <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
-                                        <path d="M3 6l0 13"/>
-                                        <path d="M12 6l0 13"/>
-                                        <path d="M21 6l0 13"/>
-                                    </svg>
-                                    Mes Formations
-                                </a>
-                            </div>
-                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_students') }}" class="btn btn-white w-100">
+                                <a href="{{ path('mentor_apprentices') }}" class="btn btn-white w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
@@ -294,42 +274,57 @@
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                                         <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
                                     </svg>
-                                    Mes Étudiants
+                                    Mes Apprentis
                                 </a>
                             </div>
                             <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_sessions') }}" class="btn btn-white w-100">
+                                <a href="{{ path('mentor_missions') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                        <path d="M15 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                        <path d="M9 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                        <path d="M3 12a9 9 0 0 1 9 -9a9 9 0 0 1 9 9"/>
+                                    </svg>
+                                    Missions
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('mentor_evaluations') }}" class="btn btn-white w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 7v5l3 3"/>
+                                    </svg>
+                                    Évaluations
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
+                                <a href="{{ path('mentor_meetings_schedule') }}" class="btn btn-white w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
                                         <path d="M16 3v4"/>
                                         <path d="M8 3v4"/>
                                         <path d="M4 11h16"/>
+                                        <path d="M12 15h2"/>
                                     </svg>
                                     Planning
                                 </a>
                             </div>
                             <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_resources') }}" class="btn btn-white w-100">
+                                <a href="{{ path('mentor_notifications') }}" class="btn btn-white w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/>
+                                        <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                        <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
                                     </svg>
-                                    Ressources
+                                    Notifications
                                 </a>
                             </div>
                             <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_analytics') }}" class="btn btn-white w-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
-                                        <path d="M12 7v5l3 3"/>
-                                    </svg>
-                                    Statistiques
-                                </a>
-                            </div>
-                            <div class="col-6 col-sm-4 col-md-2 col-xl-auto py-3">
-                                <a href="{{ path('teacher_profile') }}" class="btn btn-white w-100">
+                                <a href="{{ path('mentor_profile') }}" class="btn btn-white w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <circle cx="12" cy="7" r="4"/>

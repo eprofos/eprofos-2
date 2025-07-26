@@ -8,6 +8,8 @@ security:
             algorithm: auto
         App\Entity\User\Teacher:
             algorithm: auto
+        App\Entity\User\Mentor:
+            algorithm: auto
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
@@ -25,6 +27,11 @@ security:
         app_teacher_provider:
             entity:
                 class: App\Entity\User\Teacher
+                property: email
+        # used to reload mentor user from session
+        app_mentor_provider:
+            entity:
+                class: App\Entity\User\Mentor
                 property: email
 
     firewalls:
@@ -86,6 +93,26 @@ security:
                 delete_cookies:
                     PHPSESSID: { path: /, domain: ~ }
 
+        # Mentor firewall for /mentor routes
+        mentor:
+            pattern: ^/mentor
+            lazy: true
+            provider: app_mentor_provider
+            form_login:
+                login_path: mentor_login
+                check_path: mentor_login
+                default_target_path: mentor_dashboard
+                always_use_default_target_path: true
+                enable_csrf: true
+                username_parameter: email
+                password_parameter: password
+            logout:
+                path: mentor_logout
+                target: mentor_login
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: { path: /, domain: ~ }
+
         # Main firewall for public routes
         main:
             lazy: true
@@ -107,6 +134,12 @@ security:
         - { path: ^/teacher/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/teacher/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/teacher, roles: ROLE_TEACHER }
+        - { path: ^/mentor/login, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor/register, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor, roles: ROLE_MENTOR }
 
 when@test:
     security:
@@ -131,4 +164,7 @@ when@test:
                 security: false
             teacher:
                 pattern: ^/teacher
+                security: false
+            mentor:
+                pattern: ^/mentor
                 security: false

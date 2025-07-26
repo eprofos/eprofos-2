@@ -1,0 +1,261 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% set page_title = 'Rendez-vous' %}
+
+{% block body %}
+<!-- Page body content -->
+<div class="row row-deck row-cards">
+    <!-- Upcoming Meetings -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Prochains rendez-vous</h3>
+            </div>
+            <div class="card-body">
+                            {% if upcoming_meetings is empty %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <rect x="4" y="5" width="16" height="16" rx="2"/>
+                                            <line x1="16" y1="3" x2="16" y2="7"/>
+                                            <line x1="8" y1="3" x2="8" y2="7"/>
+                                            <line x1="4" y1="11" x2="20" y2="11"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun rendez-vous planifié</p>
+                                    <p class="empty-subtitle text-muted">
+                                        Planifiez votre premier rendez-vous avec un apprenti
+                                    </p>
+                                    <div class="empty-action">
+                                        <a href="{{ path('mentor_meetings_schedule') }}" class="btn btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                            Planifier un rendez-vous
+                                        </a>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {# TODO: Display upcoming meetings when data is available #}
+                                <div class="list-group list-group-flush">
+                                    {% for meeting in upcoming_meetings %}
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="status-dot status-dot-animated bg-green d-block"></span>
+                                                </div>
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">{{ meeting.title }}</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        {{ meeting.date|date('d/m/Y H:i') }} - {{ meeting.apprentice.fullName }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meeting Requests -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Demandes de rendez-vous</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if meeting_requests is empty %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                            <path d="M12 9h.01"/>
+                                            <path d="M11 12h1v4h1"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucune demande</p>
+                                    <p class="empty-subtitle text-muted">
+                                        Vous n'avez aucune demande de rendez-vous en attente
+                                    </p>
+                                </div>
+                            {% else %}
+                                {# TODO: Display meeting requests when data is available #}
+                                <div class="list-group list-group-flush">
+                                    {% for request in meeting_requests %}
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">{{ request.apprentice.fullName }}</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        {{ request.subject }} - {{ request.requestedDate|date('d/m/Y') }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <div class="btn-list">
+                                                        <a href="#" class="btn btn-sm btn-outline-green">
+                                                            Accepter
+                                                        </a>
+                                                        <a href="#" class="btn btn-sm btn-outline-red">
+                                                            Refuser
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Time Slots -->
+                <div class="col-md-12 col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Mes créneaux disponibles</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if available_slots is empty %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <polyline points="12,7 12,12 15,15"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun créneau configuré</p>
+                                    <p class="empty-subtitle text-muted">
+                                        Définissez vos créneaux de disponibilité dans les paramètres
+                                    </p>
+                                    <div class="empty-action">
+                                        <a href="{{ path('mentor_settings') }}" class="btn btn-outline-primary">
+                                            Configurer mes créneaux
+                                        </a>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {# TODO: Display available slots when data is available #}
+                                <div class="list-group list-group-flush">
+                                    {% for slot in available_slots %}
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col text-truncate">
+                                                    <div class="text-body">{{ slot.dayName }}</div>
+                                                    <div class="text-muted text-truncate mt-n1">
+                                                        {{ slot.startTime }} - {{ slot.endTime }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <span class="badge bg-green">Disponible</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Meetings -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Historique des rendez-vous</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if past_meetings is empty %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 11l3 3l8 -8"/>
+                                            <path d="M20 12c0 4.418 -3.582 8 -8 8a8 8 0 0 1 -7.743 -6.096"/>
+                                            <path d="M4 12a8 8 0 0 1 7.743 -6.096"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun rendez-vous passé</p>
+                                    <p class="empty-subtitle text-muted">
+                                        L'historique de vos rendez-vous apparaîtra ici
+                                    </p>
+                                </div>
+                            {% else %}
+                                {# TODO: Display past meetings when data is available #}
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Apprenti</th>
+                                                <th>Sujet</th>
+                                                <th>Durée</th>
+                                                <th>Statut</th>
+                                                <th class="w-1"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for meeting in past_meetings %}
+                                                <tr>
+                                                    <td class="text-muted">
+                                                        {{ meeting.date|date('d/m/Y H:i') }}
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex py-1 align-items-center">
+                                                            <span class="avatar me-2">{{ meeting.apprentice.initials }}</span>
+                                                            <div class="flex-fill">
+                                                                <div class="font-weight-medium">{{ meeting.apprentice.fullName }}</div>
+                                                                <div class="text-muted">{{ meeting.apprentice.email }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {{ meeting.subject }}
+                                                    </td>
+                                                    <td class="text-muted">
+                                                        {{ meeting.duration }} min
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ meeting.status == 'completed' ? 'success' : (meeting.status == 'cancelled' ? 'danger' : 'warning') }}">
+                                                            {{ meeting.statusLabel }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-list flex-nowrap">
+                                                            <a href="#" class="btn btn-white btn-sm">
+                                                                Voir détails
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('mentor_meetings_schedule') }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Planifier un rendez-vous
+        </a>
+    </div>
+{% endblock %}
+{% endblock %}

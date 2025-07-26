@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Mentor - EPROFOS</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Inscription à l'espace mentor EPROFOS pour accompagner les apprenants">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    
+    {{ importmap('private') }}
+</head>
+<body class="d-flex flex-column">    
+    <div class="page page-center">
+        <div class="container container-normal py-4">
+            <div class="text-center mb-4">
+                <a href="{{ path('app_home') }}" class="navbar-brand navbar-brand-autodark">
+                    <img src="{{ asset('images/logo.svg') }}" height="36" alt="EPROFOS" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span style="display: none; font-size: 1.5rem; font-weight: bold;">EPROFOS</span>
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">Devenir mentor EPROFOS</h2>
+                    
+                    <div class="alert alert-info d-flex" role="alert">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                        </div>
+                        <div>
+                            Accompagnez les apprenants dans leur parcours de formation professionnelle et partagez votre expertise.
+                        </div>
+                    </div>
+                    
+                    {% for flash_error in app.flashes('error') %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="m0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    {{ flash_error }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    {% if form_errors(registrationForm) %}
+                        <div class="alert alert-danger">
+                            {{ form_errors(registrationForm) }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Informations personnelles -->
+                    <div class="row mb-3">
+                        <div class="col">
+                            <h3 class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                </svg>
+                                Informations personnelles
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.firstName) }}
+                                {{ form_widget(registrationForm.firstName) }}
+                                {{ form_errors(registrationForm.firstName) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.lastName) }}
+                                {{ form_widget(registrationForm.lastName) }}
+                                {{ form_errors(registrationForm.lastName) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.email) }}
+                        {{ form_widget(registrationForm.email) }}
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.phone) }}
+                                {{ form_widget(registrationForm.phone) }}
+                                {{ form_errors(registrationForm.phone) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.birthDate) }}
+                                {{ form_widget(registrationForm.birthDate) }}
+                                {{ form_errors(registrationForm.birthDate) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations professionnelles -->
+                    <div class="row mb-3 mt-4">
+                        <div class="col">
+                            <h3 class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 21l18 0"/>
+                                    <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"/>
+                                    <path d="M9 9l0 .01"/>
+                                    <path d="M15 9l0 .01"/>
+                                    <path d="M10 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2z"/>
+                                </svg>
+                                Informations professionnelles
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.position) }}
+                                {{ form_widget(registrationForm.position) }}
+                                {{ form_errors(registrationForm.position) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.experienceYears) }}
+                                {{ form_widget(registrationForm.experienceYears) }}
+                                {{ form_errors(registrationForm.experienceYears) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.companyName) }}
+                                {{ form_widget(registrationForm.companyName) }}
+                                {{ form_errors(registrationForm.companyName) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.companySiret) }}
+                                {{ form_widget(registrationForm.companySiret) }}
+                                {{ form_errors(registrationForm.companySiret) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.educationLevel) }}
+                        {{ form_widget(registrationForm.educationLevel) }}
+                        {{ form_errors(registrationForm.educationLevel) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(registrationForm.expertiseDomains) }}
+                        {{ form_widget(registrationForm.expertiseDomains) }}
+                        {{ form_errors(registrationForm.expertiseDomains) }}
+                        <div class="form-text">Maintenez Ctrl/Cmd pour sélectionner plusieurs domaines</div>
+                    </div>
+
+                    <!-- Mot de passe -->
+                    <div class="row mb-3 mt-4">
+                        <div class="col">
+                            <h3 class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"/>
+                                    <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/>
+                                    <path d="M8 11v-4a4 4 0 1 1 8 0v4"/>
+                                </svg>
+                                Sécurité
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.plainPassword.first) }}
+                                {{ form_widget(registrationForm.plainPassword.first) }}
+                                {{ form_errors(registrationForm.plainPassword.first) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(registrationForm.plainPassword.second) }}
+                                {{ form_widget(registrationForm.plainPassword.second) }}
+                                {{ form_errors(registrationForm.plainPassword.second) }}
+                            </div>
+                        </div>
+                    </div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+
+                    <div class="mb-4">
+                        <label class="form-check">
+                            {{ form_widget(registrationForm.agreeTerms) }}
+                            {{ form_label(registrationForm.agreeTerms) }}
+                        </label>
+                        {{ form_errors(registrationForm.agreeTerms) }}
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                            </svg>
+                            Créer mon compte mentor
+                        </button>
+                    </div>
+
+                    {{ form_end(registrationForm) }}
+                    
+                    <div class="text-center text-muted mt-3">
+                        Déjà mentor ? <a href="{{ path('mentor_login') }}" tabindex="-1">Se connecter</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center text-muted mt-3">
+                <a href="{{ path('app_home') }}" class="text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l14 0"/>
+                        <path d="M5 12l6 6"/>
+                        <path d="M5 12l6 -6"/>
+                    </svg>
+                    Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Support mentors</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Documentation</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="link-secondary">Conditions d'utilisation</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            © {{ 'now'|date('Y') }} 
+                            <a href="{{ path('app_home') }}" class="link-secondary">EPROFOS</a>
+                            Tous droits réservés.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

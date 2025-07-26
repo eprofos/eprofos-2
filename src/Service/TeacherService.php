@@ -125,7 +125,7 @@ class TeacherService
     /**
      * Send welcome email to new teacher
      */
-    public function sendWelcomeEmail(Teacher $teacher, string $tempPassword = null): bool
+    public function sendWelcomeEmail(Teacher $teacher, ?string $tempPassword = null): bool
     {
         try {
             $email = (new Email())

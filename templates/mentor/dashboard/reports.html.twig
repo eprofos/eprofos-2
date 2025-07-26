@@ -1,0 +1,349 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% set page_title = 'Rapports' %}
+
+{% block body %}
+<!-- Page body content -->
+<div class="row row-deck row-cards">
+    <!-- Reports Overview -->
+    <div class="col-12">
+        <div class="row row-cards">
+                        <!-- Apprentice Reports -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">Rapports apprentis</div>
+                                    </div>
+                                    <div class="h1 mb-3">{{ apprentice_reports|length|default(0) }}</div>
+                                    <div class="d-flex mb-2">
+                                        <div>Progression moyenne</div>
+                                        <div class="ms-auto">
+                                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                                0% <!-- TODO: Calculate when data is available -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+                                                    <polyline points="16,7 22,7 22,13"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-primary" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="0% Complete">
+                                            <span class="visually-hidden">0% Complete</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Reports -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">Rapports performance</div>
+                                    </div>
+                                    <div class="h1 mb-3">{{ performance_reports|length|default(0) }}</div>
+                                    <div class="d-flex mb-2">
+                                        <div>Score moyen</div>
+                                        <div class="ms-auto">
+                                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                                0/20 <!-- TODO: Calculate when data is available -->
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-success" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="0% Complete">
+                                            <span class="visually-hidden">0% Complete</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Reports -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">Rapports entreprise</div>
+                                    </div>
+                                    <div class="h1 mb-3">{{ company_reports|length|default(0) }}</div>
+                                    <div class="d-flex mb-2">
+                                        <div>Conformité</div>
+                                        <div class="ms-auto">
+                                            <span class="text-green d-inline-flex align-items-center lh-1">
+                                                100% <!-- TODO: Calculate when data is available -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="m9 12 2 2 4 -4"/>
+                                                    <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s4.03 -9 9 -9s9 4.03 9 9"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-info" style="width: 100%" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="100% Complete">
+                                            <span class="visually-hidden">100% Complete</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Reports -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">Rapports personnalisés</div>
+                                    </div>
+                                    <div class="h1 mb-3">{{ custom_reports|length|default(0) }}</div>
+                                    <div class="d-flex mb-2">
+                                        <div>Dernière création</div>
+                                        <div class="ms-auto">
+                                            <span class="text-muted">
+                                                Jamais <!-- TODO: Show last creation date when data is available -->
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-warning" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="0% Complete">
+                                            <span class="visually-hidden">0% Complete</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apprentice Progress Reports -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Rapports de progression des apprentis</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if apprentice_reports is empty %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                            <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                            <path d="M3 6l0 13"/>
+                                            <path d="M12 6l0 13"/>
+                                            <path d="M21 6l0 13"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun rapport disponible</p>
+                                    <p class="empty-subtitle text-muted">
+                                        Les rapports de progression de vos apprentis apparaîtront ici
+                                    </p>
+                                    <div class="empty-action">
+                                        <a href="#" class="btn btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                            Créer un rapport
+                                        </a>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {# TODO: Display apprentice reports when data is available #}
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter">
+                                        <thead>
+                                            <tr>
+                                                <th>Apprenti</th>
+                                                <th>Période</th>
+                                                <th>Progression</th>
+                                                <th>Évaluation</th>
+                                                <th>Statut</th>
+                                                <th class="w-1"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for report in apprentice_reports %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex py-1 align-items-center">
+                                                            <span class="avatar me-2">{{ report.apprentice.initials }}</span>
+                                                            <div class="flex-fill">
+                                                                <div class="font-weight-medium">{{ report.apprentice.fullName }}</div>
+                                                                <div class="text-muted">{{ report.apprentice.email }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-muted">
+                                                        {{ report.period }}
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="me-2">{{ report.progressPercentage }}%</span>
+                                                            <div class="progress" style="width: 6rem;">
+                                                                <div class="progress-bar" style="width: {{ report.progressPercentage }}%" role="progressbar"></div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-{{ report.evaluationScore >= 14 ? 'success' : (report.evaluationScore >= 10 ? 'warning' : 'danger') }}">
+                                                            {{ report.evaluationScore }}/20
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ report.status == 'completed' ? 'success' : (report.status == 'in_progress' ? 'warning' : 'secondary') }}">
+                                                            {{ report.statusLabel }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-list flex-nowrap">
+                                                            <a href="#" class="btn btn-white btn-sm">
+                                                                Voir détails
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Analytics -->
+                <div class="col-lg-4">
+                    <div class="row row-cards">
+                        <!-- Quick Report Actions -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Actions rapides</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="status-dot bg-success d-block"></span>
+                                                </div>
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">Générer rapport mensuel</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        Synthèse des performances du mois
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="status-dot bg-warning d-block"></span>
+                                                </div>
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">Rapport d'évaluation</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        Évaluations en cours et terminées
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="status-dot bg-info d-block"></span>
+                                                </div>
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">Rapport entreprise</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        Statistiques globales de l'entreprise
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="status-dot bg-primary d-block"></span>
+                                                </div>
+                                                <div class="col text-truncate">
+                                                    <a href="#" class="text-body d-block">Rapport personnalisé</a>
+                                                    <div class="d-block text-muted text-truncate mt-n1">
+                                                        Créer un rapport sur mesure
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Reports -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Rapports récents</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if (apprentice_reports|merge(performance_reports|default([]))|merge(company_reports|default([]))|merge(custom_reports|default([])))|length == 0 %}
+                                        <div class="empty">
+                                            <div class="empty-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                    <path d="M12 1v6m0 6v6"/>
+                                                    <path d="m21 12h-6m-6 0h-6"/>
+                                                    <path d="m16.24 7.76l-4.24 4.24"/>
+                                                    <path d="m12 12l-4.24 4.24"/>
+                                                    <path d="m16.24 16.24l-4.24-4.24"/>
+                                                    <path d="m12 12l4.24-4.24"/>
+                                                </svg>
+                                            </div>
+                                            <p class="empty-title">Aucun rapport récent</p>
+                                            <p class="empty-subtitle text-muted">
+                                                Créez votre premier rapport pour commencer
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        {# TODO: Display recent reports when data is available #}
+                                        <div class="list-group list-group-flush">
+                                            {# This will be populated when data becomes available #}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="#" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                <polyline points="7,11 12,16 17,11"/>
+                <line x1="12" y1="4" x2="12" y2="16"/>
+            </svg>
+            Exporter
+        </a>
+        <a href="#" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nouveau rapport
+        </a>
+    </div>
+{% endblock %}
+{% endblock %}

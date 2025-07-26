@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title ?? 'Dashboard' }} - EPROFOS Mentor{% endblock %}</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Plateforme d'accompagnement EPROFOS pour mentors">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="{{ csrf_token('default') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    
+    {% block javascripts %}
+        {{ importmap('private') }}
+    {% endblock %}
+    
+    {% block head_scripts %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="page">
+        {% block sidebar %}
+            {% if app.user %}
+                {% include 'mentor/components/sidebar.html.twig' %}
+            {% endif %}
+        {% endblock %}
+        
+        <div class="page-wrapper">
+            {% block navbar %}
+                {% if app.user %}
+                    {% include 'mentor/components/navbar.html.twig' %}
+                {% endif %}
+            {% endblock %}
+            
+            {% block page_header %}
+                {% if app.user %}
+                    <div class="page-header d-print-none">
+                        <div class="container-xl">
+                            <div class="row g-2 align-items-center">
+                                <div class="col">
+                                    <!-- Page pre-title -->
+                                    {% if breadcrumb is defined and breadcrumb|length > 1 %}
+                                        <div class="page-pretitle">
+                                            {% for item in breadcrumb[:-1] %}
+                                                {% if item.url %}
+                                                    <a href="{{ item.url }}" class="text-muted">{{ item.label }}</a>
+                                                {% else %}
+                                                    <span class="text-muted">{{ item.label }}</span>
+                                                {% endif %}
+                                                {% if not loop.last %} / {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Page title -->
+                                    <h2 class="page-title">
+                                        {% block page_title %}{{ page_title ?? 'Dashboard' }}{% endblock %}
+                                    </h2>
+                                </div>
+                                
+                                <!-- Page title actions -->
+                                <div class="col-auto ms-auto d-print-none">
+                                    {% block page_actions %}{% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endblock %}
+            
+            <!-- Page body -->
+            <div class="page-body">
+                <div class="container-xl">
+                    {% block flash_messages %}
+                        {% for label, messages in app.flashes %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                                    <div class="d-flex">
+                                        <div>
+                                            {% if label == 'success' %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                    <path d="M5 12l5 5l10 -10"></path>
+                                                </svg>
+                                            {% elseif label == 'error' or label == 'danger' %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                    <path d="M12 9v2m0 4v.01"></path>
+                                                    <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                                                </svg>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
+                                                    <path d="M12 9h.01"></path>
+                                                    <path d="M11 12h1v4h1"></path>
+                                                </svg>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {{ message }}
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endblock %}
+                    
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+            
+            {% block footer %}
+                <footer class="footer footer-transparent d-print-none">
+                    <div class="container-xl">
+                        <div class="row text-center align-items-center flex-row-reverse">
+                            <div class="col-lg-auto ms-lg-auto">
+                                <ul class="list-inline list-inline-dots mb-0">
+                                    <li class="list-inline-item">
+                                        <a href="{{ path('app_home') }}" class="link-secondary" target="_blank">
+                                            Voir le site public
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                                <ul class="list-inline list-inline-dots mb-0">
+                                    <li class="list-inline-item">
+                                        Copyright &copy; {{ 'now'|date('Y') }}
+                                        <a href="{{ path('app_home') }}" class="link-secondary">EPROFOS</a>.
+                                        Tous droits réservés.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

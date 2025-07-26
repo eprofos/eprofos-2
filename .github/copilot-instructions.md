@@ -5,6 +5,8 @@ EPROFOS is a Symfony 7.3/PHP 8.4 Learning Management System (LMS) for profession
 
 **Core Technologies**: Symfony Asset Mapper (not Webpack), KnpSnappyBundle for PDFs, PHPOffice for documents, Doctrine with extensive fixtures, PostgreSQL with advanced constraints.
 
+IMPORTANT: DON ONLY WHAT YOU ARE ASKED TO DO.
+
 ## Essential Architecture
 
 ### Core Entity Relationships

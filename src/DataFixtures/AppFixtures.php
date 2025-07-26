@@ -89,6 +89,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             DocumentUIComponentFixtures::class,
             StudentFixtures::class,
             TeacherFixtures::class,
+            MentorFixtures::class,
             CourseFixtures::class,
             ExerciseFixtures::class,
             QCMFixtures::class,

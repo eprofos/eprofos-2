@@ -1,0 +1,182 @@
+{% set mentor = app.user %}
+<aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <h1 class="navbar-brand navbar-brand-autodark">
+            <a href="{{ path('mentor_dashboard') }}">
+                <img src="{{ asset('images/logo-white.svg') }}" width="110" height="32" alt="EPROFOS" class="navbar-brand-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span class="navbar-brand-text" style="display: none;">EPROFOS</span>
+            </a>
+        </h1>
+        
+        <div class="navbar-nav flex-row d-lg-none">
+            <div class="nav-item d-none d-lg-flex me-3">
+                <div class="btn-list">
+                    <!-- Additional buttons for mobile if needed -->
+                </div>
+            </div>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                    <span class="avatar avatar-sm" style="background-image: url({{ asset('images/default-avatar.jpg') }})">
+                        {{ mentor.initials }}
+                    </span>
+                    <div class="d-none d-xl-block ps-2">
+                        <div>{{ mentor.fullName }}</div>
+                        <div class="mt-1 small text-muted">Mentor</div>
+                    </div>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="{{ path('mentor_logout') }}" class="dropdown-item">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-3">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_dashboard' ? 'active' : '' }}" href="{{ path('mentor_dashboard') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Tableau de bord
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Mes Apprentis -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_apprentices' ? 'active' : '' }}" href="{{ path('mentor_apprentices') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Mes Apprentis
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Missions -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_missions' ? 'active' : '' }}" href="{{ path('mentor_missions') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                                <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s4.03 -9 9 -9s9 4.03 9 9"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Missions
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Évaluations -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_evaluations' ? 'active' : '' }}" href="{{ path('mentor_evaluations') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Évaluations
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Rendez-vous -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_meetings' ? 'active' : '' }}" href="{{ path('mentor_meetings') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                <path d="M16 3v4"/>
+                                <path d="M8 3v4"/>
+                                <path d="M4 11h16"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Rendez-vous
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Rapports -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_reports' ? 'active' : '' }}" href="{{ path('mentor_reports') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                <path d="M3 6l0 13"/>
+                                <path d="M12 6l0 13"/>
+                                <path d="M21 6l0 13"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Rapports
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Divider -->
+                <li class="nav-item">
+                    <div class="hr-text">Mon Compte</div>
+                </li>
+                
+                <!-- Mon Profil -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_profile' ? 'active' : '' }}" href="{{ path('mentor_profile') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="7" r="4"/>
+                                <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Mon Profil
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Paramètres -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'mentor_settings' ? 'active' : '' }}" href="{{ path('mentor_settings') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/>
+                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Paramètres
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</aside>
