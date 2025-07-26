@@ -112,6 +112,7 @@ These fields are required for French training quality certification.
 - Value passing: `data-formation-filter-url-value="{{ path('route') }}"`
 - Event dispatching: `this.dispatch('resultsUpdated', { detail: data })`
 - Debounced search with `setTimeout()` for performance
+- **Modal Integration**: When creating modals in Twig, use `modal_controller.js` with `data-controller="modal"`, `data-modal-modal-id-value="modal-id"`, and actions `click->modal#open`/`click->modal#close`
 
 ### Collection Form Pattern
 Use dedicated `CollectionController` for dynamic form fields:
