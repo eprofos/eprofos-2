@@ -1,0 +1,380 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('mentor_missions_index') }}">Missions</a></li>
+                            <li class="breadcrumb-item active">{{ page_title }}</li>
+                        </ol>
+                    </nav>
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Créez une nouvelle mission pour vos alternants
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_missions_index') }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 14l-4 -4l4 -4"/>
+                                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                            </svg>
+                            Retour aux missions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                                <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s9 4.03 9 9s9 4.03 9 9"/>
+                            </svg>
+                            Informations de la mission
+                        </h3>
+                    </div>
+                    
+                    {{ form_start(form, {attr: {class: 'card', novalidate: 'novalidate'}}) }}
+                        <div class="card-body">
+                            <!-- Basic Information -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.title, 'Titre de la mission', {label_attr: {class: 'form-label required'}}) }}
+                                        {{ form_widget(form.title, {attr: {class: 'form-control', placeholder: 'Ex: Développement d\'une application mobile'}}) }}
+                                        {{ form_errors(form.title) }}
+                                        <small class="form-hint">Donnez un titre clair et descriptif à votre mission.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.description, 'Description détaillée', {label_attr: {class: 'form-label required'}}) }}
+                                        {{ form_widget(form.description, {attr: {class: 'form-control', rows: 5, placeholder: 'Décrivez en détail la mission, le contexte et les attentes...'}}) }}
+                                        {{ form_errors(form.description) }}
+                                        <small class="form-hint">Soyez aussi précis que possible pour aider l'alternant à comprendre la mission.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Context -->
+                            {% if form.context is defined %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.context, 'Contexte de la mission', {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.context, {attr: {class: 'form-control', rows: 3, placeholder: 'Décrivez le contexte dans lequel s\'inscrit cette mission...'}}) }}
+                                        {{ form_errors(form.context) }}
+                                        <small class="form-hint">Expliquez dans quel cadre cette mission s'inscrit dans l'entreprise.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Mission Parameters -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.complexity, 'Complexité', {label_attr: {class: 'form-label required'}}) }}
+                                        {{ form_widget(form.complexity, {attr: {class: 'form-select'}}) }}
+                                        {{ form_errors(form.complexity) }}
+                                        <small class="form-hint">Niveau de difficulté requis pour cette mission.</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.term, 'Type de mission', {label_attr: {class: 'form-label required'}}) }}
+                                        {{ form_widget(form.term, {attr: {class: 'form-select'}}) }}
+                                        {{ form_errors(form.term) }}
+                                        <small class="form-hint">Durée de la mission (court/moyen/long terme).</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form_label(form.duration, 'Durée estimée (heures)', {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.duration, {attr: {class: 'form-control', placeholder: 'Ex: 40'}}) }}
+                                        {{ form_errors(form.duration) }}
+                                        <small class="form-hint">Durée estimée pour réaliser la mission.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Department and Order -->
+                            <div class="row">
+                                {% if form.department is defined %}
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.department, 'Département', {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.department, {attr: {class: 'form-control', placeholder: 'Ex: Développement, Marketing, RH'}}) }}
+                                        {{ form_errors(form.department) }}
+                                        <small class="form-hint">Département responsable de cette mission.</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if form.orderIndex is defined %}
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.orderIndex, 'Ordre de priorité', {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.orderIndex, {attr: {class: 'form-control', placeholder: 'Ex: 1'}}) }}
+                                        {{ form_errors(form.orderIndex) }}
+                                        <small class="form-hint">Ordre dans lequel cette mission doit être réalisée.</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Objectives -->
+                            {% if form.objectives is defined %}
+                            {% do form.objectives.setRendered %}
+                            <div class="mb-3">
+                                {{ form_label(form.objectives, 'Objectifs pédagogiques', {label_attr: {class: 'form-label'}}) }}
+                                <div data-controller="collection" 
+                                     data-collection-index-value="{{ form.objectives|length }}"
+                                     data-collection-prototype-name-value="__name__">
+                                    
+                                    <div data-collection-target="prototype" 
+                                         data-prototype="{{ form_widget(form.objectives.vars.prototype)|e('html_attr') }}" 
+                                         style="display: none;"></div>
+                                    
+                                    <div data-collection-target="collection">
+                                        {% for objectiveForm in form.objectives %}
+                                            <div class="collection-item mb-2">
+                                                <div class="input-group">
+                                                    {{ form_widget(objectiveForm, {attr: {class: 'form-control', placeholder: 'Ex: Maîtriser les concepts de base du développement mobile'}}) }}
+                                                    <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M18 6l-12 12"/>
+                                                            <path d="M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter un objectif
+                                    </button>
+                                </div>
+                                {{ form_errors(form.objectives) }}
+                                <small class="form-hint">Définissez les objectifs pédagogiques que l'alternant doit atteindre.</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Required Skills -->
+                            {% if form.requiredSkills is defined %}
+                            {% do form.requiredSkills.setRendered %}
+                            <div class="mb-3">
+                                {{ form_label(form.requiredSkills, 'Compétences requises', {label_attr: {class: 'form-label'}}) }}
+                                <div data-controller="collection" 
+                                     data-collection-index-value="{{ form.requiredSkills|length }}"
+                                     data-collection-prototype-name-value="__name__">
+                                    
+                                    <div data-collection-target="prototype" 
+                                         data-prototype="{{ form_widget(form.requiredSkills.vars.prototype)|e('html_attr') }}" 
+                                         style="display: none;"></div>
+                                    
+                                    <div data-collection-target="collection">
+                                        {% for skillForm in form.requiredSkills %}
+                                            <div class="collection-item mb-2">
+                                                <div class="input-group">
+                                                    {{ form_widget(skillForm, {attr: {class: 'form-control', placeholder: 'Ex: JavaScript, React Native, Git'}}) }}
+                                                    <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M18 6l-12 12"/>
+                                                            <path d="M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter une compétence
+                                    </button>
+                                </div>
+                                {{ form_errors(form.requiredSkills) }}
+                                <small class="form-hint">Listez les compétences techniques et comportementales nécessaires.</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Skills to Acquire -->
+                            {% if form.skillsToAcquire is defined %}
+                            {% do form.skillsToAcquire.setRendered %}
+                            <div class="mb-3">
+                                {{ form_label(form.skillsToAcquire, 'Compétences à acquérir', {label_attr: {class: 'form-label'}}) }}
+                                <div data-controller="collection" 
+                                     data-collection-index-value="{{ form.skillsToAcquire|length }}"
+                                     data-collection-prototype-name-value="__name__">
+                                    
+                                    <div data-collection-target="prototype" 
+                                         data-prototype="{{ form_widget(form.skillsToAcquire.vars.prototype)|e('html_attr') }}" 
+                                         style="display: none;"></div>
+                                    
+                                    <div data-collection-target="collection">
+                                        {% for skillForm in form.skillsToAcquire %}
+                                            <div class="collection-item mb-2">
+                                                <div class="input-group">
+                                                    {{ form_widget(skillForm, {attr: {class: 'form-control', placeholder: 'Ex: Tests unitaires, Architecture microservices'}}) }}
+                                                    <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M18 6l-12 12"/>
+                                                            <path d="M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter une compétence
+                                    </button>
+                                </div>
+                                {{ form_errors(form.skillsToAcquire) }}
+                                <small class="form-hint">Compétences que l'alternant va développer pendant cette mission.</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Prerequisites -->
+                            {% if form.prerequisites is defined %}
+                            {% do form.prerequisites.setRendered %}
+                            <div class="mb-3">
+                                {{ form_label(form.prerequisites, 'Prérequis', {label_attr: {class: 'form-label'}}) }}
+                                <div data-controller="collection" 
+                                     data-collection-index-value="{{ form.prerequisites|length }}"
+                                     data-collection-prototype-name-value="__name__">
+                                    
+                                    <div data-collection-target="prototype" 
+                                         data-prototype="{{ form_widget(form.prerequisites.vars.prototype)|e('html_attr') }}" 
+                                         style="display: none;"></div>
+                                    
+                                    <div data-collection-target="collection">
+                                        {% for prereqForm in form.prerequisites %}
+                                            <div class="collection-item mb-2">
+                                                <div class="input-group">
+                                                    {{ form_widget(prereqForm, {attr: {class: 'form-control', placeholder: 'Ex: Connaissance de base en programmation'}}) }}
+                                                    <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M18 6l-12 12"/>
+                                                            <path d="M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter un prérequis
+                                    </button>
+                                </div>
+                                {{ form_errors(form.prerequisites) }}
+                                <small class="form-hint">Compétences ou formations nécessaires avant de commencer cette mission.</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Evaluation Criteria -->
+                            {% if form.evaluationCriteria is defined %}
+                            {% do form.evaluationCriteria.setRendered %}
+                            <div class="mb-3">
+                                {{ form_label(form.evaluationCriteria, 'Critères d\'évaluation', {label_attr: {class: 'form-label'}}) }}
+                                <div data-controller="collection" 
+                                     data-collection-index-value="{{ form.evaluationCriteria|length }}"
+                                     data-collection-prototype-name-value="__name__">
+                                    
+                                    <div data-collection-target="prototype" 
+                                         data-prototype="{{ form_widget(form.evaluationCriteria.vars.prototype)|e('html_attr') }}" 
+                                         style="display: none;"></div>
+                                    
+                                    <div data-collection-target="collection">
+                                        {% for criterionForm in form.evaluationCriteria %}
+                                            <div class="collection-item mb-2">
+                                                <div class="input-group">
+                                                    {{ form_widget(criterionForm, {attr: {class: 'form-control', placeholder: 'Ex: Qualité du code, Respect des délais, Innovation'}}) }}
+                                                    <button type="button" class="btn btn-outline-danger" data-action="click->collection#removeItem">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M18 6l-12 12"/>
+                                                            <path d="M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="click->collection#addItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Ajouter un critère
+                                    </button>
+                                </div>
+                                {{ form_errors(form.evaluationCriteria) }}
+                                <small class="form-hint">Définissez comment la mission sera évaluée.</small>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-footer text-end">
+                            <div class="d-flex">
+                                <a href="{{ path('mentor_missions_index') }}" class="btn btn-link">Annuler</a>
+                                <button type="submit" class="btn btn-primary ms-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Créer la mission
+                                </button>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

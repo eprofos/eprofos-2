@@ -1,0 +1,312 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Gérer vos missions d'alternance
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_missions_create') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Créer une mission
+                        </a>
+                        <a href="{{ path('mentor_missions_recommendations') }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9.5 2a6.5 6.5 0 1 1 0 13a6.5 6.5 0 0 1 0 -13z"/>
+                                <path d="M17.5 15a4.5 4.5 0 1 1 0 9a4.5 4.5 0 0 1 0 -9z"/>
+                                <path d="M8.5 9l2 2l4 -4"/>
+                            </svg>
+                            Recommandations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Statistics Cards -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Total missions</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.total_missions ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted">Créées par vous</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Missions actives</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.active_missions ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted">Disponibles pour assignation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Assignations totales</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.total_assignments ?? 0 }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted">Missions assignées</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Taux de réussite</div>
+                        </div>
+                        <div class="h1 mb-3">{{ stats.success_rate ?? 0 }}%</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: {{ stats.success_rate ?? 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted">Missions réussies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Statut</label>
+                                <select name="status" class="form-select">
+                                    <option value="all" {{ filters.status == 'all' ? 'selected' : '' }}>Toutes</option>
+                                    <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Actives</option>
+                                    <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inactives</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Complexité</label>
+                                <select name="complexity" class="form-select">
+                                    <option value="all" {{ filters.complexity == 'all' ? 'selected' : '' }}>Toutes</option>
+                                    {% for key, label in complexity_options %}
+                                        <option value="{{ key }}" {{ filters.complexity == key ? 'selected' : '' }}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Type</label>
+                                <select name="term" class="form-select">
+                                    <option value="all" {{ filters.term == 'all' ? 'selected' : '' }}>Tous</option>
+                                    {% for key, label in term_options %}
+                                        <option value="{{ key }}" {{ filters.term == key ? 'selected' : '' }}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">Filtrer</button>
+                                <a href="{{ path('mentor_missions_index') }}" class="btn btn-outline-secondary">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missions List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Mission</th>
+                                    <th>Type</th>
+                                    <th>Complexité</th>
+                                    <th>Assignations</th>
+                                    <th>Statut</th>
+                                    <th>Créée le</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mission in missions %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex py-1 align-items-center">
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">{{ mission.title }}</div>
+                                                    <div class="text-muted">{{ mission.description|length > 100 ? mission.description|slice(0, 100) ~ '...' : mission.description }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-blue">{{ mission.termLabel }}</span>
+                                        </td>
+                                        <td>
+                                            {% set complexity_colors = {'debutant': 'green', 'intermediaire': 'yellow', 'avance': 'red'} %}
+                                            <span class="badge bg-{{ complexity_colors[mission.complexity] ?? 'secondary' }}">
+                                                {{ mission.complexityLabel }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="text-muted">
+                                                {{ mission.activeAssignmentsCount }} actives / {{ mission.assignments|length }} total
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if mission.isActive %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ mission.createdAt|date('d/m/Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="{{ path('mentor_missions_show', {id: mission.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    Voir
+                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="{{ path('mentor_missions_show', {id: mission.id}) }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg>
+                                                            Voir détails
+                                                        </a>
+                                                        {% if mission.activeAssignmentsCount == 0 %}
+                                                            <a class="dropdown-item" href="{{ path('mentor_missions_edit', {id: mission.id}) }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/><path d="M16 5l3 3"/></svg>
+                                                                Modifier
+                                                            </a>
+                                                        {% endif %}
+                                                        <form method="post" action="{{ path('mentor_missions_toggle_status', {id: mission.id}) }}" style="display: inline;">
+                                                            <button type="submit" class="dropdown-item" onclick="return confirm('Êtes-vous sûr de vouloir {{ mission.isActive ? 'désactiver' : 'activer' }} cette mission ?')">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 2l0 20l-2 -2l-2 2l0 -20l2 2l2 -2"/><path d="M12 6l8 0"/><path d="M12 12l8 0"/><path d="M12 18l8 0"/></svg>
+                                                                {{ mission.isActive ? 'Désactiver' : 'Activer' }}
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <div class="empty">
+                                                <div class="empty-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M9 12l2 2l4 -4"/>
+                                                        <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                                        <path d="M15 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                                        <path d="M9 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                                        <path d="M3 12a9 9 0 0 1 9 -9a9 9 0 0 1 9 9"/>
+                                                    </svg>
+                                                </div>
+                                                <p class="empty-title">Aucune mission trouvée</p>
+                                                <p class="empty-subtitle text-muted">
+                                                    Créez votre première mission pour commencer à assigner des tâches à vos alternants.
+                                                </p>
+                                                <div class="empty-action">
+                                                    <a href="{{ path('mentor_missions_create') }}" class="btn btn-primary">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M12 5l0 14"/>
+                                                            <path d="M5 12l14 0"/>
+                                                        </svg>
+                                                        Créer une mission
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if total_pages > 1 %}
+                        <div class="card-footer d-flex align-items-center">
+                            <p class="m-0 text-muted">
+                                Affichage de {{ ((current_page - 1) * 10) + 1 }} à {{ min(current_page * 10, total_count) }} sur {{ total_count }} missions
+                            </p>
+                            <ul class="pagination m-0 ms-auto">
+                                {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('mentor_missions_index', app.request.query.all|merge({page: current_page - 1})) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6"/></svg>
+                                            prev
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+                                    <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ path('mentor_missions_index', app.request.query.all|merge({page: page})) }}">{{ page }}</a>
+                                    </li>
+                                {% endfor %}
+                                
+                                {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('mentor_missions_index', app.request.query.all|merge({page: current_page + 1})) }}">
+                                            next
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6"/></svg>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

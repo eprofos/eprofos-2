@@ -91,50 +91,16 @@ class DashboardController extends AbstractController
     /**
      * Apprentices management page
      * 
-     * Displays supervised apprentices, their progress, and management tools.
+     * Redirects to the assignments page since this is where alternance management happens.
      */
     #[Route('/apprentices', name: 'apprentices', methods: ['GET'])]
     public function apprentices(): Response
     {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
-
-        // TODO: Implement when Alternant entity is created
-        $apprenticesData = [
-            'mentor' => $mentor,
-            'current_apprentices' => [], // TODO: Get current apprentices
-            'past_apprentices' => [], // TODO: Get past apprentices
-            'available_candidates' => [], // TODO: Get available apprentice candidates
-            'apprentice_requests' => [], // TODO: Get pending apprentice assignment requests
-            'page_title' => 'Mes Alternants'
-        ];
-
-        return $this->render('mentor/dashboard/apprentices.html.twig', $apprenticesData);
+        // Redirect to assignments since that's where we manage alternance students
+        return $this->redirectToRoute('mentor_assignments_index');
     }
 
-    /**
-     * Missions management page
-     * 
-     * Displays created missions, mission templates, and mission management tools.
-     */
-    #[Route('/missions', name: 'missions', methods: ['GET'])]
-    public function missions(): Response
-    {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
 
-        // TODO: Implement when Mission entity is created
-        $missionsData = [
-            'mentor' => $mentor,
-            'active_missions' => [], // TODO: Get active missions
-            'draft_missions' => [], // TODO: Get draft missions
-            'completed_missions' => [], // TODO: Get completed missions
-            'mission_templates' => [], // TODO: Get mission templates
-            'page_title' => 'Missions d\'Alternance'
-        ];
-
-        return $this->render('mentor/dashboard/missions.html.twig', $missionsData);
-    }
 
     /**
      * Evaluations and reports page
@@ -160,104 +126,13 @@ class DashboardController extends AbstractController
         return $this->render('mentor/dashboard/evaluations.html.twig', $evaluationsData);
     }
 
-    /**
-     * Training resources page
-     * 
-     * Displays available training resources for mentors and apprentices.
-     */
-    #[Route('/resources', name: 'resources', methods: ['GET'])]
-    public function resources(): Response
-    {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
 
-        // TODO: Implement when training resources system is ready
-        $resourcesData = [
-            'mentor' => $mentor,
-            'mentor_guides' => [], // TODO: Get mentor training guides
-            'apprentice_resources' => [], // TODO: Get resources for apprentices
-            'company_documents' => [], // TODO: Get company-specific documents
-            'training_videos' => [], // TODO: Get training videos
-            'page_title' => 'Ressources de Formation'
-        ];
 
-        return $this->render('mentor/dashboard/resources.html.twig', $resourcesData);
-    }
 
-    /**
-     * Company collaboration page
-     * 
-     * Displays other mentors from the same company and collaboration tools.
-     */
-    #[Route('/company', name: 'company', methods: ['GET'])]
-    public function company(): Response
-    {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
 
-        $companyStats = $this->mentorService->getCompanyStatistics($mentor->getCompanyName());
 
-        // TODO: Get other mentors from the same company
-        $companyData = [
-            'mentor' => $mentor,
-            'company_stats' => $companyStats,
-            'other_mentors' => [], // TODO: Get other mentors from same company
-            'company_missions' => [], // TODO: Get company-wide missions
-            'company_apprentices' => [], // TODO: Get all company apprentices
-            'page_title' => 'Collaboration Entreprise'
-        ];
 
-        return $this->render('mentor/dashboard/company.html.twig', $companyData);
-    }
 
-    /**
-     * Mentor calendar page
-     * 
-     * Displays calendar with apprentice meetings, evaluations, and important dates.
-     */
-    #[Route('/calendar', name: 'calendar', methods: ['GET'])]
-    public function calendar(): Response
-    {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
-
-        // TODO: Implement when calendar/scheduling system is ready
-        $calendarData = [
-            'mentor' => $mentor,
-            'upcoming_events' => [], // TODO: Get upcoming events
-            'evaluation_dates' => [], // TODO: Get scheduled evaluations
-            'meeting_requests' => [], // TODO: Get meeting requests from apprentices
-            'company_events' => [], // TODO: Get company training events
-            'page_title' => 'Planning Mentor'
-        ];
-
-        return $this->render('mentor/dashboard/calendar.html.twig', $calendarData);
-    }
-
-    /**
-     * Mentor analytics page
-     * 
-     * Displays performance analytics, apprentice success rates, and mentor insights.
-     */
-    #[Route('/analytics', name: 'analytics', methods: ['GET'])]
-    public function analytics(): Response
-    {
-        /** @var Mentor $mentor */
-        $mentor = $this->getUser();
-
-        // TODO: Implement when analytics system is ready
-        $analyticsData = [
-            'mentor' => $mentor,
-            'mentor_performance' => [], // TODO: Get mentor performance metrics
-            'apprentice_success_rate' => 0, // TODO: Calculate apprentice success rate
-            'mission_completion_rate' => 0, // TODO: Calculate mission completion rate
-            'feedback_summary' => [], // TODO: Get feedback summary
-            'improvement_suggestions' => [], // TODO: Get improvement suggestions
-            'page_title' => 'Analyses & Performance'
-        ];
-
-        return $this->render('mentor/dashboard/analytics.html.twig', $analyticsData);
-    }
 
     /**
      * Mentor notifications page
@@ -322,35 +197,11 @@ class DashboardController extends AbstractController
 
     // PLACEHOLDER ROUTES - These will be implemented when the corresponding features are added
 
-    /**
-     * Invite apprentice page - PLACEHOLDER
-     */
-    #[Route('/apprentices/invite', name: 'apprentices_invite', methods: ['GET'])]
-    public function apprenticesInvite(): Response
-    {
-        $this->addFlash('info', 'Cette fonctionnalité sera disponible prochainement.');
-        return $this->redirectToRoute('mentor_apprentices');
-    }
 
-    /**
-     * Create mission page - PLACEHOLDER
-     */
-    #[Route('/missions/create', name: 'missions_create', methods: ['GET'])]
-    public function missionsCreate(): Response
-    {
-        $this->addFlash('info', 'Cette fonctionnalité sera disponible prochainement.');
-        return $this->redirectToRoute('mentor_missions');
-    }
 
-    /**
-     * Create evaluation page - PLACEHOLDER
-     */
-    #[Route('/evaluations/create', name: 'evaluations_create', methods: ['GET'])]
-    public function evaluationsCreate(): Response
-    {
-        $this->addFlash('info', 'Cette fonctionnalité sera disponible prochainement.');
-        return $this->redirectToRoute('mentor_evaluations');
-    }
+
+
+
 
     /**
      * Meetings management page
@@ -400,13 +251,5 @@ class DashboardController extends AbstractController
         return $this->render('mentor/dashboard/reports.html.twig', $reportsData);
     }
 
-    /**
-     * Schedule meeting page - PLACEHOLDER
-     */
-    #[Route('/meetings/schedule', name: 'meetings_schedule', methods: ['GET'])]
-    public function meetingsSchedule(): Response
-    {
-        $this->addFlash('info', 'Cette fonctionnalité sera disponible prochainement.');
-        return $this->redirectToRoute('mentor_meetings');
-    }
+
 }

@@ -20,5 +20,6 @@ import '@fortawesome/fontawesome-free';
 
 // Import admin-specific styles
 import './styles/admin.css';
+import './styles/objectives.css';
 
 console.log('Private entrypoint loaded successfully');

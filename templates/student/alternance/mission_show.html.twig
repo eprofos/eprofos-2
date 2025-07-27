@@ -1,0 +1,297 @@
+{% extends 'student/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">
+                        <a href="{{ path('student_alternance_missions') }}">Mes Missions</a>
+                    </div>
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        <span class="badge {{ assignment.statusBadgeClass }} me-2 text-white">{{ assignment.statusLabel }}</span>
+                        <span class="badge bg-blue me-2 text-white">{{ mission.termLabel }}</span>
+                        <span class="badge bg-secondary text-white">{{ mission.complexityLabel }}</span>
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_alternance_missions') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 14l-4 -4l4 -4"/>
+                                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                            </svg>
+                            Retour aux missions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <!-- Mission Details -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Description de la mission</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="markdown">
+                            {{ mission.description|nl2br }}
+                        </div>
+
+                        {% if mission.objectives|length > 0 %}
+                            <h4 class="mt-4 mb-3">Objectifs</h4>
+                            <ul class="list-unstyled">
+                                {% for objective in mission.objectives %}
+                                    <li class="d-flex mb-2">
+                                        <div class="me-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M5 12l5 5l10 -10"/>
+                                            </svg>
+                                        </div>
+                                        <div>{{ objective }}</div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% if mission.requiredSkills|length > 0 %}
+                            <h4 class="mt-4 mb-3">Compétences requises</h4>
+                            <div class="row">
+                                {% for skill in mission.requiredSkills %}
+                                    <div class="col-md-6 mb-2">
+                                        <span class="badge bg-primary text-white">{{ skill }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Intermediate Objectives -->
+                {% if assignment.intermediateObjectivesAsDTO|length > 0 %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Objectifs intermédiaires</h3>
+                        </div>
+                        <div class="card-body">
+                            {% for objective in assignment.intermediateObjectivesAsDTO %}
+                                <div class="d-flex mb-3">
+                                    <div class="me-3">
+                                        {% if objective.completed %}
+                                            <span class="avatar avatar-sm bg-success text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 12l5 5l10 -10"/>
+                                                </svg>
+                                            </span>
+                                        {% else %}
+                                            <span class="avatar avatar-sm bg-secondary text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10z"/>
+                                                </svg>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-fill">
+                                        <div class="font-weight-medium {% if objective.completed %}text-decoration-line-through text-secondary{% endif %}">
+                                            {{ objective.title }}
+                                        </div>
+                                        {% if objective.description %}
+                                            <div class="text-secondary small">{{ objective.description }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Progress Update Form -->
+                {% if not assignment.isCompleted %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Mettre à jour ma progression</h3>
+                        </div>
+                        <form method="post" action="{{ path('student_alternance_mission_update_progress', {id: assignment.id}) }}">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Taux de progression (%)</label>
+                                    <input type="number" name="completion_rate" class="form-control" 
+                                           min="0" max="100" step="1" 
+                                           value="{{ assignment.completionRate|round }}"
+                                           placeholder="Pourcentage de progression">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Auto-évaluation</label>
+                                    <textarea name="self_assessment" class="form-control" rows="4" 
+                                              placeholder="Décrivez votre progression, les difficultés rencontrées, les réalisations...">{{ assignment.studentFeedback }}</textarea>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                        <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                        <path d="M14 4l0 4l-6 0l0 -4"/>
+                                    </svg>
+                                    Enregistrer la progression
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Progress Overview -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Progression</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-lg bg-primary text-white">
+                                        {{ assignment.completionRate|round }}%
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar {{ assignment.completionProgressClass }}" 
+                                             style="width: {{ assignment.completionRate }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-secondary">Début</div>
+                                    <div class="font-weight-medium">{{ assignment.startDate|date('d/m/Y') }}</div>
+                                </div>
+                            </div>
+                            {% if assignment.endDate %}
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-secondary">Échéance</div>
+                                        <div class="font-weight-medium {% if assignment.isOverdue %}text-danger{% endif %}">
+                                            {{ assignment.endDate|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if assignment.isOverdue %}
+                            <div class="alert alert-danger mt-3">
+                                <div class="d-flex">
+                                    <div class="me-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/>
+                                            <path d="M12 9v4"/>
+                                            <path d="M12 16h.01"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-title">Mission en retard !</h4>
+                                        <div class="text-secondary">L'échéance de cette mission est dépassée. Contactez votre tuteur.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Mission Info -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">T</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Terme</div>
+                                <div class="text-secondary">{{ mission.termLabel }}</div>
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">C</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Complexité</div>
+                                <div class="text-secondary">{{ mission.complexityLabel }}</div>
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">D</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Durée estimée</div>
+                                <div class="text-secondary">{{ mission.duration ?: 'Non renseignée' }}</div>
+                            </div>
+                        </div>
+                        {% if assignment.getDurationInDays > 0 %}
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-sm">J</span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">Durée totale</div>
+                                    <div class="text-secondary">{{ assignment.getDurationInDays }} jours</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Feedback -->
+                {% if assignment.mentorFeedback or assignment.studentFeedback %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Commentaires</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if assignment.mentorFeedback %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="avatar avatar-xs bg-primary text-white me-2">T</span>
+                                        <strong>Tuteur entreprise</strong>
+                                    </div>
+                                    <div class="text-secondary">{{ assignment.mentorFeedback|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                            {% if assignment.studentFeedback %}
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="avatar avatar-xs bg-success text-white me-2">M</span>
+                                        <strong>Mon auto-évaluation</strong>
+                                    </div>
+                                    <div class="text-secondary">{{ assignment.studentFeedback|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

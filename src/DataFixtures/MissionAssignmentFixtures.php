@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\Alternance\MissionAssignment;
+use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
@@ -29,6 +30,13 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         if (empty($missions)) {
             echo "⚠️  No missions found. Please run CompanyMissionFixtures first.\n";
             return;
+        }
+
+        // Ensure mentor@eprofos.fr gets assignments by creating specific assignments for this mentor's missions
+        $mentorEprofos = $manager->getRepository(Mentor::class)->findOneBy(['email' => 'mentor@eprofos.fr']);
+        if ($mentorEprofos) {
+            echo "🎯 Creating specific assignments for mentor@eprofos.fr\n";
+            $this->createAssignmentsForSpecificMentor($manager, $mentorEprofos, $students, $faker);
         }
 
         $assignmentCount = 0;
@@ -110,6 +118,66 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         echo "✅ Created {$assignmentCount} mission assignments\n";
         echo "📊 Distribution by status:\n";
         $this->printStatusDistribution($manager);
+    }
+
+    /**
+     * Create specific assignments for a mentor to ensure they have data to display
+     */
+    private function createAssignmentsForSpecificMentor(ObjectManager $manager, $mentor, array $students, object $faker): void
+    {
+        // Get all missions for this mentor
+        $mentorMissions = $manager->getRepository(CompanyMission::class)->findBy(['supervisor' => $mentor]);
+        
+        if (empty($mentorMissions)) {
+            echo "⚠️  No missions found for mentor {$mentor->getEmail()}\n";
+            return;
+        }
+
+        echo "📋 Found " . count($mentorMissions) . " missions for mentor {$mentor->getEmail()}\n";
+        
+        // Assign each mission to 1-3 students with different statuses
+        foreach ($mentorMissions as $mission) {
+            $assignmentsForThisMission = $faker->numberBetween(1, 3);
+            $selectedStudents = $faker->randomElements($students, min($assignmentsForThisMission, count($students)));
+            
+            foreach ($selectedStudents as $student) {
+                $assignment = new MissionAssignment();
+                $assignment->setMission($mission);
+                $assignment->setStudent($student);
+                
+                // Set assignment date (varied timeframes)
+                $startDate = $faker->dateTimeBetween('-6 months', '-1 week');
+                $assignment->setStartDate($startDate);
+                
+                // Set end date based on mission duration
+                $expectedDays = $this->getExpectedDurationDays($mission->getDuration());
+                $endDate = (clone $startDate)->modify("+{$expectedDays} days");
+                $assignment->setEndDate($endDate);
+                
+                // Assign realistic status based on timing
+                $daysSinceStart = $startDate->diff(new \DateTimeImmutable())->days;
+                if ($daysSinceStart > $expectedDays + 7) {
+                    $status = $faker->randomElement(['terminee', 'suspendue']);
+                } elseif ($daysSinceStart > 7) {
+                    $status = $faker->randomElement(['en_cours', 'terminee']);
+                } else {
+                    $status = 'planifiee';
+                }
+                
+                $assignment->setStatus($status);
+                
+                // Set assignment details based on status
+                $this->setAssignmentDetails($assignment, $status, $startDate, $faker);
+                
+                // Set evaluations
+                $this->setEvaluations($assignment, $status, $faker);
+                
+                $manager->persist($assignment);
+                echo "  ✅ Created assignment: {$student->getFirstName()} {$student->getLastName()} -> {$mission->getTitle()} ({$status})\n";
+            }
+        }
+        
+        $manager->flush();
     }
 
     /**
@@ -326,23 +394,66 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
      */
     private function generateIntermediateObjectives(CompanyMission $mission, object $faker, bool $withProgress = false, bool $allCompleted = false): array
     {
-        $objectives = [];
         $missionObjectives = $mission->getObjectives();
         
-        // Break down mission objectives into intermediate ones
-        foreach ($missionObjectives as $index => $objective) {
-            $intermediateObj = [
+        // Generate structured objectives with completion tracking
+        $objectives = [];
+        
+        foreach ($missionObjectives as $objective) {
+            $objectiveData = [
                 'title' => $objective,
-                'description' => 'Objectif intermédiaire: ' . $objective,
-                'completed' => $allCompleted || ($withProgress && $faker->boolean(70)),
+                'description' => 'Objectif issu de la mission: ' . $objective,
+                'completed' => $allCompleted ? true : ($withProgress ? $faker->boolean(60) : false),
                 'completion_date' => null
             ];
             
-            if ($intermediateObj['completed']) {
-                $intermediateObj['completion_date'] = $faker->dateTimeBetween('-2 months', 'now')->format('Y-m-d');
+            if ($objectiveData['completed']) {
+                $objectiveData['completion_date'] = $faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d H:i:s');
             }
             
-            $objectives[] = $intermediateObj;
+            $objectives[] = $objectiveData;
+        }
+        
+        // Add some additional intermediate objectives
+        $additionalObjectiveTemplates = [
+            [
+                'title' => 'Se familiariser avec l\'environnement de travail',
+                'description' => 'Découvrir l\'organisation, les locaux et les équipes'
+            ],
+            [
+                'title' => 'Maîtriser les outils et procédures',
+                'description' => 'Apprendre à utiliser les outils métier et comprendre les processus'
+            ],
+            [
+                'title' => 'Développer l\'autonomie sur les tâches courantes',
+                'description' => 'Être capable de réaliser les tâches quotidiennes sans supervision'
+            ],
+            [
+                'title' => 'Produire des livrables de qualité',
+                'description' => 'Respecter les standards de qualité et les délais impartis'
+            ],
+            [
+                'title' => 'Collaborer efficacement avec l\'équipe',
+                'description' => 'S\'intégrer dans l\'équipe et communiquer efficacement'
+            ]
+        ];
+        
+        // Add 1-3 additional objectives randomly
+        $extraObjectives = $faker->randomElements($additionalObjectiveTemplates, $faker->numberBetween(1, 3));
+        
+        foreach ($extraObjectives as $template) {
+            $objectiveData = [
+                'title' => $template['title'],
+                'description' => $template['description'],
+                'completed' => $allCompleted ? true : ($withProgress ? $faker->boolean(40) : false),
+                'completion_date' => null
+            ];
+            
+            if ($objectiveData['completed']) {
+                $objectiveData['completion_date'] = $faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d H:i:s');
+            }
+            
+            $objectives[] = $objectiveData;
         }
         
         return $objectives;

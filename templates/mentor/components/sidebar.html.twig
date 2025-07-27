@@ -73,7 +73,7 @@
                 
                 <!-- Missions -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') == 'mentor_missions' ? 'active' : '' }}" href="{{ path('mentor_missions') }}">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'mentor_missions' ? 'active' : '' }}" href="{{ path('mentor_missions_index') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -83,6 +83,25 @@
                         </span>
                         <span class="nav-link-title">
                             Missions
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Assignations -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'mentor_assignments' ? 'active' : '' }}" href="{{ path('mentor_assignments_index') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M6 4h12v12h-12z"/>
+                                <path d="M6 8h12"/>
+                                <path d="M6 12h6"/>
+                                <path d="M6 16h4"/>
+                                <path d="M16 16l2 2l4 -4"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Assignations
                         </span>
                     </a>
                 </li>

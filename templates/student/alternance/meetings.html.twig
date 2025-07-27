@@ -1,0 +1,205 @@
+{% extends 'student/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Suivi des réunions de coordination avec vos tuteurs et formateurs
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_alternance_dashboard') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                <path d="M5 12v7a2 2 0 0 1 2 2h10a2 2 0 0 1 2 -2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                            </svg>
+                            Tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        {% if meetings|length > 0 %}
+            <!-- Upcoming Meetings -->
+            {% set upcoming_meetings = meetings|filter(m => m.isUpcoming) %}
+            {% if upcoming_meetings|length > 0 %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-primary">
+                            <div class="card-header">
+                                <h3 class="card-title text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 2c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/>
+                                        <path d="M12 7v5l3 3"/>
+                                    </svg>
+                                    Réunions à venir
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for meeting in upcoming_meetings|slice(0, 3) %}
+                                        <div class="col-md-4">
+                                            <div class="card card-sm">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="bg-primary text-white avatar me-3">
+                                                            {{ meeting.date|date('d') }}
+                                                        </span>
+                                                        <div class="flex-fill">
+                                                            <div class="font-weight-medium">{{ meeting.typeLabel }}</div>
+                                                            <div class="text-secondary">
+                                                                {{ meeting.date|date('d/m/Y à H:i') }}
+                                                                <br>
+                                                                <small>{{ meeting.locationLabel }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <a href="{{ path('student_alternance_meeting_show', {id: meeting.id}) }}" 
+                                                           class="btn btn-primary btn-sm w-100">
+                                                            Voir les détails
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- All Meetings -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Historique des réunions</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-vcenter">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Lieu</th>
+                                            <th>Participants</th>
+                                            <th>Statut</th>
+                                            <th class="w-1">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for meeting in meetings %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="bg-blue text-white avatar avatar-sm me-3">
+                                                            {{ meeting.date|date('d') }}
+                                                        </span>
+                                                        <div>
+                                                            <div class="font-weight-medium">{{ meeting.date|date('d/m/Y') }}</div>
+                                                            <div class="text-secondary">{{ meeting.date|date('H:i') }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="font-weight-medium">{{ meeting.typeLabel }}</div>
+                                                    {% if meeting.duration %}
+                                                        <div class="text-secondary small">{{ meeting.durationFormatted }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary text-white">{{ meeting.locationLabel }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="avatar-list avatar-list-stacked">
+                                                        {% if meeting.pedagogicalSupervisor %}
+                                                            <span class="avatar avatar-sm" title="{{ meeting.pedagogicalSupervisor.fullName }} (Formateur)">
+                                                                {{ meeting.pedagogicalSupervisor.fullName|slice(0,2)|upper }}
+                                                            </span>
+                                                        {% endif %}
+                                                        {% if meeting.mentor %}
+                                                            <span class="avatar avatar-sm" title="{{ meeting.mentor.fullName }} (Tuteur)">
+                                                                {{ meeting.mentor.fullName|slice(0,2)|upper }}
+                                                            </span>
+                                                        {% endif %}
+                                                        <span class="avatar avatar-sm" title="Vous">
+                                                            {{ app.user.fullName|slice(0,2)|upper }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ meeting.statusBadgeClass }} text-white">
+                                                        {{ meeting.statusLabel }}
+                                                    </span>
+                                                    {% if meeting.isUpcoming %}
+                                                        {% set timeUntil = meeting.timeUntilMeeting %}
+                                                        {% if timeUntil %}
+                                                            <div class="text-primary small mt-1">
+                                                                Dans {{ timeUntil.days }} jour{{ timeUntil.days > 1 ? 's' : '' }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{{ path('student_alternance_meeting_show', {id: meeting.id}) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        Voir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_no_data.svg') }}" height="128" alt="Aucune réunion">
+                                </div>
+                                <p class="empty-title">Aucune réunion planifiée</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Aucune réunion de coordination n'a encore été planifiée. 
+                                    Vos formateurs et tuteurs vous informeront des prochaines réunions.
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('student_alternance_dashboard') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                            <path d="M5 12v7a2 2 0 0 1 2 2h10a2 2 0 0 1 2 -2v-7"/>
+                                            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                                        </svg>
+                                        Retour au tableau de bord
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

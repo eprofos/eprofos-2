@@ -1,0 +1,315 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Missions nécessitant votre attention
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_missions_index') }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 14l-4 -4l4 -4"/>
+                                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                            </svg>
+                            Retour aux missions
+                        </a>
+                        <a href="{{ path('mentor_missions_create') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Créer une mission
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Overview Alert -->
+        {% if recommendations.unassigned is empty %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-success d-flex align-items-center" role="alert">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="alert-title">Excellent travail !</h4>
+                            Toutes vos missions sont correctement assignées. Aucune action n'est requise pour le moment.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="alert-title">{{ recommendations.unassigned|length }} mission{{ recommendations.unassigned|length > 1 ? 's' : '' }} nécessite{{ recommendations.unassigned|length > 1 ? 'nt' : '' }} votre attention</h4>
+                            Ces missions n'ont pas encore été assignées à des alternants.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Unassigned Missions -->
+        {% if recommendations.unassigned is not empty %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M6 4h12v12h-12z"/>
+                                    <path d="M6 8h12"/>
+                                    <path d="M6 12h6"/>
+                                    <path d="M6 16h4"/>
+                                    <path d="M16 16l2 2l4 -4"/>
+                                </svg>
+                                Missions sans assignation ({{ recommendations.unassigned|length }})
+                            </h3>
+                            <div class="card-actions">
+                                <a href="{{ path('mentor_assignments_create') }}" class="btn btn-primary btn-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Créer une assignation
+                                </a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mission</th>
+                                        <th>Type</th>
+                                        <th>Complexité</th>
+                                        <th>Durée</th>
+                                        <th>Créée le</th>
+                                        <th class="w-1">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mission in recommendations.unassigned %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex py-1 align-items-center">
+                                                    <div class="flex-fill">
+                                                        <div class="font-weight-medium">{{ mission.title }}</div>
+                                                        <div class="text-muted">{{ mission.description|length > 80 ? mission.description|slice(0, 80) ~ '...' : mission.description }}</div>
+                                                        {% if mission.objectives %}
+                                                            <small class="text-info">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                                                                    <path d="M21 21l-6 -6"/>
+                                                                </svg>
+                                                                {{ mission.objectives|length }} objectif{{ mission.objectives|length > 1 ? 's' : '' }}
+                                                            </small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-blue">{{ mission.termLabel }}</span>
+                                            </td>
+                                            <td>
+                                                {% set complexity_colors = {'debutant': 'green', 'intermediaire': 'yellow', 'avance': 'red'} %}
+                                                <span class="badge bg-{{ complexity_colors[mission.complexity] ?? 'secondary' }}">
+                                                    {{ mission.complexityLabel }}
+                                                </span>
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ mission.duration }} h
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ mission.createdAt|date('d/m/Y') }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-list flex-nowrap">
+                                                    <a href="{{ path('mentor_missions_show', {id: mission.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                        </svg>
+                                                        Voir
+                                                    </a>
+                                                    <a href="{{ path('mentor_assignments_create', {mission: mission.id}) }}" class="btn btn-sm btn-success">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                                        </svg>
+                                                        Assigner
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Recommendations Tips -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-blue" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9.5 2a6.5 6.5 0 1 1 0 13a6.5 6.5 0 0 1 0 -13z"/>
+                                <path d="M17.5 15a4.5 4.5 0 1 1 0 9a4.5 4.5 0 0 1 0 -9z"/>
+                                <path d="M8.5 9l2 2l4 -4"/>
+                            </svg>
+                            Conseils pour optimiser vos missions
+                        </h3>
+                        <ul class="list-unstyled space-y-2">
+                            <li class="d-flex align-items-start">
+                                <span class="badge bg-green me-2 mt-1">1</span>
+                                <div>
+                                    <strong>Assignez rapidement</strong><br>
+                                    <small class="text-muted">Les missions non assignées perdent de leur pertinence avec le temps.</small>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-start">
+                                <span class="badge bg-blue me-2 mt-1">2</span>
+                                <div>
+                                    <strong>Adaptez la complexité</strong><br>
+                                    <small class="text-muted">Assignez des missions adaptées au niveau de chaque alternant.</small>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-start">
+                                <span class="badge bg-yellow me-2 mt-1">3</span>
+                                <div>
+                                    <strong>Suivez les progrès</strong><br>
+                                    <small class="text-muted">Un suivi régulier améliore les chances de réussite.</small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-green" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/>
+                                <path d="M3 6l0 13"/>
+                                <path d="M12 6l0 13"/>
+                                <path d="M21 6l0 13"/>
+                            </svg>
+                            Actions recommandées
+                        </h3>
+                        <div class="space-y-2">
+                            {% if recommendations.unassigned is not empty %}
+                                <div class="d-grid">
+                                    <a href="{{ path('mentor_assignments_create') }}" class="btn btn-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 5l0 14"/>
+                                            <path d="M5 12l14 0"/>
+                                        </svg>
+                                        Créer une assignation
+                                    </a>
+                                </div>
+                            {% endif %}
+                            <div class="d-grid">
+                                <a href="{{ path('mentor_assignments_index') }}" class="btn btn-outline-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M6 4h12v12h-12z"/>
+                                        <path d="M6 8h12"/>
+                                        <path d="M6 12h6"/>
+                                        <path d="M6 16h4"/>
+                                        <path d="M16 16l2 2l4 -4"/>
+                                    </svg>
+                                    Voir toutes les assignations
+                                </a>
+                            </div>
+                            <div class="d-grid">
+                                <a href="{{ path('mentor_missions_create') }}" class="btn btn-outline-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s9 4.03 9 9s9 4.03 9 9"/>
+                                    </svg>
+                                    Créer une nouvelle mission
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State for No Recommendations -->
+        {% if recommendations.unassigned is empty %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <div class="empty">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Parfait ! Aucune action requise</p>
+                                <p class="empty-subtitle text-muted">
+                                    Toutes vos missions sont correctement gérées. Continuez votre excellent travail de mentorat !
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('mentor_missions_index') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 12l2 2l4 -4"/>
+                                            <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s9 4.03 9 9s9 4.03 9 9"/>
+                                        </svg>
+                                        Voir toutes les missions
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

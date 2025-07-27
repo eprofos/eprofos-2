@@ -1,0 +1,175 @@
+{% extends 'student/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Consultez vos évaluations de compétences et suivez votre progression
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_alternance_dashboard') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                <path d="M5 12v7a2 2 0 0 1 2 2h10a2 2 0 0 1 2 -2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                            </svg>
+                            Tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        {% if assessments|length > 0 %}
+            <div class="row row-deck row-cards">
+                {% for assessment in assessments %}
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h3 class="card-title">{{ assessment.assessmentTypeLabel }}</h3>
+                                        <div class="text-secondary">
+                                            {{ assessment.assessmentDate|date('d/m/Y') }}
+                                            <span class="badge bg-blue ms-2 text-white">{{ assessment.contextLabel }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        {% if assessment.overallRating %}
+                                            <span class="badge {{ assessment.overallRatingBadgeClass }} text-white">
+                                                {{ assessment.overallRatingLabel }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary text-white">Non évalué</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if assessment.relatedMission %}
+                                    <div class="mb-3">
+                                        <div class="text-secondary small">Mission associée</div>
+                                        <div class="font-weight-medium">{{ assessment.relatedMission.mission.title }}</div>
+                                    </div>
+                                {% endif %}
+
+                                {% if assessment.hasCrossEvaluation %}
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <div class="text-secondary small">Centre de formation</div>
+                                                <div class="font-weight-medium text-primary">
+                                                    {{ assessment.averageCenterScore|number_format(1) }}/20
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <div class="text-secondary small">Entreprise</div>
+                                                <div class="font-weight-medium text-success">
+                                                    {{ assessment.averageCompanyScore|number_format(1) }}/20
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mb-3">
+                                        <div class="text-secondary small">Moyenne générale</div>
+                                        <div class="h3 text-primary">{{ assessment.overallAverageScore|number_format(1) }}/20</div>
+                                    </div>
+                                {% elseif assessment.averageCenterScore > 0 %}
+                                    <div class="text-center mb-3">
+                                        <div class="text-secondary small">Note centre de formation</div>
+                                        <div class="h3 text-primary">{{ assessment.averageCenterScore|number_format(1) }}/20</div>
+                                    </div>
+                                {% elseif assessment.averageCompanyScore > 0 %}
+                                    <div class="text-center mb-3">
+                                        <div class="text-secondary small">Note entreprise</div>
+                                        <div class="h3 text-success">{{ assessment.averageCompanyScore|number_format(1) }}/20</div>
+                                    </div>
+                                {% endif %}
+
+                                {% if assessment.skillsEvaluated|length > 0 %}
+                                    <div class="mb-3">
+                                        <div class="text-secondary small mb-2">Compétences évaluées</div>
+                                        <div class="row g-2">
+                                            {% for skill in assessment.skillsEvaluated|slice(0, 4) %}
+                                                <div class="col-auto">
+                                                    <span class="badge bg-primary text-white">{{ skill.name|default(skill) }}</span>
+                                                </div>
+                                            {% endfor %}
+                                            {% if assessment.skillsEvaluated|length > 4 %}
+                                                <div class="col-auto">
+                                                    <span class="badge bg-secondary text-white">+{{ assessment.skillsEvaluated|length - 4 }} autres</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if assessment.centerComments or assessment.mentorComments %}
+                                    <div class="mb-3">
+                                        <div class="text-secondary small mb-2">Commentaires</div>
+                                        {% if assessment.centerComments %}
+                                            <div class="small text-muted mb-1">
+                                                <strong>Centre:</strong> {{ assessment.centerComments|slice(0, 100) }}{% if assessment.centerComments|length > 100 %}...{% endif %}
+                                            </div>
+                                        {% endif %}
+                                        {% if assessment.mentorComments %}
+                                            <div class="small text-muted">
+                                                <strong>Entreprise:</strong> {{ assessment.mentorComments|slice(0, 100) }}{% if assessment.mentorComments|length > 100 %}...{% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ path('student_alternance_assessment_show', {id: assessment.id}) }}" 
+                                   class="btn btn-primary w-100">
+                                    Voir les détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_no_data.svg') }}" height="128" alt="Aucune évaluation">
+                                </div>
+                                <p class="empty-title">Aucune évaluation disponible</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Vous n'avez pas encore d'évaluations de compétences. 
+                                    Elles apparaîtront ici une fois créées par vos formateurs ou tuteurs.
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('student_alternance_dashboard') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                            <path d="M5 12v7a2 2 0 0 1 2 2h10a2 2 0 0 1 2 -2v-7"/>
+                                            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                                        </svg>
+                                        Retour au tableau de bord
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

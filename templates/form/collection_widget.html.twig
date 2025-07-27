@@ -1,0 +1,87 @@
+{# Custom widget for IntermediateObjectiveType #}
+{% block _mission_assignment_intermediateObjectivesForForm_entry_widget %}
+    <div class="card mb-3 collection-item objective-item" 
+         data-collection-target="collectionElement"
+         data-controller="objective-completion">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="card-title mb-0">
+                    {% if prototype is defined %}
+                        Nouvel objectif
+                    {% else %}
+                        Objectif
+                    {% endif %}
+                </h6>
+                <button type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        data-action="click->collection#deleteCollectionElement"
+                        title="Supprimer cet objectif">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    {{ form_row(form.title) }}
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        {{ form_row(form.completed, {
+                            'attr': {
+                                'data-action': 'change->objective-completion#toggle'
+                            }
+                        }) }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form_row(form.description) }}
+            </div>
+            
+            <div class="completion-date-field" 
+                 data-objective-completion-target="dateField"
+                 style="display: {{ form.completed.vars.data ? 'block' : 'none' }}">
+                {{ form_row(form.completionDate) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{# Collection widget for objectives #}
+{% block collection_widget %}
+    {% set allow_delete = allow_delete|default(true) %}
+    {% set button_delete_label = button_delete_label|default('Supprimer') %}
+    
+    {% if prototype is defined and allow_add %}
+        {% set attr = attr|merge({'data-prototype': form_widget(prototype)|e('html_attr')}) %}
+        {% set attr = attr|merge({'data-controller': attr['data-controller']|default('collection') ~ ' objective-collection'}) %}
+    {% endif %}
+    
+    <div {{ block('widget_container_attributes') }}>
+        {% if label is not same as(false) %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label">{{ label|trans({}, translation_domain) }}</label>
+                {% if allow_add|default(true) %}
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-primary"
+                            data-action="click->collection#addCollectionElement"
+                            data-collection-add-label="{{ attr['data-collection-add-label']|default('Ajouter un élément') }}">
+                        <i class="fas fa-plus"></i>
+                        {{ attr['data-collection-add-label']|default('Ajouter un élément') }}
+                    </button>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <div data-collection-target="collectionContainer" class="collection-container">
+            {% for child in form %}
+                {{ form_widget(child) }}
+            {% endfor %}
+        </div>
+        
+        {% if help %}
+            <div class="form-text">{{ help|trans({}, translation_domain) }}</div>
+        {% endif %}
+    </div>
+{% endblock collection_widget %}

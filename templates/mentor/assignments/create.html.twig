@@ -1,0 +1,245 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% form_theme form 'form/collection_widget.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('mentor_assignments_index') }}">Assignations</a></li>
+                            <li class="breadcrumb-item active">Nouvelle assignation</li>
+                        </ol>
+                    </nav>
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Assigner une mission à un alternant
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_assignments_index') }}" class="btn btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l14 0"/>
+                                <path d="M5 12l6 6"/>
+                                <path d="M5 12l6 -6"/>
+                            </svg>
+                            Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations de l'assignation</h3>
+                    </div>
+                    {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                        <div class="card-body">
+                            <!-- Mission Selection -->
+                            <div class="mb-3">
+                                {{ form_label(form.mission, null, {label_attr: {class: 'form-label required'}}) }}
+                                {{ form_widget(form.mission, {attr: {class: 'form-select'}}) }}
+                                {{ form_errors(form.mission) }}
+                                <small class="form-hint">Choisissez la mission à assigner</small>
+                            </div>
+
+                            <!-- Student Selection -->
+                            <div class="mb-3">
+                                {{ form_label(form.student, null, {label_attr: {class: 'form-label required'}}) }}
+                                {{ form_widget(form.student, {attr: {class: 'form-select'}}) }}
+                                {{ form_errors(form.student) }}
+                                <small class="form-hint">Sélectionnez l'alternant qui réalisera cette mission</small>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.startDate, null, {label_attr: {class: 'form-label required'}}) }}
+                                        {{ form_widget(form.startDate, {attr: {class: 'form-control'}}) }}
+                                        {{ form_errors(form.startDate) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.endDate, null, {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.endDate, {attr: {class: 'form-control'}}) }}
+                                        {{ form_errors(form.endDate) }}
+                                        <small class="form-hint">Date de fin prévue (optionnelle)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="mb-3">
+                                {{ form_label(form.status, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.status, {attr: {class: 'form-select'}}) }}
+                                {{ form_errors(form.status) }}
+                            </div>
+
+                            <!-- Intermediate Objectives -->
+                            <div class="mb-3">
+                                {{ form_label(form.intermediateObjectivesForForm, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.intermediateObjectivesForForm) }}
+                                {{ form_errors(form.intermediateObjectivesForForm) }}
+                                <small class="form-hint">Si vide, les objectifs seront générés automatiquement à partir de la mission</small>
+                            </div>                            <!-- Completion Rate -->
+                            <div class="mb-3">
+                                {{ form_label(form.completionRate, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.completionRate, {attr: {class: 'form-control'}}) }}
+                                {{ form_errors(form.completionRate) }}
+                                <small class="form-hint">{{ form.completionRate.vars.help }}</small>
+                            </div>
+
+                            <!-- Difficulties -->
+                            <div class="mb-3">
+                                {{ form_label(form.difficulties, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.difficulties) }}
+                                {{ form_errors(form.difficulties) }}
+                            </div>
+
+                            <!-- Achievements -->
+                            <div class="mb-3">
+                                {{ form_label(form.achievements, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.achievements) }}
+                                {{ form_errors(form.achievements) }}
+                            </div>
+
+                            <!-- Mentor Feedback -->
+                            <div class="mb-3">
+                                {{ form_label(form.mentorFeedback, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.mentorFeedback, {attr: {class: 'form-control'}}) }}
+                                {{ form_errors(form.mentorFeedback) }}
+                            </div>
+
+                            <!-- Student Feedback -->
+                            <div class="mb-3">
+                                {{ form_label(form.studentFeedback, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.studentFeedback, {attr: {class: 'form-control'}}) }}
+                                {{ form_errors(form.studentFeedback) }}
+                            </div>
+
+                            <!-- Ratings -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.mentorRating, null, {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.mentorRating, {attr: {class: 'form-select'}}) }}
+                                        {{ form_errors(form.mentorRating) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.studentSatisfaction, null, {label_attr: {class: 'form-label'}}) }}
+                                        {{ form_widget(form.studentSatisfaction, {attr: {class: 'form-select'}}) }}
+                                        {{ form_errors(form.studentSatisfaction) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Competencies Acquired -->
+                            <div class="mb-3">
+                                {{ form_label(form.competenciesAcquired, null, {label_attr: {class: 'form-label'}}) }}
+                                {{ form_widget(form.competenciesAcquired) }}
+                                {{ form_errors(form.competenciesAcquired) }}
+                            </div>
+                        </div>
+
+                        <div class="card-footer text-end">
+                            <div class="d-flex">
+                                <a href="{{ path('mentor_assignments_index') }}" class="btn btn-link">Annuler</a>
+                                <button type="submit" class="btn btn-primary ms-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Créer l'assignation
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {# Mark fields as rendered to prevent duplication in form_end() #}
+                        {% do form.mission.setRendered %}
+                        {% do form.student.setRendered %}
+                        {% do form.startDate.setRendered %}
+                        {% do form.endDate.setRendered %}
+                        {% do form.status.setRendered %}
+                        {% do form.intermediateObjectivesForForm.setRendered %}
+                        {% do form.completionRate.setRendered %}
+                        {% do form.difficulties.setRendered %}
+                        {% do form.achievements.setRendered %}
+                        {% do form.mentorFeedback.setRendered %}
+                        {% do form.studentFeedback.setRendered %}
+                        {% do form.mentorRating.setRendered %}
+                        {% do form.studentSatisfaction.setRendered %}
+                        {% do form.competenciesAcquired.setRendered %}
+                        
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Help Panel -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Guide d'assignation</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h4 class="card-title h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-primary me-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 12l2 2l4 -4"/>
+                                    <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                </svg>
+                                Choisir une mission
+                            </h4>
+                            <p class="text-muted">Sélectionnez une mission active adaptée au niveau de l'alternant. Les missions sont classées par complexité et durée.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="card-title h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success me-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                </svg>
+                                Sélectionner l'alternant
+                            </h4>
+                            <p class="text-muted">Choisissez l'alternant qui possède les compétences requises pour cette mission.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="card-title h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-warning me-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                    <path d="M16 3v4"/>
+                                    <path d="M8 3v4"/>
+                                    <path d="M4 11h16"/>
+                                </svg>
+                                Planifier les dates
+                            </h4>
+                            <p class="text-muted">Définissez une date de début et, si possible, une date de fin prévue pour organiser le suivi.</p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h4 class="alert-title">Astuce</h4>
+                            <div class="text-muted">Les objectifs intermédiaires peuvent être générés automatiquement à partir de la mission. Vous pouvez les personnaliser selon les besoins spécifiques de l'alternant.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

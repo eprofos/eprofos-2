@@ -1,0 +1,338 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('mentor_assignments_index') }}">Assignations</a></li>
+                            <li class="breadcrumb-item active">{{ assignment.mission.title }}</li>
+                        </ol>
+                    </nav>
+                    <h2 class="page-title">{{ assignment.mission.title }}</h2>
+                    <div class="page-subtitle">
+                        Assigné à {{ assignment.student.fullName }} le {{ assignment.createdAt|date('d/m/Y') }}
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_assignments_edit', {id: assignment.id}) }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier
+                        </a>
+                        {% if assignment.status != 'terminee' %}
+                            <form method="post" action="{{ path('mentor_assignments_complete', {id: assignment.id}) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Marquer cette assignation comme terminée ?')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Marquer terminée
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <!-- Assignment Details -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Détails de l'assignation</h3>
+                        <div class="card-actions">
+                            {% if assignment.status == 'terminee' %}
+                                <span class="badge bg-success">Terminée</span>
+                            {% elseif assignment.status == 'en_cours' %}
+                                <span class="badge bg-warning">En cours</span>
+                            {% elseif assignment.status == 'planifiee' %}
+                                <span class="badge bg-info">Planifiée</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ assignment.status|title }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Student Information -->
+                        <div class="mb-4">
+                            <h4 class="mb-3">Alternant</h4>
+                            <div class="d-flex align-items-center">
+                                <span class="avatar me-3">{{ assignment.student.firstName|first|upper }}{{ assignment.student.lastName|first|upper }}</span>
+                                <div>
+                                    <div class="font-weight-medium">{{ assignment.student.fullName }}</div>
+                                    <div class="text-muted">{{ assignment.student.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mission Information -->
+                        <div class="mb-4">
+                            <h4 class="mb-3">Mission</h4>
+                            <div class="mb-2">
+                                <strong>{{ assignment.mission.title }}</strong>
+                            </div>
+                            <div class="text-muted mb-3">{{ assignment.mission.description }}</div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Complexité</label>
+                                    <div>
+                                        <span class="badge bg-{{ assignment.mission.complexity == 'debutant' ? 'success' : (assignment.mission.complexity == 'intermediaire' ? 'warning' : 'danger') }}">
+                                            {{ assignment.mission.complexityLabel }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Type</label>
+                                    <div>
+                                        <span class="badge bg-primary">{{ assignment.mission.termLabel }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="mb-4">
+                            <h4 class="mb-3">Planification</h4>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Date d'assignation</label>
+                                    <div>{{ assignment.createdAt|date('d/m/Y') }}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Date de début</label>
+                                    <div>{{ assignment.startDate|date('d/m/Y') }}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Date de fin prévue</label>
+                                    <div>
+                                        {% if assignment.endDate %}
+                                            {{ assignment.endDate|date('d/m/Y') }}
+                                        {% else %}
+                                            <span class="text-muted">Non définie</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="mb-4">
+                            <h4 class="mb-3">Progression</h4>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Avancement</span>
+                                    <span class="text-muted">{{ assignment.completionRate|round }}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ assignment.completionRate }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Objectives -->
+                        {% if assignment.intermediateObjectives and assignment.intermediateObjectives|length > 0 %}
+                            <div class="mb-4">
+                                <h4 class="mb-3">Objectifs intermédiaires</h4>
+                                <div class="list-group list-group-flush">
+                                    {% for objective in assignment.intermediateObjectivesAsDTO %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                                            <div class="ms-2 me-auto">
+                                                <div class="fw-bold">{{ objective.title }}</div>
+                                                {% if objective.hasDescription %}
+                                                    <div class="text-muted small">{{ objective.description }}</div>
+                                                {% endif %}
+                                                {% if objective.completed and objective.completionDate %}
+                                                    <div class="text-muted small">
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                        Terminé le {{ objective.formattedCompletionDate }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <span class="badge {{ objective.completionStatusClass }} rounded-pill">
+                                                {{ objective.completionStatusLabel }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">{{ assignment.objectivesCompletionSummary }}</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <!-- Feedback -->
+                        {% if assignment.mentorFeedback or assignment.studentFeedback %}
+                            <div class="mb-4">
+                                <h4 class="mb-3">Retours</h4>
+                                
+                                {% if assignment.mentorFeedback %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Retour du mentor</label>
+                                        <div class="alert alert-info">{{ assignment.mentorFeedback|nl2br }}</div>
+                                    </div>
+                                {% endif %}
+
+                                {% if assignment.studentFeedback %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Retour de l'alternant</label>
+                                        <div class="alert alert-light">{{ assignment.studentFeedback|nl2br }}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Ratings -->
+                        {% if assignment.mentorRating or assignment.studentSatisfaction %}
+                            <div class="mb-4">
+                                <h4 class="mb-3">Évaluations</h4>
+                                <div class="row">
+                                    {% if assignment.mentorRating %}
+                                        <div class="col-md-6">
+                                            <label class="form-label">Note du mentor</label>
+                                            <div class="h3 text-primary">{{ assignment.mentorRating }}/10</div>
+                                        </div>
+                                    {% endif %}
+                                    {% if assignment.studentSatisfaction %}
+                                        <div class="col-md-6">
+                                            <label class="form-label">Satisfaction de l'alternant</label>
+                                            <div class="h3 text-success">{{ assignment.studentSatisfaction }}/10</div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions rapides</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <form method="post" action="{{ path('mentor_assignments_progress', {id: assignment.id}) }}" class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="font-weight-medium">Mettre à jour la progression</div>
+                                        <div class="text-muted">{{ assignment.completionRate|round }}% actuellement</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="input-group">
+                                            <input type="number" name="completionRate" class="form-control form-control-sm" min="0" max="100" step="0.1" value="{{ assignment.completionRate|round }}">
+                                            <button type="submit" class="btn btn-primary btn-sm">Maj</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <a href="{{ path('mentor_assignments_edit', {id: assignment.id}) }}" class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-primary text-white avatar avatar-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                                <path d="M16 5l3 3"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="text-reset d-block">Modifier l'assignation</div>
+                                        <div class="d-block text-muted text-truncate mt-n1">Éditer les détails et retours</div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="{{ path('mentor_missions_show', {id: assignment.mission.id}) }}" class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-info text-white avatar avatar-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M9 12l2 2l4 -4"/>
+                                                <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="text-reset d-block">Voir la mission</div>
+                                        <div class="d-block text-muted text-truncate mt-n1">Détails complets de la mission</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Statistics -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Statistiques</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-blue text-white avatar">
+                                        {{ (assignment.createdAt.diff(assignment.startDate).days)|abs }}
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">Jours de préparation</div>
+                                    <div class="text-muted">Entre assignation et début</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if assignment.endDate %}
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <span class="bg-green text-white avatar">
+                                            {{ assignment.startDate.diff(assignment.endDate).days }}
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium">Durée prévue</div>
+                                        <div class="text-muted">En jours</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if assignment.status == 'terminee' %}
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <span class="bg-success text-white avatar">
+                                            ✓
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium">Mission terminée</div>
+                                        <div class="text-muted">Marquée comme terminée</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

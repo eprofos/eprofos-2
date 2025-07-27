@@ -1,0 +1,172 @@
+{% extends 'student/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        Gestion et suivi de vos missions en alternance
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_alternance_dashboard') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                <path d="M5 12v7a2 2 0 0 1 2 2h10a2 2 0 0 1 2 -2v-7"/>
+                                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                            </svg>
+                            Tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Filtres</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="status" value="all" class="form-selectgroup-input" 
+                                               {% if filters.status == 'all' %}checked{% endif %}>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Toutes</strong>
+                                                <div class="text-muted">Toutes les missions</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="status" value="active" class="form-selectgroup-input"
+                                               {% if filters.status == 'active' %}checked{% endif %}>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Actives</strong>
+                                                <div class="text-muted">En cours ou planifiées</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="status" value="completed" class="form-selectgroup-input"
+                                               {% if filters.status == 'completed' %}checked{% endif %}>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Terminées</strong>
+                                                <div class="text-muted">Missions accomplies</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="status" value="overdue" class="form-selectgroup-input"
+                                               {% if filters.status == 'overdue' %}checked{% endif %}>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>En retard</strong>
+                                                <div class="text-danger">Échéance dépassée</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missions List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card" id="missions-container">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Mes Missions 
+                            <span class="badge bg-primary ms-2">{{ total_count }}</span>
+                        </h3>
+                    </div>
+                    <div id="missions-list">
+                        {% include 'student/alternance/_missions_list.html.twig' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusRadios = document.querySelectorAll('input[name="status"]');
+            const missionsContainer = document.getElementById('missions-list');
+            
+            statusRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const status = this.value;
+                        const currentUrl = new URL(window.location);
+                        currentUrl.searchParams.set('status', status);
+                        currentUrl.searchParams.set('page', '1'); // Reset to first page
+                        
+                        // Show loading
+                        missionsContainer.innerHTML = '<div class="card-body text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                        
+                        // AJAX request
+                        fetch(currentUrl.toString(), {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            missionsContainer.innerHTML = html;
+                            // Update URL
+                            window.history.pushState({}, '', currentUrl.toString());
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            missionsContainer.innerHTML = '<div class="card-body text-center text-danger">Erreur lors du chargement des missions.</div>';
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

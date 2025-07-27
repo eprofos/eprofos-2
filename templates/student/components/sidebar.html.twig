@@ -121,6 +121,83 @@
                 
                 <!-- Divider -->
                 <li class="nav-item">
+                    <div class="hr-text">Alternance</div>
+                </li>
+                
+                <!-- Mon Alternance -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'student_alternance_dashboard' ? 'active' : '' }}" href="{{ path('student_alternance_dashboard') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 21h18"/>
+                                <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"/>
+                                <path d="M9 9h1v1h-1z"/>
+                                <path d="M14 9h1v1h-1z"/>
+                                <path d="M9 13h1v1h-1z"/>
+                                <path d="M14 13h1v1h-1z"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Mon Alternance
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Mes Missions -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'student_alternance_mission' ? 'active' : '' }}" href="{{ path('student_alternance_missions') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Mes Missions
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Mes Évaluations -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'student_alternance_assessment' ? 'active' : '' }}" href="{{ path('student_alternance_assessments') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 11l3 3l8 -8"/>
+                                <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Mes Évaluations
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Réunions -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'student_alternance_meeting' ? 'active' : '' }}" href="{{ path('student_alternance_meetings') }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="13" r="2"/>
+                                <path d="m20 20l-1.5 -1.5"/>
+                                <circle cx="19" cy="19" r="1"/>
+                                <path d="M12 7v1l2.5 1.5"/>
+                                <circle cx="12" cy="12" r="9"/>
+                            </svg>
+                        </span>
+                        <span class="nav-link-title">
+                            Réunions
+                        </span>
+                    </a>
+                </li>
+                
+                <!-- Divider -->
+                <li class="nav-item">
                     <div class="hr-text">Mon Compte</div>
                 </li>
                 

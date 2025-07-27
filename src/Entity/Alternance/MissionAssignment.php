@@ -26,7 +26,7 @@ class MissionAssignment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class)]
+    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'missionAssignments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: 'L\'alternant est obligatoire.')]
     private ?Student $student = null;
@@ -72,7 +72,7 @@ class MissionAssignment
         notInRangeMessage: 'Le taux d\'avancement doit être entre {{ min }} et {{ max }}%.'
     )]
     #[Gedmo\Versioned]
-    private ?float $completionRate = 0.0;
+    private ?string $completionRate = '0.00';
 
     #[ORM\Column(type: Types::JSON)]
     #[Assert\NotNull(message: 'Les difficultés rencontrées doivent être documentées.')]
@@ -158,6 +158,12 @@ class MissionAssignment
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->lastUpdated = new \DateTimeImmutable();
+        
+        // Initialize array fields to prevent null reference errors
+        $this->intermediateObjectives = [];
+        $this->difficulties = [];
+        $this->achievements = [];
+        $this->competenciesAcquired = [];
     }
 
     public function getId(): ?int
@@ -231,14 +237,85 @@ class MissionAssignment
         return $this;
     }
 
+    /**
+     * Get intermediate objectives as DTO objects for form usage
+     * 
+     * @return \App\DTO\Alternance\IntermediateObjectiveDTO[]
+     */
+    public function getIntermediateObjectivesForForm(): array
+    {
+        $dtos = [];
+        foreach ($this->intermediateObjectives as $index => $objectiveData) {
+            if (is_array($objectiveData)) {
+                // Check if this is a legacy format where keys might be wrong
+                if (isset($objectiveData[0]) && is_string($objectiveData[0])) {
+                    // This might be an indexed array instead of associative
+                    $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                        title: $objectiveData[0] ?? 'Objectif sans titre',
+                        description: isset($objectiveData[1]) && is_string($objectiveData[1]) ? $objectiveData[1] : '',
+                        completed: isset($objectiveData[2]) ? (bool) $objectiveData[2] : false
+                    );
+                } else {
+                    // Normal associative array
+                    $dtos[] = \App\DTO\Alternance\IntermediateObjectiveDTO::fromArray($objectiveData);
+                }
+            } elseif (is_string($objectiveData)) {
+                // Handle legacy simple string objectives
+                $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                    title: $objectiveData,
+                    description: '',
+                    completed: false
+                );
+            } else {
+                // Handle any other data types by creating a default objective
+                $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                    title: 'Objectif ' . ($index + 1),
+                    description: '',
+                    completed: false
+                );
+            }
+        }
+        return $dtos;
+    }
+
+    /**
+     * Set intermediate objectives from DTO objects for form usage
+     * 
+     * @param \App\DTO\Alternance\IntermediateObjectiveDTO[] $dtos
+     */
+    public function setIntermediateObjectivesForForm(array $dtos): static
+    {
+        $arrayData = [];
+        foreach ($dtos as $dto) {
+            if ($dto instanceof \App\DTO\Alternance\IntermediateObjectiveDTO) {
+                // Only include objectives with non-empty titles
+                if (!empty(trim($dto->title))) {
+                    $arrayData[] = $dto->toArray();
+                }
+            }
+        }
+        $this->intermediateObjectives = $arrayData;
+        return $this;
+    }
+
+    /**
+     * Get intermediate objectives as DTO objects for display
+     * 
+     * @return \App\DTO\Alternance\IntermediateObjectiveDTO[]
+     */
+    public function getIntermediateObjectivesAsDTO(): array
+    {
+        return $this->getIntermediateObjectivesForForm();
+    }
+
     public function getCompletionRate(): ?float
     {
-        return $this->completionRate;
+        return $this->completionRate !== null ? (float) $this->completionRate : null;
     }
 
     public function setCompletionRate(float $completionRate): static
     {
-        $this->completionRate = $completionRate;
+        $this->completionRate = (string) $completionRate;
         return $this;
     }
 
@@ -551,13 +628,16 @@ class MissionAssignment
         
         $completed = 0;
         foreach ($this->intermediateObjectives as $objective) {
-            if (isset($objective['completed']) && $objective['completed'] === true) {
+            if (is_array($objective) && isset($objective['completed']) && $objective['completed'] === true) {
                 $completed++;
+            } elseif (is_string($objective)) {
+                // Legacy objectives are considered not completed unless explicitly marked
+                continue;
             }
         }
         
         $total = count($this->intermediateObjectives);
-        return $completed . '/' . $total . ' objectifs atteints';
+        return $completed . '/' . $total . ' objectifs atteints (' . round(($completed / $total) * 100) . '%)';
     }
 
     /**

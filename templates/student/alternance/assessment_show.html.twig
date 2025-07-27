@@ -1,0 +1,371 @@
+{% extends 'student/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">
+                        <a href="{{ path('student_alternance_assessments') }}">Mes Évaluations</a>
+                    </div>
+                    <h2 class="page-title">{{ page_title }}</h2>
+                    <div class="page-subtitle">
+                        <span class="badge bg-blue me-2 text-white">{{ assessment.contextLabel }}</span>
+                        <span class="badge {{ assessment.overallRatingBadgeClass }} text-white">{{ assessment.overallRatingLabel }}</span>
+                        <span class="text-secondary ms-2">{{ assessment.assessmentDate|date('d/m/Y') }}</span>
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('student_alternance_assessments') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 14l-4 -4l4 -4"/>
+                                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+                            </svg>
+                            Retour aux évaluations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Overall Scores -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Scores globaux</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if assessment.hasCrossEvaluation %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="h1 text-primary">{{ assessment.averageCenterScore|number_format(1) }}/20</div>
+                                        <div class="text-secondary">Centre de formation</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="h1 text-success">{{ assessment.averageCompanyScore|number_format(1) }}/20</div>
+                                        <div class="text-secondary">Entreprise</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="h1 text-warning">{{ assessment.overallAverageScore|number_format(1) }}/20</div>
+                                        <div class="text-secondary">Moyenne générale</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elseif assessment.averageCenterScore > 0 %}
+                            <div class="text-center">
+                                <div class="h1 text-primary">{{ assessment.averageCenterScore|number_format(1) }}/20</div>
+                                <div class="text-secondary">Centre de formation</div>
+                            </div>
+                        {% elseif assessment.averageCompanyScore > 0 %}
+                            <div class="text-center">
+                                <div class="h1 text-success">{{ assessment.averageCompanyScore|number_format(1) }}/20</div>
+                                <div class="text-secondary">Entreprise</div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-secondary">
+                                <div class="h2">Pas encore de notes</div>
+                                <div>L'évaluation est en cours</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Skills Details -->
+                {% if assessment.skillsEvaluated|length > 0 %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Détail des compétences évaluées</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Compétence</th>
+                                            {% if assessment.centerScores|length > 0 %}
+                                                <th class="text-center">Centre</th>
+                                            {% endif %}
+                                            {% if assessment.companyScores|length > 0 %}
+                                                <th class="text-center">Entreprise</th>
+                                            {% endif %}
+                                            {% if assessment.hasCrossEvaluation %}
+                                                <th class="text-center">Écart</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for skillCode, skill in assessment.skillsEvaluated %}
+                                            <tr>
+                                                <td>
+                                                    <div class="font-weight-medium">{{ skill.name|default(skill) }}</div>
+                                                    {% if skill.code is defined and skill.code != skillCode %}
+                                                        <div class="text-secondary small">{{ skill.code }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                {% if assessment.centerScores|length > 0 %}
+                                                    <td class="text-center">
+                                                        {% if assessment.centerScores[skillCode] is defined %}
+                                                            <span class="badge bg-primary text-white">
+                                                                {{ assessment.centerScores[skillCode].value|number_format(1) }}/{{ assessment.centerScores[skillCode].max_value|default(20) }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-secondary">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                                {% if assessment.companyScores|length > 0 %}
+                                                    <td class="text-center">
+                                                        {% if assessment.companyScores[skillCode] is defined %}
+                                                            <span class="badge bg-success text-white">
+                                                                {{ assessment.companyScores[skillCode].value|number_format(1) }}/{{ assessment.companyScores[skillCode].max_value|default(20) }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-secondary">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                                {% if assessment.hasCrossEvaluation %}
+                                                    <td class="text-center">
+                                                        {% if assessment.centerScores[skillCode] is defined and assessment.companyScores[skillCode] is defined %}
+                                                            {% set gap = (assessment.centerScores[skillCode].value - assessment.companyScores[skillCode].value)|abs %}
+                                                            {% if gap > 2 %}
+                                                                <span class="badge bg-danger text-white">{{ gap|number_format(1) }}</span>
+                                                            {% elseif gap > 1 %}
+                                                                <span class="badge bg-warning text-white">{{ gap|number_format(1) }}</span>
+                                                            {% else %}
+                                                                <span class="badge bg-success text-white">{{ gap|number_format(1) }}</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="text-secondary">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Development Plan -->
+                {% if assessment.developmentPlan|length > 0 %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Plan de développement</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if assessment.developmentPlan is not empty %}
+                                {% for item in assessment.developmentPlan %}
+                                    <div class="d-flex mb-3">
+                                        <div class="me-3">
+                                            {% if item.status is defined and item.status == 'completed' %}
+                                                <span class="avatar avatar-sm bg-success text-white">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M5 12l5 5l10 -10"/>
+                                                    </svg>
+                                                </span>
+                                            {% elseif item.status is defined and item.status == 'in_progress' %}
+                                                <span class="avatar avatar-sm bg-warning text-white">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"/>
+                                                        <path d="M12 7v5l3 3"/>
+                                                    </svg>
+                                                </span>
+                                            {% else %}
+                                                <span class="avatar avatar-sm bg-secondary text-white">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10z"/>
+                                                    </svg>
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-fill">
+                                            <div class="font-weight-medium">{{ item.skill|default('Compétence non définie') }}</div>
+                                            <div class="text-secondary">{{ item.objective|default('Objectif non défini') }}</div>
+                                            <div class="small text-muted mt-1">{{ item.actions|default('Actions non définies') }}</div>
+                                            {% if item.deadline is defined and item.deadline %}
+                                                <div class="small text-info mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-xs me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <rect x="4" y="5" width="16" height="16" rx="2"/>
+                                                        <line x1="16" y1="3" x2="16" y2="7"/>
+                                                        <line x1="8" y1="3" x2="8" y2="7"/>
+                                                        <line x1="4" y1="11" x2="20" y2="11"/>
+                                                    </svg>
+                                                    Échéance : {{ item.deadline }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                            <line x1="9" y1="9" x2="10" y2="9"/>
+                                            <line x1="9" y1="13" x2="15" y2="13"/>
+                                            <line x1="9" y1="17" x2="15" y2="17"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun plan de développement</p>
+                                    <p class="empty-subtitle text-secondary">Le plan de développement sera créé lors de la prochaine évaluation.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Assessment Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations de l'évaluation</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">T</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Type</div>
+                                <div class="text-secondary">{{ assessment.assessmentTypeLabel }}</div>
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">C</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Contexte</div>
+                                <div class="text-secondary">{{ assessment.contextLabel }}</div>
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-auto">
+                                <span class="avatar avatar-sm">D</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Date</div>
+                                <div class="text-secondary">{{ assessment.assessmentDate|date('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                        {% if assessment.relatedMission %}
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-sm">M</span>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium">Mission associée</div>
+                                    <div class="text-secondary">
+                                        <a href="{{ path('student_alternance_mission_show', {id: assessment.relatedMission.id}) }}">
+                                            {{ assessment.relatedMission.mission.title }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Evaluators -->
+                {% if assessment.centerEvaluator or assessment.mentorEvaluator %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Évaluateurs</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if assessment.centerEvaluator %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="avatar avatar-sm bg-primary text-white me-3">CF</span>
+                                    <div>
+                                        <div class="font-weight-medium">{{ assessment.centerEvaluator.fullName }}</div>
+                                        <div class="text-secondary small">Centre de formation</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if assessment.mentorEvaluator %}
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar avatar-sm bg-success text-white me-3">E</span>
+                                    <div>
+                                        <div class="font-weight-medium">{{ assessment.mentorEvaluator.fullName }}</div>
+                                        <div class="text-secondary small">Tuteur entreprise</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Comments -->
+                {% if assessment.centerComments or assessment.mentorComments %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Commentaires</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if assessment.centerComments %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="avatar avatar-xs bg-primary text-white me-2">CF</span>
+                                        <strong>Centre de formation</strong>
+                                    </div>
+                                    <div class="text-secondary">{{ assessment.centerComments|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                            {% if assessment.mentorComments %}
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="avatar avatar-xs bg-success text-white me-2">E</span>
+                                        <strong>Tuteur entreprise</strong>
+                                    </div>
+                                    <div class="text-secondary">{{ assessment.mentorComments|nl2br }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Statistics -->
+                {% if assessment.isComplete %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Statistiques</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="h4">{{ assessment.skillsEvaluated|length }}</div>
+                                    <div class="text-secondary small">Compétences</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="h4">{{ assessment.developmentPlanSummary.total_items }}</div>
+                                    <div class="text-secondary small">Actions</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

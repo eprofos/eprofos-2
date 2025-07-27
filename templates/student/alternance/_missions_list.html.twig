@@ -1,0 +1,154 @@
+{% if assignments|length > 0 %}
+    <div class="table-responsive">
+        <table class="table table-vcenter">
+            <thead>
+                <tr>
+                    <th>Mission</th>
+                    <th>Statut</th>
+                    <th>Progression</th>
+                    <th>Dates</th>
+                    <th class="w-1">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if assignment.mission.complexity == 'facile' %}
+                                        <span class="avatar avatar-sm bg-green text-white">F</span>
+                                    {% elseif assignment.mission.complexity == 'moyen' %}
+                                        <span class="avatar avatar-sm bg-yellow text-white">M</span>
+                                    {% else %}
+                                        <span class="avatar avatar-sm bg-red text-white">D</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-weight-medium">{{ assignment.mission.title }}</div>
+                                    <div class="text-secondary">
+                                        <span class="badge bg-blue me-1 text-white">{{ assignment.mission.termLabel }}</span>
+                                        <span class="badge bg-secondary text-white">{{ assignment.mission.complexityLabel }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ assignment.statusBadgeClass }} text-white">
+                                {{ assignment.statusLabel }}
+                            </span>
+                            {% if assignment.isOverdue %}
+                                <div class="text-danger small mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v4"/>
+                                        <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/>
+                                        <path d="M12 16h.01"/>
+                                    </svg>
+                                    En retard
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar {{ assignment.completionProgressClass }}" 
+                                             style="width: {{ assignment.completionRate }}%"
+                                             role="progressbar" 
+                                             aria-valuenow="{{ assignment.completionRate }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-secondary">
+                                    {{ assignment.completionRate|round }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-secondary">
+                                <div>Début: {{ assignment.startDate|date('d/m/Y') }}</div>
+                                {% if assignment.endDate %}
+                                    <div>Fin: {{ assignment.endDate|date('d/m/Y') }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-list">
+                                <a href="{{ path('student_alternance_mission_show', {id: assignment.id}) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    Voir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if total_pages > 1 %}
+        <div class="card-footer d-flex align-items-center">
+            <p class="m-0 text-secondary">
+                Affichage de {{ (current_page - 1) * 10 + 1 }} à {{ (current_page - 1) * 10 + assignments|length }} sur {{ total_count }} missions
+            </p>
+            <ul class="pagination m-0 ms-auto">
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}&status={{ filters.status }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M15 6l-6 6l6 6"/>
+                            </svg>
+                            Précédent
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% set start_page = max(1, current_page - 2) %}
+                {% set end_page = min(total_pages, current_page + 2) %}
+
+                {% for page in start_page..end_page %}
+                    <li class="page-item {% if page == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}&status={{ filters.status }}">{{ page }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}&status={{ filters.status }}">
+                            Suivant
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 6l6 6l-6 6"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+
+{% else %}
+    <div class="card-body text-center">
+        <div class="empty">
+            <div class="empty-img">
+                <img src="{{ asset('images/undraw_no_data.svg') }}" height="128" alt="Aucune mission">
+            </div>
+            <p class="empty-title">Aucune mission trouvée</p>
+            <p class="empty-subtitle text-secondary">
+                {% if filters.status == 'active' %}
+                    Vous n'avez aucune mission active pour le moment.
+                {% elseif filters.status == 'completed' %}
+                    Vous n'avez encore terminé aucune mission.
+                {% elseif filters.status == 'overdue' %}
+                    Aucune mission n'est en retard. Excellent travail !
+                {% else %}
+                    Aucune mission ne vous a encore été assignée.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+{% endif %}

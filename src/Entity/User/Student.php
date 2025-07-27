@@ -2,7 +2,10 @@
 
 namespace App\Entity\User;
 
+use App\Entity\Alternance\MissionAssignment;
 use App\Repository\StudentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -115,8 +118,17 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $passwordResetTokenExpiresAt = null;
 
+    /**
+     * Collection of mission assignments for this student
+     * 
+     * @var Collection<int, MissionAssignment>
+     */
+    #[ORM\OneToMany(mappedBy: 'student', targetEntity: MissionAssignment::class, cascade: ['persist', 'remove'])]
+    private Collection $missionAssignments;
+
     public function __construct()
     {
+        $this->missionAssignments = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_STUDENT'];
@@ -510,6 +522,36 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return Collection<int, MissionAssignment>
+     */
+    public function getMissionAssignments(): Collection
+    {
+        return $this->missionAssignments;
+    }
+
+    public function addMissionAssignment(MissionAssignment $missionAssignment): static
+    {
+        if (!$this->missionAssignments->contains($missionAssignment)) {
+            $this->missionAssignments->add($missionAssignment);
+            $missionAssignment->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMissionAssignment(MissionAssignment $missionAssignment): static
+    {
+        if ($this->missionAssignments->removeElement($missionAssignment)) {
+            // set the owning side to null (unless already changed)
+            if ($missionAssignment->getStudent() === $this) {
+                $missionAssignment->setStudent(null);
+            }
+        }
+
+        return $this;
     }
 
     public function __toString(): string
