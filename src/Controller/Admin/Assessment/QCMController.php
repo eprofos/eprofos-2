@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Assessment;
 
 use App\Entity\Training\Course;
 use App\Entity\Training\QCM;

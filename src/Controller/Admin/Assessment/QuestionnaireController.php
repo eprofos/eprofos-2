@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Assessment;
 
+use App\Entity\Assessment\Question;
 use App\Entity\Assessment\Questionnaire;
-use App\Entity\Question;
-use App\Entity\QuestionOption;
+use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionOption;
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Training\FormationRepository;
 use App\Service\Assessment\QuestionnaireEmailService;
@@ -310,7 +311,7 @@ class QuestionnaireController extends AbstractController
             }
 
             // Create questionnaire response
-            $response = new \App\Entity\QuestionnaireResponse();
+            $response = new QuestionnaireResponse();
             $response->setQuestionnaire($questionnaire)
                 ->setFormation($formation)
                 ->setFirstName($data['first_name'] ?? '')

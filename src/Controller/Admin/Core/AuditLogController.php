@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Core;
 
 use App\Service\Core\AuditLogService;
 use Doctrine\ORM\EntityManagerInterface;

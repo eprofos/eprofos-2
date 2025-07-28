@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Service;
 
 use App\Entity\Service\Service;
 use App\Form\ServiceType;
@@ -93,7 +93,7 @@ class ServiceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Generate slug from title
-            $slug = $this->slugger->slug($service->getTitle())->lower();
+            $slug = $this->slugger->slug($service->getTitle())->lower()->toString();
             $service->setSlug($slug);
 
             $entityManager->persist($service);
@@ -133,7 +133,7 @@ class ServiceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update slug if title changed
-            $slug = $this->slugger->slug($service->getTitle())->lower();
+            $slug = $this->slugger->slug($service->getTitle())->lower()->toString();
             $service->setSlug($slug);
 
             $entityManager->flush();

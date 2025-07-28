@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Analysis;
 
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;

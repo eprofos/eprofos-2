@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\CRM;
 
 use App\Entity\CRM\ContactRequest;
 use App\Form\ContactRequestType;

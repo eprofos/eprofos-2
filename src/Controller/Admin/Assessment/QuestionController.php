@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Assessment;
 
 use App\Entity\Assessment\Question;
 use App\Entity\Assessment\Questionnaire;

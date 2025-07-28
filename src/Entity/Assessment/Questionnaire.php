@@ -502,7 +502,7 @@ class Questionnaire
 
         $questionCount = $this->getQuestionCount();
 
-        return $questionCount > 0 ? ceil($questionCount / $this->questionsPerStep) : 1;
+        return $questionCount > 0 ? (int) ceil($questionCount / $this->questionsPerStep) : 1;
     }
 
     /**
@@ -560,7 +560,7 @@ class Questionnaire
     public function generateSlug(SluggerInterface $slugger): static
     {
         if ($this->title && !$this->slug) {
-            $this->slug = $slugger->slug($this->title)->lower();
+            $this->slug = $slugger->slug($this->title)->lower()->toString();
         }
 
         return $this;
