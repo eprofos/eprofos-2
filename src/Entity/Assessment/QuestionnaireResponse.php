@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Assessment;
 
 use App\Entity\Training\Formation;
 use App\Repository\QuestionnaireResponseRepository;

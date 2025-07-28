@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionnaireResponse;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

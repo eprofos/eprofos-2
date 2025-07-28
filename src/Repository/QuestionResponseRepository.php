@@ -2,9 +2,9 @@
 
 namespace App\Repository;
 
-use App\Entity\QuestionResponse;
-use App\Entity\Question;
-use App\Entity\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionResponse;
+use App\Entity\Assessment\Question;
+use App\Entity\Assessment\QuestionnaireResponse;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

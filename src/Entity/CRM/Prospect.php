@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\CRM;
 
+use App\Entity\Analysis\NeedsAnalysisRequest;
+use App\Entity\Service\Service;
 use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Admin;

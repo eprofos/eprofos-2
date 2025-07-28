@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Assessment;
 
 use App\Repository\QuestionResponseRepository;
 use Doctrine\DBAL\Types\Types;

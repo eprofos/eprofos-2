@@ -4,6 +4,7 @@ namespace App\Form\Alternance;
 
 use App\Entity\Alternance\MissionAssignment;
 use App\Entity\Alternance\CompanyMission;
+use App\Entity\User\Mentor;
 use App\Entity\User\Student; 
 use App\Form\Alternance\IntermediateObjectiveType;
 use App\Form\DataTransformer\IntermediateObjectiveTransformer;
@@ -235,7 +236,7 @@ class MissionAssignmentType extends AbstractType
                 'novalidate' => 'novalidate'
             ]
         ]);
-        
-        $resolver->setAllowedTypes('mentor', ['null', 'App\Entity\User\Mentor']);
+
+        $resolver->setAllowedTypes('mentor', ['null', Mentor::class]);
     }
 }

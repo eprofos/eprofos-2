@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Service;
-use App\Entity\ServiceCategory;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceCategory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;

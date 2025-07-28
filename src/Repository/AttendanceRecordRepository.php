@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\AttendanceRecord;
+use App\Entity\Core\AttendanceRecord;
 use App\Entity\User\Student;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Session;

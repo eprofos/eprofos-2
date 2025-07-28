@@ -2,7 +2,7 @@
 
 namespace App\Controller\Public;
 
-use App\Entity\ContactRequest;
+use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\Formation;
 use App\Repository\ContactRequestRepository;
 use App\Repository\FormationRepository;

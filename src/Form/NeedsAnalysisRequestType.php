@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Entity\Training\Formation;
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Repository\FormationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;

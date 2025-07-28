@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Analysis;
 
 use App\Repository\CompanyNeedsAnalysisRepository;
 use Doctrine\DBAL\Types\Types;

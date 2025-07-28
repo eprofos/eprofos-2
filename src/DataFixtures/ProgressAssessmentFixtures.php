@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;

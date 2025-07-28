@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\ContactRequest;
+use App\Entity\CRM\ContactRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

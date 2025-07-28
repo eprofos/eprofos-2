@@ -2,10 +2,10 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\CompanyNeedsAnalysis;
+use App\Entity\Analysis\CompanyNeedsAnalysis;
 use App\Entity\Training\Formation;
-use App\Entity\IndividualNeedsAnalysis;
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\IndividualNeedsAnalysis;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
 use App\Service\ProspectManagementService;
 use App\Service\TokenGeneratorService;

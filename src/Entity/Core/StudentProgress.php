@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Core;
 
 use App\Entity\Training\Formation;
 use App\Entity\Training\Module;

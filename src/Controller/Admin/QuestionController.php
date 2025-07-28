@@ -2,9 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Question;
-use App\Entity\QuestionOption;
-use App\Entity\Questionnaire;
+use App\Entity\Assessment\Question;
+use App\Entity\Assessment\QuestionOption;
+use App\Entity\Assessment\Questionnaire;
 use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

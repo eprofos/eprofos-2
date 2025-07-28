@@ -2,8 +2,8 @@
 
 namespace App\Form;
 
-use App\Entity\Service;
-use App\Entity\ServiceCategory;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceCategory;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;

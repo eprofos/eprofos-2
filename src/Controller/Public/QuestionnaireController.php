@@ -2,9 +2,9 @@
 
 namespace App\Controller\Public;
 
-use App\Entity\Questionnaire;
-use App\Entity\QuestionnaireResponse;
-use App\Entity\QuestionResponse;
+use App\Entity\Assessment\Questionnaire;
+use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionResponse;
 use App\Repository\QuestionnaireRepository;
 use App\Repository\QuestionnaireResponseRepository;
 use App\Repository\FormationRepository;

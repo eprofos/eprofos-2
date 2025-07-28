@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
 use App\Form\NeedsAnalysisRequestType;
 use App\Repository\NeedsAnalysisRequestRepository;

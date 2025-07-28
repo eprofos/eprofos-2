@@ -2,8 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Prospect;
-use App\Entity\ProspectNote;
+use App\Entity\CRM\Prospect;
+use App\Entity\CRM\ProspectNote;
 use App\Form\ProspectNoteType;
 use App\Repository\ProspectNoteRepository;
 use Doctrine\ORM\EntityManagerInterface;

@@ -2,8 +2,8 @@
 
 namespace App\Form;
 
-use App\Entity\Prospect;
-use App\Entity\ProspectNote;
+use App\Entity\CRM\Prospect;
+use App\Entity\CRM\ProspectNote;
 use App\Entity\User\Admin;
 use App\Repository\AdminRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;

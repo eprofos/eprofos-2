@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Question;
-use App\Entity\Questionnaire;
+use App\Entity\Assessment\Question;
+use App\Entity\Assessment\Questionnaire;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;

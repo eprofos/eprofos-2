@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use App\Entity\Training\Formation;
 use App\Repository\StudentProgressRepository;
 use App\Repository\AttendanceRecordRepository;

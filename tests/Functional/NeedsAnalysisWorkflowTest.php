@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\Entity\NeedsAnalysisRequest;
-use App\Entity\CompanyNeedsAnalysis;
-use App\Entity\IndividualNeedsAnalysis;
+use App\Entity\Analysis\NeedsAnalysisRequest;
+use App\Entity\Analysis\CompanyNeedsAnalysis;
+use App\Entity\Analysis\IndividualNeedsAnalysis;
 use App\Entity\User\Admin;
 use App\Repository\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;

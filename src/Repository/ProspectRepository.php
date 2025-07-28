@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Prospect;
+use App\Entity\CRM\Prospect;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

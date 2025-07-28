@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\ServiceCategory;
+use App\Entity\Service\ServiceCategory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;

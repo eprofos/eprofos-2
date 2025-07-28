@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\ServiceCategory;
+use App\Entity\Service\ServiceCategory;
 use App\Form\ServiceCategoryType;
 use App\Repository\ServiceCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;

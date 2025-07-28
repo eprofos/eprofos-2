@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;

@@ -2,12 +2,12 @@
 
 namespace App\Service;
 
-use App\Entity\Prospect;
-use App\Entity\ContactRequest;
+use App\Entity\CRM\Prospect;
+use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\SessionRegistration;
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Training\Formation;
-use App\Entity\Service;
+use App\Entity\Service\Service;
 use App\Repository\ProspectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

@@ -2,6 +2,8 @@
 
 namespace App\Controller\Admin\Alternance;
 
+use App\Entity\Alternance\AlternanceContract;
+use App\Entity\User\Mentor;
 use App\Repository\MentorRepository;
 use App\Repository\AlternanceContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -195,8 +197,8 @@ class CompanyController extends AbstractController
                      COUNT(DISTINCT m.id) as mentorCount,
                      COUNT(DISTINCT ac.id) as contractCount,
                      ac.companyAddress')
-            ->from('App\Entity\User\Mentor', 'm')
-            ->leftJoin('App\Entity\Alternance\AlternanceContract', 'ac', 'WITH', 'ac.companySiret = m.companySiret')
+            ->from(Mentor::class, 'm')
+            ->leftJoin(AlternanceContract::class, 'ac', 'WITH', 'ac.companySiret = m.companySiret')
             ->groupBy('m.companyName, m.companySiret, ac.companyAddress');
 
         if ($search) {
@@ -218,7 +220,7 @@ class CompanyController extends AbstractController
     {
         $qb = $this->entityManager->createQueryBuilder()
             ->select('COUNT(DISTINCT m.companySiret)')
-            ->from('App\Entity\User\Mentor', 'm');
+            ->from(Mentor::class, 'm');
 
         if ($search) {
             $qb->where('m.companyName LIKE :search OR m.companySiret LIKE :search')
@@ -238,7 +240,7 @@ class CompanyController extends AbstractController
         // Get companies with most mentors
         $topCompaniesByMentors = $this->entityManager->createQueryBuilder()
             ->select('m.companyName, COUNT(m.id) as mentorCount')
-            ->from('App\Entity\User\Mentor', 'm')
+            ->from(Mentor::class, 'm')
             ->groupBy('m.companyName')
             ->orderBy('mentorCount', 'DESC')
             ->setMaxResults(5)
@@ -248,7 +250,7 @@ class CompanyController extends AbstractController
         // Get companies with most contracts
         $topCompaniesByContracts = $this->entityManager->createQueryBuilder()
             ->select('ac.companyName, COUNT(ac.id) as contractCount')
-            ->from('App\Entity\Alternance\AlternanceContract', 'ac')
+            ->from(AlternanceContract::class, 'ac')
             ->groupBy('ac.companyName')
             ->orderBy('contractCount', 'DESC')
             ->setMaxResults(5)

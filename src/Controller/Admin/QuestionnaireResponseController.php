@@ -2,8 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\QuestionnaireResponse;
-use App\Entity\Questionnaire;
+use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\Questionnaire;
 use App\Repository\QuestionnaireResponseRepository;
 use App\Repository\QuestionResponseRepository;
 use Doctrine\ORM\EntityManagerInterface;

@@ -3,8 +3,8 @@
 namespace App\Command;
 
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
-use App\Entity\AttendanceRecord;
+use App\Entity\Core\StudentProgress;
+use App\Entity\Core\AttendanceRecord;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Session;
 use App\Repository\StudentRepository;

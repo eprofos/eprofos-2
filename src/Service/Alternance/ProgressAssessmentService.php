@@ -4,7 +4,7 @@ namespace App\Service\Alternance;
 
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\StudentProgressRepository;
 use Doctrine\ORM\EntityManagerInterface;

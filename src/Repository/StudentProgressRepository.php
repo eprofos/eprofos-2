@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User\Student;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use App\Entity\Training\Formation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;

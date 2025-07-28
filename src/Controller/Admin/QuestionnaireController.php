@@ -2,9 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Questionnaire;
+use App\Entity\Assessment\Questionnaire;
 use App\Entity\Training\Formation;
-use App\Entity\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionnaireResponse;
 use App\Repository\QuestionnaireRepository;
 use App\Repository\FormationRepository;
 use App\Service\QuestionnaireEmailService;

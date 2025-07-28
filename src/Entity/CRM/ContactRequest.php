@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\CRM;
 
+use App\Entity\Service\Service;
 use App\Entity\Training\Formation;
 use App\Repository\ContactRequestRepository;
 use Doctrine\DBAL\Types\Types;

@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

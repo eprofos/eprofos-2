@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\ProspectNote;
-use App\Entity\Prospect;
+use App\Entity\CRM\ProspectNote;
+use App\Entity\CRM\Prospect;
 use App\Entity\User\Admin;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

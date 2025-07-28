@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Alternance\AlternanceCalendar;
+use App\Entity\Alternance\AlternanceContract;
 use App\Entity\User\Student;
 use App\Repository\AlternanceCalendarRepository;
 use App\Service\AlternanceCalendarService;
@@ -75,7 +76,7 @@ class AlternanceConflictService
         $missingWeeks = [];
         
         // Get all contracts for the student
-        $contracts = $this->entityManager->getRepository('App\Entity\Alternance\AlternanceContract')
+        $contracts = $this->entityManager->getRepository(AlternanceContract::class)
             ->findBy(['student' => $student]);
         
         foreach ($contracts as $contract) {
@@ -200,7 +201,7 @@ class AlternanceConflictService
         $conflicts = [];
         
         // Get contracts and analyze rhythm for each
-        $contracts = $this->entityManager->getRepository('App\Entity\Alternance\AlternanceContract')
+        $contracts = $this->entityManager->getRepository(AlternanceContract::class)
             ->findBy(['student' => $student]);
         
         foreach ($contracts as $contract) {

@@ -3,9 +3,9 @@
 namespace App\DataFixtures;
 
 use App\Entity\User\Student;
-use App\Entity\AttendanceRecord;
+use App\Entity\Core\AttendanceRecord;
 use App\Entity\Training\Session;
-use App\Entity\StudentProgress;
+use App\Entity\Core\StudentProgress;
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use Doctrine\Bundle\FixturesBundle\Fixture;

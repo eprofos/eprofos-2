@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Training\SessionRegistration;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;

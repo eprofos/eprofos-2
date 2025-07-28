@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\QuestionnaireResponse;
-use App\Entity\Questionnaire;
+use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\Questionnaire;
 use App\Entity\Training\Formation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Prospect;
-use App\Entity\ProspectNote;
+use App\Entity\CRM\Prospect;
+use App\Entity\CRM\ProspectNote;
 use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form;
 
-use App\Entity\CompanyNeedsAnalysis;
-use App\Entity\NeedsAnalysisRequest;
+use App\Entity\Analysis\CompanyNeedsAnalysis;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;

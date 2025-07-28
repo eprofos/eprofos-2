@@ -2,9 +2,9 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\ContactRequest;
+use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\Formation;
-use App\Entity\Service;
+use App\Entity\Service\Service;
 use App\Service\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

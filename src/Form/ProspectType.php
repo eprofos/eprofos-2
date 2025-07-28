@@ -3,8 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Training\Formation;
-use App\Entity\Prospect;
-use App\Entity\Service;
+use App\Entity\CRM\Prospect;
+use App\Entity\Service\Service;
 use App\Entity\User\Admin;
 use App\Repository\FormationRepository;
 use App\Repository\ServiceRepository;

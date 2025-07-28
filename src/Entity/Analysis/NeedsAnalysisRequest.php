@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Analysis;
 
+use App\Entity\CRM\Prospect;
 use App\Entity\Training\Formation;
 use App\Entity\User\Admin;
 use App\Repository\NeedsAnalysisRequestRepository;

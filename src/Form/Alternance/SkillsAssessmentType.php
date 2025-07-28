@@ -232,7 +232,7 @@ class SkillsAssessmentType extends AbstractType
                 'novalidate' => 'novalidate'
             ]
         ]);
-        
-        $resolver->setAllowedTypes('mentor', ['null', 'App\Entity\User\Mentor']);
+
+        $resolver->setAllowedTypes('mentor', ['null', Mentor::class]);
     }
 }

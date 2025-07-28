@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\ContactRequest;
+use App\Entity\CRM\ContactRequest;
 use App\Form\ContactRequestType;
 use App\Repository\ContactRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;

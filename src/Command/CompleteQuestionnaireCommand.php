@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionnaireResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

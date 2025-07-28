@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Core;
 
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\Training\Session;
