@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250726172512 extends AbstractMigration
+final class Version20250728195015 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -36,13 +36,85 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN admins.last_login_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE attendance_records (id SERIAL NOT NULL, student_id INT NOT NULL, session_id INT NOT NULL, status VARCHAR(20) NOT NULL, participation_score INT NOT NULL, absence_reason TEXT DEFAULT NULL, excused BOOLEAN NOT NULL, admin_notes TEXT DEFAULT NULL, arrival_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, departure_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, minutes_late INT DEFAULT NULL, minutes_early_departure INT DEFAULT NULL, metadata JSON DEFAULT NULL, recorded_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, recorded_by VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE alternance_calendars (id SERIAL NOT NULL, student_id INT NOT NULL, contract_id INT NOT NULL, week SMALLINT NOT NULL, year SMALLINT NOT NULL, location VARCHAR(20) NOT NULL, center_sessions JSON DEFAULT NULL, company_activities JSON DEFAULT NULL, evaluations JSON DEFAULT NULL, meetings JSON DEFAULT NULL, holidays JSON DEFAULT NULL, notes TEXT DEFAULT NULL, is_confirmed BOOLEAN NOT NULL, last_modified TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, modified_by VARCHAR(100) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_CDB29EFACB944F1A ON alternance_calendars (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_CDB29EFA2576E0FD ON alternance_calendars (contract_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_week_year ON alternance_calendars (week, year)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_location ON alternance_calendars (location)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_confirmed ON alternance_calendars (is_confirmed)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX unique_student_week_year ON alternance_calendars (student_id, week, year)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE alternance_contracts (id SERIAL NOT NULL, student_id INT NOT NULL, session_id INT NOT NULL, mentor_id INT NOT NULL, pedagogical_supervisor_id INT NOT NULL, company_name VARCHAR(255) NOT NULL, company_address TEXT NOT NULL, company_siret VARCHAR(14) NOT NULL, contract_type VARCHAR(50) NOT NULL, start_date DATE NOT NULL, end_date DATE NOT NULL, duration INT DEFAULT NULL, job_title VARCHAR(255) NOT NULL, job_description TEXT NOT NULL, learning_objectives JSON NOT NULL, company_objectives JSON NOT NULL, weekly_center_hours INT NOT NULL, weekly_company_hours INT NOT NULL, remuneration VARCHAR(255) NOT NULL, status VARCHAR(50) NOT NULL, notes TEXT DEFAULT NULL, contract_number VARCHAR(255) DEFAULT NULL, company_contact_person VARCHAR(255) DEFAULT NULL, company_contact_email VARCHAR(255) DEFAULT NULL, company_contact_phone VARCHAR(20) DEFAULT NULL, objectives TEXT DEFAULT NULL, tasks TEXT DEFAULT NULL, evaluation_criteria TEXT DEFAULT NULL, compensation INT DEFAULT NULL, additional_data JSON DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, validated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX UNIQ_403DB586AAD0FA19 ON alternance_contracts (contract_number)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_403DB586CB944F1A ON alternance_contracts (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_403DB586613FECDF ON alternance_contracts (session_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_403DB586DB403044 ON alternance_contracts (mentor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_403DB58668C8A426 ON alternance_contracts (pedagogical_supervisor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_contracts.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_contracts.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_contracts.validated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_contracts.started_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_contracts.completed_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE alternance_programs (id SERIAL NOT NULL, session_id INT NOT NULL, title VARCHAR(255) NOT NULL, description TEXT NOT NULL, total_duration INT NOT NULL, center_duration INT NOT NULL, company_duration INT NOT NULL, center_modules JSON NOT NULL, company_modules JSON NOT NULL, coordination_points JSON NOT NULL, assessment_periods JSON NOT NULL, rhythm VARCHAR(255) NOT NULL, learning_progression JSON NOT NULL, notes TEXT DEFAULT NULL, additional_data JSON DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX UNIQ_F512DDA3613FECDF ON alternance_programs (session_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_programs.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN alternance_programs.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE attendance_records (id SERIAL NOT NULL, student_id INT NOT NULL, session_id INT NOT NULL, related_mission_id INT DEFAULT NULL, supervising_mentor_id INT DEFAULT NULL, status VARCHAR(20) NOT NULL, participation_score INT NOT NULL, absence_reason TEXT DEFAULT NULL, excused BOOLEAN NOT NULL, admin_notes TEXT DEFAULT NULL, arrival_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, departure_time TIME(0) WITHOUT TIME ZONE DEFAULT NULL, minutes_late INT DEFAULT NULL, minutes_early_departure INT DEFAULT NULL, metadata JSON DEFAULT NULL, attendance_location VARCHAR(20) DEFAULT NULL, company_evaluation_criteria JSON DEFAULT NULL, company_notes TEXT DEFAULT NULL, company_rating DOUBLE PRECISION DEFAULT NULL, recorded_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, recorded_by VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_9B5AB644CB944F1A ON attendance_records (student_id)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_9B5AB644613FECDF ON attendance_records (session_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_9B5AB64434A1A620 ON attendance_records (related_mission_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_9B5AB64457E1EB64 ON attendance_records (supervising_mentor_id)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX idx_status ON attendance_records (status)
@@ -87,6 +159,18 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN chapter.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE company_missions (id SERIAL NOT NULL, supervisor_id INT NOT NULL, title VARCHAR(255) NOT NULL, description TEXT NOT NULL, context TEXT NOT NULL, objectives JSON NOT NULL, required_skills JSON NOT NULL, skills_to_acquire JSON NOT NULL, duration VARCHAR(100) NOT NULL, complexity VARCHAR(50) NOT NULL, term VARCHAR(50) NOT NULL, order_index INT NOT NULL, department VARCHAR(150) NOT NULL, prerequisites JSON NOT NULL, evaluation_criteria JSON NOT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_2C66C11319E9AC5F ON company_missions (supervisor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN company_missions.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN company_missions.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE company_needs_analyses (id SERIAL NOT NULL, needs_analysis_request_id INT NOT NULL, company_name VARCHAR(255) NOT NULL, responsible_person VARCHAR(255) NOT NULL, contact_email VARCHAR(180) NOT NULL, contact_phone VARCHAR(20) NOT NULL, company_address TEXT NOT NULL, activity_sector VARCHAR(255) NOT NULL, naf_code VARCHAR(10) DEFAULT NULL, siret VARCHAR(14) DEFAULT NULL, employee_count INT NOT NULL, opco VARCHAR(255) DEFAULT NULL, trainees_info JSON NOT NULL, training_title VARCHAR(255) NOT NULL, training_duration_hours INT NOT NULL, preferred_start_date DATE DEFAULT NULL, preferred_end_date DATE DEFAULT NULL, training_location_preference VARCHAR(255) NOT NULL, location_appropriation_needs TEXT DEFAULT NULL, disability_accommodations TEXT DEFAULT NULL, training_expectations TEXT NOT NULL, specific_needs TEXT NOT NULL, submitted_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
@@ -94,6 +178,33 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             COMMENT ON COLUMN company_needs_analyses.submitted_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE company_visits (id SERIAL NOT NULL, student_id INT NOT NULL, visitor_id INT NOT NULL, mentor_id INT NOT NULL, visit_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, visit_type VARCHAR(50) NOT NULL, objectives_checked JSON NOT NULL, observed_activities JSON NOT NULL, strengths JSON NOT NULL, improvement_areas JSON NOT NULL, mentor_feedback TEXT DEFAULT NULL, student_feedback TEXT DEFAULT NULL, recommendations JSON NOT NULL, visit_report TEXT DEFAULT NULL, follow_up_required BOOLEAN NOT NULL, next_visit_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, overall_rating INT DEFAULT NULL, working_conditions_rating INT DEFAULT NULL, supervision_rating INT DEFAULT NULL, integration_rating INT DEFAULT NULL, notes TEXT DEFAULT NULL, duration INT DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, created_by VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_79D75D9F70BEE6D ON company_visits (visitor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_79D75D9FDB403044 ON company_visits (mentor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_visit_student ON company_visits (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_visit_date ON company_visits (visit_date)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_visit_type ON company_visits (visit_type)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_visit_follow_up ON company_visits (follow_up_required)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN company_visits.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN company_visits.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE contact_requests (id SERIAL NOT NULL, formation_id INT DEFAULT NULL, service_id INT DEFAULT NULL, prospect_id INT DEFAULT NULL, type VARCHAR(20) NOT NULL, first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL, email VARCHAR(180) NOT NULL, phone VARCHAR(20) DEFAULT NULL, company VARCHAR(150) DEFAULT NULL, subject VARCHAR(200) DEFAULT NULL, message TEXT NOT NULL, status VARCHAR(20) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, processed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, additional_data JSON DEFAULT NULL, admin_notes TEXT DEFAULT NULL, PRIMARY KEY(id))
@@ -106,6 +217,33 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_E1A04AC6D182060A ON contact_requests (prospect_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE coordination_meetings (id SERIAL NOT NULL, student_id INT NOT NULL, pedagogical_supervisor_id INT NOT NULL, mentor_id INT NOT NULL, date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, type VARCHAR(50) NOT NULL, location VARCHAR(50) NOT NULL, agenda JSON NOT NULL, discussion_points JSON NOT NULL, decisions JSON NOT NULL, action_plan JSON NOT NULL, next_meeting_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, meeting_report TEXT DEFAULT NULL, status VARCHAR(30) NOT NULL, attendees JSON NOT NULL, duration INT DEFAULT NULL, notes TEXT DEFAULT NULL, satisfaction_rating INT DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, created_by VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_FBCC898F68C8A426 ON coordination_meetings (pedagogical_supervisor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_FBCC898FDB403044 ON coordination_meetings (mentor_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_coordination_student ON coordination_meetings (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_coordination_date ON coordination_meetings (date)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_coordination_status ON coordination_meetings (status)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_coordination_type ON coordination_meetings (type)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN coordination_meetings.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN coordination_meetings.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE course (id SERIAL NOT NULL, chapter_id INT NOT NULL, title VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, description TEXT NOT NULL, learning_objectives JSON DEFAULT NULL, content_outline TEXT DEFAULT NULL, prerequisites TEXT DEFAULT NULL, learning_outcomes JSON DEFAULT NULL, teaching_methods TEXT DEFAULT NULL, resources JSON DEFAULT NULL, assessment_methods TEXT DEFAULT NULL, success_criteria JSON DEFAULT NULL, content TEXT DEFAULT NULL, type VARCHAR(50) NOT NULL, duration_minutes INT NOT NULL, order_index INT NOT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
@@ -342,6 +480,24 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN mentors.password_reset_token_expires_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE mission_assignments (id SERIAL NOT NULL, student_id INT NOT NULL, mission_id INT NOT NULL, start_date DATE NOT NULL, end_date DATE NOT NULL, status VARCHAR(50) NOT NULL, intermediate_objectives JSON NOT NULL, completion_rate NUMERIC(5, 2) NOT NULL, difficulties JSON NOT NULL, achievements JSON NOT NULL, mentor_feedback TEXT DEFAULT NULL, student_feedback TEXT DEFAULT NULL, mentor_rating INT DEFAULT NULL, student_satisfaction INT DEFAULT NULL, competencies_acquired JSON NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, last_updated TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_57151A3CCB944F1A ON mission_assignments (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_57151A3CBE6CAE90 ON mission_assignments (mission_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN mission_assignments.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN mission_assignments.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN mission_assignments.last_updated IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE module (id SERIAL NOT NULL, formation_id INT NOT NULL, title VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, description TEXT NOT NULL, learning_objectives JSON DEFAULT NULL, prerequisites TEXT DEFAULT NULL, duration_hours INT NOT NULL, order_index INT NOT NULL, evaluation_methods TEXT DEFAULT NULL, teaching_methods TEXT DEFAULT NULL, resources JSON DEFAULT NULL, success_criteria JSON DEFAULT NULL, is_active BOOLEAN NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
@@ -385,6 +541,27 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             COMMENT ON COLUMN needs_analysis_requests.last_reminder_sent_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE progress_assessments (id SERIAL NOT NULL, student_id INT NOT NULL, period DATE NOT NULL, center_progression NUMERIC(5, 2) NOT NULL, company_progression NUMERIC(5, 2) NOT NULL, overall_progression NUMERIC(5, 2) NOT NULL, completed_objectives JSON NOT NULL, pending_objectives JSON NOT NULL, upcoming_objectives JSON NOT NULL, difficulties JSON NOT NULL, support_needed JSON NOT NULL, next_steps TEXT DEFAULT NULL, skills_matrix JSON NOT NULL, risk_level INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_58755352CB944F1A ON progress_assessments (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_student_period ON progress_assessments (student_id, period)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_risk_level ON progress_assessments (risk_level)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_overall_progression ON progress_assessments (overall_progression)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN progress_assessments.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN progress_assessments.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE prospect_notes (id SERIAL NOT NULL, prospect_id INT NOT NULL, created_by_id INT NOT NULL, title VARCHAR(200) NOT NULL, content TEXT NOT NULL, type VARCHAR(30) NOT NULL, status VARCHAR(20) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, scheduled_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, metadata JSON DEFAULT NULL, is_important BOOLEAN NOT NULL, is_private BOOLEAN NOT NULL, PRIMARY KEY(id))
@@ -555,7 +732,7 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN session_registrations.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE sessions (id SERIAL NOT NULL, formation_id INT NOT NULL, name VARCHAR(255) NOT NULL, description TEXT DEFAULT NULL, start_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, end_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, registration_deadline DATE DEFAULT NULL, location VARCHAR(255) NOT NULL, address VARCHAR(500) DEFAULT NULL, max_capacity INT NOT NULL, min_capacity INT NOT NULL, current_registrations INT NOT NULL, price NUMERIC(10, 2) DEFAULT NULL, status VARCHAR(50) NOT NULL, is_active BOOLEAN NOT NULL, instructor VARCHAR(100) DEFAULT NULL, notes TEXT DEFAULT NULL, additional_info JSON DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE sessions (id SERIAL NOT NULL, formation_id INT NOT NULL, name VARCHAR(255) NOT NULL, description TEXT DEFAULT NULL, start_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, end_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, registration_deadline DATE DEFAULT NULL, location VARCHAR(255) NOT NULL, address VARCHAR(500) DEFAULT NULL, max_capacity INT NOT NULL, min_capacity INT NOT NULL, current_registrations INT NOT NULL, price NUMERIC(10, 2) DEFAULT NULL, status VARCHAR(50) NOT NULL, is_active BOOLEAN NOT NULL, instructor VARCHAR(100) DEFAULT NULL, notes TEXT DEFAULT NULL, additional_info JSON DEFAULT NULL, is_alternance_session BOOLEAN DEFAULT NULL, alternance_type VARCHAR(50) DEFAULT NULL, minimum_alternance_duration INT DEFAULT NULL, center_percentage INT DEFAULT NULL, company_percentage INT DEFAULT NULL, alternance_prerequisites JSON DEFAULT NULL, alternance_rhythm VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_9A609D135200282E ON sessions (formation_id)
@@ -567,7 +744,37 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN sessions.updated_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE student_progress (id SERIAL NOT NULL, student_id INT NOT NULL, formation_id INT NOT NULL, current_module_id INT DEFAULT NULL, current_chapter_id INT DEFAULT NULL, completion_percentage NUMERIC(5, 2) NOT NULL, module_progress JSON DEFAULT NULL, chapter_progress JSON DEFAULT NULL, last_activity TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, engagement_score INT NOT NULL, difficulty_signals JSON DEFAULT NULL, at_risk_of_dropout BOOLEAN NOT NULL, risk_score NUMERIC(5, 2) NOT NULL, total_time_spent INT NOT NULL, login_count INT NOT NULL, average_session_duration NUMERIC(8, 2) DEFAULT NULL, attendance_rate NUMERIC(5, 2) NOT NULL, missed_sessions INT NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, last_risk_assessment TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE skills_assessments (id SERIAL NOT NULL, student_id INT NOT NULL, center_evaluator_id INT DEFAULT NULL, mentor_evaluator_id INT DEFAULT NULL, related_mission_id INT DEFAULT NULL, assessment_type VARCHAR(50) NOT NULL, context VARCHAR(50) NOT NULL, assessment_date DATE NOT NULL, skills_evaluated JSON NOT NULL, center_scores JSON NOT NULL, company_scores JSON NOT NULL, global_competencies JSON NOT NULL, center_comments TEXT DEFAULT NULL, mentor_comments TEXT DEFAULT NULL, development_plan JSON NOT NULL, overall_rating VARCHAR(50) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_AEE93CF8CB944F1A ON skills_assessments (student_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_AEE93CF844B5DF02 ON skills_assessments (center_evaluator_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_AEE93CF8B7C7B482 ON skills_assessments (mentor_evaluator_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_AEE93CF834A1A620 ON skills_assessments (related_mission_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_student_assessment_date ON skills_assessments (student_id, assessment_date)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_context ON skills_assessments (context)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX idx_assessment_type ON skills_assessments (assessment_type)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN skills_assessments.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN skills_assessments.updated_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE student_progress (id SERIAL NOT NULL, student_id INT NOT NULL, formation_id INT NOT NULL, current_module_id INT DEFAULT NULL, current_chapter_id INT DEFAULT NULL, alternance_contract_id INT DEFAULT NULL, completion_percentage NUMERIC(5, 2) NOT NULL, module_progress JSON DEFAULT NULL, chapter_progress JSON DEFAULT NULL, last_activity TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, engagement_score INT NOT NULL, difficulty_signals JSON DEFAULT NULL, at_risk_of_dropout BOOLEAN NOT NULL, risk_score NUMERIC(5, 2) NOT NULL, total_time_spent INT NOT NULL, login_count INT NOT NULL, average_session_duration NUMERIC(8, 2) DEFAULT NULL, attendance_rate NUMERIC(5, 2) NOT NULL, missed_sessions INT NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, completed_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, last_risk_assessment TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, center_completion_rate NUMERIC(5, 2) DEFAULT NULL, company_completion_rate NUMERIC(5, 2) DEFAULT NULL, mission_progress JSON DEFAULT NULL, skills_acquired JSON DEFAULT NULL, alternance_status VARCHAR(50) DEFAULT NULL, alternance_risk_score INT DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_918ABEDDCB944F1A ON student_progress (student_id)
@@ -580,6 +787,9 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_918ABEDD88248E1A ON student_progress (current_chapter_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_918ABEDD58BCE027 ON student_progress (alternance_contract_id)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX idx_student_formation ON student_progress (student_id, formation_id)
@@ -639,16 +849,55 @@ final class Version20250726172512 extends AbstractMigration
             COMMENT ON COLUMN teachers.password_reset_token_expires_at IS '(DC2Type:datetime_immutable)'
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_calendars ADD CONSTRAINT FK_CDB29EFACB944F1A FOREIGN KEY (student_id) REFERENCES students (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_calendars ADD CONSTRAINT FK_CDB29EFA2576E0FD FOREIGN KEY (contract_id) REFERENCES alternance_contracts (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts ADD CONSTRAINT FK_403DB586CB944F1A FOREIGN KEY (student_id) REFERENCES students (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts ADD CONSTRAINT FK_403DB586613FECDF FOREIGN KEY (session_id) REFERENCES sessions (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts ADD CONSTRAINT FK_403DB586DB403044 FOREIGN KEY (mentor_id) REFERENCES mentors (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts ADD CONSTRAINT FK_403DB58668C8A426 FOREIGN KEY (pedagogical_supervisor_id) REFERENCES teachers (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_programs ADD CONSTRAINT FK_F512DDA3613FECDF FOREIGN KEY (session_id) REFERENCES sessions (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB644CB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB644613FECDF FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB64434A1A620 FOREIGN KEY (related_mission_id) REFERENCES company_missions (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records ADD CONSTRAINT FK_9B5AB64457E1EB64 FOREIGN KEY (supervising_mentor_id) REFERENCES mentors (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE chapter ADD CONSTRAINT FK_F981B52EAFC2B591 FOREIGN KEY (module_id) REFERENCES module (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE company_missions ADD CONSTRAINT FK_2C66C11319E9AC5F FOREIGN KEY (supervisor_id) REFERENCES mentors (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE company_needs_analyses ADD CONSTRAINT FK_8224FC4BB3BF07B2 FOREIGN KEY (needs_analysis_request_id) REFERENCES needs_analysis_requests (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits ADD CONSTRAINT FK_79D75D9FCB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits ADD CONSTRAINT FK_79D75D9F70BEE6D FOREIGN KEY (visitor_id) REFERENCES teachers (id) ON DELETE RESTRICT NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits ADD CONSTRAINT FK_79D75D9FDB403044 FOREIGN KEY (mentor_id) REFERENCES mentors (id) ON DELETE RESTRICT NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE contact_requests ADD CONSTRAINT FK_E1A04AC65200282E FOREIGN KEY (formation_id) REFERENCES formation (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -658,6 +907,15 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE contact_requests ADD CONSTRAINT FK_E1A04AC6D182060A FOREIGN KEY (prospect_id) REFERENCES prospects (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings ADD CONSTRAINT FK_FBCC898FCB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings ADD CONSTRAINT FK_FBCC898F68C8A426 FOREIGN KEY (pedagogical_supervisor_id) REFERENCES teachers (id) ON DELETE RESTRICT NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings ADD CONSTRAINT FK_FBCC898FDB403044 FOREIGN KEY (mentor_id) REFERENCES mentors (id) ON DELETE RESTRICT NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE course ADD CONSTRAINT FK_169E6FB9579F4768 FOREIGN KEY (chapter_id) REFERENCES chapter (id) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -723,6 +981,12 @@ final class Version20250726172512 extends AbstractMigration
             ALTER TABLE individual_needs_analyses ADD CONSTRAINT FK_51E7BAD4B3BF07B2 FOREIGN KEY (needs_analysis_request_id) REFERENCES needs_analysis_requests (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE mission_assignments ADD CONSTRAINT FK_57151A3CCB944F1A FOREIGN KEY (student_id) REFERENCES students (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE mission_assignments ADD CONSTRAINT FK_57151A3CBE6CAE90 FOREIGN KEY (mission_id) REFERENCES company_missions (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE module ADD CONSTRAINT FK_C2426285200282E FOREIGN KEY (formation_id) REFERENCES formation (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
@@ -733,6 +997,9 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE needs_analysis_requests ADD CONSTRAINT FK_FCFD4E0CD182060A FOREIGN KEY (prospect_id) REFERENCES prospects (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE progress_assessments ADD CONSTRAINT FK_58755352CB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE prospect_notes ADD CONSTRAINT FK_40653D66D182060A FOREIGN KEY (prospect_id) REFERENCES prospects (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -792,6 +1059,18 @@ final class Version20250726172512 extends AbstractMigration
             ALTER TABLE sessions ADD CONSTRAINT FK_9A609D135200282E FOREIGN KEY (formation_id) REFERENCES formation (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments ADD CONSTRAINT FK_AEE93CF8CB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments ADD CONSTRAINT FK_AEE93CF844B5DF02 FOREIGN KEY (center_evaluator_id) REFERENCES teachers (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments ADD CONSTRAINT FK_AEE93CF8B7C7B482 FOREIGN KEY (mentor_evaluator_id) REFERENCES mentors (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments ADD CONSTRAINT FK_AEE93CF834A1A620 FOREIGN KEY (related_mission_id) REFERENCES mission_assignments (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDDCB944F1A FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
@@ -803,6 +1082,9 @@ final class Version20250726172512 extends AbstractMigration
         $this->addSql(<<<'SQL'
             ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDD88248E1A FOREIGN KEY (current_chapter_id) REFERENCES chapter (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress ADD CONSTRAINT FK_918ABEDD58BCE027 FOREIGN KEY (alternance_contract_id) REFERENCES alternance_contracts (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
     }
 
     public function down(Schema $schema): void
@@ -812,16 +1094,55 @@ final class Version20250726172512 extends AbstractMigration
             CREATE SCHEMA public
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_calendars DROP CONSTRAINT FK_CDB29EFACB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_calendars DROP CONSTRAINT FK_CDB29EFA2576E0FD
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts DROP CONSTRAINT FK_403DB586CB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts DROP CONSTRAINT FK_403DB586613FECDF
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts DROP CONSTRAINT FK_403DB586DB403044
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_contracts DROP CONSTRAINT FK_403DB58668C8A426
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE alternance_programs DROP CONSTRAINT FK_F512DDA3613FECDF
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB644CB944F1A
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB644613FECDF
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB64434A1A620
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE attendance_records DROP CONSTRAINT FK_9B5AB64457E1EB64
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE chapter DROP CONSTRAINT FK_F981B52EAFC2B591
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE company_missions DROP CONSTRAINT FK_2C66C11319E9AC5F
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE company_needs_analyses DROP CONSTRAINT FK_8224FC4BB3BF07B2
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits DROP CONSTRAINT FK_79D75D9FCB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits DROP CONSTRAINT FK_79D75D9F70BEE6D
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE company_visits DROP CONSTRAINT FK_79D75D9FDB403044
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE contact_requests DROP CONSTRAINT FK_E1A04AC65200282E
@@ -831,6 +1152,15 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE contact_requests DROP CONSTRAINT FK_E1A04AC6D182060A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings DROP CONSTRAINT FK_FBCC898FCB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings DROP CONSTRAINT FK_FBCC898F68C8A426
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE coordination_meetings DROP CONSTRAINT FK_FBCC898FDB403044
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE course DROP CONSTRAINT FK_169E6FB9579F4768
@@ -896,6 +1226,12 @@ final class Version20250726172512 extends AbstractMigration
             ALTER TABLE individual_needs_analyses DROP CONSTRAINT FK_51E7BAD4B3BF07B2
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE mission_assignments DROP CONSTRAINT FK_57151A3CCB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE mission_assignments DROP CONSTRAINT FK_57151A3CBE6CAE90
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE module DROP CONSTRAINT FK_C2426285200282E
         SQL);
         $this->addSql(<<<'SQL'
@@ -906,6 +1242,9 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE needs_analysis_requests DROP CONSTRAINT FK_FCFD4E0CD182060A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE progress_assessments DROP CONSTRAINT FK_58755352CB944F1A
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE prospect_notes DROP CONSTRAINT FK_40653D66D182060A
@@ -965,6 +1304,18 @@ final class Version20250726172512 extends AbstractMigration
             ALTER TABLE sessions DROP CONSTRAINT FK_9A609D135200282E
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments DROP CONSTRAINT FK_AEE93CF8CB944F1A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments DROP CONSTRAINT FK_AEE93CF844B5DF02
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments DROP CONSTRAINT FK_AEE93CF8B7C7B482
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE skills_assessments DROP CONSTRAINT FK_AEE93CF834A1A620
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDDCB944F1A
         SQL);
         $this->addSql(<<<'SQL'
@@ -977,7 +1328,19 @@ final class Version20250726172512 extends AbstractMigration
             ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDD88248E1A
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE student_progress DROP CONSTRAINT FK_918ABEDD58BCE027
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE admins
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE alternance_calendars
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE alternance_contracts
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE alternance_programs
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE attendance_records
@@ -989,10 +1352,19 @@ final class Version20250726172512 extends AbstractMigration
             DROP TABLE chapter
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE company_missions
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE company_needs_analyses
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE company_visits
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE contact_requests
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE coordination_meetings
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE course
@@ -1037,10 +1409,16 @@ final class Version20250726172512 extends AbstractMigration
             DROP TABLE mentors
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE mission_assignments
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE module
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE needs_analysis_requests
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE progress_assessments
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE prospect_notes
@@ -1083,6 +1461,9 @@ final class Version20250726172512 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE sessions
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE skills_assessments
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE student_progress
