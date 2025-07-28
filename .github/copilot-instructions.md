@@ -20,6 +20,11 @@ IMPORTANT: DON ONLY WHAT YOU ARE ASKED TO DO.
 - `Document` system with versioning, metadata, UI components, and templates
 - `Questionnaire` → `Question` → `QuestionOption` with response tracking
 - `AttendanceRecord` for session tracking and Qualiopi compliance
+- **NEW**: `Alternance` system with `AlternanceContract`, `CompanyVisit`, `MissionAssignment`, `SkillsAssessment`
+- **NEW**: `CoordinationMeeting` for teacher-mentor-student coordination
+- **NEW**: `User\Mentor` with company authentication and specialized dashboard
+- **NEW**: `CompanyMission` system for apprentice task management
+- **NEW**: `StudentProgress` entity for detailed learning analytics
 
 ### Hierarchical Program Structure
 **Critical Pattern**: Training content uses a 5-level hierarchy:
@@ -36,16 +41,20 @@ Each level has dedicated fields for learning objectives, evaluation methods, and
 src/Controller/
 ├── Public/     # Public-facing controllers (FormationController, ContactController, etc.)
 ├── Admin/      # Admin interface controllers
-└── Student/    # Student dashboard controllers
+│   ├── Alternance/  # NEW: Alternance management (MentorController, CompanyController, PlanningController)
+│   ├── Training/    # Training content management
+│   └── Service/     # Service catalog management
+├── Student/    # Student dashboard controllers
+├── Mentor/     # NEW: Mentor dashboard and mission management
+└── Teacher/    # Teacher interface for pedagogical supervision
 ```
 
 **Key Pattern**: Public controllers use repository methods like `findCategoriesWithActiveFormations()`, `createCatalogQueryBuilder()` for filtering.
 
 ### Database & Migrations
 - PostgreSQL with comprehensive constraints and indexes
-- Migrations in `migrations/Version*.php` - run with `doctrine:migrations:migrate`
-- Current migration: `Version20250721094647.php` with full schema
-- Fixtures load realistic test data: `doctrine:fixtures:load`
+- Migrations in `migrations/Version*.php` - run with `docker compose exec -it php php bin/console doctrine:migrations:migrate --no-interaction`
+- Fixtures load realistic test data: `docker compose exec -it php php bin/console doctrine:fixtures:load __no-interaction`
 - 30+ specialized fixture files with dependency management via `AppFixtures`
 
 ### Frontend Architecture
@@ -115,6 +124,9 @@ These fields are required for French training quality certification.
 - Event dispatching: `this.dispatch('resultsUpdated', { detail: data })`
 - Debounced search with `setTimeout()` for performance
 - **Modal Integration**: When creating modals in Twig, use `modal_controller.js` with `data-controller="modal"`, `data-modal-modal-id-value="modal-id"`, and actions `click->modal#open`/`click->modal#close`
+- **NEW**: `alternance_dashboard_controller.js` - Chart.js integration for alternance analytics
+- **NEW**: `mentor_dashboard_controller.js` - Mentor-specific dashboard interactions
+- **NEW**: `student_alternance_controller.js` - Student alternance interface management
 
 ### Collection Form Pattern
 Use dedicated `CollectionController` for dynamic form fields:
@@ -188,6 +200,10 @@ templates/
 - `DurationCalculationService` - Training duration management
 - `DropoutPreventionService` - Student retention analytics
 - `AuditLogService` - Compliance and change tracking
+- **NEW**: `MentorService` - Mentor authentication, performance tracking, and company management
+- **NEW**: `MissionAssignmentService` - Apprentice task assignment and progress tracking
+- **NEW**: `SkillsAssessmentService` - Cross-evaluation system (mentor + teacher assessments)
+- **NEW**: `PlanningAnalyticsService` - Alternance schedule optimization and analytics
 - Services handle complex business rules and cross-entity operations
 
 ### Document Generation System
@@ -211,11 +227,3 @@ templates/
 - `templates/base.html.twig` - Main layout structure
 - `src/DataFixtures/AppFixtures.php` - Test data orchestration
 - `importmap.php` - Asset management configuration
-- `migrations/Version20250721094647.php` - Latest database schema
-- `docs/IMPLEMENTATION_SUMMARY.md` - Complete implementation overview
-
-## Testing & Quality
-- PHPUnit tests in `tests/` directory
-- Run with `docker compose exec php php bin/phpunit`
-- Use fixtures for test data consistency
-- Follow PSR standards and Symfony conventions
