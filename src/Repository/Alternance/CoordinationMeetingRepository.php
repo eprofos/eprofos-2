@@ -230,6 +230,7 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->groupBy('s.id, s.firstName, s.lastName')
             ->orderBy('last_meeting_date', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

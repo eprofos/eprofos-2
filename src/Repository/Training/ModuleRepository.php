@@ -109,7 +109,8 @@ class ModuleRepository extends ServiceEntityRepository
             )
                 ->setParameter('orderIndex', $index + 1)
                 ->setParameter('id', $moduleId)
-                ->execute();
+                ->execute()
+            ;
         }
     }
 }

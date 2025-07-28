@@ -29,8 +29,6 @@ class AlternanceFixtures extends Fixture implements DependentFixtureInterface, F
         $teachers = $manager->getRepository(Teacher::class)->findAll();
 
         if (empty($alternanceSessions)) {
-            echo "⚠️  No alternance sessions found. Please run SessionFixtures first.\n";
-
             return;
         }
 
@@ -58,7 +56,7 @@ class AlternanceFixtures extends Fixture implements DependentFixtureInterface, F
 
                 // Contract Number - Generate realistic contract number
                 $year = date('Y');
-                $contractNumber = 'ALT-' . $year . '-' . str_pad((string)($contractCount + 1), 4, '0', STR_PAD_LEFT);
+                $contractNumber = 'ALT-' . $year . '-' . str_pad((string) ($contractCount + 1), 4, '0', STR_PAD_LEFT);
                 $contract->setContractNumber($contractNumber);
 
                 // Company Information
@@ -401,8 +399,6 @@ class AlternanceFixtures extends Fixture implements DependentFixtureInterface, F
         }
 
         $manager->flush();
-
-        echo "✅ Alternance: Created {$contractCount} contracts and {$programCount} programs\n";
     }
 
     public function getDependencies(): array

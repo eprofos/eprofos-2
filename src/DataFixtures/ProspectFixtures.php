@@ -29,8 +29,6 @@ class ProspectFixtures extends Fixture implements DependentFixtureInterface
         $users = $manager->getRepository(Admin::class)->findAll();
 
         if (empty($users)) {
-            echo "❌ No users found. Please create users first.\n";
-
             return;
         }
 
@@ -228,8 +226,6 @@ class ProspectFixtures extends Fixture implements DependentFixtureInterface
         }
 
         $manager->flush();
-
-        echo '✅ Prospects: Created ' . count($prospects) . " prospects with notes\n";
     }
 
     /**

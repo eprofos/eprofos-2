@@ -112,6 +112,7 @@ class QCMRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

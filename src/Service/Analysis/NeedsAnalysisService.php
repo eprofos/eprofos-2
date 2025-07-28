@@ -394,6 +394,7 @@ class NeedsAnalysisService
             ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
             ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
             ->setTrainingExpectations($data['training_expectations'] ?? '')
-            ->setSpecificNeeds($data['specific_needs'] ?? '');
+            ->setSpecificNeeds($data['specific_needs'] ?? '')
+        ;
     }
 }

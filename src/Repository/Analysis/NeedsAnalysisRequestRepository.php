@@ -520,12 +520,14 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-                ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation'])
+            ;
         }
 
         if (!empty($criteria['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-                ->setParameter('createdBy', $criteria['created_by']);
+                ->setParameter('createdBy', $criteria['created_by'])
+            ;
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();

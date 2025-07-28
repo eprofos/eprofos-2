@@ -23,8 +23,6 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
         $mentors = $manager->getRepository(Mentor::class)->findAll();
 
         if (empty($mentors)) {
-            echo "⚠️  No mentors found. Please run MentorFixtures first.\n";
-
             return;
         }
 
@@ -106,8 +104,6 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
         }
 
         $manager->flush();
-
-        echo "✅ Created {$missionCount} company missions\n";
     }
 
     public function getDependencies(): array

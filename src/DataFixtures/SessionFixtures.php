@@ -238,7 +238,6 @@ class SessionFixtures extends Fixture implements DependentFixtureInterface, Fixt
         $manager->flush();
 
         // Create prospects from session registrations using the ProspectManagementService
-        echo "Creating prospects from session registrations...\n";
         $createdProspects = 0;
 
         $sessionRegistrations = $manager->getRepository(SessionRegistration::class)->findAll();
@@ -261,10 +260,6 @@ class SessionFixtures extends Fixture implements DependentFixtureInterface, Fixt
                 ]);
             }
         }
-
-        echo "✅ Sessions: Created {$sessionCount} sessions with {$registrationCount} registrations\n";
-        echo "✅ Alternance: Created {$alternanceSessionCount} alternance sessions\n";
-        echo "✅ Prospects: Created {$createdProspects} prospects from session registrations\n";
     }
 
     public function getDependencies(): array

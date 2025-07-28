@@ -541,6 +541,7 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('ma.status = :status')
             ->setParameter('status', $status)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 }

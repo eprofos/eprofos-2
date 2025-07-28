@@ -36,8 +36,6 @@ class StudentProgressFixtures extends Fixture implements DependentFixtureInterfa
         $chapters = $manager->getRepository(Chapter::class)->findAll();
 
         if (empty($students) || empty($formations)) {
-            echo "⚠️  Warning: No students or formations found. Make sure to load StudentFixtures and FormationFixtures first.\n";
-
             return;
         }
 
@@ -63,9 +61,6 @@ class StudentProgressFixtures extends Fixture implements DependentFixtureInterfa
         }
 
         $manager->flush();
-
-        echo "✅ Student Progress: Created {$progressCount} progress records\n";
-        echo "⚠️  At Risk: {$atRiskCount} students identified as at risk of dropout\n";
     }
 
     public function getDependencies(): array

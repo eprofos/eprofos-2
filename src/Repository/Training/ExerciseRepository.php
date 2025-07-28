@@ -99,6 +99,7 @@ class ExerciseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('e.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

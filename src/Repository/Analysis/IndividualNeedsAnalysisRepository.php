@@ -516,7 +516,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('experienceLevel', $experienceLevel)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -529,6 +530,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->groupBy('ina.fundingType, ina.professionalStatus')
             ->orderBy('count', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

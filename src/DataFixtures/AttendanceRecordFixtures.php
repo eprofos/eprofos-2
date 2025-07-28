@@ -32,8 +32,6 @@ class AttendanceRecordFixtures extends Fixture implements DependentFixtureInterf
         $progressRecords = $manager->getRepository(StudentProgress::class)->findAll();
 
         if (empty($sessions) || empty($students)) {
-            echo "⚠️  Warning: No sessions or students found. Make sure to load SessionFixtures and StudentFixtures first.\n";
-
             return;
         }
 
@@ -66,10 +64,6 @@ class AttendanceRecordFixtures extends Fixture implements DependentFixtureInterf
         }
 
         $manager->flush();
-
-        echo "✅ Attendance Records: Created {$attendanceCount} attendance records\n";
-        echo "⚠️  Absences: {$absenteeCount} recorded absences\n";
-        echo "🕐 Late Arrivals: {$lateCount} recorded late arrivals\n";
     }
 
     public function getDependencies(): array

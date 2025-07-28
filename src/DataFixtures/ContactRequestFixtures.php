@@ -202,7 +202,6 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
         $manager->flush();
 
         // Create prospects from contact requests using the ProspectManagementService
-        echo "Creating prospects from contact requests...\n";
         $createdProspects = 0;
 
         foreach ($contactRequests as $requestData) {
@@ -229,9 +228,6 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
                 }
             }
         }
-
-        echo '✅ Contact Requests: Created ' . count($contactRequests) . " contact requests\n";
-        echo "✅ Prospects: Created {$createdProspects} prospects from contact requests\n";
     }
 
     /**

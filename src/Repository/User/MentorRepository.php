@@ -725,7 +725,8 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('count', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**

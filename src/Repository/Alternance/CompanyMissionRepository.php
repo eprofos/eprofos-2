@@ -569,11 +569,13 @@ class CompanyMissionRepository extends ServiceEntityRepository
 
         if (!empty($filters['complexity'])) {
             $qb->andWhere('cm.complexity = :complexity')
-                ->setParameter('complexity', $filters['complexity']);
+                ->setParameter('complexity', $filters['complexity'])
+            ;
         }
 
         return $qb->orderBy('cm.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

@@ -286,6 +286,7 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->orderBy('dut.updatedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

@@ -30,9 +30,6 @@ class AlternanceCalendarFixtures extends Fixture implements DependentFixtureInte
         $contracts = $manager->getRepository(AlternanceContract::class)->findAll();
 
         if (empty($contracts)) {
-            echo '⚠️  No alternance contracts found. Please run AlternanceFixtures first.
-';
-
             return;
         }
 
@@ -44,9 +41,6 @@ class AlternanceCalendarFixtures extends Fixture implements DependentFixtureInte
         }
 
         $manager->flush();
-
-        echo '✅ Alternance Calendar: Created calendar entries for ' . count($contracts) . ' contracts
-';
     }
 
     public function getDependencies(): array

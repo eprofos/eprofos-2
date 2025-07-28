@@ -474,7 +474,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('since', $since)
             ->orderBy('cna.submittedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -488,6 +489,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('empty', '')
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

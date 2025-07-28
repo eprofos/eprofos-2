@@ -128,7 +128,8 @@ class ChapterRepository extends ServiceEntityRepository
             ->andWhere('c.isActive = true')
             ->setParameter('moduleId', $moduleId)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ?? 0;
     }

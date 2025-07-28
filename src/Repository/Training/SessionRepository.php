@@ -308,6 +308,7 @@ class SessionRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('s.startDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

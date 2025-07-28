@@ -139,7 +139,6 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
         $manager->flush();
 
         // Create prospects from needs analysis requests using the ProspectManagementService
-        echo "Creating prospects from needs analysis requests...\n";
         $createdProspects = 0;
 
         $needsAnalysisRequests = $manager->getRepository(NeedsAnalysisRequest::class)->findAll();
@@ -162,9 +161,6 @@ class NeedsAnalysisFixtures extends Fixture implements DependentFixtureInterface
                 ]);
             }
         }
-
-        echo '✅ Needs Analysis: Created ' . count($needsAnalysisRequests) . " needs analysis requests\n";
-        echo "✅ Prospects: Created {$createdProspects} prospects from needs analysis requests\n";
     }
 
     /**

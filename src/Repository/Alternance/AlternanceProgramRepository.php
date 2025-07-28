@@ -361,6 +361,7 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->orderBy('ap.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

@@ -292,6 +292,7 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('status', 'pending')
             ->orderBy('sr.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

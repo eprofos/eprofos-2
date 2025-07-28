@@ -507,7 +507,8 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setParameter('cutoff', $cutoffDate)
             ->orderBy('s.lastLoginAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     //    /**

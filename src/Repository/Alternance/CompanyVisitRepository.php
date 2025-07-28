@@ -270,6 +270,7 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->groupBy('year, month')
             ->orderBy('year, month', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }

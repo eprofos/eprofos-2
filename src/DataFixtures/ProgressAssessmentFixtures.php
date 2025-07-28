@@ -29,8 +29,6 @@ class ProgressAssessmentFixtures extends Fixture implements DependentFixtureInte
         $students = $manager->getRepository(Student::class)->findAll();
 
         if (empty($students)) {
-            echo "Warning: Students not found. Skipping ProgressAssessmentFixtures.\n";
-
             return;
         }
 
@@ -280,7 +278,6 @@ class ProgressAssessmentFixtures extends Fixture implements DependentFixtureInte
         }
 
         $manager->flush();
-        echo "✅ Created {$assessmentsCreated} progress assessments\n";
     }
 
     public function getDependencies(): array
@@ -384,6 +381,5 @@ class ProgressAssessmentFixtures extends Fixture implements DependentFixtureInte
         }
 
         $manager->flush();
-        echo "✅ Linked StudentProgress records to AlternanceContracts\n";
     }
 }

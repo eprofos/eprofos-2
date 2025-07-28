@@ -27,21 +27,16 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         $missions = $manager->getRepository(CompanyMission::class)->findAll();
 
         if (empty($students)) {
-            echo "⚠️  No students found. Please run StudentFixtures first.\n";
-
             return;
         }
 
         if (empty($missions)) {
-            echo "⚠️  No missions found. Please run CompanyMissionFixtures first.\n";
-
             return;
         }
 
         // Ensure mentor@eprofos.fr gets assignments by creating specific assignments for this mentor's missions
         $mentorEprofos = $manager->getRepository(Mentor::class)->findOneBy(['email' => 'mentor@eprofos.fr']);
         if ($mentorEprofos) {
-            echo "🎯 Creating specific assignments for mentor@eprofos.fr\n";
             $this->createAssignmentsForSpecificMentor($manager, $mentorEprofos, $students, $faker);
         }
 
@@ -120,10 +115,6 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         }
 
         $manager->flush();
-
-        echo "✅ Created {$assignmentCount} mission assignments\n";
-        echo "📊 Distribution by status:\n";
-        $this->printStatusDistribution($manager);
     }
 
     public function getDependencies(): array
@@ -150,12 +141,8 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         $mentorMissions = $manager->getRepository(CompanyMission::class)->findBy(['supervisor' => $mentor]);
 
         if (empty($mentorMissions)) {
-            echo "⚠️  No missions found for mentor {$mentor->getEmail()}\n";
-
             return;
         }
-
-        echo '📋 Found ' . count($mentorMissions) . " missions for mentor {$mentor->getEmail()}\n";
 
         // Assign each mission to 1-3 students with different statuses
         foreach ($mentorMissions as $mission) {
@@ -195,7 +182,6 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
                 $this->setEvaluations($assignment, $status, $faker);
 
                 $manager->persist($assignment);
-                echo "  ✅ Created assignment: {$student->getFirstName()} {$student->getLastName()} -> {$mission->getTitle()} ({$status})\n";
             }
         }
 
@@ -533,19 +519,5 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
         }
 
         return $faker->randomElements($minorDifficulties, $faker->numberBetween(0, 2));
-    }
-
-    /**
-     * Print status distribution for verification.
-     */
-    private function printStatusDistribution(ObjectManager $manager): void
-    {
-        $repository = $manager->getRepository(MissionAssignment::class);
-
-        $statuses = ['planifiee', 'en_cours', 'terminee', 'suspendue'];
-        foreach ($statuses as $status) {
-            $count = count($repository->findBy(['status' => $status]));
-            echo "   - {$status}: {$count}\n";
-        }
     }
 }

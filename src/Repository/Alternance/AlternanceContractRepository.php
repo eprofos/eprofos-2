@@ -976,7 +976,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->where('ac.createdAt >= :startDate')
             ->andWhere('ac.status = :status')
             ->setParameter('startDate', $startDate)
-            ->setParameter('status', 'completed');
+            ->setParameter('status', 'completed')
+        ;
 
         $total = (int) $totalQb->getQuery()->getSingleScalarResult();
         $completed = (int) $completedQb->getQuery()->getSingleScalarResult();

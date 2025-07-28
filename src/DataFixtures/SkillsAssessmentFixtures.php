@@ -33,8 +33,6 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         $missions = $manager->getRepository(MissionAssignment::class)->findAll();
 
         if (empty($students) || empty($teachers) || empty($mentors)) {
-            echo "Warning: Students, Teachers, or Mentors not found. Skipping SkillsAssessmentFixtures.\n";
-
             return;
         }
 
@@ -269,7 +267,6 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         }
 
         $manager->flush();
-        echo "✅ Created {$assessmentsCreated} skills assessments\n";
     }
 
     public function getDependencies(): array

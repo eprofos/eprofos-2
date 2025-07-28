@@ -109,6 +109,7 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 }
