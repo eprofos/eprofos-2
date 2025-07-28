@@ -67,7 +67,7 @@ class StudentProgress
     /**
      * Overall completion percentage (0-100).
      */
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    #[ORM\Column(type: Types::FLOAT)]
     #[Assert\Range(
         min: 0,
         max: 100,
@@ -143,7 +143,7 @@ class StudentProgress
     /**
      * Attendance rate for sessions (0-100).
      */
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    #[ORM\Column(type: Types::FLOAT)]
     private ?float $attendanceRate = 100.00;
 
     /**

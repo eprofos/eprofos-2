@@ -214,7 +214,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     public function findWithFilters(array $filters = []): array
     {
         $qb = $this->createQueryBuilder('nar')
-            ->leftJoin('nar.createdByUser', 'u')
+            ->leftJoin('nar.createdByAdmin', 'u')
             ->leftJoin('nar.formation', 'f')
             ->addSelect('u', 'f')
         ;
@@ -238,7 +238,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
         }
 
         if (!empty($filters['created_by'])) {
-            $qb->andWhere('nar.createdByUser = :createdBy')
+            $qb->andWhere('nar.createdByAdmin = :createdBy')
                 ->setParameter('createdBy', $filters['created_by'])
             ;
         }
@@ -277,7 +277,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     public function findByCreatedByAdmin($admin): array
     {
         return $this->createQueryBuilder('nar')
-            ->andWhere('nar.createdByUser = :admin')
+            ->andWhere('nar.createdByAdmin = :admin')
             ->setParameter('admin', $admin)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
@@ -361,7 +361,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     public function findByCriteria(array $criteria = [], int $page = 1, int $limit = 20): array
     {
         $qb = $this->createQueryBuilder('nar')
-            ->leftJoin('nar.createdByUser', 'u')
+            ->leftJoin('nar.createdByAdmin', 'u')
             ->leftJoin('nar.formation', 'f')
             ->addSelect('u', 'f')
         ;
@@ -385,7 +385,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
         }
 
         if (!empty($criteria['created_by'])) {
-            $qb->andWhere('nar.createdByUser = :createdBy')
+            $qb->andWhere('nar.createdByAdmin = :createdBy')
                 ->setParameter('createdBy', $criteria['created_by'])
             ;
         }
@@ -428,7 +428,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
         }
 
         if (!empty($criteria['created_by'])) {
-            $qb->andWhere('nar.createdByUser = :createdBy')
+            $qb->andWhere('nar.createdByAdmin = :createdBy')
                 ->setParameter('createdBy', $criteria['created_by'])
             ;
         }
@@ -442,7 +442,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     public function findBySearchTerm(string $search, array $criteria = [], int $page = 1, int $limit = 20): array
     {
         $qb = $this->createQueryBuilder('nar')
-            ->leftJoin('nar.createdByUser', 'u')
+            ->leftJoin('nar.createdByAdmin', 'u')
             ->leftJoin('nar.formation', 'f')
             ->addSelect('u', 'f')
         ;
@@ -474,7 +474,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
         }
 
         if (!empty($criteria['created_by'])) {
-            $qb->andWhere('nar.createdByUser = :createdBy')
+            $qb->andWhere('nar.createdByAdmin = :createdBy')
                 ->setParameter('createdBy', $criteria['created_by'])
             ;
         }
@@ -525,7 +525,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
         }
 
         if (!empty($criteria['created_by'])) {
-            $qb->andWhere('nar.createdByUser = :createdBy')
+            $qb->andWhere('nar.createdByAdmin = :createdBy')
                 ->setParameter('createdBy', $criteria['created_by'])
             ;
         }

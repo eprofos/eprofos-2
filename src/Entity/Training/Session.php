@@ -97,7 +97,7 @@ class Session
     #[Gedmo\Versioned]
     private int $currentRegistrations = 0;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le prix ne peut pas être négatif.')]
     #[Gedmo\Versioned]
     private ?float $price = null;

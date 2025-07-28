@@ -96,7 +96,7 @@ class MissionAssignment
     #[Gedmo\Versioned]
     private array $intermediateObjectives = [];
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    #[ORM\Column(type: Types::FLOAT)]
     #[Assert\NotNull(message: 'Le taux d\'avancement est obligatoire.')]
     #[Assert\Range(
         min: 0,

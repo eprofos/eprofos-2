@@ -122,7 +122,7 @@ class Prospect
     )]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le budget estimé doit être positif ou zéro.')]
     private ?float $estimatedBudget = null;
 

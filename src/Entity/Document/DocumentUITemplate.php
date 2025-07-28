@@ -136,16 +136,16 @@ class DocumentUITemplate
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $margins = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     private ?float $marginTop = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     private ?float $marginRight = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     private ?float $marginBottom = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     private ?float $marginLeft = null;
 
     #[ORM\Column]

@@ -130,9 +130,9 @@
                                             </dd>
                                         {% endif %}
                                         
-                                        {% if request.createdByUser %}
+                                        {% if request.createdByAdmin %}
                                             <dt class="col-sm-4">Créée par :</dt>
-                                            <dd class="col-sm-8">{{ request.createdByUser.userIdentifier }}</dd>
+                                            <dd class="col-sm-8">{{ request.createdByAdmin.userIdentifier }}</dd>
                                         {% endif %}
                                     </dl>
                                 </div>
