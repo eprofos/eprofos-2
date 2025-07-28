@@ -6,7 +6,7 @@ namespace App\Controller\Admin\CRM;
 
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
-use App\Form\ProspectNoteType;
+use App\Form\CRM\ProspectNoteType;
 use App\Repository\CRM\ProspectNoteRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;

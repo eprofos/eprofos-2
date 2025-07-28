@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin\CRM;
 
 use App\Entity\CRM\ContactRequest;
-use App\Form\ContactRequestType;
+use App\Form\CRM\ContactRequestType;
 use App\Repository\CRM\ContactRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

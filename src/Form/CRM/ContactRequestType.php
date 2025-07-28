@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Form;
+namespace App\Form\CRM;
 
 use App\Entity\CRM\ContactRequest;
 use Symfony\Component\Form\AbstractType;

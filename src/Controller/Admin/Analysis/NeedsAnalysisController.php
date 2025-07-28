@@ -6,7 +6,7 @@ namespace App\Controller\Admin\Analysis;
 
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
-use App\Form\NeedsAnalysisRequestType;
+use App\Form\Analysis\NeedsAnalysisRequestType;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\Analysis\NeedsAnalysisService;
 use DateTimeImmutable;

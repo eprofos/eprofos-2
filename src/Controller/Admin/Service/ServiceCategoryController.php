@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin\Service;
 
 use App\Entity\Service\ServiceCategory;
-use App\Form\ServiceCategoryType;
+use App\Form\Service\ServiceCategoryType;
 use App\Repository\Service\ServiceCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

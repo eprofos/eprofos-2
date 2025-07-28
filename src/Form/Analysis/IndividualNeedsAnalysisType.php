@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Form;
+namespace App\Form\Analysis;
 
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use Symfony\Component\Form\AbstractType;

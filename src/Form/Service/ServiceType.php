@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Form;
+namespace App\Form\Service;
 
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceCategory;

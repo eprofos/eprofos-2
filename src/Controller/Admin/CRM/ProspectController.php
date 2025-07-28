@@ -6,8 +6,8 @@ namespace App\Controller\Admin\CRM;
 
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
-use App\Form\ProspectNoteType;
-use App\Form\ProspectType;
+use App\Form\CRM\ProspectNoteType;
+use App\Form\CRM\ProspectType;
 use App\Repository\CRM\ProspectNoteRepository;
 use App\Repository\CRM\ProspectRepository;
 use App\Repository\User\AdminRepository;

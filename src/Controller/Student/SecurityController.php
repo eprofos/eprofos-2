@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Student;
 
 use App\Entity\User\Student;
-use App\Form\StudentRegistrationFormType;
+use App\Form\User\StudentRegistrationFormType;
 use App\Repository\User\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;

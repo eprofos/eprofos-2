@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin\User;
 
 use App\Entity\User\Student;
-use App\Form\StudentType;
+use App\Form\User\StudentType;
 use App\Repository\User\StudentRepository;
 use App\Service\Core\StudentService;
 use Doctrine\ORM\EntityManagerInterface;

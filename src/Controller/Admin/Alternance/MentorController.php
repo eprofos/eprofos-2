@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\User\Mentor;
-use App\Form\MentorType;
+use App\Form\User\MentorType;
 use App\Repository\Alternance\AlternanceContractRepository;
 use App\Repository\User\MentorRepository;
 use App\Service\User\MentorAuthenticationService;

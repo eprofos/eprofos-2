@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Mentor;
 
 use App\Entity\User\Mentor;
-use App\Form\MentorRegistrationFormType;
+use App\Form\User\MentorRegistrationFormType;
 use App\Repository\User\MentorRepository;
 use App\Service\User\MentorAuthenticationService;
 use App\Service\User\MentorService;

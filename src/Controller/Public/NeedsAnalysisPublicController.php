@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Public;
 
 use App\Entity\Analysis\NeedsAnalysisRequest;
-use App\Form\CompanyNeedsAnalysisType;
-use App\Form\IndividualNeedsAnalysisType;
+use App\Form\Analysis\CompanyNeedsAnalysisType;
+use App\Form\Analysis\IndividualNeedsAnalysisType;
 use App\Service\Analysis\NeedsAnalysisService;
 use Exception;
 use Psr\Log\LoggerInterface;
