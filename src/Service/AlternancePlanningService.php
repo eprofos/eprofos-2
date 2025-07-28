@@ -7,7 +7,7 @@ use App\Entity\Alternance\AlternanceContract;
 use App\Entity\User\Student;
 use App\Service\AlternanceCalendarService;
 use App\Service\AlternanceRhythmService;
-use App\Repository\AlternanceCalendarRepository;
+use App\Repository\Alternance\AlternanceCalendarRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

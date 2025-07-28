@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User\Student;
 use App\Form\StudentType;
-use App\Repository\StudentRepository;
+use App\Repository\User\StudentRepository;
 use App\Service\StudentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

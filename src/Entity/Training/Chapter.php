@@ -2,7 +2,7 @@
 
 namespace App\Entity\Training;
 
-use App\Repository\ChapterRepository;
+use App\Repository\Training\ChapterRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

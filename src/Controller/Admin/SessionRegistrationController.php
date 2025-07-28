@@ -3,8 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Training\SessionRegistration;
-use App\Repository\SessionRegistrationRepository;
-use App\Repository\SessionRepository;
+use App\Repository\Training\SessionRegistrationRepository;
+use App\Repository\Training\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

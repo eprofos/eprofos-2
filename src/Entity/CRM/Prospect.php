@@ -7,7 +7,7 @@ use App\Entity\Service\Service;
 use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Admin;
-use App\Repository\ProspectRepository;
+use App\Repository\CRM\ProspectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

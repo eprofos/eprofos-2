@@ -5,7 +5,7 @@ namespace App\Form;
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
 use App\Entity\User\Admin;
-use App\Repository\AdminRepository;
+use App\Repository\User\AdminRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;

@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\Course;
 use App\Entity\Training\Chapter;
-use App\Repository\CourseRepository;
+use App\Repository\Training\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;

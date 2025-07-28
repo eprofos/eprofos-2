@@ -6,7 +6,7 @@ use App\Entity\Alternance\CompanyMission;
 use App\Entity\Training\Session;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
-use App\Repository\AttendanceRecordRepository;
+use App\Repository\Core\AttendanceRecordRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

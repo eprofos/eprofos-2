@@ -2,7 +2,7 @@
 
 namespace App\Entity\User;
 
-use App\Repository\MentorRepository;
+use App\Repository\User\MentorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;

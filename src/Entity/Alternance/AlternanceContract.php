@@ -6,7 +6,7 @@ use App\Entity\Training\Session;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;

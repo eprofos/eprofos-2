@@ -4,8 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\Questionnaire;
-use App\Repository\QuestionnaireResponseRepository;
-use App\Repository\QuestionResponseRepository;
+use App\Repository\Assessment\QuestionnaireResponseRepository;
+use App\Repository\Assessment\QuestionResponseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

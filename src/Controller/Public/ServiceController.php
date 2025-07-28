@@ -2,8 +2,8 @@
 
 namespace App\Controller\Public;
 
-use App\Repository\ServiceRepository;
-use App\Repository\ServiceCategoryRepository;
+use App\Repository\Service\ServiceRepository;
+use App\Repository\Service\ServiceCategoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

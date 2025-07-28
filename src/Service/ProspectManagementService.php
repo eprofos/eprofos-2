@@ -8,7 +8,7 @@ use App\Entity\Training\SessionRegistration;
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Training\Formation;
 use App\Entity\Service\Service;
-use App\Repository\ProspectRepository;
+use App\Repository\CRM\ProspectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

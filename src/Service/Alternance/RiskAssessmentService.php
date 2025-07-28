@@ -6,7 +6,7 @@ use App\Entity\User\Student;
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\Core\StudentProgress;
 use App\Repository\Alternance\ProgressAssessmentRepository;
-use App\Repository\StudentProgressRepository;
+use App\Repository\Core\StudentProgressRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

@@ -3,7 +3,7 @@
 namespace App\Entity\User;
 
 use App\Entity\Alternance\MissionAssignment;
-use App\Repository\StudentRepository;
+use App\Repository\User\StudentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;

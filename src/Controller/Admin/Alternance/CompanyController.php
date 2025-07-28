@@ -4,8 +4,8 @@ namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Entity\User\Mentor;
-use App\Repository\MentorRepository;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\User\MentorRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\CRM\ContactRequest;
 use App\Form\ContactRequestType;
-use App\Repository\ContactRequestRepository;
+use App\Repository\CRM\ContactRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

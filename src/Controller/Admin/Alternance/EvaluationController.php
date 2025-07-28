@@ -6,7 +6,7 @@ use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\Alternance\SkillsAssessment;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Alternance\SkillsAssessmentRepository;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\ProgressAssessmentService;
 use App\Service\Alternance\SkillsAssessmentService;
 use Doctrine\ORM\EntityManagerInterface;

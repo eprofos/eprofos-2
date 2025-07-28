@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\Category;
 use App\Form\Training\CategoryType;
-use App\Repository\CategoryRepository;
+use App\Repository\Training\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

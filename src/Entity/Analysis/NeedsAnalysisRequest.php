@@ -5,7 +5,7 @@ namespace App\Entity\Analysis;
 use App\Entity\CRM\Prospect;
 use App\Entity\Training\Formation;
 use App\Entity\User\Admin;
-use App\Repository\NeedsAnalysisRequestRepository;
+use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

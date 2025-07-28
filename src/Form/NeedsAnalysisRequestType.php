@@ -6,7 +6,7 @@ namespace App\Form;
 
 use App\Entity\Training\Formation;
 use App\Entity\Analysis\NeedsAnalysisRequest;
-use App\Repository\FormationRepository;
+use App\Repository\Training\FormationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;

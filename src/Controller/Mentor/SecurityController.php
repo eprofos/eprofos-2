@@ -4,7 +4,7 @@ namespace App\Controller\Mentor;
 
 use App\Entity\User\Mentor;
 use App\Form\MentorRegistrationFormType;
-use App\Repository\MentorRepository;
+use App\Repository\User\MentorRepository;
 use App\Service\MentorService;
 use App\Service\MentorAuthenticationService;
 use Doctrine\ORM\EntityManagerInterface;

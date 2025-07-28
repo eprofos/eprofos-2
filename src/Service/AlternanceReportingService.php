@@ -3,8 +3,8 @@
 namespace App\Service;
 
 use App\Entity\User\Student;
-use App\Repository\CoordinationMeetingRepository;
-use App\Repository\CompanyVisitRepository;
+use App\Repository\Alternance\CoordinationMeetingRepository;
+use App\Repository\Alternance\CompanyVisitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

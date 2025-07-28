@@ -2,11 +2,11 @@
 
 namespace App\Controller\Admin\Alternance;
 
-use App\Repository\AlternanceContractRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Alternance\SkillsAssessmentRepository;
-use App\Repository\CompanyMissionRepository;
-use App\Repository\MentorRepository;
+use App\Repository\Alternance\CompanyMissionRepository;
+use App\Repository\User\MentorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

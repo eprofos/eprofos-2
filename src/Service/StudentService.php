@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User\Student;
-use App\Repository\StudentRepository;
+use App\Repository\User\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;

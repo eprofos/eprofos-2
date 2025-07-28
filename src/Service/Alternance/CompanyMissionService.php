@@ -5,7 +5,7 @@ namespace App\Service\Alternance;
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
-use App\Repository\CompanyMissionRepository;
+use App\Repository\Alternance\CompanyMissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

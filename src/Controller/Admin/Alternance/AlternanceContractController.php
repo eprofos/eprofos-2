@@ -4,7 +4,7 @@ namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Form\Alternance\AlternanceContractType;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\AlternanceContractService;
 use App\Service\Alternance\AlternanceValidationService;
 use Doctrine\ORM\EntityManagerInterface;

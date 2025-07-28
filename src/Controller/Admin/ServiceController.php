@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Service\Service;
 use App\Form\ServiceType;
-use App\Repository\ServiceRepository;
+use App\Repository\Service\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

@@ -2,7 +2,7 @@
 
 namespace App\Entity\Training;
 
-use App\Repository\ExerciseRepository;
+use App\Repository\Training\ExerciseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;

@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User\Mentor;
-use App\Repository\MentorRepository;
+use App\Repository\User\MentorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;

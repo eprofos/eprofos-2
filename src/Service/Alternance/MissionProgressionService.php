@@ -5,8 +5,8 @@ namespace App\Service\Alternance;
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\Alternance\MissionAssignment;
 use App\Entity\User\Student;
-use App\Repository\CompanyMissionRepository;
-use App\Repository\MissionAssignmentRepository;
+use App\Repository\Alternance\CompanyMissionRepository;
+use App\Repository\Alternance\MissionAssignmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

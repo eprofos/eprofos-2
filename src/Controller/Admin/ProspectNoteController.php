@@ -5,7 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
 use App\Form\ProspectNoteType;
-use App\Repository\ProspectNoteRepository;
+use App\Repository\CRM\ProspectNoteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

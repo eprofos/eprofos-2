@@ -4,8 +4,8 @@ namespace App\Controller\Admin\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Form\MentorType;
-use App\Repository\MentorRepository;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\User\MentorRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\MentorService;
 use App\Service\MentorAuthenticationService;
 use Doctrine\ORM\EntityManagerInterface;

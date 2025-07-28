@@ -5,8 +5,8 @@ namespace App\Service;
 use App\Entity\User\Student;
 use App\Entity\Core\StudentProgress;
 use App\Entity\Training\Formation;
-use App\Repository\StudentProgressRepository;
-use App\Repository\AttendanceRecordRepository;
+use App\Repository\Core\StudentProgressRepository;
+use App\Repository\Core\AttendanceRecordRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

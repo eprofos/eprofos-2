@@ -5,7 +5,7 @@ namespace App\Entity\Alternance;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
-use App\Repository\CoordinationMeetingRepository;
+use App\Repository\Alternance\CoordinationMeetingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;

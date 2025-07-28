@@ -2,9 +2,9 @@
 
 namespace App\Service\Alternance;
 
-use App\Repository\AlternanceContractRepository;
-use App\Repository\FormationRepository;
-use App\Repository\AttendanceRecordRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
+use App\Repository\Training\FormationRepository;
+use App\Repository\Core\AttendanceRecordRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**

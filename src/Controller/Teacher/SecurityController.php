@@ -4,7 +4,7 @@ namespace App\Controller\Teacher;
 
 use App\Entity\User\Teacher;
 use App\Form\TeacherRegistrationFormType;
-use App\Repository\TeacherRepository;
+use App\Repository\User\TeacherRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

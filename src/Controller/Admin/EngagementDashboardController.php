@@ -2,8 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use App\Repository\StudentProgressRepository;
-use App\Repository\AttendanceRecordRepository;
+use App\Repository\Core\StudentProgressRepository;
+use App\Repository\Core\AttendanceRecordRepository;
 use App\Service\DropoutPreventionService;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;

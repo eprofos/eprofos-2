@@ -4,7 +4,7 @@ namespace App\Form\Training;
 
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Module;
-use App\Repository\ModuleRepository;
+use App\Repository\Training\ModuleRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;

@@ -6,7 +6,7 @@ use App\Entity\Alternance\CompanyVisit;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
-use App\Repository\CompanyVisitRepository;
+use App\Repository\Alternance\CompanyVisitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

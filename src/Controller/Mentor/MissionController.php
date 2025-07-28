@@ -6,7 +6,7 @@ use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use App\Form\Alternance\CompanyMissionType;
 use App\Service\Alternance\CompanyMissionService;
-use App\Repository\CompanyMissionRepository;
+use App\Repository\Alternance\CompanyMissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

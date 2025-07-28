@@ -3,7 +3,7 @@
 namespace App\Entity\Training;
 
 use App\Entity\CRM\ContactRequest;
-use App\Repository\FormationRepository;
+use App\Repository\Training\FormationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

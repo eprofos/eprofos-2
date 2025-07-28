@@ -3,7 +3,7 @@
 namespace App\Entity\Alternance;
 
 use App\Entity\Training\Session;
-use App\Repository\AlternanceProgramRepository;
+use App\Repository\Alternance\AlternanceProgramRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;

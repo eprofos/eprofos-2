@@ -4,8 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\Session;
 use App\Form\Training\SessionType;
-use App\Repository\SessionRepository;
-use App\Repository\FormationRepository;
+use App\Repository\Training\SessionRepository;
+use App\Repository\Training\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

@@ -8,7 +8,7 @@ use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Analysis\CompanyNeedsAnalysis;
 use App\Entity\Analysis\IndividualNeedsAnalysis;
 use App\Entity\User\Admin;
-use App\Repository\NeedsAnalysisRequestRepository;
+use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
 use App\Service\TokenGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;

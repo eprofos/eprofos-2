@@ -2,7 +2,7 @@
 
 namespace App\Entity\Analysis;
 
-use App\Repository\CompanyNeedsAnalysisRepository;
+use App\Repository\Analysis\CompanyNeedsAnalysisRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

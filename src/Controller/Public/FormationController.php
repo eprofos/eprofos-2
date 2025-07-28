@@ -3,8 +3,8 @@
 namespace App\Controller\Public;
 
 use App\Entity\Training\Formation;
-use App\Repository\FormationRepository;
-use App\Repository\CategoryRepository;
+use App\Repository\Training\FormationRepository;
+use App\Repository\Training\CategoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

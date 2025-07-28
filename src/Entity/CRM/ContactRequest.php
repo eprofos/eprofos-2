@@ -4,7 +4,7 @@ namespace App\Entity\CRM;
 
 use App\Entity\Service\Service;
 use App\Entity\Training\Formation;
-use App\Repository\ContactRequestRepository;
+use App\Repository\CRM\ContactRequestRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

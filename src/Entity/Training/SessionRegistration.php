@@ -3,7 +3,7 @@
 namespace App\Entity\Training;
 
 use App\Entity\CRM\Prospect;
-use App\Repository\SessionRegistrationRepository;
+use App\Repository\Training\SessionRegistrationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;

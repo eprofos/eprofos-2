@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\Formation;
 use App\Form\Training\FormationType;
-use App\Repository\FormationRepository;
+use App\Repository\Training\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

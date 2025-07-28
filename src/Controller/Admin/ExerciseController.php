@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\Exercise;
 use App\Entity\Training\Course;
-use App\Repository\ExerciseRepository;
+use App\Repository\Training\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

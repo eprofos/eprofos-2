@@ -4,8 +4,8 @@ namespace App\Controller\Public;
 
 use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\Formation;
-use App\Repository\ContactRequestRepository;
-use App\Repository\FormationRepository;
+use App\Repository\CRM\ContactRequestRepository;
+use App\Repository\Training\FormationRepository;
 use App\Service\ProspectManagementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

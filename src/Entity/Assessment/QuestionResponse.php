@@ -2,7 +2,7 @@
 
 namespace App\Entity\Assessment;
 
-use App\Repository\QuestionResponseRepository;
+use App\Repository\Assessment\QuestionResponseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

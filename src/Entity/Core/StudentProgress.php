@@ -7,7 +7,7 @@ use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;
 use App\Entity\User\Student;
 use App\Entity\Alternance\AlternanceContract;
-use App\Repository\StudentProgressRepository;
+use App\Repository\Core\StudentProgressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

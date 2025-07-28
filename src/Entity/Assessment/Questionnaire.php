@@ -3,7 +3,7 @@
 namespace App\Entity\Assessment;
 
 use App\Entity\Training\Formation;
-use App\Repository\QuestionnaireRepository;
+use App\Repository\Assessment\QuestionnaireRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

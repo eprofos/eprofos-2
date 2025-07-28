@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Training\QCM;
 use App\Entity\Training\Course;
-use App\Repository\QCMRepository;
+use App\Repository\Training\QCMRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

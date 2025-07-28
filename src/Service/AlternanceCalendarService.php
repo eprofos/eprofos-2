@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\Alternance\AlternanceCalendar;
 use App\Entity\Alternance\AlternanceContract;
 use App\Entity\User\Student;
-use App\Repository\AlternanceCalendarRepository;
+use App\Repository\Alternance\AlternanceCalendarRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 

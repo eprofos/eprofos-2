@@ -2,7 +2,7 @@
 
 namespace App\Entity\Assessment;
 
-use App\Repository\QuestionRepository;
+use App\Repository\Assessment\QuestionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

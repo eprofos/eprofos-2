@@ -2,7 +2,7 @@
 
 namespace App\Entity\Service;
 
-use App\Repository\ServiceCategoryRepository;
+use App\Repository\Service\ServiceCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;

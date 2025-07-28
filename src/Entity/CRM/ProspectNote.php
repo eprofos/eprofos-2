@@ -3,7 +3,7 @@
 namespace App\Entity\CRM;
 
 use App\Entity\User\Admin;
-use App\Repository\ProspectNoteRepository;
+use App\Repository\CRM\ProspectNoteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;

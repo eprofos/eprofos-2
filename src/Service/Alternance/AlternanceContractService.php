@@ -3,7 +3,7 @@
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
-use App\Repository\AlternanceContractRepository;
+use App\Repository\Alternance\AlternanceContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

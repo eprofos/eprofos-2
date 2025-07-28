@@ -7,7 +7,7 @@ namespace App\Controller\Admin;
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
 use App\Form\NeedsAnalysisRequestType;
-use App\Repository\NeedsAnalysisRequestRepository;
+use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\NeedsAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
