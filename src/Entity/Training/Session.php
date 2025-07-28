@@ -100,7 +100,7 @@ class Session
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le prix ne peut pas être négatif.')]
     #[Gedmo\Versioned]
-    private ?string $price = null;
+    private ?float $price = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
@@ -324,12 +324,12 @@ class Session
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice(?string $price): static
+    public function setPrice(?float $price): static
     {
         $this->price = $price;
 

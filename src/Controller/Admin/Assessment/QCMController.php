@@ -66,7 +66,7 @@ class QCMController extends AbstractController
             $data = $request->request->all();
 
             $qcm->setTitle($data['title']);
-            $qcm->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $qcm->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $qcm->setDescription($data['description']);
             $qcm->setInstructions($data['instructions'] ?? null);
             $qcm->setTimeLimitMinutes($data['time_limit_minutes'] ? (int) $data['time_limit_minutes'] : null);
@@ -132,7 +132,7 @@ class QCMController extends AbstractController
             $data = $request->request->all();
 
             $qcm->setTitle($data['title']);
-            $qcm->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $qcm->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $qcm->setDescription($data['description']);
             $qcm->setInstructions($data['instructions'] ?? null);
             $qcm->setTimeLimitMinutes($data['time_limit_minutes'] ? (int) $data['time_limit_minutes'] : null);

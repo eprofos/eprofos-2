@@ -63,8 +63,8 @@ class ModuleController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Auto-generate slug if not provided
             if (!$module->getSlug()) {
-                $slug = $this->slugger->slug($module->getTitle())->lower();
-                $module->setSlug((string)$slug);
+                $slug = $this->slugger->slug($module->getTitle())->lower()->toString();
+                $module->setSlug($slug);
             }
 
             // Set order index if not provided

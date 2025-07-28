@@ -69,7 +69,7 @@ class ServiceCategoryFixtures extends Fixture
         foreach ($serviceCategories as $categoryData) {
             $serviceCategory = new ServiceCategory();
             $serviceCategory->setName($categoryData['name']);
-            $serviceCategory->setSlug((string)$this->slugger->slug($categoryData['name'])->lower());
+            $serviceCategory->setSlug($this->slugger->slug($categoryData['name'])->lower()->toString());
             $serviceCategory->setDescription($categoryData['description']);
 
             $manager->persist($serviceCategory);

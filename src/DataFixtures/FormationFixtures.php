@@ -328,7 +328,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
         foreach ($formations as $formationData) {
             $formation = new Formation();
             $formation->setTitle($formationData['title']);
-            $formation->setSlug((string)$this->slugger->slug($formationData['title'])->lower());
+            $formation->setSlug($this->slugger->slug($formationData['title'])->lower()->toString());
             $formation->setDescription($formationData['description']);
             $formation->setObjectives($formationData['objectives']);
             $formation->setPrerequisites($formationData['prerequisites']);

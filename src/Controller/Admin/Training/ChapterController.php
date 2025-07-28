@@ -101,8 +101,8 @@ class ChapterController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Auto-generate slug if not provided
             if (!$chapter->getSlug()) {
-                $slug = $this->slugger->slug($chapter->getTitle())->lower();
-                $chapter->setSlug((string)$slug);
+                $slug = $this->slugger->slug($chapter->getTitle())->lower()->toString();
+                $chapter->setSlug($slug);
             }
 
             // Set order index if not provided

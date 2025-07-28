@@ -192,8 +192,8 @@ class FormationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Generate slug from title
-            $slug = $this->slugger->slug($formation->getTitle())->lower();
-            $formation->setSlug((string)$slug);
+            $slug = $this->slugger->slug($formation->getTitle())->lower()->toString();
+            $formation->setSlug($slug);
 
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();
@@ -250,8 +250,8 @@ class FormationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update slug if title changed
-            $slug = $this->slugger->slug($formation->getTitle())->lower();
-            $formation->setSlug((string)$slug);
+            $slug = $this->slugger->slug($formation->getTitle())->lower()->toString();
+            $formation->setSlug($slug);
 
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();

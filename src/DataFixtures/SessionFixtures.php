@@ -131,7 +131,7 @@ class SessionFixtures extends Fixture implements DependentFixtureInterface, Fixt
 
                 // Price (sometimes different from formation price)
                 if ($faker->boolean(30)) { // 30% chance of different price
-                    $session->setPrice((string)$faker->randomFloat(2, 300, 2000));
+                    $session->setPrice($faker->randomFloat(2, 300, 2000));
                 }
 
                 // Description
@@ -397,7 +397,7 @@ class SessionFixtures extends Fixture implements DependentFixtureInterface, Fixt
             // Price usually lower for alternance (funding différent)
             $basePrice = $formation->getPrice() ?: 1500;
             $alternancePrice = $basePrice * $faker->randomFloat(2, 0.3, 0.7); // 30-70% of base price
-            $session->setPrice((string)$alternancePrice);
+            $session->setPrice($alternancePrice);
 
             // Set alternance-specific fields
             $session->setIsAlternanceSession(true);

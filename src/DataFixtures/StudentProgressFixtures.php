@@ -171,10 +171,10 @@ class StudentProgressFixtures extends Fixture implements DependentFixtureInterfa
         }
 
         // Set completion percentage
-        $progress->setCompletionPercentage((string) $completion);
+        $progress->setCompletionPercentage($completion);
 
         // Set attendance rate
-        $progress->setAttendanceRate((string) $attendanceRate);
+        $progress->setAttendanceRate($attendanceRate);
 
         // Set login and activity data
         $expectedLogins = (int) ($daysRunning * $loginFrequency);

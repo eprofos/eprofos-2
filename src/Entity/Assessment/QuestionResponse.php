@@ -289,7 +289,7 @@ class QuestionResponse
             Question::TYPE_SINGLE_CHOICE, Question::TYPE_MULTIPLE_CHOICE => $this->formatChoiceResponse(),
             Question::TYPE_FILE_UPLOAD => $this->fileResponse ? basename($this->fileResponse) : 'Aucun fichier',
             Question::TYPE_DATE => $this->dateResponse?->format('d/m/Y') ?? '',
-            Question::TYPE_NUMBER => (string) $this->numberResponse,
+            Question::TYPE_NUMBER => $this->numberResponse,
             default => (string) $value
         };
     }

@@ -76,7 +76,7 @@ class ProspectFixtures extends Fixture implements DependentFixtureInterface
                 ->setPriority($faker->randomElement($priorities))
                 ->setSource($faker->randomElement($sources))
                 ->setDescription($faker->optional(0.7)->paragraph())
-                ->setEstimatedBudget((string)$faker->optional(0.6)->numberBetween(2000, 50000))
+                ->setEstimatedBudget($faker->optional(0.6)->numberBetween(2000, 50000))
                 ->setAssignedTo($faker->randomElement($users))
                 ->setCreatedAt($faker->dateTimeBetween('-6 months', 'now'))
                 ->setTags($faker->randomElement($tags))

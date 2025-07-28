@@ -87,8 +87,8 @@ class CategoryController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Generate slug from name
-            $slug = $this->slugger->slug($category->getName())->lower();
-            $category->setSlug((string)$slug);
+            $slug = $this->slugger->slug($category->getName())->lower()->toString();
+            $category->setSlug($slug);
 
             $entityManager->persist($category);
             $entityManager->flush();
@@ -127,8 +127,8 @@ class CategoryController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update slug if name changed
-            $slug = $this->slugger->slug($category->getName())->lower();
-            $category->setSlug((string)$slug);
+            $slug = $this->slugger->slug($category->getName())->lower()->toString();
+            $category->setSlug($slug);
 
             $entityManager->flush();
 

@@ -151,7 +151,7 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
         foreach ($services as $serviceData) {
             $service = new Service();
             $service->setTitle($serviceData['title']);
-            $service->setSlug((string)$this->slugger->slug($serviceData['title'])->lower());
+            $service->setSlug($this->slugger->slug($serviceData['title'])->lower()->toString());
             $service->setDescription($serviceData['description']);
             $service->setBenefits($serviceData['benefits']);
             $service->setIcon($serviceData['icon']);

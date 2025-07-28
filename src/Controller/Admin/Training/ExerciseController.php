@@ -66,7 +66,7 @@ class ExerciseController extends AbstractController
             $data = $request->request->all();
 
             $exercise->setTitle($data['title']);
-            $exercise->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $exercise->setDescription($data['description']);
             $exercise->setType($data['type']);
             $exercise->setDifficulty($data['difficulty']);
@@ -132,7 +132,7 @@ class ExerciseController extends AbstractController
             $data = $request->request->all();
 
             $exercise->setTitle($data['title']);
-            $exercise->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $exercise->setDescription($data['description']);
             $exercise->setType($data['type']);
             $exercise->setDifficulty($data['difficulty']);

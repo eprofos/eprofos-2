@@ -73,7 +73,7 @@ class CourseController extends AbstractController
             $data = $request->request->all();
 
             $course->setTitle($data['title']);
-            $course->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $course->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $course->setDescription($data['description']);
             $course->setType($data['type']);
             $course->setContent($data['content'] ?? null);
@@ -169,7 +169,7 @@ class CourseController extends AbstractController
             $data = $request->request->all();
 
             $course->setTitle($data['title']);
-            $course->setSlug((string)$this->slugger->slug($data['title'])->lower());
+            $course->setSlug($this->slugger->slug($data['title'])->lower()->toString());
             $course->setDescription($data['description']);
             $course->setType($data['type']);
             $course->setContent($data['content'] ?? null);

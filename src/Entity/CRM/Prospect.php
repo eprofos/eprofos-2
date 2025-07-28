@@ -124,7 +124,7 @@ class Prospect
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le budget estimé doit être positif ou zéro.')]
-    private ?string $estimatedBudget = null;
+    private ?float $estimatedBudget = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?DateTimeInterface $expectedClosureDate = null;
@@ -711,12 +711,12 @@ class Prospect
         return $this;
     }
 
-    public function getEstimatedBudget(): ?string
+    public function getEstimatedBudget(): ?float
     {
         return $this->estimatedBudget;
     }
 
-    public function setEstimatedBudget(?string $estimatedBudget): static
+    public function setEstimatedBudget(?float $estimatedBudget): static
     {
         $this->estimatedBudget = $estimatedBudget;
 

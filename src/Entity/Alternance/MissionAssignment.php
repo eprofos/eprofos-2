@@ -104,7 +104,7 @@ class MissionAssignment
         notInRangeMessage: 'Le taux d\'avancement doit être entre {{ min }} et {{ max }}%.',
     )]
     #[Gedmo\Versioned]
-    private ?string $completionRate = '0.00';
+    private ?float $completionRate = 0.00;
 
     #[ORM\Column(type: Types::JSON)]
     #[Assert\NotNull(message: 'Les difficultés rencontrées doivent être documentées.')]
@@ -337,7 +337,7 @@ class MissionAssignment
 
     public function setCompletionRate(float $completionRate): static
     {
-        $this->completionRate = (string) $completionRate;
+        $this->completionRate = $completionRate;
 
         return $this;
     }
