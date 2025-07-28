@@ -3,7 +3,7 @@
 namespace App\MessageHandler;
 
 use App\Message\DurationUpdateMessage;
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;

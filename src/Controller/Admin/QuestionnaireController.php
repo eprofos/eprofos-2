@@ -7,7 +7,7 @@ use App\Entity\Training\Formation;
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Training\FormationRepository;
-use App\Service\QuestionnaireEmailService;
+use App\Service\Assessment\QuestionnaireEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

@@ -140,7 +140,7 @@ php bin/console app:duration:sync --batch-size=50
 
 ```php
 // Inject the service
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 
 // Calculate course duration (including exercises and QCMs)
 $courseDuration = $durationService->calculateCourseDuration($course);

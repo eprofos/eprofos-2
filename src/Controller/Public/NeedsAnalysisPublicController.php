@@ -7,7 +7,7 @@ namespace App\Controller\Public;
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Form\CompanyNeedsAnalysisType;
 use App\Form\IndividualNeedsAnalysisType;
-use App\Service\NeedsAnalysisService;
+use App\Service\Analysis\NeedsAnalysisService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

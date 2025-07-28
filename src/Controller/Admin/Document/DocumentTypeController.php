@@ -5,7 +5,7 @@ namespace App\Controller\Admin\Document;
 use App\Entity\Document\DocumentType;
 use App\Form\Document\DocumentTypeType;
 use App\Repository\Document\DocumentTypeRepository;
-use App\Service\DocumentTypeService;
+use App\Service\Document\DocumentTypeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

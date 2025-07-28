@@ -5,7 +5,7 @@ namespace App\Controller\Admin\Document;
 use App\Entity\Document\DocumentCategory;
 use App\Form\Document\DocumentCategoryType;
 use App\Repository\Document\DocumentCategoryRepository;
-use App\Service\DocumentCategoryService;
+use App\Service\Document\DocumentCategoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

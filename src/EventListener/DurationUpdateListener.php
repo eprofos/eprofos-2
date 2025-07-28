@@ -8,7 +8,7 @@ use App\Entity\Training\Chapter;
 use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
 use App\Entity\Training\QCM;
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;

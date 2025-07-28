@@ -10,7 +10,7 @@ use App\Entity\Training\Session;
 use App\Repository\User\StudentRepository;
 use App\Repository\Training\FormationRepository;
 use App\Repository\Training\SessionRepository;
-use App\Service\DropoutPreventionService;
+use App\Service\Core\DropoutPreventionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

@@ -5,7 +5,7 @@ namespace App\Controller\Admin\Document;
 use App\Entity\Document\DocumentMetadata;
 use App\Form\Document\DocumentMetadataType;
 use App\Repository\Document\DocumentMetadataRepository;
-use App\Service\DocumentMetadataService;
+use App\Service\Document\DocumentMetadataService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

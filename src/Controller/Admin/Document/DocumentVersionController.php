@@ -6,7 +6,7 @@ use App\Entity\Document\Document;
 use App\Entity\Document\DocumentVersion;
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentVersionRepository;
-use App\Service\DocumentService;
+use App\Service\Document\DocumentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

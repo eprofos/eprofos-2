@@ -7,7 +7,7 @@ use App\Entity\Training\SessionRegistration;
 use App\Form\Training\SessionRegistrationType;
 use App\Repository\Training\SessionRepository;
 use App\Repository\Training\SessionRegistrationRepository;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

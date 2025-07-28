@@ -9,7 +9,7 @@ use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
 use App\Entity\Training\QCM;
 use App\Entity\Training\Category;
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;

@@ -2,7 +2,7 @@
 
 namespace App\Twig;
 
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;

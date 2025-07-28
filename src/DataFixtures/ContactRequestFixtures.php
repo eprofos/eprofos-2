@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\Formation;
 use App\Entity\Service\Service;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;

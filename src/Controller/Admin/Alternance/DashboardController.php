@@ -5,7 +5,7 @@ namespace App\Controller\Admin\Alternance;
 use App\Entity\Alternance\AlternanceContract;
 use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\AlternanceValidationService;
-use App\Service\QualiopiValidationService;
+use App\Service\Training\QualiopiValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

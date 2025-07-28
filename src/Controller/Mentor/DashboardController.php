@@ -3,8 +3,8 @@
 namespace App\Controller\Mentor;
 
 use App\Entity\User\Mentor;
-use App\Service\MentorService;
-use App\Service\MentorAuthenticationService;
+use App\Service\User\MentorService;
+use App\Service\User\MentorAuthenticationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

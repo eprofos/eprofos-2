@@ -5,7 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\User\Student;
 use App\Form\StudentType;
 use App\Repository\User\StudentRepository;
-use App\Service\StudentService;
+use App\Service\Core\StudentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

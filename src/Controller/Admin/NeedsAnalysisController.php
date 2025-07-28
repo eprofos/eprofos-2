@@ -8,7 +8,7 @@ use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
 use App\Form\NeedsAnalysisRequestType;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
-use App\Service\NeedsAnalysisService;
+use App\Service\Analysis\NeedsAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

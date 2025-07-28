@@ -5,7 +5,7 @@ namespace App\Command;
 use App\Repository\Training\SessionRegistrationRepository;
 use App\Repository\CRM\ContactRequestRepository;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

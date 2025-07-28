@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Entity\CRM\ContactRequest;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

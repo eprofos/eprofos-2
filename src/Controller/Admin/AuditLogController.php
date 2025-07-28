@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Service\AuditLogService;
+use App\Service\Core\AuditLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

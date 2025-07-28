@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Training\Formation;
-use App\Service\FormationScheduleService;
+use App\Service\Training\FormationScheduleService;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

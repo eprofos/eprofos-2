@@ -2,7 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;

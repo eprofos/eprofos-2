@@ -7,7 +7,7 @@ use App\Entity\Document\DocumentUITemplate;
 use App\Form\DocumentUITemplateType;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Repository\Document\DocumentUITemplateRepository;
-use App\Service\DocumentUITemplateService;
+use App\Service\Document\DocumentUITemplateService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

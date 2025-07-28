@@ -2,7 +2,7 @@
 
 namespace App\Twig;
 
-use App\Service\AuditLogService;
+use App\Service\Core\AuditLogService;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;

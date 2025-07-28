@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Session;
 use App\Entity\Training\SessionRegistration;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

@@ -6,7 +6,7 @@ use App\Entity\CRM\ContactRequest;
 use App\Entity\Training\Formation;
 use App\Repository\CRM\ContactRequestRepository;
 use App\Repository\Training\FormationRepository;
-use App\Service\ProspectManagementService;
+use App\Service\CRM\ProspectManagementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

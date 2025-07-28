@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Service\DropoutPreventionService;
+use App\Service\Core\DropoutPreventionService;
 use Knp\Snappy\Pdf;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

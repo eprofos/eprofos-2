@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Repository\Core\StudentProgressRepository;
 use App\Repository\Core\AttendanceRecordRepository;
-use App\Service\DropoutPreventionService;
+use App\Service\Core\DropoutPreventionService;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;

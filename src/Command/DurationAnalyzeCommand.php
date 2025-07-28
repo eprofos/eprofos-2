@@ -6,7 +6,7 @@ use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Course;
-use App\Service\DurationCalculationService;
+use App\Service\Training\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
