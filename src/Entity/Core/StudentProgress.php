@@ -73,7 +73,7 @@ class StudentProgress
         max: 100,
         notInRangeMessage: 'Le pourcentage de completion doit être entre {{ min }}% et {{ max }}%',
     )]
-    private ?string $completionPercentage = '0.00';
+    private ?float $completionPercentage = 0.00;
 
     /**
      * Module-specific completion tracking.
@@ -144,7 +144,7 @@ class StudentProgress
      * Attendance rate for sessions (0-100).
      */
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
-    private ?string $attendanceRate = '100.00';
+    private ?float $attendanceRate = 100.00;
 
     /**
      * Number of missed sessions.
@@ -292,12 +292,12 @@ class StudentProgress
         return $this;
     }
 
-    public function getCompletionPercentage(): ?string
+    public function getCompletionPercentage(): ?float
     {
         return $this->completionPercentage;
     }
 
-    public function setCompletionPercentage(string $completionPercentage): static
+    public function setCompletionPercentage(float $completionPercentage): static
     {
         $this->completionPercentage = $completionPercentage;
 
@@ -424,12 +424,12 @@ class StudentProgress
         return $this;
     }
 
-    public function getAttendanceRate(): ?string
+    public function getAttendanceRate(): ?float
     {
         return $this->attendanceRate;
     }
 
-    public function setAttendanceRate(string $attendanceRate): static
+    public function setAttendanceRate(float $attendanceRate): static
     {
         $this->attendanceRate = $attendanceRate;
 
@@ -621,7 +621,7 @@ class StudentProgress
 
         $totalItems = count($moduleProgress) + count($chapterProgress);
         if ($totalItems === 0) {
-            $this->completionPercentage = '0.00';
+            $this->completionPercentage = 0.00;
 
             return $this;
         }
@@ -640,7 +640,7 @@ class StudentProgress
         }
 
         $percentage = ($completedItems / $totalItems) * 100;
-        $this->completionPercentage = number_format($percentage, 2);
+        $this->completionPercentage = (float)number_format($percentage, 2);
 
         // Mark as completed if 100%
         if ($percentage >= 100 && !$this->completedAt) {
@@ -758,7 +758,7 @@ class StudentProgress
         // For now, estimate based on missed sessions
         $totalSessions = $this->missedSessions + 10; // Rough estimate
         $attendedSessions = $totalSessions - $this->missedSessions;
-        $this->attendanceRate = number_format(($attendedSessions / $totalSessions) * 100, 2);
+        $this->attendanceRate = (float)number_format(($attendedSessions / $totalSessions) * 100, 2);
 
         $this->detectRiskSignals();
 

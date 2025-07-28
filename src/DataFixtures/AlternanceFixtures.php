@@ -58,7 +58,7 @@ class AlternanceFixtures extends Fixture implements DependentFixtureInterface, F
 
                 // Contract Number - Generate realistic contract number
                 $year = date('Y');
-                $contractNumber = 'ALT-' . $year . '-' . str_pad($contractCount + 1, 4, '0', STR_PAD_LEFT);
+                $contractNumber = 'ALT-' . $year . '-' . str_pad((string)($contractCount + 1), 4, '0', STR_PAD_LEFT);
                 $contract->setContractNumber($contractNumber);
 
                 // Company Information

@@ -338,7 +338,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         return $faker->randomElements($evidenceTypes[$context], $faker->numberBetween(1, 3));
     }
 
-    private function generateCompetencyNotes(string $competencyName, int $currentLevel): string
+    private function generateCompetencyNotes(string $competencyName, float $currentLevel): string
     {
         $notes = [
             1 => "Compétence en cours d'acquisition pour {$competencyName}.",

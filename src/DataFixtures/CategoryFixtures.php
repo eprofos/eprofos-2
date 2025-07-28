@@ -107,7 +107,7 @@ class CategoryFixtures extends Fixture
         foreach ($categories as $categoryData) {
             $category = new Category();
             $category->setName($categoryData['name']);
-            $category->setSlug($this->slugger->slug($categoryData['name'])->lower());
+            $category->setSlug($this->slugger->slug($categoryData['name'])->lower()->toString());
             $category->setDescription($categoryData['description']);
             $category->setIcon($categoryData['icon']);
             $category->setIsActive($categoryData['isActive']);
