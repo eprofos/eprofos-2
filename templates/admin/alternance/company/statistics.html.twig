@@ -1,0 +1,315 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques - {{ company.companyName }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        <a href="{{ path('admin_dashboard') }}" class="text-muted">Administration</a> / 
+                        <a href="{{ path('admin_alternance_dashboard') }}" class="text-muted">Alternance</a> /
+                        <a href="{{ path('admin_alternance_company_index') }}" class="text-muted">Entreprises</a> /
+                        <a href="{{ path('admin_alternance_company_show', {siret: company.companySiret}) }}" class="text-muted">{{ company.companyName }}</a>
+                    </div>
+                    <h2 class="page-title">
+                        Statistiques détaillées - {{ company.companyName }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_alternance_company_show', {siret: company.companySiret}) }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <polyline points="15,6 9,12 15,18"/>
+                            </svg>
+                            Retour à l'entreprise
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Company Info Header -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">{{ company.companyName }}</h3>
+                    <div class="text-muted">SIRET: {{ company.companySiret }}</div>
+                    {% if companyAddress %}
+                        <div class="text-muted">{{ companyAddress }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row row-deck row-cards mb-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Total mentors</div>
+                    </div>
+                    <div class="h1 mb-0">{{ metrics.total_mentors }}</div>
+                    <div class="d-flex mb-2">
+                        <div class="flex-fill">
+                            <div class="progress progress-xs">
+                                <div class="progress-bar bg-primary" style="width: {{ metrics.total_mentors > 0 ? (metrics.active_mentors / metrics.total_mentors * 100)|round : 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted ms-2">{{ metrics.active_mentors }} actifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Total contrats</div>
+                    </div>
+                    <div class="h1 mb-0">{{ metrics.total_contracts }}</div>
+                    <div class="d-flex mb-2">
+                        <div class="flex-fill">
+                            <div class="progress progress-xs">
+                                <div class="progress-bar bg-success" style="width: {{ metrics.total_contracts > 0 ? (metrics.active_contracts / metrics.total_contracts * 100)|round : 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted ms-2">{{ metrics.active_contracts }} actifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Taux de réussite</div>
+                    </div>
+                    <div class="h1 mb-0">{{ metrics.success_rate }}%</div>
+                    <div class="d-flex mb-2">
+                        <div class="flex-fill">
+                            <div class="progress progress-xs">
+                                <div class="progress-bar bg-info" style="width: {{ metrics.success_rate }}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted ms-2">{{ metrics.completed_contracts }} terminés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Durée moyenne</div>
+                    </div>
+                    <div class="h1 mb-0">{{ metrics.average_contract_duration }}</div>
+                    <div class="text-muted">mois par contrat</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Detailed Analytics -->
+    <div class="row">
+        <!-- Contract Status Distribution -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Répartition des contrats par statut</h3>
+                </div>
+                <div class="card-body">
+                    {% if metrics.contracts_by_status %}
+                        {% for status, count in metrics.contracts_by_status %}
+                            {% set status_label = status == 'active' ? 'Actifs' : (status == 'completed' ? 'Terminés' : (status == 'pending' ? 'En attente' : (status == 'terminated' ? 'Résiliés' : status|title))) %}
+                            {% set status_color = status == 'active' ? 'success' : (status == 'completed' ? 'primary' : (status == 'pending' ? 'warning' : (status == 'terminated' ? 'danger' : 'secondary'))) %}
+                            {% set percentage = metrics.total_contracts > 0 ? (count / metrics.total_contracts * 100)|round : 0 %}
+                            
+                            <div class="row align-items-center mb-3">
+                                <div class="col-auto">
+                                    <span class="badge bg-{{ status_color }}-lt">{{ status_label }}</span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-{{ status_color }}" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ count }} ({{ percentage }}%)</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune donnée disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contract Type Distribution -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Répartition des contrats par type</h3>
+                </div>
+                <div class="card-body">
+                    {% if metrics.contracts_by_type %}
+                        {% for type, count in metrics.contracts_by_type %}
+                            {% set percentage = metrics.total_contracts > 0 ? (count / metrics.total_contracts * 100)|round : 0 %}
+                            
+                            <div class="row align-items-center mb-3">
+                                <div class="col-auto">
+                                    <span class="badge bg-info-lt">{{ type|title }}</span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-info" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ count }} ({{ percentage }}%)</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune donnée disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expertise Distribution -->
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Domaines d'expertise des mentors</h3>
+                </div>
+                <div class="card-body">
+                    {% if metrics.mentor_expertise_distribution %}
+                        {% for domain, count in metrics.mentor_expertise_distribution %}
+                            {% set percentage = metrics.total_mentors > 0 ? (count / metrics.total_mentors * 100)|round : 0 %}
+                            
+                            <div class="row align-items-center mb-2">
+                                <div class="col-auto">
+                                    <span class="badge bg-blue-lt">{{ domain }}</span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-blue" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ count }} mentor(s)</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune donnée d'expertise disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Évolution mensuelle des contrats</h3>
+                </div>
+                <div class="card-body">
+                    {% if metrics.monthly_trends %}
+                        {% set max_contracts = max(metrics.monthly_trends) %}
+                        {% for month, count in metrics.monthly_trends|slice(-12) %}
+                            {% set percentage = max_contracts > 0 ? (count / max_contracts * 100)|round : 0 %}
+                            
+                            <div class="row align-items-center mb-2">
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ month }}</span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-green" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ count }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune donnée de tendance disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Data -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations historiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Premier contrat</label>
+                                <div class="form-control-plaintext">
+                                    {% if metrics.oldest_contract %}
+                                        {{ metrics.oldest_contract.createdAt|date('d/m/Y') }}
+                                    {% else %}
+                                        Aucun contrat
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Dernier mentor ajouté</label>
+                                <div class="form-control-plaintext">
+                                    {% if metrics.newest_mentor %}
+                                        {{ metrics.newest_mentor.createdAt|date('d/m/Y') }}
+                                        <br>
+                                        <small class="text-muted">{{ metrics.newest_mentor.firstName }} {{ metrics.newest_mentor.lastName }}</small>
+                                    {% else %}
+                                        Aucun mentor
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Contrats terminés</label>
+                                <div class="form-control-plaintext">
+                                    {{ metrics.completed_contracts }} / {{ metrics.total_contracts }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Mentors actifs</label>
+                                <div class="form-control-plaintext">
+                                    {{ metrics.active_mentors }} / {{ metrics.total_mentors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

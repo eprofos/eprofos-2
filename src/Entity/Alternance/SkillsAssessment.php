@@ -432,6 +432,123 @@ class SkillsAssessment
     }
 
     /**
+     * Get evaluation status based on completion
+     */
+    public function getStatus(): string
+    {
+        if ($this->overallRating === null || $this->overallRating === 'non_evalue') {
+            return 'pending';
+        }
+        
+        return 'validated';
+    }
+
+    /**
+     * Get overall score as decimal for compatibility with controller
+     */
+    public function getOverallScore(): ?float
+    {
+        return $this->getOverallAverageScore() / 20; // Convert from 0-20 to 0-1 scale
+    }
+
+    /**
+     * Get mentor for compatibility with controller  
+     */
+    public function getMentor()
+    {
+        return $this->mentorEvaluator;
+    }
+
+    /**
+     * Get skills assessed as array for template compatibility
+     */
+    public function getSkillsAssessed(): array
+    {
+        $skills = [];
+        foreach ($this->skillsEvaluated as $skillCode => $skillInfo) {
+            $skills[] = (object) [
+                'name' => $skillInfo['name'] ?? $skillCode,
+                'code' => $skillCode
+            ];
+        }
+        return $skills;
+    }
+
+    /**
+     * Get skill level based on overall rating
+     */
+    public function getSkillLevel(): ?string
+    {
+        return match ($this->overallRating) {
+            'excellent' => 'expert',
+            'satisfaisant' => 'advanced', 
+            'moyen' => 'intermediate',
+            'insuffisant' => 'beginner',
+            default => null
+        };
+    }
+
+    /**
+     * Get strengths based on high-scoring skills
+     */
+    public function getSkillsStrengths(): array
+    {
+        $strengths = [];
+        
+        foreach ($this->centerScores as $skill => $score) {
+            if (isset($score['value']) && $score['value'] >= 16) { // 16/20 = 80%
+                $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
+                $strengths[] = $skillName;
+            }
+        }
+        
+        foreach ($this->companyScores as $skill => $score) {
+            if (isset($score['value']) && $score['value'] >= 16) {
+                $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
+                if (!in_array($skillName, $strengths)) {
+                    $strengths[] = $skillName;
+                }
+            }
+        }
+        
+        return $strengths;
+    }
+
+    /**
+     * Get weaknesses based on low-scoring skills
+     */
+    public function getSkillsWeaknesses(): array
+    {
+        $weaknesses = [];
+        
+        foreach ($this->centerScores as $skill => $score) {
+            if (isset($score['value']) && $score['value'] < 12) { // 12/20 = 60%
+                $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
+                $weaknesses[] = $skillName;
+            }
+        }
+        
+        foreach ($this->companyScores as $skill => $score) {
+            if (isset($score['value']) && $score['value'] < 12) {
+                $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
+                if (!in_array($skillName, $weaknesses)) {
+                    $weaknesses[] = $skillName;
+                }
+            }
+        }
+        
+        return $weaknesses;
+    }
+
+    /**
+     * Get entity type for template compatibility
+     */
+    public function getEntityType(): string
+    {
+        return 'skills';
+    }
+
+    /**
      * Calculate average center score
      */
     public function getAverageCenterScore(): float

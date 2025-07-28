@@ -1,0 +1,449 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Performance de {{ mentor.fullName }} - Mentor{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_dashboard') }}">Alternance</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_index') }}">Mentors</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}">{{ mentor.fullName }}</a></li>
+        <li class="breadcrumb-item active">Performance</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_title %}
+<div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <div class="mentor-avatar me-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                 style="width: 50px; height: 50px; font-weight: bold;">
+                {{ mentor.initials }}
+            </div>
+        </div>
+        <div>
+            <h1 class="h3 mb-0">Performance de {{ mentor.fullName }}</h1>
+            <p class="text-muted mb-0">{{ mentor.position }} - {{ mentor.companyName }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-clock"></i> Période: {{ period }} mois
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ path('admin_alternance_mentor_performance', {id: mentor.id, period: 3}) }}">3 mois</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_alternance_mentor_performance', {id: mentor.id, period: 6}) }}">6 mois</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_alternance_mentor_performance', {id: mentor.id, period: 12}) }}">12 mois</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_alternance_mentor_performance', {id: mentor.id, period: 24}) }}">24 mois</a></li>
+            </ul>
+        </div>
+        <a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<!-- Key Performance Indicators -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h3 class="mb-1">{{ performance.alternants_count ?? 0 }}</h3>
+                <p class="mb-0">Alternants encadrés</p>
+                {% if performance.alternants_trend is defined %}
+                <small class="opacity-75">
+                    <i class="fas fa-{{ performance.alternants_trend > 0 ? 'arrow-up' : (performance.alternants_trend < 0 ? 'arrow-down' : 'minus') }}"></i>
+                    {{ performance.alternants_trend > 0 ? '+' : '' }}{{ performance.alternants_trend }}%
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h3 class="mb-1">{{ performance.success_rate ?? 0 }}%</h3>
+                <p class="mb-0">Taux de réussite</p>
+                {% if performance.success_rate_trend is defined %}
+                <small class="opacity-75">
+                    <i class="fas fa-{{ performance.success_rate_trend > 0 ? 'arrow-up' : (performance.success_rate_trend < 0 ? 'arrow-down' : 'minus') }}"></i>
+                    {{ performance.success_rate_trend > 0 ? '+' : '' }}{{ performance.success_rate_trend }}%
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h3 class="mb-1">{{ performance.satisfaction_rate ?? 0 }}%</h3>
+                <p class="mb-0">Satisfaction</p>
+                {% if performance.satisfaction_trend is defined %}
+                <small class="opacity-75">
+                    <i class="fas fa-{{ performance.satisfaction_trend > 0 ? 'arrow-up' : (performance.satisfaction_trend < 0 ? 'arrow-down' : 'minus') }}"></i>
+                    {{ performance.satisfaction_trend > 0 ? '+' : '' }}{{ performance.satisfaction_trend }}%
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h3 class="mb-1">{{ performance.evaluations_count ?? 0 }}</h3>
+                <p class="mb-0">Évaluations réalisées</p>
+                {% if performance.evaluations_trend is defined %}
+                <small class="opacity-75">
+                    <i class="fas fa-{{ performance.evaluations_trend > 0 ? 'arrow-up' : (performance.evaluations_trend < 0 ? 'arrow-down' : 'minus') }}"></i>
+                    {{ performance.evaluations_trend > 0 ? '+' : '' }}{{ performance.evaluations_trend }}%
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Performance Chart -->
+        {% if performance.monthly_data is defined %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Évolution des performances</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" height="100"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Alternants Performance -->
+        {% if performance.alternants is defined and performance.alternants|length > 0 %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Performance des alternants</h5>
+                <span class="badge bg-primary">{{ performance.alternants|length }}</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Alternant</th>
+                                <th>Formation</th>
+                                <th>Progression</th>
+                                <th>Dernière évaluation</th>
+                                <th>Note moyenne</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alternant in performance.alternants %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 30px; height: 30px; font-size: 0.75rem;">
+                                            {{ alternant.initials ?? alternant.fullName|slice(0,2)|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ alternant.fullName }}</strong>
+                                            <br><small class="text-muted">{{ alternant.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ alternant.formation ?? 'Non définie' }}</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" 
+                                             style="width: {{ alternant.progression ?? 0 }}%"
+                                             title="{{ alternant.progression ?? 0 }}% complété">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ alternant.progression ?? 0 }}%</small>
+                                </td>
+                                <td>
+                                    {% if alternant.last_evaluation %}
+                                        {{ alternant.last_evaluation|date('d/m/Y') }}
+                                    {% else %}
+                                        <span class="text-muted">Aucune</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alternant.average_grade is defined %}
+                                        <span class="badge bg-{{ alternant.average_grade >= 16 ? 'success' : (alternant.average_grade >= 12 ? 'warning' : 'danger') }}">
+                                            {{ alternant.average_grade }}/20
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ alternant.status == 'active' ? 'success' : (alternant.status == 'completed' ? 'primary' : 'secondary') }}">
+                                        {{ alternant.status_label ?? alternant.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Evaluations History -->
+        {% if performance.evaluations is defined and performance.evaluations|length > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Historique des évaluations</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for evaluation in performance.evaluations %}
+                    <div class="timeline-item d-flex mb-3">
+                        <div class="timeline-marker bg-{{ evaluation.type == 'excellent' ? 'success' : (evaluation.type == 'good' ? 'warning' : 'info') }} rounded-circle me-3" 
+                             style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ evaluation.title }}</strong>
+                                    {% if evaluation.alternant %}
+                                        <span class="text-muted">- {{ evaluation.alternant }}</span>
+                                    {% endif %}
+                                    {% if evaluation.note %}
+                                        <br><small class="text-muted">{{ evaluation.note }}</small>
+                                    {% endif %}
+                                    {% if evaluation.grade is defined %}
+                                        <br>
+                                        <span class="badge bg-{{ evaluation.grade >= 16 ? 'success' : (evaluation.grade >= 12 ? 'warning' : 'danger') }}">
+                                            {{ evaluation.grade }}/20
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ evaluation.date|date('d/m/Y') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-4">
+        <!-- Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy"></i> Résumé</h5>
+            </div>
+            <div class="card-body">
+                {% if performance.summary is defined %}
+                    {% for key, value in performance.summary %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">{{ key }}</span>
+                        <strong>{{ value }}</strong>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="mb-3">
+                        <span class="text-muted">Total alternants</span>
+                        <div class="float-end"><strong>{{ performance.alternants_count ?? 0 }}</strong></div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Contrats actifs</span>
+                        <div class="float-end"><strong>{{ performance.active_contracts ?? 0 }}</strong></div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Missions créées</span>
+                        <div class="float-end"><strong>{{ performance.missions_count ?? 0 }}</strong></div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Évaluations</span>
+                        <div class="float-end"><strong>{{ performance.evaluations_count ?? 0 }}</strong></div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Strengths & Areas for Improvement -->
+        {% if performance.strengths is defined or performance.improvements is defined %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star"></i> Points forts & améliorations</h5>
+            </div>
+            <div class="card-body">
+                {% if performance.strengths is defined and performance.strengths|length > 0 %}
+                <h6 class="text-success"><i class="fas fa-thumbs-up"></i> Points forts</h6>
+                <ul class="list-unstyled">
+                    {% for strength in performance.strengths %}
+                    <li><i class="fas fa-check text-success"></i> {{ strength }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if performance.improvements is defined and performance.improvements|length > 0 %}
+                <h6 class="text-warning mt-3"><i class="fas fa-exclamation-triangle"></i> À améliorer</h6>
+                <ul class="list-unstyled">
+                    {% for improvement in performance.improvements %}
+                    <li><i class="fas fa-arrow-up text-warning"></i> {{ improvement }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="mailto:{{ mentor.email }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-envelope"></i> Contacter le mentor
+                    </a>
+                    <a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-user"></i> Voir le profil complet
+                    </a>
+                    <a href="{{ path('admin_alternance_mentor_edit', {id: mentor.id}) }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-edit"></i> Modifier le mentor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% if performance.monthly_data is defined %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const monthlyData = {{ performance.monthly_data|json_encode|raw }};
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: monthlyData.labels || [],
+            datasets: [
+                {
+                    label: 'Alternants actifs',
+                    data: monthlyData.alternants || [],
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Évaluations',
+                    data: monthlyData.evaluations || [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Taux de satisfaction (%)',
+                    data: monthlyData.satisfaction || [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Mois'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Nombre'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Pourcentage'
+                    },
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Évolution des performances sur {{ period }} mois'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 18px;
+    height: calc(100% + 12px);
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.mentor-avatar {
+    flex-shrink: 0;
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+.card-body .float-end {
+    float: right !important;
+}
+</style>
+{% endblock %}

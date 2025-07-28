@@ -464,4 +464,61 @@ class CompanyMissionService
 
         return $exportData;
     }
+
+    /**
+     * Get mission progress data
+     */
+    public function getMissionProgressData(CompanyMission $mission): array
+    {
+        $assignments = $mission->getAssignments();
+        
+        $statusCounts = [
+            'assigned' => 0,
+            'in_progress' => 0,
+            'completed' => 0,
+            'cancelled' => 0,
+        ];
+
+        $totalAssignments = $assignments->count();
+        
+        foreach ($assignments as $assignment) {
+            $status = $assignment->getStatus();
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            }
+        }
+
+        $completionRate = $totalAssignments > 0 ? 
+            round(($statusCounts['completed'] / $totalAssignments) * 100, 1) : 0;
+
+        return [
+            'total_assignments' => $totalAssignments,
+            'status_counts' => $statusCounts,
+            'completion_rate' => $completionRate,
+            'average_duration' => $this->calculateAverageAssignmentDuration($assignments),
+        ];
+    }
+
+    /**
+     * Calculate average assignment duration
+     */
+    private function calculateAverageAssignmentDuration($assignments): float
+    {
+        $completedAssignments = $assignments->filter(fn($a) => $a->getStatus() === 'completed');
+        
+        if ($completedAssignments->isEmpty()) {
+            return 0;
+        }
+
+        $totalDuration = 0;
+        foreach ($completedAssignments as $assignment) {
+            if ($assignment->getStartDate() && $assignment->getCompletedAt()) {
+                $duration = $assignment->getStartDate()->diff($assignment->getCompletedAt())->days;
+                $totalDuration += $duration;
+            }
+        }
+
+        return $completedAssignments->count() > 0 ? 
+            round($totalDuration / $completedAssignments->count(), 1) : 0;
+    }
 }

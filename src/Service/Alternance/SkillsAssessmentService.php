@@ -408,4 +408,275 @@ class SkillsAssessmentService
 
         return $exportData;
     }
+
+    /**
+     * Analyze skills assessment and provide detailed insights
+     */
+    public function analyzeSkillsAssessment(SkillsAssessment $assessment): array
+    {
+        $analysis = [
+            'overall_status' => $this->getOverallSkillsStatus($assessment),
+            'skills_analysis' => $this->analyzeSkillsPerformance($assessment),
+            'cross_evaluation_analysis' => $this->analyzeCrossEvaluation($assessment),
+            'development_recommendations' => $this->generateDevelopmentRecommendations($assessment),
+            'strengths_and_weaknesses' => $this->identifyStrengthsAndWeaknesses($assessment),
+            'progression_tracking' => $this->trackSkillsProgression($assessment),
+        ];
+
+        return $analysis;
+    }
+
+    /**
+     * Approve a skills assessment
+     */
+    public function approveAssessment(SkillsAssessment $assessment, string $comments = ''): SkillsAssessment
+    {
+        // Add approval note to development plan
+        $currentPlan = $assessment->getDevelopmentPlan();
+        $approvalNote = [
+            'type' => 'validation',
+            'date' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'status' => 'approved',
+            'comments' => $comments ?: 'Évaluation approuvée',
+            'action' => 'approval'
+        ];
+        
+        $currentPlan[] = $approvalNote;
+        $assessment->setDevelopmentPlan($currentPlan);
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Skills assessment approved', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Reject a skills assessment
+     */
+    public function rejectAssessment(SkillsAssessment $assessment, string $comments = ''): SkillsAssessment
+    {
+        // Add rejection note to development plan
+        $currentPlan = $assessment->getDevelopmentPlan();
+        $rejectionNote = [
+            'type' => 'validation',
+            'date' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'status' => 'rejected',
+            'comments' => $comments ?: 'Évaluation rejetée - révision nécessaire',
+            'action' => 'rejection'
+        ];
+        
+        $currentPlan[] = $rejectionNote;
+        $assessment->setDevelopmentPlan($currentPlan);
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Skills assessment rejected', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Get overall status of skills assessment
+     */
+    private function getOverallSkillsStatus(SkillsAssessment $assessment): array
+    {
+        $overallScore = $assessment->getOverallAverageScore();
+        
+        if ($overallScore >= 4) {
+            $status = 'excellent';
+            $message = 'Compétences excellentes, autonomie confirmée';
+        } elseif ($overallScore >= 3) {
+            $status = 'good';
+            $message = 'Compétences satisfaisantes, progression normale';
+        } elseif ($overallScore >= 2) {
+            $status = 'average';
+            $message = 'Compétences moyennes, accompagnement recommandé';
+        } else {
+            $status = 'poor';
+            $message = 'Compétences insuffisantes, soutien renforcé nécessaire';
+        }
+
+        return [
+            'status' => $status,
+            'message' => $message,
+            'overall_score' => $overallScore,
+            'is_complete' => $assessment->isComplete(),
+            'has_cross_evaluation' => $assessment->hasCrossEvaluation()
+        ];
+    }
+
+    /**
+     * Analyze skills performance
+     */
+    private function analyzeSkillsPerformance(SkillsAssessment $assessment): array
+    {
+        $centerScores = $assessment->getCenterScores();
+        $companyScores = $assessment->getCompanyScores();
+        
+        $skillsAnalysis = [];
+        
+        foreach ($assessment->getSkillsEvaluated() as $skill) {
+            $centerScore = $centerScores[$skill] ?? 0;
+            $companyScore = $companyScores[$skill] ?? 0;
+            $gap = abs($centerScore - $companyScore);
+            
+            $skillsAnalysis[$skill] = [
+                'center_score' => $centerScore,
+                'company_score' => $companyScore,
+                'average_score' => ($centerScore + $companyScore) / 2,
+                'score_gap' => $gap,
+                'gap_level' => $gap > 2 ? 'high' : ($gap > 1 ? 'medium' : 'low'),
+                'status' => $this->getSkillStatus(($centerScore + $companyScore) / 2)
+            ];
+        }
+        
+        return $skillsAnalysis;
+    }
+
+    /**
+     * Analyze cross evaluation
+     */
+    private function analyzeCrossEvaluation(SkillsAssessment $assessment): array
+    {
+        if (!$assessment->hasCrossEvaluation()) {
+            return ['has_cross_evaluation' => false];
+        }
+
+        $centerScores = $assessment->getCenterScores();
+        $companyScores = $assessment->getCompanyScores();
+        
+        $totalGap = 0;
+        $skillsCount = count($assessment->getSkillsEvaluated());
+        
+        foreach ($assessment->getSkillsEvaluated() as $skill) {
+            $centerScore = $centerScores[$skill] ?? 0;
+            $companyScore = $companyScores[$skill] ?? 0;
+            $totalGap += abs($centerScore - $companyScore);
+        }
+        
+        $averageGap = $skillsCount > 0 ? $totalGap / $skillsCount : 0;
+        
+        return [
+            'has_cross_evaluation' => true,
+            'average_gap' => $averageGap,
+            'gap_level' => $averageGap > 2 ? 'high' : ($averageGap > 1 ? 'medium' : 'low'),
+            'alignment_status' => $averageGap <= 1 ? 'aligned' : 'needs_review'
+        ];
+    }
+
+    /**
+     * Generate development recommendations
+     */
+    private function generateDevelopmentRecommendations(SkillsAssessment $assessment): array
+    {
+        $recommendations = [];
+        $skillsAnalysis = $this->analyzeSkillsPerformance($assessment);
+        
+        foreach ($skillsAnalysis as $skill => $analysis) {
+            if ($analysis['average_score'] < 3) {
+                $recommendations[] = [
+                    'skill' => $skill,
+                    'priority' => 'high',
+                    'type' => 'improvement',
+                    'recommendation' => "Renforcement urgent nécessaire pour {$skill}",
+                    'actions' => [
+                        'Formation spécialisée',
+                        'Mentorat renforcé',
+                        'Pratique supervisée'
+                    ]
+                ];
+            } elseif ($analysis['gap_level'] === 'high') {
+                $recommendations[] = [
+                    'skill' => $skill,
+                    'priority' => 'medium',
+                    'type' => 'alignment',
+                    'recommendation' => "Harmonisation centre-entreprise pour {$skill}",
+                    'actions' => [
+                        'Réunion tripartite',
+                        'Clarification des attentes',
+                        'Ajustement des objectifs'
+                    ]
+                ];
+            }
+        }
+        
+        return $recommendations;
+    }
+
+    /**
+     * Identify strengths and weaknesses
+     */
+    private function identifyStrengthsAndWeaknesses(SkillsAssessment $assessment): array
+    {
+        $skillsAnalysis = $this->analyzeSkillsPerformance($assessment);
+        
+        $strengths = [];
+        $weaknesses = [];
+        
+        foreach ($skillsAnalysis as $skill => $analysis) {
+            if ($analysis['average_score'] >= 4) {
+                $strengths[] = [
+                    'skill' => $skill,
+                    'score' => $analysis['average_score'],
+                    'description' => "Maîtrise excellente de {$skill}"
+                ];
+            } elseif ($analysis['average_score'] < 2) {
+                $weaknesses[] = [
+                    'skill' => $skill,
+                    'score' => $analysis['average_score'],
+                    'description' => "Compétence à développer : {$skill}"
+                ];
+            }
+        }
+        
+        return [
+            'strengths' => $strengths,
+            'weaknesses' => $weaknesses
+        ];
+    }
+
+    /**
+     * Track skills progression
+     */
+    private function trackSkillsProgression(SkillsAssessment $assessment): array
+    {
+        // This would compare with previous assessments
+        $student = $assessment->getStudent();
+        $previousAssessments = $this->skillsAssessmentRepository->findBy(
+            ['student' => $student],
+            ['assessmentDate' => 'DESC'],
+            5
+        );
+        
+        return [
+            'has_progression_data' => count($previousAssessments) > 1,
+            'assessment_count' => count($previousAssessments),
+            'progression_trend' => 'stable' // Would be calculated from actual data
+        ];
+    }
+
+    /**
+     * Get skill status based on score
+     */
+    private function getSkillStatus(float $score): string
+    {
+        if ($score >= 4) {
+            return 'mastered';
+        } elseif ($score >= 3) {
+            return 'competent';
+        } elseif ($score >= 2) {
+            return 'developing';
+        } else {
+            return 'needs_work';
+        }
+    }
 }

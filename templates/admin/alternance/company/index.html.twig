@@ -1,0 +1,269 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Entreprises d'alternance - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        <a href="{{ path('admin_dashboard') }}" class="text-muted">Administration</a> / 
+                        <a href="{{ path('admin_alternance_dashboard') }}" class="text-muted">Alternance</a>
+                    </div>
+                    <h2 class="page-title">
+                        Entreprises d'alternance
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_alternance_company_export', {format: 'csv'}) }}" class="btn btn-outline-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                <path d="M9 9l1 0"/>
+                                <path d="M9 13l6 0"/>
+                                <path d="M9 17l6 0"/>
+                            </svg>
+                            Exporter CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Statistics Cards -->
+    <div class="row row-deck row-cards mb-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Entreprises</div>
+                    </div>
+                    <div class="h1 mb-0">{{ statistics.total_companies }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Mentors</div>
+                    </div>
+                    <div class="h1 mb-0">{{ statistics.total_mentors }}</div>
+                    <div class="d-flex mb-2">
+                        <div class="flex-fill">
+                            <div class="progress progress-xs">
+                                <div class="progress-bar bg-primary" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted ms-2">{{ statistics.average_mentors_per_company }} par entreprise</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Contrats</div>
+                    </div>
+                    <div class="h1 mb-0">{{ statistics.total_contracts }}</div>
+                    <div class="d-flex mb-2">
+                        <div class="flex-fill">
+                            <div class="progress progress-xs">
+                                <div class="progress-bar bg-success" style="width: {{ (statistics.active_contracts / statistics.total_contracts * 100)|round }}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted ms-2">{{ statistics.active_contracts }} actifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="subheader">Contrats par entreprise</div>
+                    </div>
+                    <div class="h1 mb-0">{{ statistics.average_contracts_per_company }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ path('admin_alternance_company_index') }}">
+                <div class="row g-2">
+                    <div class="col">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Rechercher une entreprise..." value="{{ search }}">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <circle cx="10" cy="10" r="7"/>
+                                    <path d="m21 21l-6 -6"/>
+                                </svg>
+                                Rechercher
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        {% if search %}
+                            <a href="{{ path('admin_alternance_company_index') }}" class="btn btn-outline-secondary">
+                                Effacer
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Companies List -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>SIRET</th>
+                        <th>Adresse</th>
+                        <th class="text-center">Mentors</th>
+                        <th class="text-center">Contrats</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                        <tr>
+                            <td>
+                                <div class="d-flex py-1 align-items-center">
+                                    <div class="avatar me-2 bg-primary-lt">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 21l18 0"/>
+                                            <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"/>
+                                            <path d="M9 9l0 .01"/>
+                                            <path d="M15 9l0 .01"/>
+                                            <path d="M10 12l4 0"/>
+                                            <path d="M10 15l4 0"/>
+                                            <path d="M10 18l4 0"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-fill">
+                                        <div class="font-weight-medium">{{ company.companyName }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted">
+                                {{ company.companySiret }}
+                            </td>
+                            <td class="text-muted">
+                                {{ company.companyAddress|default('Non renseignée') }}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-blue-lt">{{ company.mentorCount }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-green-lt">{{ company.contractCount }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-list justify-content-end">
+                                    <a href="{{ path('admin_alternance_company_show', {siret: company.companySiret}) }}" class="btn btn-sm btn-outline-primary">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                {% if search %}
+                                    <div class="empty">
+                                        <div class="empty-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <circle cx="10" cy="10" r="7"/>
+                                                <path d="m21 21l-6 -6"/>
+                                            </svg>
+                                        </div>
+                                        <p class="empty-title">Aucune entreprise trouvée</p>
+                                        <p class="empty-subtitle text-muted">
+                                            Essayez de modifier vos critères de recherche.
+                                        </p>
+                                    </div>
+                                {% else %}
+                                    <div class="empty">
+                                        <div class="empty-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M3 21l18 0"/>
+                                                <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"/>
+                                                <path d="M9 9l0 .01"/>
+                                                <path d="M15 9l0 .01"/>
+                                                <path d="M10 12l4 0"/>
+                                                <path d="M10 15l4 0"/>
+                                                <path d="M10 18l4 0"/>
+                                            </svg>
+                                        </div>
+                                        <p class="empty-title">Aucune entreprise</p>
+                                        <p class="empty-subtitle text-muted">
+                                            Aucune entreprise n'est encore enregistrée dans le système.
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total_pages > 1 %}
+            <div class="card-footer d-flex align-items-center">
+                <p class="m-0 text-muted">
+                    Page {{ current_page }} sur {{ total_pages }}
+                </p>
+                <ul class="pagination m-0 ms-auto">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_alternance_company_index', {page: current_page - 1, search: search}) }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <polyline points="15,6 9,12 15,18"/>
+                                </svg>
+                                Précédent
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+                        <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('admin_alternance_company_index', {page: page, search: search}) }}">{{ page }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_alternance_company_index', {page: current_page + 1, search: search}) }}">
+                                Suivant
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <polyline points="9,6 15,12 9,18"/>
+                                </svg>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -549,4 +549,37 @@ class MissionAssignmentService
                 : $durations[floor($count/2)],
         ];
     }
+
+    /**
+     * Assign mission to contract
+     */
+    public function assignMissionToContract(CompanyMission $mission, $contract): MissionAssignment
+    {
+        $assignment = new MissionAssignment();
+        $assignment->setMission($mission);
+        $assignment->setStudent($contract->getStudent());
+        $assignment->setStartDate(new \DateTime());
+        $assignment->setEndDate($this->calculateExpectedEndDate($mission));
+        $assignment->setStatus('planifiee');
+        
+        $this->entityManager->persist($assignment);
+        $this->entityManager->flush();
+        
+        $this->logger->info('Mission assigned to contract', [
+            'mission_id' => $mission->getId(),
+            'contract_id' => $contract->getId(),
+            'assignment_id' => $assignment->getId(),
+        ]);
+
+        return $assignment;
+    }
+
+    /**
+     * Calculate expected end date based on mission duration
+     */
+    private function calculateExpectedEndDate(CompanyMission $mission): \DateTime
+    {
+        $duration = $mission->getDuration() ?? 30; // Default 30 days
+        return (new \DateTime())->add(new \DateInterval("P{$duration}D"));
+    }
 }

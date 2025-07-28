@@ -1,0 +1,277 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Contrats - {{ company.companyName }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        <a href="{{ path('admin_dashboard') }}" class="text-muted">Administration</a> / 
+                        <a href="{{ path('admin_alternance_dashboard') }}" class="text-muted">Alternance</a> /
+                        <a href="{{ path('admin_alternance_company_index') }}" class="text-muted">Entreprises</a> /
+                        <a href="{{ path('admin_alternance_company_show', {siret: company.companySiret}) }}" class="text-muted">{{ company.companyName }}</a>
+                    </div>
+                    <h2 class="page-title">
+                        Contrats - {{ company.companyName }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_alternance_company_show', {siret: company.companySiret}) }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <polyline points="15,6 9,12 15,18"/>
+                            </svg>
+                            Retour à l'entreprise
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Company Info Header -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">{{ company.companyName }}</h3>
+                    <div class="text-muted">SIRET: {{ company.companySiret }}</div>
+                    {% if companyAddress %}
+                        <div class="text-muted">{{ companyAddress }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-auto">
+                    <div class="text-center">
+                        <div class="h1 mb-0 text-success">{{ contracts|length }}</div>
+                        <div class="text-muted">Contrat(s)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ path('admin_alternance_company_contracts', {siret: company.companySiret}) }}">
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <select name="status" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="pending" {{ status_filter == 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="active" {{ status_filter == 'active' ? 'selected' : '' }}>Actif</option>
+                            <option value="completed" {{ status_filter == 'completed' ? 'selected' : '' }}>Terminé</option>
+                            <option value="terminated" {{ status_filter == 'terminated' ? 'selected' : '' }}>Résilié</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">
+                            Filtrer
+                        </button>
+                    </div>
+                    {% if status_filter %}
+                        <div class="col-auto">
+                            <a href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret}) }}" class="btn btn-outline-secondary">
+                                Effacer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contracts List -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Liste des contrats</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Type de contrat</th>
+                        <th>Période</th>
+                        <th>Durée</th>
+                        <th class="text-center">Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contract in contracts %}
+                        <tr>
+                            <td>
+                                <div class="d-flex py-1 align-items-center">
+                                    <span class="avatar me-2">{{ contract.studentFirstName|first }}{{ contract.studentLastName|first }}</span>
+                                    <div class="flex-fill">
+                                        <div class="font-weight-medium">{{ contract.studentFirstName }} {{ contract.studentLastName }}</div>
+                                        {% if contract.studentEmail %}
+                                            <div class="text-muted">{{ contract.studentEmail }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-info-lt">{{ contract.contractType|title }}</span>
+                            </td>
+                            <td>
+                                <div class="text-muted">
+                                    {% if contract.startDate %}
+                                        Du {{ contract.startDate|date('d/m/Y') }}
+                                    {% endif %}
+                                    {% if contract.endDate %}
+                                        <br>au {{ contract.endDate|date('d/m/Y') }}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-muted">
+                                {% if contract.duration %}
+                                    {{ contract.duration }} mois
+                                {% else %}
+                                    Non définie
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% set status_class = 'secondary' %}
+                                {% if contract.status == 'active' %}
+                                    {% set status_class = 'success' %}
+                                {% elseif contract.status == 'completed' %}
+                                    {% set status_class = 'primary' %}
+                                {% elseif contract.status == 'pending' %}
+                                    {% set status_class = 'warning' %}
+                                {% elseif contract.status == 'terminated' %}
+                                    {% set status_class = 'danger' %}
+                                {% endif %}
+                                
+                                <span class="badge bg-{{ status_class }}-lt">
+                                    {% if contract.status == 'active' %}Actif
+                                    {% elseif contract.status == 'completed' %}Terminé
+                                    {% elseif contract.status == 'pending' %}En attente
+                                    {% elseif contract.status == 'terminated' %}Résilié
+                                    {% else %}{{ contract.status|title }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-list justify-content-end">
+                                    <a href="{{ path('admin_alternance_contract_show', {id: contract.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <div class="empty">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                            <path d="M9 9l1 0"/>
+                                            <path d="M9 13l6 0"/>
+                                            <path d="M9 17l6 0"/>
+                                        </svg>
+                                    </div>
+                                    <p class="empty-title">Aucun contrat</p>
+                                    <p class="empty-subtitle text-muted">
+                                        {% if status_filter %}
+                                            Aucun contrat avec le statut "{{ status_filter }}" pour cette entreprise.
+                                        {% else %}
+                                            Cette entreprise n'a pas encore de contrat enregistré.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total_pages > 1 %}
+            <div class="card-footer d-flex align-items-center">
+                <p class="m-0 text-muted">
+                    Page {{ current_page }} sur {{ total_pages }}
+                </p>
+                <ul class="pagination m-0 ms-auto">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret, page: current_page - 1, status: status_filter}) }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <polyline points="15,6 9,12 15,18"/>
+                                </svg>
+                                Précédent
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+                        <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret, page: page, status: status_filter}) }}">{{ page }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret, page: current_page + 1, status: status_filter}) }}">
+                                Suivant
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <polyline points="9,6 15,12 9,18"/>
+                                </svg>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Contract Statistics -->
+    {% if contracts|length > 0 %}
+        <div class="row row-deck row-cards mt-3">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="h1 mb-0 text-warning">{{ contracts|filter(c => c.status == 'pending')|length }}</div>
+                        <div class="text-muted">En attente</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="h1 mb-0 text-success">{{ contracts|filter(c => c.status == 'active')|length }}</div>
+                        <div class="text-muted">Actifs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="h1 mb-0 text-primary">{{ contracts|filter(c => c.status == 'completed')|length }}</div>
+                        <div class="text-muted">Terminés</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="h1 mb-0 text-danger">{{ contracts|filter(c => c.status == 'terminated')|length }}</div>
+                        <div class="text-muted">Résiliés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

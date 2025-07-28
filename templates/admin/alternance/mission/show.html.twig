@@ -1,0 +1,376 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = mission.title %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_mission_assignments', {id: mission.id}) }}" class="btn btn-outline-primary me-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+        </svg>
+        Assignations
+    </a>
+    <a href="{{ path('admin_alternance_mission_edit', {id: mission.id}) }}" class="btn btn-outline-secondary me-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+            <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+            <path d="M16 5l3 3"/>
+        </svg>
+        Modifier
+    </a>
+    <a href="{{ path('admin_alternance_mission_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l14 0"/>
+            <path d="M5 12l6 -6"/>
+            <path d="M5 12l6 6"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Mission Details -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Détails de la mission</h3>
+                    <div class="card-actions">
+                        <div class="d-flex gap-2">
+                            {% set complexityColors = {
+                                'debutant': 'green',
+                                'intermediaire': 'blue',
+                                'avance': 'orange'
+                            } %}
+                            <span class="badge bg-{{ complexityColors[mission.complexity] ?? 'secondary' }} text-white">
+                                {{ mission.complexityLabel }}
+                            </span>
+                            {% if mission.isActive %}
+                                <span class="badge bg-success text-white">Actif</span>
+                            {% else %}
+                                <span class="badge bg-secondary text-white">Inactif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Description :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ mission.description|nl2br }}
+                        </div>
+                    </div>
+                    
+                    {% if mission.objectives|length > 0 %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Objectifs :</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <ul class="list-unstyled mb-0">
+                                    {% for objective in mission.objectives %}
+                                        <li>• {{ objective }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if mission.prerequisites|length > 0 %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Prérequis :</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <ul class="list-unstyled mb-0">
+                                    {% for prerequisite in mission.prerequisites %}
+                                        <li>• {{ prerequisite }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if mission.requiredSkills|length > 0 %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Compétences requises :</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <ul class="list-unstyled mb-0">
+                                    {% for skill in mission.requiredSkills %}
+                                        <li>• {{ skill }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if mission.skillsToAcquire|length > 0 %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Compétences à acquérir :</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <ul class="list-unstyled mb-0">
+                                    {% for skill in mission.skillsToAcquire %}
+                                        <li>• {{ skill }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if mission.evaluationCriteria|length > 0 %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Critères d'évaluation :</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <ul class="list-unstyled mb-0">
+                                    {% for criteria in mission.evaluationCriteria %}
+                                        <li>• {{ criteria }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Durée estimée :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ mission.duration }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Type de mission :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ mission.termLabel }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <strong>Créée le :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ mission.createdAt|date('d/m/Y à H:i') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics and Quick Actions -->
+        <div class="col-lg-4">
+            <!-- Statistics Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted">Assignations :</span>
+                                <span class="ms-auto fw-bold">{{ assignments|length }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted">Terminées :</span>
+                                <span class="ms-auto fw-bold text-success">
+                                    {{ assignments|filter(a => a.status == 'completed')|length }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted">En cours :</span>
+                                <span class="ms-auto fw-bold text-primary">
+                                    {{ assignments|filter(a => a.status == 'in_progress')|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted">Annulées :</span>
+                                <span class="ms-auto fw-bold text-danger">
+                                    {{ assignments|filter(a => a.status == 'cancelled')|length }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if progress_data is defined %}
+                        <hr>
+                        <div class="mb-1">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="text-muted">Taux de réussite</span>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar" style="width: {{ progress_data.completion_rate ?? 0 }}%" role="progressbar"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ progress_data.completion_rate ?? 0 }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assignment Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Assigner la mission</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ path('admin_alternance_mission_assign', {id: mission.id}) }}">
+                        <div class="mb-3">
+                            <label class="form-label">Contrat d'alternance</label>
+                            <select name="contract_id" class="form-select" required>
+                                <option value="">Sélectionner un contrat</option>
+                                {# In a real implementation, you would populate this with available contracts #}
+                                <option value="1">Contrat 1 - Jean Dupont</option>
+                                <option value="2">Contrat 2 - Marie Martin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" {{ not mission.isActive ? 'disabled' : '' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Assigner la mission
+                        </button>
+                        {% if not mission.isActive %}
+                            <div class="form-hint text-danger">
+                                La mission doit être active pour être assignée
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Assignments -->
+        {% if assignments|length > 0 %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Assignations récentes</h3>
+                        <div class="card-actions">
+                            <a href="{{ path('admin_alternance_mission_assignments', {id: mission.id}) }}" class="btn btn-sm btn-outline-primary">
+                                Voir toutes les assignations
+                            </a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Alternant</th>
+                                    <th>Contrat</th>
+                                    <th>Statut</th>
+                                    <th>Date d'assignation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments|slice(0, 5) %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                                    {{ assignment.contract.student.firstName|first }}{{ assignment.contract.student.lastName|first }}
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold">{{ assignment.contract.student.firstName }} {{ assignment.contract.student.lastName }}</div>
+                                                    <div class="text-muted small">{{ assignment.contract.student.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ assignment.contract.title ?? 'Contrat #' ~ assignment.contract.id }}</span>
+                                        </td>
+                                        <td>
+                                            {% set statusColors = {
+                                                'assigned': 'secondary',
+                                                'in_progress': 'primary',
+                                                'completed': 'success',
+                                                'cancelled': 'danger'
+                                            } %}
+                                            <span class="badge bg-{{ statusColors[assignment.status] ?? 'secondary' }} text-white">
+                                                {{ assignment.statusLabel }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ assignment.createdAt|date('d/m/Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    Actions
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <form method="POST" action="{{ path('admin_alternance_mission_assignment_status', {id: assignment.id}) }}" style="display: inline;">
+                                                        {% if assignment.status == 'assigned' %}
+                                                            <button type="submit" name="status" value="in_progress" class="dropdown-item">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M7 4v16l13 -8z"/>
+                                                                </svg>
+                                                                Démarrer
+                                                            </button>
+                                                        {% elseif assignment.status == 'in_progress' %}
+                                                            <button type="submit" name="status" value="completed" class="dropdown-item">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M5 12l5 5l10 -10"/>
+                                                                </svg>
+                                                                Terminer
+                                                            </button>
+                                                        {% endif %}
+                                                        {% if assignment.status != 'cancelled' and assignment.status != 'completed' %}
+                                                            <button type="submit" name="status" value="cancelled" class="dropdown-item text-danger">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M18 6l-12 12"/>
+                                                                    <path d="M6 6l12 12"/>
+                                                                </svg>
+                                                                Annuler
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

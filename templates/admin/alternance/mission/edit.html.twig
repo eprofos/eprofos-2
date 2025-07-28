@@ -1,0 +1,255 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Modifier la mission: ' ~ mission.title %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_mission_show', {id: mission.id}) }}" class="btn btn-outline-primary me-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+        </svg>
+        Voir la mission
+    </a>
+    <a href="{{ path('admin_alternance_mission_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l14 0"/>
+            <path d="M5 12l6 -6"/>
+            <path d="M5 12l6 6"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Modifier les informations</h3>
+                    <div class="card-actions">
+                        {% if mission.assignments|length > 0 %}
+                            <span class="badge bg-yellow text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 9v2m0 4v.01"/>
+                                    <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                </svg>
+                                {{ mission.assignments|length }} assignation{{ mission.assignments|length > 1 ? 's' : '' }} active{{ mission.assignments|length > 1 ? 's' : '' }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form_label(form.title, 'Titre de la mission', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Saisir le titre de la mission'}}) }}
+                                {{ form_errors(form.title) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(form.complexity, 'Niveau de complexité', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.complexity, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.complexity) }}
+                                {% if mission.assignments|length > 0 %}
+                                    <div class="form-hint text-warning">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 9v2m0 4v.01"/>
+                                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                        </svg>
+                                        Attention : modifier la complexité peut affecter les assignations en cours
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.duration, 'Durée estimée', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.duration, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.duration) }}
+                                <div class="form-hint">Durée estimée pour accomplir cette mission</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.term, 'Type de mission', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.term, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.term) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.context, 'Contexte', {'label_attr': {'class': 'form-label required'}}) }}
+                        {{ form_widget(form.context, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Contexte détaillé de la mission...'}}) }}
+                        {{ form_errors(form.context) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.objectives, 'Objectifs pédagogiques', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.objectives) }}
+                        {{ form_errors(form.objectives) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.prerequisites, 'Prérequis', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.prerequisites) }}
+                        {{ form_errors(form.prerequisites) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.requiredSkills, 'Compétences requises', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.requiredSkills) }}
+                        {{ form_errors(form.requiredSkills) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.skillsToAcquire, 'Compétences à acquérir', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.skillsToAcquire) }}
+                        {{ form_errors(form.skillsToAcquire) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.evaluationCriteria, 'Critères d\'évaluation', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.evaluationCriteria) }}
+                        {{ form_errors(form.evaluationCriteria) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-check form-switch">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    <span class="form-check-label">Mission active</span>
+                                </label>
+                                {{ form_errors(form.isActive) }}
+                                <div class="form-hint">Une mission active peut être assignée aux alternants</div>
+                                {% if mission.assignments|length > 0 and mission.isActive %}
+                                    <div class="form-hint text-warning">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 9v2m0 4v.01"/>
+                                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                        </svg>
+                                        Désactiver cette mission affectera les assignations en cours
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_rest(form) }}
+                </div>
+                
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted small">
+                                <strong>Dernière modification :</strong> {{ mission.updatedAt ? mission.updatedAt|date('d/m/Y à H:i') : 'Non modifiée' }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                                Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l5 5l10 -10"/>
+                                </svg>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Status Changes -->
+    <div class="modal modal-blur fade" id="status-change-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modal-title">Confirmer la modification</div>
+                    <div id="status-change-message">Cette action peut affecter les assignations en cours.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirm-status-change">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const activeCheckbox = document.querySelector('#{{ form.isActive.vars.id }}');
+            const hasAssignments = {{ mission.assignments|length }};
+            
+            let originalActiveState = activeCheckbox.checked;
+            
+            // Warn about status changes when there are active assignments
+            function checkStatusChange() {
+                if (hasAssignments > 0) {
+                    const activeChanged = activeCheckbox.checked !== originalActiveState;
+                    
+                    if (activeChanged) {
+                        const modal = new bootstrap.Modal(document.getElementById('status-change-modal'));
+                        
+                        let message = 'Cette modification peut affecter ';
+                        if (hasAssignments === 1) {
+                            message += 'l\'assignation en cours.';
+                        } else {
+                            message += 'les ' + hasAssignments + ' assignations en cours.';
+                        }
+                        
+                        document.getElementById('status-change-message').textContent = message;
+                        
+                        return new Promise((resolve) => {
+                            document.getElementById('confirm-status-change').onclick = function() {
+                                modal.hide();
+                                resolve(true);
+                            };
+                            
+                            document.querySelector('[data-bs-dismiss="modal"]').onclick = function() {
+                                // Reset checkbox
+                                activeCheckbox.checked = originalActiveState;
+                                modal.hide();
+                                resolve(false);
+                            };
+                            
+                            modal.show();
+                        });
+                    }
+                }
+                return Promise.resolve(true);
+            }
+            
+            form.addEventListener('submit', async function(e) {
+                if (hasAssignments > 0) {
+                    const confirmed = await checkStatusChange();
+                    if (!confirmed) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -446,4 +446,131 @@ class CompanyMissionRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * Find paginated missions with filters
+     */
+    public function findPaginatedMissions(array $filters, int $page, int $perPage): array
+    {
+        $qb = $this->createQueryBuilder('cm');
+
+        // Apply filters
+        if (!empty($filters['search'])) {
+            $qb->andWhere('cm.title LIKE :search OR cm.description LIKE :search')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'active') {
+                $qb->andWhere('cm.isActive = true');
+            } elseif ($filters['status'] === 'inactive') {
+                $qb->andWhere('cm.isActive = false');
+            }
+        }
+
+        if (!empty($filters['complexity'])) {
+            $qb->andWhere('cm.complexity = :complexity')
+               ->setParameter('complexity', $filters['complexity']);
+        }
+
+        $offset = ($page - 1) * $perPage;
+        $qb->setFirstResult($offset)
+           ->setMaxResults($perPage)
+           ->orderBy('cm.createdAt', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Count filtered missions
+     */
+    public function countFilteredMissions(array $filters): int
+    {
+        $qb = $this->createQueryBuilder('cm')
+                   ->select('COUNT(cm.id)');
+
+        // Apply same filters as findPaginatedMissions
+        if (!empty($filters['search'])) {
+            $qb->andWhere('cm.title LIKE :search OR cm.description LIKE :search')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'active') {
+                $qb->andWhere('cm.isActive = true');
+            } elseif ($filters['status'] === 'inactive') {
+                $qb->andWhere('cm.isActive = false');
+            }
+        }
+
+        if (!empty($filters['complexity'])) {
+            $qb->andWhere('cm.complexity = :complexity')
+               ->setParameter('complexity', $filters['complexity']);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Count active missions
+     */
+    public function countActive(): int
+    {
+        return $this->createQueryBuilder('cm')
+            ->select('COUNT(cm.id)')
+            ->where('cm.isActive = true')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Get difficulty distribution
+     */
+    public function getComplexityDistribution(): array
+    {
+        return $this->createQueryBuilder('cm')
+            ->select('cm.complexity, COUNT(cm.id) as count')
+            ->groupBy('cm.complexity')
+            ->orderBy('count', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find recent missions
+     */
+    public function findRecentMissions(int $limit): array
+    {
+        return $this->createQueryBuilder('cm')
+            ->orderBy('cm.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find missions for export
+     */
+    public function findForExport(array $filters): array
+    {
+        $qb = $this->createQueryBuilder('cm');
+
+        // Apply filters (same as paginated but without pagination)
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'active') {
+                $qb->andWhere('cm.isActive = true');
+            } elseif ($filters['status'] === 'inactive') {
+                $qb->andWhere('cm.isActive = false');
+            }
+        }
+
+        if (!empty($filters['complexity'])) {
+            $qb->andWhere('cm.complexity = :complexity')
+               ->setParameter('complexity', $filters['complexity']);
+        }
+
+        return $qb->orderBy('cm.createdAt', 'DESC')
+                  ->getQuery()
+                  ->getResult();
+    }
 }

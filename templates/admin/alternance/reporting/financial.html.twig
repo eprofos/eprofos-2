@@ -1,0 +1,427 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Financier - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Rapport Financier</h1>
+            <p class="text-muted mb-0">Analyse financière et rentabilité des formations en alternance</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_reporting_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="period" class="form-label">Période</label>
+                            <select name="period" id="period" class="form-select">
+                                <option value="current_year" {{ period == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                                <option value="last_year" {{ period == 'last_year' ? 'selected' : '' }}>Année dernière</option>
+                                <option value="semester" {{ period == 'semester' ? 'selected' : '' }}>Semestre</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="formation" class="form-label">Formation</label>
+                            <select name="formation" id="formation" class="form-select">
+                                <option value="">Toutes les formations</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="breakdown" class="form-label">Ventilation</label>
+                            <select name="breakdown" id="breakdown" class="form-select">
+                                <option value="formation" {{ breakdown == 'formation' ? 'selected' : '' }}>Par Formation</option>
+                                <option value="period" {{ breakdown == 'period' ? 'selected' : '' }}>Par Période</option>
+                                <option value="company" {{ breakdown == 'company' ? 'selected' : '' }}>Par Entreprise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i>Appliquer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ (financial_data.revenue_summary.total_revenue / 1000)|number_format(0) }}k€</h3>
+                            <p class="text-muted mb-0">Chiffre d'Affaires</p>
+                            <div class="d-flex align-items-center mt-1">
+                                <i class="fas fa-arrow-up text-success me-1"></i>
+                                <span class="text-success small">+{{ financial_data.revenue_summary.revenue_growth }}%</span>
+                            </div>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-euro-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ financial_data.revenue_summary.revenue_per_student|number_format(0) }}€</h3>
+                            <p class="text-muted mb-0">Revenus par Étudiant</p>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-user-graduate fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ financial_data.profitability.gross_margin }}%</h3>
+                            <p class="text-muted mb-0">Marge Brute</p>
+                        </div>
+                        <div class="text-info">
+                            <i class="fas fa-chart-pie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ financial_data.profitability.roi }}%</h3>
+                            <p class="text-muted mb-0">ROI</p>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-trending-up fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cost Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i>Analyse des Coûts</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="costAnalysisChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-calculator me-2"></i>Détail des Coûts</h5>
+                </div>
+                <div class="card-body">
+                    {% set total_costs = financial_data.cost_analysis.training_costs + financial_data.cost_analysis.administrative_costs + financial_data.cost_analysis.mentor_compensation + financial_data.cost_analysis.infrastructure_costs %}
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">Formation</span>
+                            <span class="fw-bold">{{ (financial_data.cost_analysis.training_costs / 1000)|number_format(0) }}k€</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: {{ (financial_data.cost_analysis.training_costs / total_costs * 100) }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">Administration</span>
+                            <span class="fw-bold">{{ (financial_data.cost_analysis.administrative_costs / 1000)|number_format(0) }}k€</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: {{ (financial_data.cost_analysis.administrative_costs / total_costs * 100) }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">Mentors</span>
+                            <span class="fw-bold">{{ (financial_data.cost_analysis.mentor_compensation / 1000)|number_format(0) }}k€</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: {{ (financial_data.cost_analysis.mentor_compensation / total_costs * 100) }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">Infrastructure</span>
+                            <span class="fw-bold">{{ (financial_data.cost_analysis.infrastructure_costs / 1000)|number_format(0) }}k€</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: {{ (financial_data.cost_analysis.infrastructure_costs / total_costs * 100) }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Total</span>
+                        <span class="fw-bold text-primary">{{ (total_costs / 1000)|number_format(0) }}k€</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profitability Metrics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Métriques de Rentabilité</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="display-6 text-success">{{ financial_data.profitability.gross_margin }}%</div>
+                            <div class="text-muted">Marge Brute</div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ financial_data.profitability.gross_margin }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="display-6 text-primary">{{ financial_data.profitability.net_margin }}%</div>
+                            <div class="text-muted">Marge Nette</div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: {{ financial_data.profitability.net_margin }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="display-6 text-warning">{{ financial_data.profitability.roi }}%</div>
+                            <div class="text-muted">Retour sur Investissement</div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ (financial_data.profitability.roi / 30 * 100) }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Breakdown by Formation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-graduation-cap me-2"></i>Ventilation par Formation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Formation</th>
+                                    <th>Chiffre d'Affaires</th>
+                                    <th>Marge</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for formation, data in financial_data.breakdown_by_formation %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ formation }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">{{ (data.revenue / 1000)|number_format(0) }}k€</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ data.margin > 60 ? 'success' : (data.margin > 50 ? 'warning' : 'danger') }}">
+                                                {{ data.margin }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 8px; width: 100px;">
+                                                <div class="progress-bar bg-{{ data.margin > 60 ? 'success' : (data.margin > 50 ? 'warning' : 'danger') }}" 
+                                                     style="width: {{ data.margin }}%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-credit-card me-2"></i>Analyse des Paiements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="display-6 text-success">{{ financial_data.payment_analysis.on_time_payments }}%</div>
+                            <div class="text-muted">Paiements à Temps</div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="display-6 text-warning">{{ financial_data.payment_analysis.average_payment_delay }}</div>
+                            <div class="text-muted">Délai Moyen (jours)</div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="display-6 text-danger">{{ (financial_data.payment_analysis.outstanding_amount / 1000)|number_format(0) }}k€</div>
+                            <div class="text-muted">Encours</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Recommandations</h6>
+                        <ul class="mb-0 small">
+                            <li>Optimiser les relances clients pour réduire les délais de paiement</li>
+                            <li>Négocier des conditions de paiement plus favorables</li>
+                            <li>Mettre en place un système d'alerte pour les impayés</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-target me-2"></i>Objectifs Financiers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">CA Annuel</span>
+                            <span class="small text-muted">1,500k€</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ (financial_data.revenue_summary.total_revenue / 1500000 * 100) }}%"></div>
+                        </div>
+                        <div class="small text-muted mt-1">{{ ((financial_data.revenue_summary.total_revenue / 1500000 * 100))|number_format(1) }}% atteint</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">Marge Brute</span>
+                            <span class="small text-muted">>65%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: {{ (financial_data.profitability.gross_margin / 65 * 100) }}%"></div>
+                        </div>
+                        <div class="small text-muted mt-1">{{ financial_data.profitability.gross_margin }}% actuel</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small">ROI</span>
+                            <span class="small text-muted">>25%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: {{ (financial_data.profitability.roi / 25 * 100) }}%"></div>
+                        </div>
+                        <div class="small text-muted mt-1">{{ financial_data.profitability.roi }}% actuel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-submit form on change
+            const selects = document.querySelectorAll('form select');
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+
+            // Cost Analysis Chart
+            const costCtx = document.getElementById('costAnalysisChart');
+            if (costCtx) {
+                new Chart(costCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Formation', 'Administration', 'Mentors', 'Infrastructure'],
+                        datasets: [{
+                            data: [
+                                {{ financial_data.cost_analysis.training_costs }},
+                                {{ financial_data.cost_analysis.administrative_costs }},
+                                {{ financial_data.cost_analysis.mentor_compensation }},
+                                {{ financial_data.cost_analysis.infrastructure_costs }}
+                            ],
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(255, 99, 132, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return context.label + ': ' + (value / 1000).toFixed(0) + 'k€ (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

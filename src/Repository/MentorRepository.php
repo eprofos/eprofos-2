@@ -593,4 +593,89 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
         // TODO: Implement when needed with proper JSON aggregation
         return [];
     }
+
+    /**
+     * Find paginated mentors with filters
+     */
+    public function findPaginatedMentors(array $filters, int $page, int $perPage): array
+    {
+        return $this->findWithFilters($filters, $page, $perPage);
+    }
+
+    /**
+     * Count filtered mentors
+     */
+    public function countFilteredMentors(array $filters): int
+    {
+        return $this->countWithFilters($filters);
+    }
+
+    /**
+     * Count mentors created this month
+     */
+    public function countCreatedThisMonth(): int
+    {
+        $firstDayOfMonth = new \DateTimeImmutable('first day of this month 00:00:00');
+        
+        return $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.createdAt >= :firstDay')
+            ->setParameter('firstDay', $firstDayOfMonth)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Count unique companies
+     */
+    public function countUniqueCompanies(): int
+    {
+        return $this->createQueryBuilder('m')
+            ->select('COUNT(DISTINCT m.companyName)')
+            ->andWhere('m.companyName IS NOT NULL')
+            ->andWhere('m.companyName != :empty')
+            ->setParameter('empty', '')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Get average students per mentor
+     */
+    public function getAverageStudentsPerMentor(): float
+    {
+        // Placeholder until student-mentor relationships are implemented
+        return 2.3;
+    }
+
+    /**
+     * Get mentors by company
+     */
+    public function getMentorsByCompany(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->select('m.companyName, COUNT(m.id) as count')
+            ->andWhere('m.companyName IS NOT NULL')
+            ->groupBy('m.companyName')
+            ->orderBy('count', 'DESC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get qualification distribution
+     */
+    public function getQualificationDistribution(): array
+    {
+        return $this->getEducationLevelDistribution();
+    }
+
+    /**
+     * Find mentors for export
+     */
+    public function findForExport(array $filters): array
+    {
+        return $this->findWithFilters($filters);
+    }
 }

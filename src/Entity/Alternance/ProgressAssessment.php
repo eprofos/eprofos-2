@@ -723,6 +723,153 @@ class ProgressAssessment
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    /**
+     * Get evaluation status based on progression
+     */
+    public function getStatus(): string
+    {
+        $progression = (float) $this->overallProgression;
+        
+        if ($progression >= 80) {
+            return 'validated';
+        } elseif ($progression >= 50) {
+            return 'pending';
+        } else {
+            return 'rejected';
+        }
+    }
+
+    /**
+     * Get overall score as decimal for compatibility with controller
+     */
+    public function getOverallScore(): ?float
+    {
+        return ((float) $this->overallProgression) / 100; // Convert from 0-100 to 0-1 scale
+    }
+
+    /**
+     * Get mentor for compatibility with controller (from alternance contract)
+     */
+    public function getMentor()
+    {
+        // For now, return null - would need to implement relationship
+        // if ($this->student && $this->student->getAlternanceContract()) {
+        //     return $this->student->getAlternanceContract()->getMentor();
+        // }
+        return null;
+    }
+
+    /**
+     * Get achieved objectives for template compatibility
+     */
+    public function getAchievedObjectives(): array
+    {
+        return array_map(function($obj) {
+            return $obj['objective'] ?? $obj;
+        }, $this->completedObjectives);
+    }
+
+    /**
+     * Get planned objectives for template compatibility
+     */
+    public function getPlannedObjectives(): array
+    {
+        return array_map(function($obj) {
+            return $obj['objective'] ?? $obj;
+        }, $this->upcomingObjectives);
+    }
+
+    /**
+     * Get total objectives count
+     */
+    public function getTotalObjectives(): int
+    {
+        return count($this->completedObjectives) + count($this->pendingObjectives) + count($this->upcomingObjectives);
+    }
+
+    /**
+     * Get period start date for template compatibility  
+     */
+    public function getPeriodStart(): ?\DateTimeInterface
+    {
+        // Assume period is the start of the evaluation period
+        if ($this->period) {
+            $date = new \DateTime($this->period->format('Y-m-d'));
+            return $date->modify('first day of this month');
+        }
+        return null;
+    }
+
+    /**
+     * Get period end date for template compatibility
+     */
+    public function getPeriodEnd(): ?\DateTimeInterface
+    {
+        // Assume period end is the last day of the month
+        if ($this->period) {
+            $date = new \DateTime($this->period->format('Y-m-d'));
+            return $date->modify('last day of this month');
+        }
+        return null;
+    }
+
+    /**
+     * Get mentor comments for template compatibility
+     */
+    public function getMentorComments(): ?string
+    {
+        // For now, return next steps as mentor comments
+        return $this->nextSteps;
+    }
+
+    /**
+     * Get student comments for template compatibility
+     */
+    public function getStudentComments(): ?string
+    {
+        // Could be extracted from difficulties or support needed
+        $comments = [];
+        foreach ($this->difficulties as $difficulty) {
+            if (isset($difficulty['description'])) {
+                $comments[] = $difficulty['description'];
+            }
+        }
+        return !empty($comments) ? implode("\n", $comments) : null;
+    }
+
+    /**
+     * Get admin comments (placeholder for template compatibility)
+     */
+    public function getAdminComments(): ?string
+    {
+        return null; // Could be added later if needed
+    }
+
+    /**
+     * Get validation date (placeholder for template compatibility)
+     */
+    public function getValidatedAt(): ?\DateTimeImmutable
+    {
+        // Could track when the assessment was validated
+        return null; // Could be added later if needed
+    }
+
+    /**
+     * Get validator (placeholder for template compatibility)
+     */
+    public function getValidatedBy()
+    {
+        return null; // Could be added later if needed
+    }
+
+    /**
+     * Get entity type for template compatibility
+     */
+    public function getEntityType(): string
+    {
+        return 'progress';
+    }
+
     public function __toString(): string
     {
         return sprintf(

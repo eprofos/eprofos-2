@@ -631,4 +631,67 @@ class MentorService
         $this->fromName = $fromName;
         $this->adminEmail = $adminEmail;
     }
+
+    /**
+     * Calculate performance metrics for a mentor
+     */
+    public function calculatePerformanceMetrics(Mentor $mentor): array
+    {
+        // Placeholder implementation until we have proper relationships
+        return [
+            'alternants_count' => 0,
+            'active_contracts' => 0,
+            'missions_count' => 0,
+            'evaluations_count' => 0,
+            'satisfaction_rate' => 0,
+            'success_rate' => 0,
+        ];
+    }
+
+    /**
+     * Get recent activity for a mentor
+     */
+    public function getRecentActivity(Mentor $mentor): array
+    {
+        // Placeholder implementation - return empty array for now
+        return [];
+    }
+
+    /**
+     * Get detailed performance metrics for a mentor over a period
+     */
+    public function getDetailedPerformance(Mentor $mentor, int $months): array
+    {
+        // Placeholder implementation - return minimal structure
+        return [
+            'alternants_count' => 0,
+            'success_rate' => 0,
+            'satisfaction_rate' => 0,
+            'evaluations_count' => 0,
+        ];
+    }
+
+    /**
+     * Export mentors to various formats
+     */
+    public function exportMentors(array $mentors, string $format): string
+    {
+        switch ($format) {
+            case 'csv':
+                return $this->exportToCsv($mentors);
+            case 'xlsx':
+                return $this->exportToExcel($mentors);
+            default:
+                throw new \InvalidArgumentException("Unsupported export format: {$format}");
+        }
+    }
+
+    /**
+     * Export mentors to Excel format
+     */
+    private function exportToExcel(array $mentors): string
+    {
+        // For now, return CSV format as Excel is not yet implemented
+        return $this->exportToCsv($mentors);
+    }
 }

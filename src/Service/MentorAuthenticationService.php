@@ -530,4 +530,43 @@ class MentorAuthenticationService
 
         return $issues;
     }
+
+    /**
+     * Generate credentials for a new mentor
+     */
+    public function generateCredentials(Mentor $mentor): array
+    {
+        $password = $this->generateSecurePassword();
+        $hashedPassword = $this->passwordHasher->hashPassword($mentor, $password);
+        
+        $mentor->setPassword($hashedPassword);
+        $mentor->generateEmailVerificationToken();
+        
+        return [
+            'email' => $mentor->getEmail(),
+            'password' => $password,
+            'verification_token' => $mentor->getEmailVerificationToken(),
+        ];
+    }
+
+    /**
+     * Reset credentials for an existing mentor
+     */
+    public function resetCredentials(Mentor $mentor): array
+    {
+        $password = $this->generateSecurePassword();
+        $hashedPassword = $this->passwordHasher->hashPassword($mentor, $password);
+        
+        $mentor->setPassword($hashedPassword);
+        $mentor->setEmailVerified(false);
+        $mentor->generateEmailVerificationToken();
+        
+        $this->entityManager->flush();
+        
+        return [
+            'email' => $mentor->getEmail(),
+            'password' => $password,
+            'verification_token' => $mentor->getEmailVerificationToken(),
+        ];
+    }
 }

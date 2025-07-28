@@ -1,0 +1,344 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Performance - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Rapport Performance</h1>
+            <p class="text-muted mb-0">Métriques de performance des alternants et suivi de progression</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_reporting_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="period" class="form-label">Période</label>
+                            <select name="period" id="period" class="form-select">
+                                <option value="semester" {{ period == 'semester' ? 'selected' : '' }}>Semestre</option>
+                                <option value="current_year" {{ period == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                                <option value="last_year" {{ period == 'last_year' ? 'selected' : '' }}>Année dernière</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="formation" class="form-label">Formation</label>
+                            <select name="formation" id="formation" class="form-select">
+                                <option value="">Toutes les formations</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Métriques</label>
+                            <div class="form-check-group">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="metrics[]" value="progression" 
+                                           {{ 'progression' in selected_metrics ? 'checked' : '' }}>
+                                    <label class="form-check-label">Progression</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="metrics[]" value="skills" 
+                                           {{ 'skills' in selected_metrics ? 'checked' : '' }}>
+                                    <label class="form-check-label">Compétences</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="metrics[]" value="attendance" 
+                                           {{ 'attendance' in selected_metrics ? 'checked' : '' }}>
+                                    <label class="form-check-label">Assiduité</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i>Appliquer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progression Metrics -->
+    {% if 'progression' in selected_metrics %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Métriques de Progression</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="display-6 text-primary">{{ performance_data.progression_metrics.average_progression }}%</div>
+                            <div class="text-muted">Progression Moyenne</div>
+                        </div>
+                        <div class="col-md-9">
+                            <canvas id="progressionTrendChart" width="400" height="100"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Distribution des Niveaux</h6>
+                            <div class="progress-stacked mb-2">
+                                <div class="progress-bar bg-success" style="width: {{ performance_data.progression_metrics.distribution.excellent }}%"
+                                     title="Excellent: {{ performance_data.progression_metrics.distribution.excellent }}%"></div>
+                                <div class="progress-bar bg-primary" style="width: {{ performance_data.progression_metrics.distribution.good }}%"
+                                     title="Bon: {{ performance_data.progression_metrics.distribution.good }}%"></div>
+                                <div class="progress-bar bg-warning" style="width: {{ performance_data.progression_metrics.distribution.average }}%"
+                                     title="Moyen: {{ performance_data.progression_metrics.distribution.average }}%"></div>
+                                <div class="progress-bar bg-danger" style="width: {{ performance_data.progression_metrics.distribution.needs_improvement }}%"
+                                     title="À améliorer: {{ performance_data.progression_metrics.distribution.needs_improvement }}%"></div>
+                            </div>
+                            <div class="row text-center small">
+                                <div class="col">
+                                    <span class="badge badge-success">Excellent {{ performance_data.progression_metrics.distribution.excellent }}%</span>
+                                </div>
+                                <div class="col">
+                                    <span class="badge badge-primary">Bon {{ performance_data.progression_metrics.distribution.good }}%</span>
+                                </div>
+                                <div class="col">
+                                    <span class="badge badge-warning">Moyen {{ performance_data.progression_metrics.distribution.average }}%</span>
+                                </div>
+                                <div class="col">
+                                    <span class="badge badge-danger">À améliorer {{ performance_data.progression_metrics.distribution.needs_improvement }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Skills Metrics -->
+    {% if 'skills' in selected_metrics %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-star me-2"></i>Métriques des Compétences</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="display-6 text-success">{{ performance_data.skills_metrics.average_skills_score }}/5</div>
+                            <div class="text-muted">Score Moyen</div>
+                        </div>
+                        <div class="col-md-9">
+                            <canvas id="skillsEvolutionChart" width="400" height="100"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Compétences les Mieux Maîtrisées</h6>
+                            {% for skill, score in performance_data.skills_metrics.top_performing_skills %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ skill }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 100px; height: 8px;">
+                                            <div class="progress-bar bg-success" style="width: {{ (score / 5 * 100) }}%"></div>
+                                        </div>
+                                        <span class="text-success fw-bold">{{ score }}/5</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Compétences Nécessitant une Attention</h6>
+                            {% for skill, score in performance_data.skills_metrics.skills_needing_attention %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ skill }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 100px; height: 8px;">
+                                            <div class="progress-bar bg-warning" style="width: {{ (score / 5 * 100) }}%"></div>
+                                        </div>
+                                        <span class="text-warning fw-bold">{{ score }}/5</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance Metrics -->
+    {% if 'attendance' in selected_metrics %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-calendar-check me-2"></i>Métriques d'Assiduité</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="display-6 text-success">{{ performance_data.attendance_metrics.average_attendance }}%</div>
+                            <div class="text-muted">Assiduité Moyenne</div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="display-6 text-danger">{{ performance_data.attendance_metrics.absenteeism_rate }}%</div>
+                            <div class="text-muted">Taux d'Absentéisme</div>
+                        </div>
+                        <div class="col-md-4">
+                            <canvas id="attendanceTrendChart" width="200" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Completion Metrics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-trophy me-2"></i>Métriques de Réalisation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="display-6 text-success">{{ performance_data.completion_metrics.on_time_completion }}%</div>
+                            <div class="text-muted">Réalisation à Temps</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-6 text-warning">{{ performance_data.completion_metrics.delayed_completion }}%</div>
+                            <div class="text-muted">Réalisation en Retard</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-6 text-primary">{{ performance_data.completion_metrics.early_completion }}%</div>
+                            <div class="text-muted">Réalisation en Avance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-submit form on change
+            const selects = document.querySelectorAll('form select, form input[type="checkbox"]');
+            selects.forEach(element => {
+                element.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+
+            // Charts
+            {% if 'progression' in selected_metrics %}
+            const progressionCtx = document.getElementById('progressionTrendChart');
+            if (progressionCtx) {
+                new Chart(progressionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'Progression (%)',
+                            data: {{ performance_data.progression_metrics.progression_trend|json_encode }},
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+
+            {% if 'skills' in selected_metrics %}
+            const skillsCtx = document.getElementById('skillsEvolutionChart');
+            if (skillsCtx) {
+                new Chart(skillsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'Score Compétences',
+                            data: {{ performance_data.skills_metrics.skills_evolution|json_encode }},
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 5
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+
+            {% if 'attendance' in selected_metrics %}
+            const attendanceCtx = document.getElementById('attendanceTrendChart');
+            if (attendanceCtx) {
+                new Chart(attendanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'Assiduité (%)',
+                            data: {{ performance_data.attendance_metrics.attendance_trend|json_encode }},
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                min: 80,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+        });
+    </script>
+{% endblock %}

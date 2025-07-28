@@ -1,0 +1,360 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Assignations - ' ~ mission.title %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_mission_show', {id: mission.id}) }}" class="btn btn-outline-primary me-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+        </svg>
+        Voir la mission
+    </a>
+    <a href="{{ path('admin_alternance_mission_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l14 0"/>
+            <path d="M5 12l6 -6"/>
+            <path d="M5 12l6 6"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Mission Summary -->
+        <div class="col-12 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3 class="card-title mb-1">{{ mission.title }}</h3>
+                            <p class="text-muted mb-2">{{ mission.description|length > 150 ? mission.description|slice(0, 150) ~ '...' : mission.description }}</p>
+                            <div class="d-flex gap-2">
+                                {% set complexityColors = {
+                                    'debutant': 'green',
+                                    'intermediaire': 'blue',
+                                    'avance': 'orange'
+                                } %}
+                                <span class="badge bg-{{ complexityColors[mission.complexity] ?? 'secondary' }} text-white">
+                                    {{ mission.complexityLabel }}
+                                </span>
+                                <span class="badge bg-blue text-white">
+                                    {{ mission.duration }}
+                                </span>
+                                {% if mission.isActive %}
+                                    <span class="badge bg-success text-white">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white">Inactif</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="h1 mb-0">{{ assignments|length }}</div>
+                            <div class="text-muted">Assignation{{ assignments|length > 1 ? 's' : '' }} total{{ assignments|length > 1 ? 'es' : 'e' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">En attente</div>
+                            </div>
+                            <div class="h1 mb-3 text-secondary">{{ assignments|filter(a => a.status == 'assigned')|length }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">En cours</div>
+                            </div>
+                            <div class="h1 mb-3 text-primary">{{ assignments|filter(a => a.status == 'in_progress')|length }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Terminées</div>
+                            </div>
+                            <div class="h1 mb-3 text-success">{{ assignments|filter(a => a.status == 'completed')|length }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="subheader">Annulées</div>
+                            </div>
+                            <div class="h1 mb-3 text-danger">{{ assignments|filter(a => a.status == 'cancelled')|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignments List -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Toutes les assignations</h3>
+                    <div class="card-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5.5 5h13a1 1 0 0 1 .5 1.5l-5 5.5l0 7l-4 -3l0 -4l-5 -5.5a1 1 0 0 1 .5 -1.5"/>
+                                </svg>
+                                Filtrer par statut
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#" data-filter="all">Tous les statuts</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-filter="assigned">En attente</a>
+                                <a class="dropdown-item" href="#" data-filter="in_progress">En cours</a>
+                                <a class="dropdown-item" href="#" data-filter="completed">Terminées</a>
+                                <a class="dropdown-item" href="#" data-filter="cancelled">Annulées</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if assignments|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Alternant</th>
+                                    <th>Contrat</th>
+                                    <th>Entreprise</th>
+                                    <th>Statut</th>
+                                    <th>Date d'assignation</th>
+                                    <th>Progression</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                    <tr data-status="{{ assignment.status }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-3" style="background-color: var(--tblr-primary); color: white;">
+                                                    {{ assignment.contract.student.firstName|first }}{{ assignment.contract.student.lastName|first }}
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold">{{ assignment.contract.student.firstName }} {{ assignment.contract.student.lastName }}</div>
+                                                    <div class="text-muted small">{{ assignment.contract.student.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-bold">{{ assignment.contract.title ?? 'Contrat #' ~ assignment.contract.id }}</div>
+                                                <div class="text-muted small">
+                                                    Du {{ assignment.contract.startDate|date('d/m/Y') }} 
+                                                    au {{ assignment.contract.endDate|date('d/m/Y') }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-bold">{{ assignment.contract.company.name }}</div>
+                                                <div class="text-muted small">{{ assignment.contract.company.city }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% set statusColors = {
+                                                'assigned': 'secondary',
+                                                'in_progress': 'primary',
+                                                'completed': 'success',
+                                                'cancelled': 'danger'
+                                            } %}
+                                            <span class="badge bg-{{ statusColors[assignment.status] ?? 'secondary' }} text-white">
+                                                {{ assignment.statusLabel }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ assignment.createdAt|date('d/m/Y à H:i') }}
+                                        </td>
+                                        <td>
+                                            {% if assignment.status == 'assigned' %}
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar bg-secondary" style="width: 0%" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-muted">Non démarrée</small>
+                                            {% elseif assignment.status == 'in_progress' %}
+                                                {% set progress = random(20, 80) %} {# In real implementation, calculate actual progress #}
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar" style="width: {{ progress }}%" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-muted">{{ progress }}% complétée</small>
+                                            {% elseif assignment.status == 'completed' %}
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar bg-success" style="width: 100%" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-success">Terminée</small>
+                                            {% else %}
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar bg-danger" style="width: 100%" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-danger">Annulée</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    Actions
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="#">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                                        </svg>
+                                                        Voir le détail
+                                                    </a>
+                                                    <a class="dropdown-item" href="#">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                                            <path d="M12 9h.01"/>
+                                                            <path d="M11 12h1v4h1"/>
+                                                        </svg>
+                                                        Historique
+                                                    </a>
+                                                    <div class="dropdown-divider"></div>
+                                                    
+                                                    <form method="POST" action="{{ path('admin_alternance_mission_assignment_status', {id: assignment.id}) }}" style="display: inline;">
+                                                        {% if assignment.status == 'assigned' %}
+                                                            <button type="submit" name="status" value="in_progress" class="dropdown-item">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M7 4v16l13 -8z"/>
+                                                                </svg>
+                                                                Démarrer la mission
+                                                            </button>
+                                                        {% elseif assignment.status == 'in_progress' %}
+                                                            <button type="submit" name="status" value="completed" class="dropdown-item">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M5 12l5 5l10 -10"/>
+                                                                </svg>
+                                                                Marquer comme terminée
+                                                            </button>
+                                                        {% endif %}
+                                                        
+                                                        {% if assignment.status != 'cancelled' and assignment.status != 'completed' %}
+                                                            <button type="submit" name="status" value="cancelled" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette assignation ?')">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M18 6l-12 12"/>
+                                                                    <path d="M6 6l12 12"/>
+                                                                </svg>
+                                                                Annuler l'assignation
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMDQgNDBIMjRDMTkuNTggNDAgMTYgNDMuNTggMTYgNDhWODBDMTYgODQuNDIgMTkuNTggODggMjQgODhIMTA0QzEwOC40MiA4OCAxMTIgODQuNDIgMTEyIDgwVjQ4QzExMiA0My41OCAxMDguNDIgNDAgMTA0IDQwWiIgc3Ryb2tlPSIjQ0ZEOERDIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPHA+PC9wPgo8L3N2Zz4K" height="128" alt="">
+                            </div>
+                            <p class="empty-title">Aucune assignation</p>
+                            <p class="empty-subtitle text-muted">
+                                Cette mission n'a encore été assignée à aucun alternant.
+                            </p>
+                            <div class="empty-action">
+                                <a href="{{ path('admin_alternance_mission_show', {id: mission.id}) }}" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 5l0 14"/>
+                                        <path d="M5 12l14 0"/>
+                                    </svg>
+                                    Assigner la mission
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Status filter functionality
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            const tableRows = document.querySelectorAll('tbody tr[data-status]');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Update button text
+                    const dropdownButton = document.querySelector('.dropdown-toggle');
+                    if (filter === 'all') {
+                        dropdownButton.innerHTML = dropdownButton.innerHTML.replace(/[^<]*$/, 'Tous les statuts');
+                    } else {
+                        dropdownButton.innerHTML = dropdownButton.innerHTML.replace(/[^<]*$/, this.textContent);
+                    }
+                    
+                    // Filter rows
+                    tableRows.forEach(row => {
+                        if (filter === 'all' || row.getAttribute('data-status') === filter) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Confirm status changes
+            document.querySelectorAll('form button[name="status"]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const status = this.value;
+                    const statusText = {
+                        'in_progress': 'démarrer',
+                        'completed': 'terminer',
+                        'cancelled': 'annuler'
+                    };
+                    
+                    if (status === 'cancelled') {
+                        // Already has confirmation in onclick attribute
+                        return;
+                    }
+                    
+                    if (!confirm(`Êtes-vous sûr de vouloir ${statusText[status]} cette assignation ?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

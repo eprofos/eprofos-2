@@ -551,4 +551,213 @@ class ProgressAssessmentService
 
         return $exportData;
     }
+
+    /**
+     * Analyze assessment and provide detailed insights
+     */
+    public function analyzeAssessment(ProgressAssessment $assessment): array
+    {
+        $analysis = [
+            'overall_status' => $this->getOverallStatus($assessment),
+            'progression_analysis' => $this->analyzeProgression($assessment),
+            'risk_analysis' => $assessment->getRiskFactorsAnalysis(),
+            'objectives_analysis' => $this->analyzeObjectives($assessment),
+            'skills_analysis' => $this->analyzeSkills($assessment),
+            'recommendations' => $this->generateRecommendations($assessment),
+            'intervention_plan' => $this->generateInterventionPlan($assessment),
+            'trends' => $this->getProgressionTrends($assessment),
+        ];
+
+        return $analysis;
+    }
+
+    /**
+     * Approve an assessment
+     */
+    public function approveAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
+    {
+        // For now, we'll add a note to the assessment about approval
+        // In a real implementation, you might add a validation_status field to the entity
+        $assessment->setNextSteps(
+            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
+            "[VALIDÉ " . (new \DateTime())->format('d/m/Y H:i') . "] " . 
+            ($comments ?: 'Évaluation approuvée')
+        );
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Progress assessment approved', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Reject an assessment
+     */
+    public function rejectAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
+    {
+        // For now, we'll add a note to the assessment about rejection
+        // In a real implementation, you might add a validation_status field to the entity
+        $assessment->setNextSteps(
+            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
+            "[REJETÉ " . (new \DateTime())->format('d/m/Y H:i') . "] " . 
+            ($comments ?: 'Évaluation rejetée - révision nécessaire')
+        );
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Progress assessment rejected', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Get overall status of assessment
+     */
+    private function getOverallStatus(ProgressAssessment $assessment): array
+    {
+        $overallProgression = (float) $assessment->getOverallProgression();
+        $riskLevel = $assessment->getRiskLevel();
+        
+        if ($overallProgression >= 80 && $riskLevel <= 2) {
+            $status = 'excellent';
+            $message = 'Progression excellente, aucune intervention requise';
+        } elseif ($overallProgression >= 60 && $riskLevel <= 3) {
+            $status = 'good';
+            $message = 'Progression satisfaisante, surveillance normale';
+        } elseif ($overallProgression >= 40 && $riskLevel <= 3) {
+            $status = 'average';
+            $message = 'Progression moyenne, accompagnement recommandé';
+        } elseif ($riskLevel >= 4) {
+            $status = 'critical';
+            $message = 'Situation critique, intervention urgente requise';
+        } else {
+            $status = 'poor';
+            $message = 'Progression insuffisante, soutien renforcé nécessaire';
+        }
+
+        return [
+            'status' => $status,
+            'message' => $message,
+            'progression' => $overallProgression,
+            'risk_level' => $riskLevel
+        ];
+    }
+
+    /**
+     * Analyze progression details
+     */
+    private function analyzeProgression(ProgressAssessment $assessment): array
+    {
+        $centerProgression = (float) $assessment->getCenterProgression();
+        $companyProgression = (float) $assessment->getCompanyProgression();
+        $overallProgression = (float) $assessment->getOverallProgression();
+        
+        $imbalance = abs($centerProgression - $companyProgression);
+        
+        return [
+            'center_progression' => $centerProgression,
+            'company_progression' => $companyProgression,
+            'overall_progression' => $overallProgression,
+            'imbalance' => $imbalance,
+            'imbalance_level' => $imbalance > 20 ? 'high' : ($imbalance > 10 ? 'medium' : 'low'),
+            'progression_status' => $assessment->getProgressionStatus()
+        ];
+    }
+
+    /**
+     * Analyze objectives completion
+     */
+    private function analyzeObjectives(ProgressAssessment $assessment): array
+    {
+        $summary = $assessment->getObjectivesSummary();
+        
+        return [
+            'summary' => $summary,
+            'completion_rate' => $summary['completion_rate'] ?? 0,
+            'at_risk_objectives' => $this->getAtRiskObjectives($assessment),
+            'priority_objectives' => $this->getPriorityObjectives($assessment)
+        ];
+    }
+
+    /**
+     * Analyze skills development
+     */
+    private function analyzeSkills(ProgressAssessment $assessment): array
+    {
+        $skillsSummary = $assessment->getSkillsMatrixSummary();
+        
+        return [
+            'summary' => $skillsSummary,
+            'strong_skills' => $this->getStrongSkills($assessment),
+            'weak_skills' => $this->getWeakSkills($assessment),
+            'developing_skills' => $this->getDevelopingSkills($assessment)
+        ];
+    }
+
+    /**
+     * Get progression trends for a student
+     */
+    private function getProgressionTrends(ProgressAssessment $assessment): array
+    {
+        $student = $assessment->getStudent();
+        $trend = $this->progressAssessmentRepository->getStudentProgressionTrend($student, 6);
+        
+        return [
+            'trend_direction' => $this->calculateProgressionTrend($trend),
+            'recent_assessments' => array_slice($trend['overall_progression'] ?? [], -3),
+            'improvement_rate' => $this->calculateImprovementRate($trend)
+        ];
+    }
+
+    private function getAtRiskObjectives(ProgressAssessment $assessment): array
+    {
+        // Implementation would analyze pending objectives with high priority or overdue dates
+        return [];
+    }
+
+    private function getPriorityObjectives(ProgressAssessment $assessment): array
+    {
+        // Implementation would return high priority pending objectives
+        return [];
+    }
+
+    private function getStrongSkills(ProgressAssessment $assessment): array
+    {
+        // Implementation would return skills with high levels
+        return [];
+    }
+
+    private function getWeakSkills(ProgressAssessment $assessment): array
+    {
+        // Implementation would return skills with low levels
+        return [];
+    }
+
+    private function getDevelopingSkills(ProgressAssessment $assessment): array
+    {
+        // Implementation would return skills showing improvement
+        return [];
+    }
+
+    private function calculateImprovementRate(array $trend): float
+    {
+        if (count($trend['overall_progression'] ?? []) < 2) {
+            return 0.0;
+        }
+
+        $progressions = $trend['overall_progression'];
+        $first = reset($progressions);
+        $last = end($progressions);
+        
+        return $last - $first;
+    }
 }

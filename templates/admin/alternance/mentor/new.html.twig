@@ -1,0 +1,327 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau Mentor - Administration{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_dashboard') }}">Alternance</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_index') }}">Mentors</a></li>
+        <li class="breadcrumb-item active">Nouveau</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_title %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0">Créer un nouveau mentor</h1>
+        <p class="text-muted">Ajoutez un mentor en entreprise pour l'encadrement d'alternants</p>
+    </div>
+    <a href="{{ path('admin_alternance_mentor_index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        {{ form_start(form, {attr: {class: 'needs-validation', novalidate: 'novalidate'}}) }}
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus"></i> Informations du mentor</h5>
+            </div>
+            <div class="card-body">
+                <!-- Personal Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-user"></i> Informations personnelles
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.firstName) }}
+                            {{ form_widget(form.firstName) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.lastName) }}
+                            {{ form_widget(form.lastName) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.email) }}
+                            {{ form_widget(form.email) }}
+                            {{ form_errors(form.email) }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Un email d'invitation sera envoyé à cette adresse
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.phone) }}
+                            {{ form_widget(form.phone) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-building"></i> Informations entreprise
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.companyName) }}
+                            {{ form_widget(form.companyName) }}
+                            {{ form_errors(form.companyName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.companySiret) }}
+                            {{ form_widget(form.companySiret) }}
+                            {{ form_errors(form.companySiret) }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                14 chiffres obligatoires
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.position) }}
+                            {{ form_widget(form.position) }}
+                            {{ form_errors(form.position) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-briefcase"></i> Informations professionnelles
+                        </h6>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.expertiseDomains) }}
+                            {{ form_widget(form.expertiseDomains) }}
+                            {{ form_errors(form.expertiseDomains) }}
+                            {{ form_help(form.expertiseDomains) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.experienceYears) }}
+                            {{ form_widget(form.experienceYears) }}
+                            {{ form_errors(form.experienceYears) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.educationLevel) }}
+                            {{ form_widget(form.educationLevel) }}
+                            {{ form_errors(form.educationLevel) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-cog"></i> Paramètres du compte
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form_widget(form.isActive) }}
+                            {{ form_label(form.isActive) }}
+                            {{ form_errors(form.isActive) }}
+                            {% if form.isActive.vars.help %}
+                                <div class="form-text">{{ form.isActive.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form_widget(form.emailVerified) }}
+                            {{ form_label(form.emailVerified) }}
+                            {{ form_errors(form.emailVerified) }}
+                            {% if form.emailVerified.vars.help %}
+                                <div class="form-text">{{ form.emailVerified.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('admin_alternance_mentor_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Créer le mentor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+
+        <!-- Information Panel -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Informations importantes</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-envelope"></i> Processus d'invitation
+                    </h6>
+                    <p class="mb-0">
+                        Après la création du mentor, un email d'invitation sera automatiquement envoyé 
+                        contenant ses identifiants de connexion et un lien pour accéder à son espace mentor.
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-star text-warning"></i> Domaines d'expertise</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success"></i> Sélectionnez tous les domaines pertinents</li>
+                            <li><i class="fas fa-check text-success"></i> Cela aidera à l'affectation des alternants</li>
+                            <li><i class="fas fa-check text-success"></i> Peut être modifié ultérieurement</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-building text-primary"></i> Informations entreprise</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success"></i> Le SIRET doit être valide</li>
+                            <li><i class="fas fa-check text-success"></i> Il sera vérifié automatiquement</li>
+                            <li><i class="fas fa-check text-success"></i> Utilisé pour les rapports officiels</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // SIRET validation
+    const siretInput = document.getElementById('mentor_companySiret');
+    if (siretInput) {
+        siretInput.addEventListener('input', function() {
+            // Remove non-digit characters
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Limit to 14 characters
+            if (this.value.length > 14) {
+                this.value = this.value.slice(0, 14);
+            }
+            
+            // Add visual feedback
+            if (this.value.length === 14) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                if (this.value.length > 0) {
+                    this.classList.add('is-invalid');
+                }
+            }
+        });
+    }
+
+    // Phone number formatting
+    const phoneInput = document.getElementById('mentor_phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // Basic phone formatting (French format)
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+                } else {
+                    // International format
+                    value = value.replace(/(\d{2})(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5 $6 $7');
+                }
+            }
+            this.value = value.trim();
+        });
+    }
+
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Expertise domains help
+    const expertiseSelect = document.getElementById('mentor_expertiseDomains');
+    if (expertiseSelect) {
+        expertiseSelect.addEventListener('change', function() {
+            const selectedCount = this.selectedOptions.length;
+            const helpText = this.parentNode.querySelector('.form-text');
+            if (helpText && selectedCount > 0) {
+                helpText.innerHTML = '<i class="fas fa-check text-success"></i> ' + selectedCount + ' domaine(s) sélectionné(s)';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.card-header h6 {
+    color: #495057;
+}
+
+.alert-heading {
+    color: inherit;
+}
+
+.list-unstyled li {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

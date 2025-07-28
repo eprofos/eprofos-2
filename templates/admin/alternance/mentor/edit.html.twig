@@ -1,0 +1,443 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier {{ mentor.fullName }} - Mentor{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_dashboard') }}">Alternance</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_index') }}">Mentors</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}">{{ mentor.fullName }}</a></li>
+        <li class="breadcrumb-item active">Modifier</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_title %}
+<div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <div class="mentor-avatar me-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                 style="width: 50px; height: 50px; font-weight: bold;">
+                {{ mentor.initials }}
+            </div>
+        </div>
+        <div>
+            <h1 class="h3 mb-0">Modifier {{ mentor.fullName }}</h1>
+            <p class="text-muted mb-0">{{ mentor.position }} - {{ mentor.companyName }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-eye"></i> Voir
+        </a>
+        <a href="{{ path('admin_alternance_mentor_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        {{ form_start(form, {attr: {class: 'needs-validation', novalidate: 'novalidate'}}) }}
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-edit"></i> Modifier les informations du mentor</h5>
+            </div>
+            <div class="card-body">
+                <!-- Personal Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-user"></i> Informations personnelles
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.firstName) }}
+                            {{ form_widget(form.firstName) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.lastName) }}
+                            {{ form_widget(form.lastName) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.email) }}
+                            {{ form_widget(form.email) }}
+                            {{ form_errors(form.email) }}
+                            {% if not mentor.emailVerified %}
+                            <div class="form-text text-warning">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                Email non vérifié - une nouvelle invitation sera envoyée si modifié
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.phone) }}
+                            {{ form_widget(form.phone) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-building"></i> Informations entreprise
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.companyName) }}
+                            {{ form_widget(form.companyName) }}
+                            {{ form_errors(form.companyName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.companySiret) }}
+                            {{ form_widget(form.companySiret) }}
+                            {{ form_errors(form.companySiret) }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                14 chiffres obligatoires
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.position) }}
+                            {{ form_widget(form.position) }}
+                            {{ form_errors(form.position) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-briefcase"></i> Informations professionnelles
+                        </h6>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.expertiseDomains) }}
+                            {{ form_widget(form.expertiseDomains) }}
+                            {{ form_errors(form.expertiseDomains) }}
+                            {{ form_help(form.expertiseDomains) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.experienceYears) }}
+                            {{ form_widget(form.experienceYears) }}
+                            {{ form_errors(form.experienceYears) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.educationLevel) }}
+                            {{ form_widget(form.educationLevel) }}
+                            {{ form_errors(form.educationLevel) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-cog"></i> Paramètres du compte
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form_widget(form.isActive) }}
+                            {{ form_label(form.isActive) }}
+                            {{ form_errors(form.isActive) }}
+                            {% if form.isActive.vars.help %}
+                                <div class="form-text">{{ form.isActive.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form_widget(form.emailVerified) }}
+                            {{ form_label(form.emailVerified) }}
+                            {{ form_errors(form.emailVerified) }}
+                            {% if form.emailVerified.vars.help %}
+                                <div class="form-text">{{ form.emailVerified.vars.help }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+
+        <!-- Account Information -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Informations du compte</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Créé le</label>
+                            <p class="mb-0">{{ mentor.createdAt|date('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Dernière modification</label>
+                            <p class="mb-0">{{ mentor.updatedAt|date('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Dernière connexion</label>
+                            <p class="mb-0">
+                                {% if mentor.lastLoginAt %}
+                                    {{ mentor.lastLoginAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span class="text-muted">Jamais connecté</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if mentor.alternantsCount > 0 or mentor.missionsCount > 0 %}
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i> Attention
+                    </h6>
+                    <p class="mb-0">
+                        Ce mentor a {{ mentor.alternantsCount }} alternant(s) et {{ mentor.missionsCount }} mission(s) associé(e)s.
+                        Certaines modifications peuvent affecter les contrats en cours.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i> Action irréversible
+                    </h6>
+                    <p>Êtes-vous sûr de vouloir supprimer le mentor <strong>{{ mentor.fullName }}</strong> ?</p>
+                    <p class="mb-0">Cette action ne peut pas être annulée.</p>
+                </div>
+
+                {% if mentor.alternantsCount > 0 or mentor.missionsCount > 0 %}
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i> Attention
+                    </h6>
+                    <p class="mb-0">
+                        Ce mentor a des données associées :
+                    </p>
+                    <ul class="mb-0">
+                        {% if mentor.alternantsCount > 0 %}
+                            <li>{{ mentor.alternantsCount }} alternant(s)</li>
+                        {% endif %}
+                        {% if mentor.missionsCount > 0 %}
+                            <li>{{ mentor.missionsCount }} mission(s)</li>
+                        {% endif %}
+                    </ul>
+                    <p class="mb-0 mt-2">
+                        <strong>La suppression sera bloquée s'il y a des contrats actifs.</strong>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="POST" action="{{ path('admin_alternance_mentor_delete', {id: mentor.id}) }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mentor.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Oui, supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // SIRET validation
+    const siretInput = document.getElementById('mentor_companySiret');
+    if (siretInput) {
+        siretInput.addEventListener('input', function() {
+            // Remove non-digit characters
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Limit to 14 characters
+            if (this.value.length > 14) {
+                this.value = this.value.slice(0, 14);
+            }
+            
+            // Add visual feedback
+            if (this.value.length === 14) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                if (this.value.length > 0) {
+                    this.classList.add('is-invalid');
+                }
+            }
+        });
+    }
+
+    // Phone number formatting
+    const phoneInput = document.getElementById('mentor_phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // Basic phone formatting (French format)
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+                } else {
+                    // International format
+                    value = value.replace(/(\d{2})(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5 $6 $7');
+                }
+            }
+            this.value = value.trim();
+        });
+    }
+
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Email change warning
+    const emailInput = document.getElementById('mentor_email');
+    const originalEmail = emailInput ? emailInput.value : '';
+    if (emailInput) {
+        emailInput.addEventListener('change', function() {
+            if (this.value !== originalEmail && this.value.trim() !== '') {
+                const helpText = this.parentNode.querySelector('.form-text');
+                if (!helpText || !helpText.classList.contains('text-warning')) {
+                    const warningText = document.createElement('div');
+                    warningText.className = 'form-text text-warning';
+                    warningText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Changer l\'email enverra une nouvelle invitation';
+                    this.parentNode.appendChild(warningText);
+                }
+            }
+        });
+    }
+
+    // Expertise domains help
+    const expertiseSelect = document.getElementById('mentor_expertiseDomains');
+    if (expertiseSelect) {
+        expertiseSelect.addEventListener('change', function() {
+            const selectedCount = this.selectedOptions.length;
+            const helpText = this.parentNode.querySelector('.form-text');
+            if (helpText && selectedCount > 0) {
+                helpText.innerHTML = '<i class="fas fa-check text-success"></i> ' + selectedCount + ' domaine(s) sélectionné(s)';
+            }
+        });
+    }
+
+    // Unsaved changes warning
+    let formChanged = false;
+    const formElements = form.querySelectorAll('input, select, textarea');
+    formElements.forEach(element => {
+        element.addEventListener('change', () => formChanged = true);
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    form.addEventListener('submit', () => formChanged = false);
+});
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.card-header h6 {
+    color: #495057;
+}
+
+.alert-heading {
+    color: inherit;
+}
+
+.mentor-avatar {
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}

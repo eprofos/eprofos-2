@@ -1,0 +1,400 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de Bord Reporting Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Tableau de Bord Reporting Alternance</h1>
+            <p class="text-muted mb-0">Analytics et rapports sur l'activité alternance</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" data-export="pdf"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    <li><a class="dropdown-item" href="#" data-export="excel"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                    <li><a class="dropdown-item" href="#" data-export="csv"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Filtres et Options</h4>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ path('admin_alternance_reporting_index') }}" id="filtersForm">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="period" class="form-label">Période</label>
+                                <select name="period" id="period" class="form-select">
+                                    <option value="current_month" {{ filters.period == 'current_month' ? 'selected' : '' }}>Mois actuel</option>
+                                    <option value="last_month" {{ filters.period == 'last_month' ? 'selected' : '' }}>Mois dernier</option>
+                                    <option value="current_semester" {{ filters.period == 'current_semester' ? 'selected' : '' }}>Semestre actuel</option>
+                                    <option value="current_year" {{ filters.period == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                                    <option value="last_year" {{ filters.period == 'last_year' ? 'selected' : '' }}>Année dernière</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="formation" class="form-label">Formation</label>
+                                <select name="formation" id="formation" class="form-select">
+                                    <option value="">Toutes les formations</option>
+                                    <!-- Add formation options dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="report_type" class="form-label">Type de rapport</label>
+                                <select name="report_type" id="report_type" class="form-select">
+                                    {% for key, report in available_reports %}
+                                        <option value="{{ key }}" {{ filters.report_type == key ? 'selected' : '' }}>{{ report.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Appliquer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Type Description -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>{{ available_reports[filters.report_type].name }} :</strong> {{ available_reports[filters.report_type].description }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Report -->
+    {% if filters.report_type == 'overview' %}
+        <!-- Key Metrics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="row">
+                                    <div class="col">
+                                        <h3 class="mb-1">{{ report_data.summary.total_contracts }}</h3>
+                                        <p class="text-muted mb-0">Contrats Total</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-file-contract text-primary fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="row">
+                                    <div class="col">
+                                        <h3 class="mb-1">{{ report_data.summary.active_contracts }}</h3>
+                                        <p class="text-muted mb-0">Contrats Actifs</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-play-circle text-success fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="row">
+                                    <div class="col">
+                                        <h3 class="mb-1">{{ report_data.summary.success_rate }}%</h3>
+                                        <p class="text-muted mb-0">Taux de Réussite</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-trophy text-warning fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="row">
+                                    <div class="col">
+                                        <h3 class="mb-1">{{ report_data.summary.average_duration }}</h3>
+                                        <p class="text-muted mb-0">Durée Moyenne (mois)</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock text-info fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Sections -->
+        <div class="row">
+            <!-- Progression Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Progression</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-primary">{{ report_data.progression.total_assessments }}</h4>
+                                    <small class="text-muted">Évaluations Total</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-success">{{ report_data.progression.average_progression }}%</h4>
+                                    <small class="text-muted">Progression Moyenne</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-warning">{{ report_data.progression.students_at_risk }}</h4>
+                                    <small class="text-muted">Étudiants à Risque</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <span class="badge badge-success fs-6">
+                                        <i class="fas fa-arrow-up me-1"></i>{{ report_data.progression.improvement_trend|title }}
+                                    </span>
+                                    <div><small class="text-muted">Tendance</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-star me-2"></i>Compétences</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-primary">{{ report_data.skills.total_evaluations }}</h4>
+                                    <small class="text-muted">Évaluations</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-success">{{ report_data.skills.average_skills_score }}/5</h4>
+                                    <small class="text-muted">Score Moyen</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <hr class="my-2">
+                                <div class="mb-2">
+                                    <strong class="text-danger">Lacunes :</strong>
+                                    {% for gap in report_data.skills.skills_gaps %}
+                                        <span class="badge badge-danger-light me-1">{{ gap }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div>
+                                    <strong class="text-success">Top :</strong>
+                                    {% for skill in report_data.skills.top_skills %}
+                                        <span class="badge badge-success-light me-1">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentors Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-users me-2"></i>Mentors</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-primary">{{ report_data.mentors.total_mentors }}</h4>
+                                    <small class="text-muted">Total Mentors</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-success">{{ report_data.mentors.active_mentors }}</h4>
+                                    <small class="text-muted">Actifs</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-info">{{ report_data.mentors.average_students_per_mentor }}</h4>
+                                    <small class="text-muted">Étudiants/Mentor</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-warning">{{ report_data.mentors.satisfaction_rate }}/5</h4>
+                                    <small class="text-muted">Satisfaction</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Missions Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-tasks me-2"></i>Missions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-primary">{{ report_data.missions.total_missions }}</h4>
+                                    <small class="text-muted">Total Missions</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-success">{{ report_data.missions.active_missions }}</h4>
+                                    <small class="text-muted">Actives</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-info">{{ report_data.missions.completion_rate }}%</h4>
+                                    <small class="text-muted">Taux Réalisation</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <h4 class="text-warning">{{ report_data.missions.average_rating }}/5</h4>
+                                    <small class="text-muted">Note Moyenne</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Other Report Types Placeholder -->
+    {% if filters.report_type != 'overview' %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Rapport "{{ available_reports[filters.report_type].name }}" en cours de développement</h4>
+                        <p class="text-muted">Ce type de rapport sera bientôt disponible.</p>
+                        <a href="{{ path('admin_alternance_reporting_index', {report_type: 'overview'}) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la vue d'ensemble
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-bolt me-2"></i>Actions Rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-primary w-100" disabled>
+                                <i class="fas fa-file-pdf me-2"></i>Générer Rapport PDF
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-success w-100" disabled>
+                                <i class="fas fa-envelope me-2"></i>Envoyer par Email
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-info w-100" disabled>
+                                <i class="fas fa-calendar me-2"></i>Programmer Rapport
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-warning w-100" disabled>
+                                <i class="fas fa-cog me-2"></i>Configurer Alertes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-submit form when filters change
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = document.querySelectorAll('#filtersForm select');
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+
+            // Export functionality
+            document.querySelectorAll('[data-export]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const format = this.dataset.export;
+                    // Placeholder for export functionality
+                    alert(`Export ${format.toUpperCase()} sera disponible prochainement`);
+                });
+            });
+        });
+    </script>
+{% endblock %}

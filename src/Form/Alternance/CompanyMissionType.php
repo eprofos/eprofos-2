@@ -5,6 +5,7 @@ namespace App\Form\Alternance;
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -184,6 +185,13 @@ class CompanyMissionType extends AbstractType
                         minMessage: 'Au moins un critère d\'évaluation doit être défini.'
                     )
                 ]
+            ])
+            ->add('isActive', CheckboxType::class, [
+                'label' => 'Mission active',
+                'help' => 'Une mission inactive ne peut pas recevoir de nouvelles affectations',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
+                'label_attr' => ['class' => 'form-check-label']
             ])
         ;
     }

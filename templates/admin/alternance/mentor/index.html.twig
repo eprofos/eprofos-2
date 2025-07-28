@@ -1,0 +1,422 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des Mentors - Administration{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_dashboard') }}">Alternance</a></li>
+        <li class="breadcrumb-item active">Mentors</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_title %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-0">Gestion des Mentors</h1>
+        <p class="text-muted">Gérez les mentors en entreprise pour l'alternance</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('admin_alternance_mentor_export') }}" class="btn btn-outline-primary">
+            <i class="fas fa-download"></i> Exporter
+        </a>
+        <a href="{{ path('admin_alternance_mentor_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau Mentor
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.total_mentors }}</h4>
+                        <p class="mb-0">Total Mentors</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.active_mentors }}</h4>
+                        <p class="mb-0">Mentors Actifs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.new_this_month }}</h4>
+                        <p class="mb-0">Nouveaux ce mois</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.companies_count }}</h4>
+                        <p class="mb-0">Entreprises</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Recherche</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ filters.search }}" placeholder="Nom, email, entreprise...">
+            </div>
+            <div class="col-md-3">
+                <label for="company" class="form-label">Entreprise</label>
+                <input type="text" class="form-control" id="company" name="company" 
+                       value="{{ filters.company }}" placeholder="Nom de l'entreprise">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Statut</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Tous</option>
+                    <option value="active" {{ filters.status == 'active' ? 'selected' : '' }}>Actifs</option>
+                    <option value="inactive" {{ filters.status == 'inactive' ? 'selected' : '' }}>Inactifs</option>
+                    <option value="verified" {{ filters.status == 'verified' ? 'selected' : '' }}>Email vérifié</option>
+                    <option value="unverified" {{ filters.status == 'unverified' ? 'selected' : '' }}>Email non vérifié</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{{ path('admin_alternance_mentor_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Mentors Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Liste des Mentors</h5>
+        {% if mentors|length > 0 %}
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkActionsModal">
+                <i class="fas fa-tasks"></i> Actions groupées
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if mentors|length > 0 %}
+        <form id="bulkForm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input" id="selectAll">
+                            </th>
+                            <th>Mentor</th>
+                            <th>Entreprise</th>
+                            <th>Poste</th>
+                            <th>Expertise</th>
+                            <th>Statut</th>
+                            <th>Dernière connexion</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mentor in mentors %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input mentor-checkbox" value="{{ mentor.id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="mentor-avatar me-3">
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px; font-weight: bold;">
+                                            {{ mentor.initials }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <strong>{{ mentor.fullName }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ mentor.email }}</small>
+                                        {% if mentor.phone %}
+                                            <br><small class="text-muted">{{ mentor.phone }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ mentor.companyName }}</strong>
+                                <br>
+                                <small class="text-muted">SIRET: {{ mentor.companySiret }}</small>
+                            </td>
+                            <td>{{ mentor.position }}</td>
+                            <td>
+                                {% for domain in mentor.expertiseDomainsLabels|slice(0, 2) %}
+                                    <span class="badge bg-secondary me-1">{{ domain }}</span>
+                                {% endfor %}
+                                {% if mentor.expertiseDomainsLabels|length > 2 %}
+                                    <span class="badge bg-light text-dark">+{{ mentor.expertiseDomainsLabels|length - 2 }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if mentor.isActive %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                                {% if mentor.emailVerified %}
+                                    <span class="badge bg-info">Vérifié</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Non vérifié</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if mentor.lastLoginAt %}
+                                    {{ mentor.lastLoginAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span class="text-muted">Jamais connecté</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ path('admin_alternance_mentor_show', {id: mentor.id}) }}" 
+                                       class="btn btn-outline-primary" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('admin_alternance_mentor_edit', {id: mentor.id}) }}" 
+                                       class="btn btn-outline-secondary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% if mentor.isActive %}
+                                                <li>
+                                                    <form method="POST" action="{{ path('admin_alternance_mentor_deactivate', {id: mentor.id}) }}" class="d-inline">
+                                                        <button type="submit" class="dropdown-item text-warning" 
+                                                                onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce mentor ?')">
+                                                            <i class="fas fa-user-times"></i> Désactiver
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% else %}
+                                                <li>
+                                                    <form method="POST" action="{{ path('admin_alternance_mentor_activate', {id: mentor.id}) }}" class="d-inline">
+                                                        <button type="submit" class="dropdown-item text-success">
+                                                            <i class="fas fa-user-check"></i> Activer
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+                                            <li>
+                                                <form method="POST" action="{{ path('admin_alternance_mentor_resend_invitation', {id: mentor.id}) }}" class="d-inline">
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="fas fa-envelope"></i> Renvoyer invitation
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a href="{{ path('admin_alternance_mentor_performance', {id: mentor.id}) }}" class="dropdown-item">
+                                                    <i class="fas fa-chart-line"></i> Performance
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5>Aucun mentor trouvé</h5>
+            <p class="text-muted">Commencez par créer votre premier mentor</p>
+            <a href="{{ path('admin_alternance_mentor_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un mentor
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav aria-label="Pagination des mentors" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if current_page > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ path('admin_alternance_mentor_index', filters|merge({page: current_page - 1})) }}">
+                Précédent
+            </a>
+        </li>
+        {% endif %}
+
+        {% for page in range(max(1, current_page - 2), min(total_pages, current_page + 2)) %}
+        <li class="page-item {{ page == current_page ? 'active' : '' }}">
+            <a class="page-link" href="{{ path('admin_alternance_mentor_index', filters|merge({page: page})) }}">
+                {{ page }}
+            </a>
+        </li>
+        {% endfor %}
+
+        {% if current_page < total_pages %}
+        <li class="page-item">
+            <a class="page-link" href="{{ path('admin_alternance_mentor_index', filters|merge({page: current_page + 1})) }}">
+                Suivant
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Actions groupées</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ path('admin_alternance_mentor_bulk_actions') }}" id="bulkActionsForm">
+                    <div class="mb-3">
+                        <label for="action" class="form-label">Action à effectuer</label>
+                        <select class="form-select" id="action" name="action" required>
+                            <option value="">Sélectionnez une action</option>
+                            <option value="activate">Activer les mentors sélectionnés</option>
+                            <option value="deactivate">Désactiver les mentors sélectionnés</option>
+                            <option value="resend_invitation">Renvoyer les invitations</option>
+                        </select>
+                    </div>
+                    <div id="selectedMentorsInfo" class="alert alert-info" style="display: none;">
+                        <strong>0</strong> mentor(s) sélectionné(s)
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" form="bulkActionsForm" class="btn btn-primary">Appliquer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const mentorCheckboxes = document.querySelectorAll('.mentor-checkbox');
+    const bulkActionsForm = document.getElementById('bulkActionsForm');
+    const selectedMentorsInfo = document.getElementById('selectedMentorsInfo');
+
+    // Handle select all
+    selectAllCheckbox.addEventListener('change', function() {
+        mentorCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedInfo();
+    });
+
+    // Handle individual checkboxes
+    mentorCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(mentorCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(mentorCheckboxes).some(cb => cb.checked);
+            
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            
+            updateSelectedInfo();
+        });
+    });
+
+    // Update selected mentors info
+    function updateSelectedInfo() {
+        const selectedCount = Array.from(mentorCheckboxes).filter(cb => cb.checked).length;
+        selectedMentorsInfo.querySelector('strong').textContent = selectedCount;
+        selectedMentorsInfo.style.display = selectedCount > 0 ? 'block' : 'none';
+    }
+
+    // Handle bulk actions form submission
+    bulkActionsForm.addEventListener('submit', function(e) {
+        const selectedMentors = Array.from(mentorCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        if (selectedMentors.length === 0) {
+            e.preventDefault();
+            alert('Veuillez sélectionner au moins un mentor.');
+            return;
+        }
+
+        // Add selected mentor IDs to form
+        selectedMentors.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'mentor_ids[]';
+            input.value = id;
+            this.appendChild(input);
+        });
+
+        const action = document.getElementById('action').value;
+        if (action === 'deactivate') {
+            if (!confirm(`Êtes-vous sûr de vouloir désactiver ${selectedMentors.length} mentor(s) ?`)) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

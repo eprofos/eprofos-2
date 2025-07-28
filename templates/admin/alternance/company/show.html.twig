@@ -1,0 +1,275 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ company.companyName }} - Entreprises d'alternance - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        <a href="{{ path('admin_dashboard') }}" class="text-muted">Administration</a> / 
+                        <a href="{{ path('admin_alternance_dashboard') }}" class="text-muted">Alternance</a> /
+                        <a href="{{ path('admin_alternance_company_index') }}" class="text-muted">Entreprises</a>
+                    </div>
+                    <h2 class="page-title">
+                        {{ company.companyName }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_alternance_company_statistics', {siret: company.companySiret}) }}" class="btn btn-outline-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="4" y1="19" x2="20" y2="19"/>
+                                <polyline points="4,15 8,9 12,11 16,6 20,10"/>
+                            </svg>
+                            Statistiques détaillées
+                        </a>
+                        <a href="{{ path('admin_alternance_company_index') }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <polyline points="15,6 9,12 15,18"/>
+                            </svg>
+                            Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Company Information -->
+    <div class="row row-deck row-cards mb-3">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations de l'entreprise</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom de l'entreprise</label>
+                                <div class="form-control-plaintext">{{ company.companyName }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SIRET</label>
+                                <div class="form-control-plaintext">{{ company.companySiret }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Adresse</label>
+                                <div class="form-control-plaintext">{{ companyAddress|default('Non renseignée') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Métriques clés</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h1 mb-0 text-primary">{{ metrics.total_mentors }}</div>
+                                <div class="text-muted">Mentors</div>
+                                <div class="text-xs text-muted">{{ metrics.active_mentors }} actifs</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h1 mb-0 text-success">{{ metrics.total_contracts }}</div>
+                                <div class="text-muted">Contrats</div>
+                                <div class="text-xs text-muted">{{ metrics.active_contracts }} actifs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-info">{{ metrics.success_rate }}%</div>
+                                <div class="text-muted">Taux de réussite</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-warning">{{ metrics.average_contract_duration }}</div>
+                                <div class="text-muted">Durée moyenne (mois)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="row row-deck row-cards mb-3">
+        <div class="col-sm-6 col-lg-3">
+            <a href="{{ path('admin_alternance_company_mentors', {siret: company.companySiret}) }}" class="card card-link">
+                <div class="card-body text-center">
+                    <div class="card-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-primary" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <circle cx="12" cy="7" r="4"/>
+                            <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Mentors</div>
+                    <div class="text-muted">{{ metrics.total_mentors }} mentor(s)</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <a href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret}) }}" class="card card-link">
+                <div class="card-body text-center">
+                    <div class="card-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                            <path d="M9 9l1 0"/>
+                            <path d="M9 13l6 0"/>
+                            <path d="M9 17l6 0"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Contrats</div>
+                    <div class="text-muted">{{ metrics.total_contracts }} contrat(s)</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="card-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-info" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <circle cx="12" cy="12" r="9"/>
+                            <polyline points="12,7 12,12 15,15"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Dernier mentor</div>
+                    <div class="text-muted">
+                        {% if metrics.newest_mentor %}
+                            {{ metrics.newest_mentor.createdAt|date('d/m/Y') }}
+                        {% else %}
+                            Aucun
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="card-icon mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-warning" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <circle cx="12" cy="12" r="9"/>
+                            <polyline points="12,7 12,12 15,15"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Premier contrat</div>
+                    <div class="text-muted">
+                        {% if metrics.oldest_contract %}
+                            {{ metrics.oldest_contract.createdAt|date('d/m/Y') }}
+                        {% else %}
+                            Aucun
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Mentors récents</h3>
+                </div>
+                <div class="card-body">
+                    {% if mentors|length > 0 %}
+                        {% for mentor in mentors|slice(0, 5) %}
+                            <div class="row align-items-center mb-2">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-sm">{{ mentor.firstName|first }}{{ mentor.lastName|first }}</span>
+                                </div>
+                                <div class="col">
+                                    <div class="strong">{{ mentor.firstName }} {{ mentor.lastName }}</div>
+                                    <div class="text-muted">{{ mentor.email }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-{{ mentor.isActive ? 'success' : 'secondary' }}-lt">
+                                        {{ mentor.isActive ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% if mentors|length > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{{ path('admin_alternance_company_mentors', {siret: company.companySiret}) }}" class="btn btn-sm btn-outline-primary">
+                                    Voir tous les mentors ({{ mentors|length }})
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            Aucun mentor enregistré
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Contrats récents</h3>
+                </div>
+                <div class="card-body">
+                    {% if contracts|length > 0 %}
+                        {% for contract in contracts|slice(0, 5) %}
+                            <div class="row align-items-center mb-2">
+                                <div class="col">
+                                    <div class="strong">{{ contract.studentFirstName }} {{ contract.studentLastName }}</div>
+                                    <div class="text-muted">{{ contract.contractType|title }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-{{ contract.status == 'active' ? 'success' : (contract.status == 'completed' ? 'primary' : 'secondary') }}-lt">
+                                        {% if contract.status == 'active' %}Actif
+                                        {% elseif contract.status == 'completed' %}Terminé
+                                        {% elseif contract.status == 'pending' %}En attente
+                                        {% else %}{{ contract.status|title }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% if contracts|length > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{{ path('admin_alternance_company_contracts', {siret: company.companySiret}) }}" class="btn btn-sm btn-outline-success">
+                                    Voir tous les contrats ({{ contracts|length }})
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            Aucun contrat enregistré
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

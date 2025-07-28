@@ -1,0 +1,352 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Mentors - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Rapport Mentors</h1>
+            <p class="text-muted mb-0">Analyse des mentors et de leur efficacité dans l'accompagnement des alternants</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_reporting_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="period" class="form-label">Période</label>
+                            <select name="period" id="period" class="form-select">
+                                <option value="semester" {{ period == 'semester' ? 'selected' : '' }}>Semestre</option>
+                                <option value="current_year" {{ period == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                                <option value="last_year" {{ period == 'last_year' ? 'selected' : '' }}>Année dernière</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="company" class="form-label">Entreprise</label>
+                            <select name="company" id="company" class="form-select">
+                                <option value="">Toutes les entreprises</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i>Appliquer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mentor Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ mentors_data.mentor_statistics.total_mentors }}</h3>
+                            <p class="text-muted mb-0">Total Mentors</p>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ mentors_data.mentor_statistics.active_mentors }}</h3>
+                            <p class="text-muted mb-0">Mentors Actifs</p>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ mentors_data.mentor_statistics.new_mentors }}</h3>
+                            <p class="text-muted mb-0">Nouveaux Mentors</p>
+                        </div>
+                        <div class="text-info">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">{{ mentors_data.mentor_statistics.mentor_retention_rate }}%</h3>
+                            <p class="text-muted mb-0">Rétention</p>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-handshake fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i>Performance des Mentors</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="display-6 text-primary">{{ mentors_data.mentor_performance.average_student_progression }}%</div>
+                            <div class="text-muted">Progression Moyenne des Étudiants</div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="display-6 text-success">{{ mentors_data.mentor_performance.average_satisfaction }}/5</div>
+                            <div class="text-muted">Satisfaction Moyenne</div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="display-6 text-info">{{ mentors_data.mentor_performance.completion_rate }}%</div>
+                            <div class="text-muted">Taux de Réussite</div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="display-6 text-warning">{{ mentors_data.mentor_performance.response_time }}</div>
+                            <div class="text-muted">Temps de Réponse (jours)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-building me-2"></i>Répartition par Taille d'Entreprise</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="companySizeChart" width="300" height="200"></canvas>
+                    <div class="mt-3">
+                        {% for type, count in mentors_data.mentor_distribution.by_company_size %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ type }}</span>
+                                <span class="badge badge-primary">{{ count }} mentors</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-industry me-2"></i>Répartition par Secteur</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sectorChart" width="300" height="200"></canvas>
+                    <div class="mt-3">
+                        {% for sector, count in mentors_data.mentor_distribution.by_sector %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ sector }}</span>
+                                <span class="badge badge-info">{{ count }} mentors</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Needs & Best Practices -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-graduation-cap me-2"></i>Besoins en Formation</h5>
+                </div>
+                <div class="card-body">
+                    {% for need, count in mentors_data.training_needs %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>{{ need }}</span>
+                            <div class="d-flex align-items-center">
+                                <div class="progress me-2" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: {{ (count / 20 * 100) }}%"></div>
+                                </div>
+                                <span class="badge badge-warning">{{ count }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-star me-2"></i>Bonnes Pratiques Identifiées</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for practice in mentors_data.best_practices %}
+                            <div class="list-group-item border-0 px-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                {{ practice }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-tasks me-2"></i>Plan d'Actions pour l'Amélioration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-user-graduate me-2"></i>Formation des Mentors</h6>
+                                <ul class="mb-0 small">
+                                    <li>Session pédagogie avancée</li>
+                                    <li>Techniques d'évaluation</li>
+                                    <li>Communication efficace</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-handshake me-2"></i>Accompagnement</h6>
+                                <ul class="mb-0 small">
+                                    <li>Coaching individualisé</li>
+                                    <li>Groupes d'échange</li>
+                                    <li>Ressources pédagogiques</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-trophy me-2"></i>Reconnaissance</h6>
+                                <ul class="mb-0 small">
+                                    <li>Programme de reconnaissance</li>
+                                    <li>Certification mentor expert</li>
+                                    <li>Événements de valorisation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-submit form on change
+            const selects = document.querySelectorAll('form select');
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+
+            // Company Size Chart
+            const companySizeCtx = document.getElementById('companySizeChart');
+            if (companySizeCtx) {
+                new Chart(companySizeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ mentors_data.mentor_distribution.by_company_size|keys|json_encode }},
+                        datasets: [{
+                            data: {{ mentors_data.mentor_distribution.by_company_size|json_encode }},
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 205, 86, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Sector Chart
+            const sectorCtx = document.getElementById('sectorChart');
+            if (sectorCtx) {
+                new Chart(sectorCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ mentors_data.mentor_distribution.by_sector|keys|json_encode }},
+                        datasets: [{
+                            data: {{ mentors_data.mentor_distribution.by_sector|json_encode }},
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

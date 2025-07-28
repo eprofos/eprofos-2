@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation à rejoindre EPROFOS - Espace Mentor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .welcome-message {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .credentials-box {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .credentials-box h3 {
+            color: #495057;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .credential-item {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .credential-label {
+            font-weight: bold;
+            color: #6c757d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .login-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .info-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .info-section h4 {
+            color: #856404;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        
+        .info-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .info-section li {
+            margin-bottom: 8px;
+            color: #856404;
+        }
+        
+        .mentor-profile {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .mentor-profile h4 {
+            color: #495057;
+            margin-top: 0;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+        
+        .profile-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        
+        .profile-value {
+            color: #495057;
+            text-align: right;
+        }
+        
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #adb5bd;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        .warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .credentials-box {
+                padding: 20px 15px;
+            }
+            
+            .profile-item {
+                flex-direction: column;
+            }
+            
+            .profile-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Bienvenue sur EPROFOS</h1>
+            <p class="subtitle">Votre espace mentor pour l'encadrement d'alternants</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <p>Bonjour <strong>{{ mentor.firstName }} {{ mentor.lastName }}</strong>,</p>
+            
+            <div class="welcome-message">
+                <p><strong>Félicitations !</strong> Vous avez été invité(e) à rejoindre la plateforme EPROFOS en tant que mentor pour accompagner nos alternants dans leur parcours professionnel.</p>
+            </div>
+            
+            <p>En tant que mentor chez <strong>{{ mentor.companyName }}</strong>, vous aurez accès à un espace dédié pour :</p>
+            
+            <ul>
+                <li>Suivre la progression de vos alternants</li>
+                <li>Créer et gérer les missions d'entreprise</li>
+                <li>Réaliser les évaluations périodiques</li>
+                <li>Communiquer avec l'équipe pédagogique</li>
+                <li>Accéder aux ressources et outils de suivi</li>
+            </ul>
+            
+            <!-- Credentials -->
+            <div class="credentials-box">
+                <h3>🔐 Vos identifiants de connexion</h3>
+                
+                <div class="credential-item">
+                    <div class="credential-label">Email</div>
+                    <div>{{ mentor.email }}</div>
+                </div>
+                
+                <div class="credential-item">
+                    <div class="credential-label">Mot de passe temporaire</div>
+                    <div>{{ credentials.password }}</div>
+                </div>
+                
+                <div class="warning">
+                    <strong>⚠️ Important :</strong>
+                    Pour votre sécurité, ce mot de passe temporaire doit être changé lors de votre première connexion.
+                </div>
+            </div>
+            
+            <!-- Login Button -->
+            <div style="text-align: center;">
+                <a href="{{ url('mentor_login') }}" class="login-button">
+                    🚀 Accéder à mon espace mentor
+                </a>
+            </div>
+            
+            <!-- Mentor Profile -->
+            <div class="mentor-profile">
+                <h4>📋 Récapitulatif de votre profil</h4>
+                
+                <div class="profile-item">
+                    <span class="profile-label">Nom complet</span>
+                    <span class="profile-value">{{ mentor.fullName }}</span>
+                </div>
+                
+                <div class="profile-item">
+                    <span class="profile-label">Poste</span>
+                    <span class="profile-value">{{ mentor.position }}</span>
+                </div>
+                
+                <div class="profile-item">
+                    <span class="profile-label">Entreprise</span>
+                    <span class="profile-value">{{ mentor.companyName }}</span>
+                </div>
+                
+                <div class="profile-item">
+                    <span class="profile-label">SIRET</span>
+                    <span class="profile-value">{{ mentor.companySiret }}</span>
+                </div>
+                
+                {% if mentor.phone %}
+                <div class="profile-item">
+                    <span class="profile-label">Téléphone</span>
+                    <span class="profile-value">{{ mentor.phone }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="profile-item">
+                    <span class="profile-label">Expérience</span>
+                    <span class="profile-value">{{ mentor.experienceDescription }}</span>
+                </div>
+                
+                <div class="profile-item">
+                    <span class="profile-label">Formation</span>
+                    <span class="profile-value">{{ mentor.educationLevelLabel }}</span>
+                </div>
+                
+                {% if mentor.expertiseDomainsLabels|length > 0 %}
+                <div class="profile-item">
+                    <span class="profile-label">Expertises</span>
+                    <span class="profile-value">{{ mentor.expertiseDomainsLabels|join(', ') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Information Section -->
+            <div class="info-section">
+                <h4>📚 Prochaines étapes</h4>
+                <ul>
+                    <li>Connectez-vous avec vos identifiants</li>
+                    <li>Changez votre mot de passe temporaire</li>
+                    <li>Complétez votre profil si nécessaire</li>
+                    <li>Explorez l'interface mentor</li>
+                    <li>Contactez l'équipe en cas de questions</li>
+                </ul>
+            </div>
+            
+            <p>
+                Si vous rencontrez des difficultés pour vous connecter ou si vous avez des questions concernant votre rôle de mentor, 
+                n'hésitez pas à nous contacter :
+            </p>
+            
+            <ul>
+                <li>📧 Email : <a href="mailto:support@eprofos.com">support@eprofos.com</a></li>
+                <li>📞 Téléphone : 01 23 45 67 89</li>
+                <li>🕒 Horaires : Lundi-Vendredi 9h-18h</li>
+            </ul>
+            
+            <p>
+                Nous vous remercions de votre engagement dans la formation de nos alternants et nous réjouissons de collaborer avec vous.
+            </p>
+            
+            <p>Cordialement,<br>
+            <strong>L'équipe EPROFOS</strong></p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>EPROFOS</strong> - Formation Professionnelle<br>
+                123 Rue de la Formation, 75001 Paris<br>
+                <a href="mailto:contact@eprofos.com">contact@eprofos.com</a> | 
+                <a href="https://www.eprofos.com">www.eprofos.com</a>
+            </p>
+            
+            <p style="margin-top: 20px; font-size: 12px; color: #adb5bd;">
+                Cet email a été envoyé automatiquement. Si vous pensez avoir reçu ce message par erreur, 
+                veuillez nous contacter immédiatement.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

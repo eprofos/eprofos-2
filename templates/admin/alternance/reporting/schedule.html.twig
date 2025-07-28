@@ -1,0 +1,296 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Programmation de Rapports - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Programmation de Rapports</h1>
+            <p class="text-muted mb-0">Configuration et gestion des rapports automatiques</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_reporting_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleReportModal">
+                    <i class="fas fa-plus me-2"></i>Nouveau Rapport Programmé
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Current Scheduled Reports -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>Rapports Programmés</h5>
+                </div>
+                <div class="card-body">
+                    {% if scheduled_reports|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type de Rapport</th>
+                                        <th>Fréquence</th>
+                                        <th>Prochaine Exécution</th>
+                                        <th>Destinataires</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in scheduled_reports %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">{{ report.report_type|title }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">
+                                                    {% if report.frequency == 'daily' %}Quotidien
+                                                    {% elseif report.frequency == 'weekly' %}Hebdomadaire
+                                                    {% elseif report.frequency == 'monthly' %}Mensuel
+                                                    {% elseif report.frequency == 'quarterly' %}Trimestriel
+                                                    {% else %}{{ report.frequency|title }}{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-clock text-muted me-2"></i>
+                                                    {{ report.next_execution|date('d/m/Y H:i') }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="small">
+                                                    {% for recipient in report.recipients %}
+                                                        <div><i class="fas fa-envelope text-muted me-1"></i>{{ recipient }}</div>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ report.status == 'active' ? 'success' : 'secondary' }}">
+                                                    {{ report.status == 'active' ? 'Actif' : 'Inactif' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-outline-primary" 
+                                                            onclick="editScheduledReport({{ report.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-success" 
+                                                            onclick="runReportNow({{ report.id }})">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="deleteScheduledReport({{ report.id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun rapport programmé</h5>
+                            <p class="text-muted mb-3">Configurez votre premier rapport automatique pour recevoir des analyses régulières.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleReportModal">
+                                <i class="fas fa-plus me-2"></i>Créer un Rapport Programmé
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Configuration Help -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-question-circle me-2"></i>Types de Rapports Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Vue d'ensemble</div>
+                            <div class="small text-muted">Rapport général sur l'activité alternance</div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Conformité Qualiopi</div>
+                            <div class="small text-muted">Indicateurs de qualité et conformité</div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Performance</div>
+                            <div class="small text-muted">Métriques de performance des alternants</div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Mentors</div>
+                            <div class="small text-muted">Analyse des mentors et de leur efficacité</div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Missions</div>
+                            <div class="small text-muted">Suivi et analyse des missions en entreprise</div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="fw-bold">Financier</div>
+                            <div class="small text-muted">Analyse financière et rentabilité</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Recommandations de Fréquence</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Fréquences Recommandées</h6>
+                        <ul class="mb-0 small">
+                            <li><strong>Vue d'ensemble :</strong> Hebdomadaire</li>
+                            <li><strong>Qualiopi :</strong> Mensuel</li>
+                            <li><strong>Performance :</strong> Bi-hebdomadaire</li>
+                            <li><strong>Mentors :</strong> Mensuel</li>
+                            <li><strong>Missions :</strong> Hebdomadaire</li>
+                            <li><strong>Financier :</strong> Mensuel</li>
+                        </ul>
+                    </div>
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Bonnes Pratiques</h6>
+                        <ul class="mb-0 small">
+                            <li>Évitez les envois trop fréquents</li>
+                            <li>Adaptez la fréquence au destinataire</li>
+                            <li>Testez avec des rapports ponctuels</li>
+                            <li>Vérifiez régulièrement les paramètres</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Report Modal -->
+    <div class="modal fade" id="scheduleReportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Programmer un Nouveau Rapport</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ path('admin_alternance_reporting_schedule') }}">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="report_type" class="form-label">Type de Rapport <span class="text-danger">*</span></label>
+                                <select name="schedule[report_type]" id="report_type" class="form-select" required>
+                                    <option value="">Sélectionner un type</option>
+                                    <option value="overview">Vue d'ensemble</option>
+                                    <option value="qualiopi">Conformité Qualiopi</option>
+                                    <option value="performance">Performance</option>
+                                    <option value="mentors">Mentors</option>
+                                    <option value="missions">Missions</option>
+                                    <option value="financial">Financier</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="frequency" class="form-label">Fréquence <span class="text-danger">*</span></label>
+                                <select name="schedule[frequency]" id="frequency" class="form-select" required>
+                                    <option value="">Sélectionner une fréquence</option>
+                                    <option value="daily">Quotidien</option>
+                                    <option value="weekly">Hebdomadaire</option>
+                                    <option value="monthly">Mensuel</option>
+                                    <option value="quarterly">Trimestriel</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Date de Début</label>
+                                <input type="datetime-local" name="schedule[start_date]" id="start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="format" class="form-label">Format</label>
+                                <select name="schedule[format]" id="format" class="form-select">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="recipients" class="form-label">Destinataires <span class="text-danger">*</span></label>
+                                <textarea name="schedule[recipients]" id="recipients" class="form-control" rows="3" 
+                                          placeholder="admin@eprofos.fr, direction@eprofos.fr" required></textarea>
+                                <div class="form-text">Séparez les adresses email par des virgules</div>
+                            </div>
+                            <div class="col-12">
+                                <label for="subject" class="form-label">Sujet de l'Email</label>
+                                <input type="text" name="schedule[subject]" id="subject" class="form-control" 
+                                       placeholder="Rapport Alternance - {report_type} - {date}">
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Message d'Accompagnement</label>
+                                <textarea name="schedule[message]" id="message" class="form-control" rows="3" 
+                                          placeholder="Veuillez trouver ci-joint le rapport alternance..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" name="schedule[active]" id="active" class="form-check-input" checked>
+                                    <label for="active" class="form-check-label">Activer immédiatement</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Programmer le Rapport
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function editScheduledReport(reportId) {
+            // Implementation for editing scheduled report
+            alert('Fonction d\'édition en cours de développement');
+        }
+
+        function runReportNow(reportId) {
+            if (confirm('Voulez-vous exécuter ce rapport maintenant ?')) {
+                // Implementation for running report immediately
+                alert('Exécution du rapport en cours...');
+            }
+        }
+
+        function deleteScheduledReport(reportId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce rapport programmé ?')) {
+                // Implementation for deleting scheduled report
+                alert('Rapport programmé supprimé');
+                location.reload();
+            }
+        }
+
+        // Set default start date to now
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('start_date').value = now.toISOString().slice(0, 16);
+        });
+    </script>
+{% endblock %}

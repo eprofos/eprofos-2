@@ -1,0 +1,303 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Évaluation de Progression - {{ evaluation.student.fullName }}{% endblock %}
+
+{% block page_title %}Évaluation de Progression{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Détails de l'évaluation</h3>
+                <div class="card-actions">
+                    <a href="{{ path('admin_alternance_evaluation_progress') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-arrow-left"></i>
+                        Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Student and Mentor Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Alternant</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-lg me-3">
+                                {{ evaluation.student.fullName|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ evaluation.student.fullName }}</strong>
+                                <div class="text-muted">{{ evaluation.student.email }}</div>
+                                <div class="text-muted small">Formation en alternance</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Mentor</h5>
+                        {% if evaluation.mentor %}
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-lg me-3">
+                                {{ evaluation.mentor.fullName|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ evaluation.mentor.fullName }}</strong>
+                                <div class="text-muted">{{ evaluation.mentor.email }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Aucun mentor assigné</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Evaluation Period and Status -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <h6>Période d'évaluation</h6>
+                        <p class="text-muted mb-0">
+                            Du {{ evaluation.periodStart|date('d/m/Y') }}<br>
+                            au {{ evaluation.periodEnd|date('d/m/Y') }}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Date d'évaluation</h6>
+                        <p class="text-muted mb-0">{{ evaluation.createdAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Statut</h6>
+                        {% if evaluation.status == 'pending' %}
+                            <span class="badge bg-warning fs-6">En attente de validation</span>
+                        {% elseif evaluation.status == 'validated' %}
+                            <span class="badge bg-success fs-6">Validé</span>
+                        {% elseif evaluation.status == 'rejected' %}
+                            <span class="badge bg-danger fs-6">Rejeté</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">{{ evaluation.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Overall Score -->
+                {% if evaluation.overallScore is not null %}
+                <div class="mb-4">
+                    <h5>Score Global</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="progress progress-lg">
+                                <div class="progress-bar 
+                                    {% if evaluation.overallScore >= 0.8 %}bg-success
+                                    {% elseif evaluation.overallScore >= 0.6 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ (evaluation.overallScore * 100)|round }}%">
+                                    {{ (evaluation.overallScore * 100)|round }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="mb-0">{{ (evaluation.overallScore * 100)|round }}%</h3>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Objectives -->
+                {% if evaluation.achievedObjectives is not empty or evaluation.plannedObjectives is not empty %}
+                <div class="mb-4">
+                    <h5>Objectifs</h5>
+                    
+                    {% if evaluation.achievedObjectives is not empty %}
+                    <h6 class="text-success">Objectifs atteints ({{ evaluation.achievedObjectives|length }})</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for objective in evaluation.achievedObjectives %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="ti ti-check text-success me-2"></i>
+                            {{ objective }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if evaluation.plannedObjectives is not empty %}
+                    <h6 class="text-info">Objectifs planifiés ({{ evaluation.plannedObjectives|length }})</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for objective in evaluation.plannedObjectives %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="ti ti-clock text-info me-2"></i>
+                            {{ objective }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Comments -->
+                {% if evaluation.mentorComments or evaluation.studentComments %}
+                <div class="mb-4">
+                    <h5>Commentaires</h5>
+                    
+                    {% if evaluation.mentorComments %}
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">Commentaires du mentor</h6>
+                            <p class="card-text">{{ evaluation.mentorComments|nl2br }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if evaluation.studentComments %}
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Commentaires de l'alternant</h6>
+                            <p class="card-text">{{ evaluation.studentComments|nl2br }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Admin Comments -->
+                {% if evaluation.adminComments %}
+                <div class="mb-4">
+                    <h5>Commentaires administrateur</h5>
+                    <div class="card bg-warning-light">
+                        <div class="card-body">
+                            <p class="card-text">{{ evaluation.adminComments|nl2br }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Validation Actions -->
+                {% if evaluation.status == 'pending' %}
+                <div class="border-top pt-4">
+                    <h5>Validation</h5>
+                    <form method="POST" action="{{ path('admin_alternance_evaluation_progress_validate', {id: evaluation.id}) }}">
+                        <div class="mb-3">
+                            <label for="comments" class="form-label">Commentaires (optionnel)</label>
+                            <textarea name="comments" id="comments" class="form-control" rows="3" 
+                                      placeholder="Ajoutez vos commentaires sur cette évaluation..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="ti ti-check"></i>
+                                Approuver l'évaluation
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                <i class="ti ti-x"></i>
+                                Rejeter l'évaluation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Analysis Panel -->
+        {% if analysis is defined %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Analyse</h3>
+            </div>
+            <div class="card-body">
+                {% if analysis.recommendations is not empty %}
+                <h6>Recommandations</h6>
+                <ul class="list-unstyled">
+                    {% for recommendation in analysis.recommendations %}
+                    <li class="mb-2">
+                        <i class="ti ti-bulb text-warning me-2"></i>
+                        {% if recommendation.title is defined %}
+                            <strong>{{ recommendation.title }}</strong>: {{ recommendation.description }}
+                        {% else %}
+                            {{ recommendation }}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% set strengthsList = analysis.strengths ?? (analysis.skills_analysis.strengths ?? []) %}
+                {% if strengthsList is not empty %}
+                <h6 class="mt-4">Points forts</h6>
+                <ul class="list-unstyled">
+                    {% for strength in strengthsList %}
+                    <li class="mb-2">
+                        <i class="ti ti-plus text-success me-2"></i>
+                        {{ strength }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% set improvementsList = analysis.areas_for_improvement ?? (analysis.skills_analysis.areas_for_improvement ?? []) %}
+                {% if improvementsList is not empty %}
+                <h6 class="mt-4">Axes d'amélioration</h6>
+                <ul class="list-unstyled">
+                    {% for area in improvementsList %}
+                    <li class="mb-2">
+                        <i class="ti ti-arrow-up text-info me-2"></i>
+                        {{ area }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% set nextStepsList = analysis.next_steps ?? (analysis.intervention_plan.next_steps ?? []) %}
+                {% if nextStepsList is not empty %}
+                <h6 class="mt-4">Prochaines étapes</h6>
+                <ul class="list-unstyled">
+                    {% for step in nextStepsList %}
+                    <li class="mb-2">
+                        <i class="ti ti-arrow-right text-primary me-2"></i>
+                        {{ step }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Historical Data -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Historique</h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-primary"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">{{ evaluation.createdAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-title">Évaluation créée</div>
+                            <div class="timeline-body text-muted">
+                                Évaluation soumise par {{ evaluation.mentor ? evaluation.mentor.fullName : 'l\'alternant' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if evaluation.validatedAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">{{ evaluation.validatedAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-title">Évaluation validée</div>
+                            {% if evaluation.validatedBy %}
+                            <div class="timeline-body text-muted">
+                                Validée par {{ evaluation.validatedBy.fullName }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,373 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Planning Alternance{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Planning Alternance</h1>
+        <div class="btn-group" role="group">
+            <a href="{{ path('admin_alternance_planning_analytics') }}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="{{ path('admin_alternance_planning_export', {format: 'csv'}) }}" class="btn btn-outline-success">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres et Vue</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="view" class="form-label">Vue</label>
+                    <select name="view" id="view" class="form-select">
+                        <option value="calendar" {{ view == 'calendar' ? 'selected' : '' }}>Calendrier</option>
+                        <option value="list" {{ view == 'list' ? 'selected' : '' }}>Liste</option>
+                        <option value="gantt" {{ view == 'gantt' ? 'selected' : '' }}>Gantt</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="period" class="form-label">Période</label>
+                    <select name="period" id="period" class="form-select">
+                        <option value="week" {{ period == 'week' ? 'selected' : '' }}>Semaine</option>
+                        <option value="month" {{ period == 'month' ? 'selected' : '' }}>Mois</option>
+                        <option value="semester" {{ period == 'semester' ? 'selected' : '' }}>Semestre</option>
+                        <option value="year" {{ period == 'year' ? 'selected' : '' }}>Année</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select name="formation" id="formation" class="form-select">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="mentor" class="form-label">Mentor</label>
+                    <select name="mentor" id="mentor" class="form-select">
+                        <option value="">Tous les mentors</option>
+                        {% for mentor in mentors %}
+                            <option value="{{ mentor.id }}" {{ filters.mentor == mentor.id ? 'selected' : '' }}>
+                                {{ mentor.fullName }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                    <a href="{{ path('admin_alternance_planning_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-file-contract text-primary fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Total Contrats</h6>
+                            <h4 class="card-title mb-0">{{ statistics.total_contracts }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-play-circle text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Contrats Actifs</h6>
+                            <h4 class="card-title mb-0">{{ statistics.active_contracts }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-check text-info fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Sessions à venir</h6>
+                            <h4 class="card-title mb-0">{{ statistics.upcoming_sessions }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-warning fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Conflits</h6>
+                            <h4 class="card-title mb-0">{{ statistics.conflicts }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content based on view -->
+    {% if view == 'calendar' %}
+        <!-- Calendar View -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Vue Calendrier</h5>
+            </div>
+            <div class="card-body">
+                <div id="calendar" style="height: 600px;">
+                    <!-- FullCalendar will be initialized here -->
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <div class="text-center">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Calendrier en cours de chargement...</p>
+                            <small class="text-muted">
+                                Intégration FullCalendar à implémenter<br>
+                                Endpoint: {{ path('admin_alternance_planning_calendar') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elseif view == 'gantt' %}
+        <!-- Gantt View -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Vue Gantt</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 600px;">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="text-center">
+                            <i class="fas fa-chart-gantt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Diagramme de Gantt en cours de développement...</p>
+                            <small class="text-muted">Intégration d'une bibliothèque Gantt à prévoir</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- List View (default) -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Liste des Contrats d'Alternance</h5>
+            </div>
+            <div class="card-body">
+                {% if contracts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Alternant</th>
+                                    <th>Formation</th>
+                                    <th>Dates</th>
+                                    <th>Statut</th>
+                                    <th>Rythme</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in contracts %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar bg-primary-subtle text-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    {{ contract.student.firstName|first }}{{ contract.student.lastName|first }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ contract.student.fullName }}</strong><br>
+                                                    <small class="text-muted">{{ contract.student.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if contract.session and contract.session.formation %}
+                                                <span class="badge bg-info">{{ contract.session.formation.title }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Non définie</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if contract.startDate and contract.endDate %}
+                                                <small>
+                                                    <strong>Début:</strong> {{ contract.startDate|date('d/m/Y') }}<br>
+                                                    <strong>Fin:</strong> {{ contract.endDate|date('d/m/Y') }}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Dates non définies</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set status_class = {
+                                                'active': 'success',
+                                                'pending': 'warning',
+                                                'completed': 'secondary',
+                                                'cancelled': 'danger'
+                                            }[contract.status] ?? 'primary' %}
+                                            <span class="badge bg-{{ status_class }}">
+                                                {{ contract.status|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% set centerHours = contract.weeklyCenterHours ?? 0 %}
+                                            {% set companyHours = contract.weeklyCompanyHours ?? 0 %}
+                                            {% if centerHours > 0 or companyHours > 0 %}
+                                                <small>
+                                                    Centre: {{ centerHours }}h<br>
+                                                    Entreprise: {{ companyHours }}h
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ path('admin_alternance_planning_contract_schedule', {id: contract.id}) }}" 
+                                                   class="btn btn-outline-primary" title="Voir le planning">
+                                                    <i class="fas fa-calendar"></i>
+                                                </a>
+                                                <a href="{{ path('admin_alternance_contract_show', {id: contract.id}) }}" 
+                                                   class="btn btn-outline-info" title="Voir le contrat">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ path('admin_alternance_contract_edit', {id: contract.id}) }}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                        <nav aria-label="Pagination des contrats">
+                            <ul class="pagination justify-content-center">
+                                {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_alternance_planning_index', filters|merge({page: current_page - 1})) }}">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page in 1..total_pages %}
+                                    {% if page == current_page %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page }}</span>
+                                        </li>
+                                    {% elseif page <= 3 or page >= total_pages - 2 or (page >= current_page - 1 and page <= current_page + 1) %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ path('admin_alternance_planning_index', filters|merge({page: page})) }}">{{ page }}</a>
+                                        </li>
+                                    {% elseif page == 4 and current_page > 5 %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% elseif page == total_pages - 3 and current_page < total_pages - 4 %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('admin_alternance_planning_index', filters|merge({page: current_page + 1})) }}">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-contract fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucun contrat trouvé</h5>
+                        <p class="text-muted">Aucun contrat d'alternance ne correspond aux critères sélectionnés.</p>
+                        <a href="{{ path('admin_alternance_contract_new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer un nouveau contrat
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Recent Changes -->
+    {% if statistics.recent_changes %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Modifications Récentes</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for change in statistics.recent_changes %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                {% set icon_class = {
+                                    'schedule_update': 'calendar-alt text-primary',
+                                    'conflict_resolved': 'check-circle text-success',
+                                    'new_contract': 'plus-circle text-info'
+                                }[change.type] ?? 'info-circle text-secondary' %}
+                                <i class="fas fa-{{ icon_class }} me-2"></i>
+                                {{ change.description }}
+                            </div>
+                            <small class="text-muted">{{ change.date|date('d/m/Y H:i') }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if view == 'calendar' %}
+        <!-- Add FullCalendar JS here when implementing -->
+        <script>
+            // TODO: Implement FullCalendar integration
+            // Calendar endpoint: {{ path('admin_alternance_planning_calendar') }}
+            console.log('Calendar view - FullCalendar integration needed');
+        </script>
+    {% endif %}
+{% endblock %}

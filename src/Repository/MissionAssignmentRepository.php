@@ -527,4 +527,17 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * Count assignments by status
+     */
+    public function countByStatus(string $status): int
+    {
+        return $this->createQueryBuilder('ma')
+            ->select('COUNT(ma.id)')
+            ->where('ma.status = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

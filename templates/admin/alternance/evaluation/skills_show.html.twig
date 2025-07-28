@@ -1,0 +1,401 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Évaluation de Compétences - {{ evaluation.student.fullName }}{% endblock %}
+
+{% block page_title %}Évaluation de Compétences{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div cla                {% set trainingSuggestions = analysis.training_suggestions ?? (analysis.strengths_and_weaknesses.suggestions ?? []) %}
+                {% if trainingSuggestions is not empty %}
+                <h6 class="mt-4">Suggestions de formation</h6>
+                <ul class="list-unstyled">
+                    {% for suggestion in trainingSuggestions %}
+                    <li class="mb-2">
+                        <i class="ti ti-school text-info me-2"></i>
+                        {{ suggestion }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}ader d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Détails de l'évaluation</h3>
+                <div class="card-actions">
+                    <a href="{{ path('admin_alternance_evaluation_skills') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-arrow-left"></i>
+                        Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Student and Mentor Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Alternant</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-lg me-3">
+                                {{ evaluation.student.fullName|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ evaluation.student.fullName }}</strong>
+                                <div class="text-muted">{{ evaluation.student.email }}</div>
+                                <div class="text-muted small">Formation en alternance</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Mentor</h5>
+                        {% if evaluation.mentor %}
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-lg me-3">
+                                {{ evaluation.mentor.fullName|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ evaluation.mentor.fullName }}</strong>
+                                <div class="text-muted">{{ evaluation.mentor.email }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Aucun mentor assigné</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Evaluation Info -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <h6>Date d'évaluation</h6>
+                        <p class="text-muted mb-0">{{ evaluation.createdAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Statut</h6>
+                        {% if evaluation.status == 'pending' %}
+                            <span class="badge bg-warning fs-6">En attente de validation</span>
+                        {% elseif evaluation.status == 'validated' %}
+                            <span class="badge bg-success fs-6">Validé</span>
+                        {% elseif evaluation.status == 'rejected' %}
+                            <span class="badge bg-danger fs-6">Rejeté</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">{{ evaluation.status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Niveau atteint</h6>
+                        {% if evaluation.skillLevel is not null %}
+                            {% set level = evaluation.skillLevel %}
+                            {% if level == 'beginner' %}
+                                <span class="badge bg-secondary fs-6">Débutant</span>
+                            {% elseif level == 'intermediate' %}
+                                <span class="badge bg-info fs-6">Intermédiaire</span>
+                            {% elseif level == 'advanced' %}
+                                <span class="badge bg-warning fs-6">Avancé</span>
+                            {% elseif level == 'expert' %}
+                                <span class="badge bg-success fs-6">Expert</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark fs-6">{{ level }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Non défini</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Overall Score -->
+                {% if evaluation.overallScore is not null %}
+                <div class="mb-4">
+                    <h5>Score Global</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="progress progress-lg">
+                                <div class="progress-bar 
+                                    {% if evaluation.overallScore >= 0.8 %}bg-success
+                                    {% elseif evaluation.overallScore >= 0.6 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ (evaluation.overallScore * 100)|round }}%">
+                                    {{ (evaluation.overallScore * 100)|round }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="mb-0">{{ (evaluation.overallScore * 100)|round }}%</h3>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Skills Assessment Details -->
+                {% if evaluation.skillsAssessed is not empty %}
+                <div class="mb-4">
+                    <h5>Compétences Évaluées</h5>
+                    <div class="row">
+                        {% for skill in evaluation.skillsAssessed %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ skill.name }}</h6>
+                                    {% if skill.score is defined %}
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar 
+                                            {% if skill.score >= 0.8 %}bg-success
+                                            {% elseif skill.score >= 0.6 %}bg-warning
+                                            {% else %}bg-danger{% endif %}" 
+                                            style="width: {{ (skill.score * 100)|round }}%">
+                                            {{ (skill.score * 100)|round }}%
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if skill.level is defined %}
+                                    <div class="text-muted small">Niveau: {{ skill.level }}</div>
+                                    {% endif %}
+                                    {% if skill.comments is defined %}
+                                    <div class="text-muted small mt-2">{{ skill.comments }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Skills Strengths and Weaknesses -->
+                {% if evaluation.skillsStrengths is not empty or evaluation.skillsWeaknesses is not empty %}
+                <div class="mb-4">
+                    <div class="row">
+                        {% if evaluation.skillsStrengths is not empty %}
+                        <div class="col-md-6">
+                            <h6 class="text-success">Points forts</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for strength in evaluation.skillsStrengths %}
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="ti ti-plus text-success me-2"></i>
+                                    {{ strength }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if evaluation.skillsWeaknesses is not empty %}
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Axes d'amélioration</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for weakness in evaluation.skillsWeaknesses %}
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="ti ti-arrow-up text-warning me-2"></i>
+                                    {{ weakness }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Development Plan -->
+                {% if evaluation.developmentPlan is not empty %}
+                <div class="mb-4">
+                    <h5>Plan de Développement</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for plan in evaluation.developmentPlan %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="ti ti-target text-primary me-2"></i>
+                            {{ plan }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Comments -->
+                {% if evaluation.mentorComments or evaluation.studentComments %}
+                <div class="mb-4">
+                    <h5>Commentaires</h5>
+                    
+                    {% if evaluation.mentorComments %}
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">Commentaires du mentor</h6>
+                            <p class="card-text">{{ evaluation.mentorComments|nl2br }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if evaluation.studentComments %}
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Commentaires de l'alternant</h6>
+                            <p class="card-text">{{ evaluation.studentComments|nl2br }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Admin Comments -->
+                {% if evaluation.adminComments %}
+                <div class="mb-4">
+                    <h5>Commentaires administrateur</h5>
+                    <div class="card bg-warning-light">
+                        <div class="card-body">
+                            <p class="card-text">{{ evaluation.adminComments|nl2br }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Validation Actions -->
+                {% if evaluation.status == 'pending' %}
+                <div class="border-top pt-4">
+                    <h5>Validation</h5>
+                    <form method="POST" action="{{ path('admin_alternance_evaluation_skills_validate', {id: evaluation.id}) }}">
+                        <div class="mb-3">
+                            <label for="comments" class="form-label">Commentaires (optionnel)</label>
+                            <textarea name="comments" id="comments" class="form-control" rows="3" 
+                                      placeholder="Ajoutez vos commentaires sur cette évaluation..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="ti ti-check"></i>
+                                Approuver l'évaluation
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                <i class="ti ti-x"></i>
+                                Rejeter l'évaluation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Analysis Panel -->
+        {% if analysis is defined %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Analyse des Compétences</h3>
+            </div>
+            <div class="card-body">
+                {% set skillProgression = analysis.skill_progression ?? (analysis.progression_tracking ?? {}) %}
+                {% if skillProgression is not empty %}
+                <h6>Progression des compétences</h6>
+                {% for skill, progression in skillProgression %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-medium">{{ skill }}</span>
+                        <span class="text-muted">{{ progression }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ progression }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}                {% set recommendationsList = analysis.recommendations ?? (analysis.development_recommendations ?? []) %}
+                {% if recommendationsList is not empty %}
+                <h6 class="mt-4">Recommandations</h6>
+                <ul class="list-unstyled">
+                    {% for recommendation in recommendationsList %}
+                    <li class="mb-2">
+                        <i class="ti ti-bulb text-warning me-2"></i>
+                        {% if recommendation.title is defined %}
+                            <strong>{{ recommendation.title }}</strong>: {{ recommendation.description }}
+                        {% else %}
+                            {{ recommendation }}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if analysis.training_suggestions is not empty %}
+                <h6 class="mt-4">Formations suggérées</h6>
+                <ul class="list-unstyled">
+                    {% for suggestion in analysis.training_suggestions %}
+                    <li class="mb-2">
+                        <i class="ti ti-book text-info me-2"></i>
+                        {{ suggestion }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Skills Comparison -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Comparaison</h3>
+            </div>
+            <div class="card-body">
+                <h6>Performance vs Moyennes</h6>
+                <div class="text-muted small mb-3">
+                    Comparaison avec les autres alternants de la même formation
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">Score personnel</span>
+                        <span class="small">{{ (evaluation.overallScore * 100)|round }}%</span>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-primary" style="width: {{ (evaluation.overallScore * 100)|round }}%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">Moyenne formation</span>
+                        <span class="small">72%</span>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-secondary" style="width: 72%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Data -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Historique</h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-primary"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">{{ evaluation.createdAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-title">Évaluation créée</div>
+                            <div class="timeline-body text-muted">
+                                Évaluation soumise par {{ evaluation.mentor ? evaluation.mentor.fullName : 'l\'alternant' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if evaluation.validatedAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">{{ evaluation.validatedAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-title">Évaluation validée</div>
+                            {% if evaluation.validatedBy %}
+                            <div class="timeline-body text-muted">
+                                Validée par {{ evaluation.validatedBy.fullName }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

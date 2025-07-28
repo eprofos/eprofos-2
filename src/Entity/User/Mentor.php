@@ -71,7 +71,7 @@ class Mentor implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 14)]
     #[Assert\NotBlank(message: 'Le SIRET est obligatoire')]
-    #[Assert\Length(exactly: 14, exactMessage: 'Le SIRET doit contenir exactement 14 chiffres')]
+    #[Assert\Length(min: 14, max: 14, minMessage: 'Le SIRET doit contenir exactement 14 chiffres', maxMessage: 'Le SIRET doit contenir exactement 14 chiffres')]
     #[Assert\Regex(pattern: '/^\d{14}$/', message: 'Le SIRET doit contenir uniquement des chiffres')]
     private ?string $companySiret = null;
 

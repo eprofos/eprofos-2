@@ -1,0 +1,215 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Conformité Qualiopi - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Rapport Conformité Qualiopi</h1>
+            <p class="text-muted mb-0">Indicateurs de qualité et conformité pour les formations en alternance</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_reporting_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="period" class="form-label">Période</label>
+                            <select name="period" id="period" class="form-select">
+                                <option value="current_month" {{ period == 'current_month' ? 'selected' : '' }}>Mois actuel</option>
+                                <option value="current_semester" {{ period == 'current_semester' ? 'selected' : '' }}>Semestre actuel</option>
+                                <option value="current_year" {{ period == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="formation" class="form-label">Formation</label>
+                            <select name="formation" id="formation" class="form-select">
+                                <option value="">Toutes les formations</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i>Appliquer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Audit Readiness -->
+    <div class="row mb-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-2">{{ qualiopi_data.audit_readiness }}%</div>
+                    <h5>Prêt pour Audit</h5>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ qualiopi_data.audit_readiness }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-primary mb-2">{{ qualiopi_data.documentation_score }}%</div>
+                    <h5>Score Documentation</h5>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: {{ qualiopi_data.documentation_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="display-4 text-info mb-2">{{ qualiopi_data.process_compliance }}%</div>
+                    <h5>Conformité Processus</h5>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: {{ qualiopi_data.process_compliance }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Indicators -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-check-circle me-2"></i>Indicateurs de Conformité</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for key, indicator in qualiopi_data.compliance_indicators %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card border-{{ indicator.status == 'compliant' ? 'success' : 'warning' }}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="card-title mb-0">{{ key|replace({'_': ' '})|title }}</h6>
+                                            <span class="badge badge-{{ indicator.status == 'compliant' ? 'success' : 'warning' }}">
+                                                {{ indicator.status == 'compliant' ? 'Conforme' : 'Attention' }}
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="text-{{ indicator.status == 'compliant' ? 'success' : 'warning' }} fs-4 fw-bold">
+                                                {{ indicator.score }}%
+                                            </div>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 6px;">
+                                            <div class="progress-bar bg-{{ indicator.status == 'compliant' ? 'success' : 'warning' }}" 
+                                                 style="width: {{ indicator.score }}%"></div>
+                                        </div>
+                                        <p class="text-muted small mb-0">{{ indicator.details }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Areas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-exclamation-triangle me-2"></i>Zones de Risque</h5>
+                </div>
+                <div class="card-body">
+                    {% for risk in qualiopi_data.risk_areas %}
+                        <div class="alert alert-{{ risk.level == 'high' ? 'danger' : (risk.level == 'medium' ? 'warning' : 'info') }} d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <strong>{{ risk.area }}</strong>
+                                <div class="small">{{ risk.actions }}</div>
+                            </div>
+                            <span class="badge badge-{{ risk.level == 'high' ? 'danger' : (risk.level == 'medium' ? 'warning' : 'info') }}">
+                                {{ risk.level|title }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Recommandations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for recommendation in qualiopi_data.recommendations %}
+                            <div class="list-group-item border-0 px-0">
+                                <i class="fas fa-arrow-right text-primary me-2"></i>
+                                {{ recommendation }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-tasks me-2"></i>Plan d'Actions Prioritaires</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Prochaines Étapes</h6>
+                        <ul class="mb-0">
+                            <li>Révision des grilles d'évaluation des compétences</li>
+                            <li>Formation des mentors sur les nouvelles procédures</li>
+                            <li>Mise à jour de la documentation des processus</li>
+                            <li>Amélioration du système de suivi des progressions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-submit form on change
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = document.querySelectorAll('form select');
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+        });
+    </script>
+{% endblock %}

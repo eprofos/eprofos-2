@@ -1,0 +1,397 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Analytics Planning Alternance{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Analytics Planning Alternance</h1>
+        <div class="btn-group" role="group">
+            <a href="{{ path('admin_alternance_planning_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour au planning
+            </a>
+            <a href="{{ path('admin_alternance_planning_export', {format: 'xlsx'}) }}" class="btn btn-outline-success">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="analytics" data-controller="analytics"
+         data-analytics-attendance-value="{{ analytics.trends.attendance|json_encode }}"
+         data-analytics-completion-value="{{ analytics.trends.completion|json_encode }}"
+         data-analytics-formation-labels-value="{{ analytics.chart_data.formation_labels|json_encode }}"
+         data-analytics-formation-values-value="{{ analytics.chart_data.formation_values|json_encode }}"
+         data-analytics-rhythm-labels-value="{{ analytics.chart_data.rhythm_labels|json_encode }}"
+         data-analytics-rhythm-values-value="{{ analytics.chart_data.rhythm_values|json_encode }}">
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres d'Analyse</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="period" class="form-label">Période d'Analyse</label>
+                    <select name="period" id="period" class="form-select">
+                        <option value="month" {{ period == 'month' ? 'selected' : '' }}>Mois en cours</option>
+                        <option value="semester" {{ period == 'semester' ? 'selected' : '' }}>Semestre</option>
+                        <option value="year" {{ period == 'year' ? 'selected' : '' }}>Année</option>
+                        <option value="custom" {{ period == 'custom' ? 'selected' : '' }}>Personnalisé</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select name="formation" id="formation" class="form-select">
+                        <option value="">Toutes les formations</option>
+                        {% for form in formations %}
+                            <option value="{{ form.id }}" {{ formation == form.id ? 'selected' : '' }}>
+                                {{ form.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="compare" class="form-label">Comparaison</label>
+                    <select name="compare" id="compare" class="form-select">
+                        <option value="">Aucune</option>
+                        <option value="previous_period">Période précédente</option>
+                        <option value="previous_year">Année précédente</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> Générer l'analyse
+                    </button>
+                    <a href="{{ path('admin_alternance_planning_analytics') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-check text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Sessions Totales</h6>
+                            <h4 class="card-title mb-0">{{ analytics.period_stats.total_sessions }}</h4>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> +12% vs période précédente
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-check text-primary fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Taux de Présence</h6>
+                            <h4 class="card-title mb-0">{{ analytics.period_stats.attendance_rate }}%</h4>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> +2.3% vs période précédente
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-graduation-cap text-info fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Taux de Réussite</h6>
+                            <h4 class="card-title mb-0">{{ analytics.period_stats.completion_rate }}%</h4>
+                            <small class="text-warning">
+                                <i class="fas fa-minus"></i> -1.2% vs période précédente
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-star text-warning fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Satisfaction</h6>
+                            <h4 class="card-title mb-0">{{ analytics.period_stats.satisfaction_rate }}/5</h4>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> +0.2 vs période précédente
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Évolution du Taux de Présence
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas data-analytics-target="attendanceChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area"></i> Évolution du Taux de Réussite
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas data-analytics-target="completionChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie"></i> Répartition par Formation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container doughnut">
+                        <canvas data-analytics-target="formationChart" width="400" height="250"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <div class="row">
+                            {% for formation, count in analytics.distribution.by_formation %}
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-truncate">{{ formation }}</span>
+                                        <strong>{{ count }}</strong>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-donut"></i> Répartition par Rythme
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container doughnut">
+                        <canvas data-analytics-target="rhythmChart" width="400" height="250"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <div class="row">
+                            {% for rhythm, count in analytics.distribution.by_rhythm %}
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ rhythm }}</span>
+                                        <strong>{{ count }}</strong>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-table"></i> Analyse Détaillée par Formation
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Formation</th>
+                            <th>Nb Alternants</th>
+                            <th>Taux Présence</th>
+                            <th>Taux Réussite</th>
+                            <th>Satisfaction</th>
+                            <th>Heures Totales</th>
+                            <th>Tendance</th>
+                        </tr>
+                    </thead>
+                                        <tbody>
+                        {% for formation in analytics.formation_details %}
+                            <tr>
+                                <td>
+                                    <strong>{{ formation.formation_name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ formation.total_contracts }}</span>
+                                </td>
+                                <td>
+                                    <span class="{% if formation.success_rate >= 85 %}text-success{% elseif formation.success_rate >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ formation.success_rate|number_format(1) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="{% if formation.success_rate >= 85 %}text-success{% elseif formation.success_rate >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ formation.success_rate|number_format(1) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ (4.0 + (formation.success_rate / 100))|number_format(1) }}/5</span>
+                                        <div class="rating">
+                                            {% set rating = (4.0 + (formation.success_rate / 100))|round %}
+                                            {% for i in 1..5 %}
+                                                <i class="fas fa-star {% if i <= rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ formation.average_duration * 35 }}h</td>
+                                <td>
+                                    {% if formation.success_rate >= 85 %}
+                                        <i class="fas fa-arrow-up text-success" title="En hausse"></i>
+                                    {% elseif formation.success_rate >= 70 %}
+                                        <i class="fas fa-minus text-warning" title="Stable"></i>
+                                    {% else %}
+                                        <i class="fas fa-arrow-down text-danger" title="En baisse"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Aucune donnée disponible pour la période sélectionnée
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights and Recommendations -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-lightbulb"></i> Insights et Recommandations
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-success">
+                        <i class="fas fa-check-circle"></i> Points Positifs
+                    </h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Taux de présence en amélioration constante (+2.3%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Satisfaction étudiante élevée (4.3/5)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Croissance du nombre de sessions (+12%)
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Points d'Attention
+                    </h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-arrow-down text-danger me-2"></i>
+                            Légère baisse du taux de réussite (-1.2%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            Quelques conflits de planning à résoudre
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-users text-info me-2"></i>
+                            Répartition inégale entre les formations
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <h6 class="text-primary">
+                <i class="fas fa-recommendations"></i> Recommandations
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="border p-3 rounded">
+                        <h6 class="text-primary">Optimisation Planning</h6>
+                        <p class="small mb-0">
+                            Réviser les rythmes d'alternance pour les formations avec un taux de réussite faible.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border p-3 rounded">
+                        <h6 class="text-success">Suivi Personnalisé</h6>
+                        <p class="small mb-0">
+                            Mettre en place un accompagnement renforcé pour les alternants en difficulté.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border p-3 rounded">
+                        <h6 class="text-info">Equilibrage</h6>
+                        <p class="small mb-0">
+                            Rééquilibrer la répartition des alternants entre les différentes formations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div> <!-- Close analytics controller div -->
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Planning - {{ contract.student.fullName }}{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Planning d'Alternance</h1>
+            <h2 class="h4 text-muted">{{ contract.student.fullName }}</h2>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{{ path('admin_alternance_planning_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour au planning
+            </a>
+            <a href="{{ path('admin_alternance_contract_show', {id: contract.id}) }}" class="btn btn-outline-info">
+                <i class="fas fa-file-contract"></i> Voir le contrat
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Contract Information -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations du Contrat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Alternant:</strong> {{ contract.student.fullName }}</p>
+                            <p><strong>Email:</strong> {{ contract.student.email }}</p>
+                            {% if contract.session and contract.session.formation %}
+                                <p><strong>Formation:</strong> {{ contract.session.formation.title }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if contract.startDate %}
+                                <p><strong>Date de début:</strong> {{ contract.startDate|date('d/m/Y') }}</p>
+                            {% endif %}
+                            {% if contract.endDate %}
+                                <p><strong>Date de fin:</strong> {{ contract.endDate|date('d/m/Y') }}</p>
+                            {% endif %}
+                            <p><strong>Statut:</strong> 
+                                {% set status_class = {
+                                    'active': 'success',
+                                    'pending': 'warning',
+                                    'completed': 'secondary',
+                                    'cancelled': 'danger'
+                                }[contract.status] ?? 'primary' %}
+                                <span class="badge bg-{{ status_class }}">{{ contract.status|capitalize }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Progression</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Complétion</span>
+                            <span>{{ schedule.completion_percentage }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ schedule.completion_percentage }}%"></div>
+                        </div>
+                    </div>
+                    <p><small><strong>Heures Entreprise:</strong> {{ schedule.total_hours_enterprise }}h</small></p>
+                    <p><small><strong>Heures Formation:</strong> {{ schedule.total_hours_training }}h</small></p>
+                    <p><small><strong>Rythme:</strong> {{ schedule.rhythm }}</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Conflicts -->
+    {% if conflicts %}
+        <div class="alert alert-warning mb-4">
+            <h6 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> Conflits Détectés
+            </h6>
+            {% for conflict in conflicts %}
+                <div class="mb-2">
+                    <strong>{{ conflict.description }}</strong><br>
+                    <small>
+                        Date: {{ conflict.date|date('d/m/Y') }} - 
+                        Sévérité: <span class="badge bg-{{ conflict.severity == 'warning' ? 'warning' : 'danger' }}">{{ conflict.severity }}</span> - 
+                        Action suggérée: {{ conflict.suggested_action }}
+                    </small>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Current Schedule -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-day"></i> Semaine Actuelle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set current = schedule.current_week %}
+                    <div class="d-flex align-items-center mb-3">
+                        {% if current.type == 'enterprise' %}
+                            <div class="badge bg-primary me-2">Entreprise</div>
+                        {% else %}
+                            <div class="badge bg-success me-2">Centre de Formation</div>
+                        {% endif %}
+                        <strong>{{ current.description }}</strong>
+                    </div>
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-start"></i> 
+                        Du {{ current.start_date|date('d/m/Y') }} au {{ current.end_date|date('d/m/Y') }}
+                    </p>
+                    {% if current.type == 'enterprise' %}
+                        <p class="text-muted">
+                            <i class="fas fa-building"></i> 
+                            Période en entreprise - Mise en pratique des compétences
+                        </p>
+                    {% else %}
+                        <p class="text-muted">
+                            <i class="fas fa-graduation-cap"></i> 
+                            Période de formation théorique au centre
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-week"></i> Prochaines Semaines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for week in schedule.next_weeks %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <div class="d-flex align-items-center mb-1">
+                                {% if week.type == 'enterprise' %}
+                                    <div class="badge bg-primary me-2">Entreprise</div>
+                                {% else %}
+                                    <div class="badge bg-success me-2">Centre</div>
+                                {% endif %}
+                                <strong>{{ week.description }}</strong>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> 
+                                Du {{ week.start_date|date('d/m/Y') }} au {{ week.end_date|date('d/m/Y') }}
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Management Form -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-edit"></i> Gestion du Planning
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="rhythm_type" class="form-label">Type de Rythme</label>
+                            <select id="rhythm_type" name="rhythm_type" class="form-select">
+                                <option value="3-1">3 semaines entreprise / 1 semaine centre</option>
+                                <option value="2-2">2 semaines entreprise / 2 semaines centre</option>
+                                <option value="1-1">1 semaine entreprise / 1 semaine centre</option>
+                                <option value="custom">Personnalisé</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="start_mode" class="form-label">Démarrer par</label>
+                            <select id="start_mode" name="start_mode" class="form-select">
+                                <option value="enterprise">Entreprise</option>
+                                <option value="training_center">Centre de Formation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="total_weeks" class="form-label">Nombre de Semaines Total</label>
+                            <input type="number" id="total_weeks" name="total_weeks" class="form-control" 
+                                   value="52" min="1" max="104">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="holidays_start" class="form-label">Début des Congés</label>
+                            <input type="date" id="holidays_start" name="holidays_start" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="holidays_end" class="form-label">Fin des Congés</label>
+                            <input type="date" id="holidays_end" name="holidays_end" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="special_notes" class="form-label">Notes Spéciales</label>
+                    <textarea id="special_notes" name="special_notes" class="form-control" rows="3" 
+                              placeholder="Remarques particulières, adaptations du planning..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Mettre à jour le planning
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="window.history.back()">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-info" onclick="generatePreview()">
+                            <i class="fas fa-eye"></i> Aperçu
+                        </button>
+                        <button type="button" class="btn btn-outline-success" onclick="exportSchedule()">
+                            <i class="fas fa-download"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Schedule Preview (Initially hidden) -->
+    <div id="schedule-preview" class="card mt-4" style="display: none;">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-calendar-alt"></i> Aperçu du Planning Généré
+            </h5>
+        </div>
+        <div class="card-body">
+            <div id="preview-content">
+                <!-- Preview content will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function generatePreview() {
+            // TODO: Implement schedule preview generation
+            const previewDiv = document.getElementById('schedule-preview');
+            const contentDiv = document.getElementById('preview-content');
+            
+            contentDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Fonction d'aperçu en cours de développement.
+                    Le planning sera généré selon les paramètres sélectionnés.
+                </div>
+            `;
+            
+            previewDiv.style.display = 'block';
+        }
+
+        function exportSchedule() {
+            // TODO: Implement PDF export
+            alert('Export PDF en cours de développement');
+        }
+
+        // Auto-calculate weeks based on rhythm
+        document.getElementById('rhythm_type').addEventListener('change', function() {
+            const rhythmType = this.value;
+            let suggestedWeeks = 52;
+            
+            switch(rhythmType) {
+                case '3-1':
+                    suggestedWeeks = 52;
+                    break;
+                case '2-2':
+                    suggestedWeeks = 48;
+                    break;
+                case '1-1':
+                    suggestedWeeks = 50;
+                    break;
+            }
+            
+            document.getElementById('total_weeks').value = suggestedWeeks;
+        });
+    </script>
+{% endblock %}

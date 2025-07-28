@@ -1,0 +1,391 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Alertes - Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Alertes et Notifications</h1>
+            <p class="text-muted mb-0">Surveillance des contrats d'alternance et actions requises</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <a href="{{ path('admin_alternance_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
+                </a>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double me-2"></i>Marquer tout comme lu
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Alert Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="alertType" class="form-label">Type d'alerte</label>
+                            <select id="alertType" class="form-select" onchange="filterAlerts()">
+                                <option value="">Tous les types</option>
+                                <option value="critical">Critique</option>
+                                <option value="warning">Avertissement</option>
+                                <option value="info">Information</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dateRange" class="form-label">Période</label>
+                            <select id="dateRange" class="form-select" onchange="filterAlerts()">
+                                <option value="today">Aujourd'hui</option>
+                                <option value="week">Cette semaine</option>
+                                <option value="month">Ce mois</option>
+                                <option value="all" selected>Toutes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Statut</label>
+                            <select id="status" class="form-select" onchange="filterAlerts()">
+                                <option value="">Tous les statuts</option>
+                                <option value="unread" selected>Non lues</option>
+                                <option value="read">Lues</option>
+                                <option value="archived">Archivées</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
+                                <i class="fas fa-undo me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Alerts -->
+    {% if alerts.critical|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-danger shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Alertes Critiques ({{ alerts.critical|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for alert in alerts.critical %}
+                                <div class="list-group-item alert-item" data-type="critical" data-created="{{ alert.created_at|date('Y-m-d') }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="bg-danger text-white rounded-circle p-2 me-3">
+                                                    <i class="fas fa-exclamation fa-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">{{ alert.title }}</h6>
+                                                    <p class="mb-1">{{ alert.message }}</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ alert.created_at|date('d/m/Y H:i') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if alert.contract_id is defined %}
+                                                <button class="btn btn-outline-primary btn-sm" disabled title="Contrat #{{ alert.contract_id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if alert.mentor_id is defined %}
+                                                <button class="btn btn-outline-info btn-sm" disabled title="Mentor #{{ alert.mentor_id }}">
+                                                    <i class="fas fa-user"></i>
+                                                </button>
+                                            {% endif %}
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="markAsRead(this)" title="Marquer comme lu">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="dismissAlert(this)" title="Ignorer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Warning Alerts -->
+    {% if alerts.warning|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Avertissements ({{ alerts.warning|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for alert in alerts.warning %}
+                                <div class="list-group-item alert-item" data-type="warning" data-created="{{ alert.created_at|date('Y-m-d') }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="bg-warning text-dark rounded-circle p-2 me-3">
+                                                    <i class="fas fa-exclamation fa-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">{{ alert.title }}</h6>
+                                                    <p class="mb-1">{{ alert.message }}</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ alert.created_at|date('d/m/Y H:i') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if alert.contract_id is defined %}
+                                                <a href="{{ path('admin_alternance_contract_show', {id: alert.contract_id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="markAsRead(this)" title="Marquer comme lu">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="dismissAlert(this)" title="Ignorer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Info Alerts -->
+    {% if alerts.info|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-info shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informations ({{ alerts.info|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for alert in alerts.info %}
+                                <div class="list-group-item alert-item" data-type="info" data-created="{{ alert.created_at|date('Y-m-d') }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="bg-info text-white rounded-circle p-2 me-3">
+                                                    <i class="fas fa-info fa-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">{{ alert.title }}</h6>
+                                                    <p class="mb-1">{{ alert.message }}</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ alert.created_at|date('d/m/Y H:i') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if alert.contract_id is defined %}
+                                                <a href="{{ path('admin_alternance_contract_show', {id: alert.contract_id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="markAsRead(this)" title="Marquer comme lu">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="dismissAlert(this)" title="Ignorer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if alerts.critical|length == 0 and alerts.warning|length == 0 and alerts.info|length == 0 %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-bell-slash fa-3x text-muted"></i>
+                        </div>
+                        <h4 class="text-muted">Aucune alerte</h4>
+                        <p class="text-muted mb-0">Il n'y a actuellement aucune alerte correspondant à vos critères.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Alert Statistics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Statistiques des Alertes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded border-danger">
+                                <h4 class="text-danger mb-1">{{ alerts.critical|length }}</h4>
+                                <p class="text-muted mb-0">Critiques</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded border-warning">
+                                <h4 class="text-warning mb-1">{{ alerts.warning|length }}</h4>
+                                <p class="text-muted mb-0">Avertissements</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded border-info">
+                                <h4 class="text-info mb-1">{{ alerts.info|length }}</h4>
+                                <p class="text-muted mb-0">Informations</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded border-secondary">
+                                <h4 class="text-secondary mb-1">{{ alerts.critical|length + alerts.warning|length + alerts.info|length }}</h4>
+                                <p class="text-muted mb-0">Total</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function filterAlerts() {
+            const type = document.getElementById('alertType').value;
+            const dateRange = document.getElementById('dateRange').value;
+            const status = document.getElementById('status').value;
+            
+            const alerts = document.querySelectorAll('.alert-item');
+            
+            alerts.forEach(alert => {
+                let show = true;
+                
+                // Filter by type
+                if (type && !alert.dataset.type.includes(type)) {
+                    show = false;
+                }
+                
+                // Filter by date range
+                if (dateRange !== 'all') {
+                    const alertDate = new Date(alert.dataset.created);
+                    const today = new Date();
+                    
+                    switch (dateRange) {
+                        case 'today':
+                            if (alertDate.toDateString() !== today.toDateString()) {
+                                show = false;
+                            }
+                            break;
+                        case 'week':
+                            const weekAgo = new Date();
+                            weekAgo.setDate(today.getDate() - 7);
+                            if (alertDate < weekAgo) {
+                                show = false;
+                            }
+                            break;
+                        case 'month':
+                            const monthAgo = new Date();
+                            monthAgo.setMonth(today.getMonth() - 1);
+                            if (alertDate < monthAgo) {
+                                show = false;
+                            }
+                            break;
+                    }
+                }
+                
+                alert.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('alertType').value = '';
+            document.getElementById('dateRange').value = 'all';
+            document.getElementById('status').value = 'unread';
+            filterAlerts();
+        }
+
+        function markAsRead(button) {
+            const alertItem = button.closest('.alert-item');
+            alertItem.style.opacity = '0.6';
+            button.disabled = true;
+            
+            // Here you would typically make an AJAX call to mark the alert as read
+            console.log('Marking alert as read');
+        }
+
+        function dismissAlert(button) {
+            const alertItem = button.closest('.alert-item');
+            alertItem.style.transition = 'opacity 0.3s';
+            alertItem.style.opacity = '0';
+            
+            setTimeout(() => {
+                alertItem.remove();
+            }, 300);
+            
+            // Here you would typically make an AJAX call to dismiss the alert
+            console.log('Dismissing alert');
+        }
+
+        function markAllAsRead() {
+            const readButtons = document.querySelectorAll('.alert-item .btn-outline-secondary');
+            readButtons.forEach(button => {
+                if (!button.disabled) {
+                    markAsRead(button);
+                }
+            });
+        }
+
+        // Auto-refresh alerts every 30 seconds
+        setInterval(() => {
+            // Here you would typically make an AJAX call to refresh alerts
+            console.log('Auto-refreshing alerts');
+        }, 30000);
+    </script>
+{% endblock %}

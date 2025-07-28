@@ -1,0 +1,278 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de Bord Alternance{% endblock %}
+
+{% block page_header %}
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-1">Tableau de Bord Alternance</h1>
+            <p class="text-muted mb-0">Vue d'ensemble de la gestion des contrats d'alternance</p>
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <button class="btn btn-primary" disabled>
+                    <i class="fas fa-plus me-2"></i>Nouveau Contrat
+                </button>
+            </div>
+            <div class="btn-group">
+                <a href="{{ path('admin_alternance_metrics') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-chart-bar me-2"></i>Métriques Détaillées
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Alerts Section -->
+    {% if alerts|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert-container">
+                    {% for alert in alerts %}
+                        <div class="alert alert-{{ alert.type }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="alert-heading mb-1">{{ alert.title }}</h6>
+                                    <p class="mb-0">{{ alert.message }}</p>
+                                </div>
+                                {% if alert.route is defined %}
+                                    <div class="ms-3">
+                                        <button class="btn btn-sm btn-outline-dark" disabled>
+                                            Voir tout
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-3">
+                                <i class="fas fa-file-contract fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Contrats</h6>
+                            <h3 class="mb-0">{{ metrics.total_contracts }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 text-success rounded p-3">
+                                <i class="fas fa-play-circle fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Contrats Actifs</h6>
+                            <h3 class="mb-0">{{ metrics.active_contracts }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 text-info rounded p-3">
+                                <i class="fas fa-trophy fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Taux de Réussite</h6>
+                            <h3 class="mb-0">{{ metrics.success_rate }}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 text-warning rounded p-3">
+                                <i class="fas fa-clock fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Durée Moyenne</h6>
+                            <h3 class="mb-0">{{ metrics.average_duration }} mois</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analytics -->
+    <div class="row mb-4" data-controller="alternance-dashboard" 
+         data-alternance-dashboard-monthly-trends-value="{{ metrics.monthly_trends|default({})|json_encode }}"
+         data-alternance-dashboard-status-distribution-value="{{ metrics.status_distribution|default({})|json_encode }}">
+        <div class="col-lg-8 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Évolution Mensuelle</h5>
+                </div>
+                <div class="card-body">
+                    <canvas data-alternance-dashboard-target="monthlyTrendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Répartition par Statut</h5>
+                </div>
+                <div class="card-body">
+                    <canvas data-alternance-dashboard-target="statusDistributionChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Satisfaction Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Satisfaction Mentors</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="d-inline-block position-relative">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-4">
+                            <h2 class="text-primary mb-0">{{ metrics.mentor_satisfaction }}/5</h2>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3">Note moyenne des mentors</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Satisfaction Étudiants</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="d-inline-block position-relative">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-4">
+                            <h2 class="text-success mb-0">{{ metrics.student_satisfaction }}/5</h2>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3">Note moyenne des étudiants</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qualiopi Indicators -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Indicateurs Qualiopi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="text-center">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ qualiopi_indicators.coordination_coverage }}%"></div>
+                                </div>
+                                <h6 class="mb-1">{{ qualiopi_indicators.coordination_coverage }}%</h6>
+                                <small class="text-muted">Coordination</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="text-center">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: {{ qualiopi_indicators.evaluation_completeness }}%"></div>
+                                </div>
+                                <h6 class="mb-1">{{ qualiopi_indicators.evaluation_completeness }}%</h6>
+                                <small class="text-muted">Évaluations</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="text-center">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-info" style="width: {{ qualiopi_indicators.documentation_rate }}%"></div>
+                                </div>
+                                <h6 class="mb-1">{{ qualiopi_indicators.documentation_rate }}%</h6>
+                                <small class="text-muted">Documentation</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="text-center">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: {{ qualiopi_indicators.mentor_qualification_rate }}%"></div>
+                                </div>
+                                <h6 class="mb-1">{{ qualiopi_indicators.mentor_qualification_rate }}%</h6>
+                                <small class="text-muted">Qualification Mentors</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    {% if recent_activity|length > 0 %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Activité Récente</h5>
+                        <a href="{{ path('admin_alternance_alerts') }}" class="btn btn-sm btn-outline-primary">
+                            Voir tout
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for activity in recent_activity %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ activity.title }}</h6>
+                                        <small>{{ activity.created_at|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ activity.description }}</p>
+                                    {% if activity.user is defined %}
+                                        <small class="text-muted">Par {{ activity.user }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}

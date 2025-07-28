@@ -1,0 +1,452 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ mentor.fullName }} - Mentor{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_dashboard') }}">Alternance</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_alternance_mentor_index') }}">Mentors</a></li>
+        <li class="breadcrumb-item active">{{ mentor.fullName }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_title %}
+<div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <div class="mentor-avatar me-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                 style="width: 60px; height: 60px; font-weight: bold; font-size: 1.5rem;">
+                {{ mentor.initials }}
+            </div>
+        </div>
+        <div>
+            <h1 class="h3 mb-0">{{ mentor.fullName }}</h1>
+            <p class="text-muted mb-0">{{ mentor.position }} - {{ mentor.companyName }}</p>
+            <div class="mt-1">
+                {% if mentor.isActive %}
+                    <span class="badge bg-success">Actif</span>
+                {% else %}
+                    <span class="badge bg-danger">Inactif</span>
+                {% endif %}
+                {% if mentor.emailVerified %}
+                    <span class="badge bg-info">Email vérifié</span>
+                {% else %}
+                    <span class="badge bg-warning">Email non vérifié</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('admin_alternance_mentor_performance', {id: mentor.id}) }}" class="btn btn-outline-info">
+            <i class="fas fa-chart-line"></i> Performance
+        </a>
+        <a href="{{ path('admin_alternance_mentor_edit', {id: mentor.id}) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
+        <div class="btn-group">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-cog"></i> Actions
+            </button>
+            <ul class="dropdown-menu">
+                {% if mentor.isActive %}
+                    <li>
+                        <form method="POST" action="{{ path('admin_alternance_mentor_deactivate', {id: mentor.id}) }}" class="d-inline">
+                            <button type="submit" class="dropdown-item text-warning" 
+                                    onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce mentor ?')">
+                                <i class="fas fa-user-times"></i> Désactiver
+                            </button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li>
+                        <form method="POST" action="{{ path('admin_alternance_mentor_activate', {id: mentor.id}) }}" class="d-inline">
+                            <button type="submit" class="dropdown-item text-success">
+                                <i class="fas fa-user-check"></i> Activer
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
+                <li>
+                    <form method="POST" action="{{ path('admin_alternance_mentor_resend_invitation', {id: mentor.id}) }}" class="d-inline">
+                        <button type="submit" class="dropdown-item">
+                            <i class="fas fa-envelope"></i> Renvoyer invitation
+                        </button>
+                    </form>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="POST" action="{{ path('admin_alternance_mentor_delete', {id: mentor.id}) }}" 
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce mentor ? Cette action est irréversible.')" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mentor.id) }}">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <!-- Left Column - Mentor Information -->
+    <div class="col-lg-8">
+        <!-- Basic Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Informations personnelles</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email</label>
+                            <p class="mb-0">
+                                <a href="mailto:{{ mentor.email }}">{{ mentor.email }}</a>
+                                {% if mentor.emailVerified %}
+                                    <i class="fas fa-check-circle text-success ms-1" title="Email vérifié"></i>
+                                {% else %}
+                                    <i class="fas fa-exclamation-circle text-warning ms-1" title="Email non vérifié"></i>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Téléphone</label>
+                            <p class="mb-0">
+                                {% if mentor.phone %}
+                                    <a href="tel:{{ mentor.phone }}">{{ mentor.phone }}</a>
+                                {% else %}
+                                    <span class="text-muted">Non renseigné</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Expérience</label>
+                            <p class="mb-0">{{ mentor.experienceDescription }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Niveau de formation</label>
+                            <p class="mb-0">{{ mentor.educationLevelLabel }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Inscription</label>
+                            <p class="mb-0">{{ mentor.createdAt|date('d/m/Y H:i') }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Dernière connexion</label>
+                            <p class="mb-0">
+                                {% if mentor.lastLoginAt %}
+                                    {{ mentor.lastLoginAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span class="text-muted">Jamais connecté</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-building"></i> Informations entreprise</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Entreprise</label>
+                            <p class="mb-0"><strong>{{ mentor.companyName }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">SIRET</label>
+                            <p class="mb-0"><code>{{ mentor.companySiret }}</code></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Poste</label>
+                            <p class="mb-0">{{ mentor.position }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expertise -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star"></i> Domaines d'expertise</h5>
+            </div>
+            <div class="card-body">
+                {% if mentor.expertiseDomainsLabels|length > 0 %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for domain in mentor.expertiseDomainsLabels %}
+                            <span class="badge bg-primary fs-6">{{ domain }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Aucun domaine d'expertise renseigné</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contracts -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-contract"></i> Contrats d'alternance</h5>
+                <span class="badge bg-secondary">{{ contracts|length }}</span>
+            </div>
+            <div class="card-body">
+                {% if contracts|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Alternant</th>
+                                    <th>Formation</th>
+                                    <th>Période</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in contracts %}
+                                <tr>
+                                    <td>
+                                        {% if contract.student %}
+                                            <strong>{{ contract.student.fullName }}</strong>
+                                            <br><small class="text-muted">{{ contract.student.email }}</small>
+                                        {% else %}
+                                            <span class="text-muted">Non assigné</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contract.formationTitle %}
+                                            {{ contract.formationTitle }}
+                                        {% else %}
+                                            <span class="text-muted">Non définie</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contract.startDate and contract.endDate %}
+                                            {{ contract.startDate|date('d/m/Y') }} - {{ contract.endDate|date('d/m/Y') }}
+                                        {% else %}
+                                            <span class="text-muted">Dates non définies</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ contract.status == 'active' ? 'success' : (contract.status == 'completed' ? 'primary' : 'secondary') }}">
+                                            {{ contract.statusLabel ?? contract.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_alternance_contract_show', {id: contract.id}) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-file-contract fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Aucun contrat d'alternance</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        {% if recent_activity %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Activité récente</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for activity in recent_activity %}
+                    <div class="timeline-item d-flex mb-3">
+                        <div class="timeline-marker bg-primary rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ activity.title }}</strong>
+                                    {% if activity.description %}
+                                        <p class="mb-0 text-muted">{{ activity.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ activity.date|date('d/m/Y H:i') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column - Quick Stats & Actions -->
+    <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Statistiques rapides</h5>
+            </div>
+            <div class="card-body">
+                {% if performance %}
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-0">{{ performance.alternants_count ?? 0 }}</h4>
+                                <small class="text-muted">Alternants</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div>
+                                <h4 class="text-success mb-0">{{ performance.active_contracts ?? 0 }}</h4>
+                                <small class="text-muted">Contrats actifs</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-info mb-0">{{ performance.missions_count ?? 0 }}</h4>
+                                <small class="text-muted">Missions</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div>
+                                <h4 class="text-warning mb-0">{{ performance.evaluations_count ?? 0 }}</h4>
+                                <small class="text-muted">Évaluations</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% if performance.satisfaction_rate is defined %}
+                    <hr>
+                    <div class="text-center">
+                        <div class="mb-2">
+                            <strong>Taux de satisfaction</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ performance.satisfaction_rate }}%"
+                                 aria-valuenow="{{ performance.satisfaction_rate }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ performance.satisfaction_rate }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted text-center">Aucune donnée de performance disponible</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Actions rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="mailto:{{ mentor.email }}" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope"></i> Envoyer un email
+                    </a>
+                    {% if mentor.phone %}
+                    <a href="tel:{{ mentor.phone }}" class="btn btn-outline-success">
+                        <i class="fas fa-phone"></i> Appeler
+                    </a>
+                    {% endif %}
+                    <a href="{{ path('admin_alternance_mentor_performance', {id: mentor.id}) }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-line"></i> Voir performance détaillée
+                    </a>
+                    <hr>
+                    <form method="POST" action="{{ path('admin_alternance_mentor_resend_invitation', {id: mentor.id}) }}" class="d-grid">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope"></i> Renvoyer invitation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Informations du compte</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Statut du compte</label>
+                    <p class="mb-0">
+                        {% if mentor.isActive %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactif</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <p class="mb-0">
+                        {% if mentor.emailVerified %}
+                            <span class="badge bg-success">Vérifié</span>
+                        {% else %}
+                            <span class="badge bg-warning">Non vérifié</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">Rôles</label>
+                    <div>
+                        {% for role in mentor.roles %}
+                            <span class="badge bg-secondary me-1">{{ role }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">Dernière modification</label>
+                    <p class="mb-0">{{ mentor.updatedAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 18px;
+    height: calc(100% + 12px);
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.mentor-avatar {
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}

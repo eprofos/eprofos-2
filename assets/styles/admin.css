@@ -50,6 +50,59 @@
     border-right: 0;
 }
 
+/* ============== ANALYTICS CHART STYLES ============== */
+
+/* Prevent infinite resize loops for Chart.js - only target chart containers */
+.analytics .chart-container canvas {
+    max-width: 100% !important;
+    max-height: 300px !important;
+    min-height: 250px !important;
+    position: relative !important;
+}
+
+/* Chart container styling */
+[data-analytics-target="attendanceChart"],
+[data-analytics-target="completionChart"],
+[data-analytics-target="formationChart"],
+[data-analytics-target="rhythmChart"] {
+    width: 100% !important;
+    height: 300px !important;
+    max-height: 300px !important;
+    display: block !important;
+}
+
+/* Doughnut chart specific styling */
+[data-analytics-target="formationChart"],
+[data-analytics-target="rhythmChart"] {
+    height: 250px !important;
+    max-height: 250px !important;
+}
+
+/* Analytics chart card body - only for cards containing charts */
+.analytics .card:has(canvas) .card-body {
+    min-height: 350px;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+/* Analytics chart parent container - only divs containing canvas */
+.analytics .card-body > div:has(canvas) {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+}
+
+/* Fallback for browsers that don't support :has() selector */
+.analytics .chart-container {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+}
+
+.analytics .chart-container.doughnut {
+    height: 250px;
+}
+
 .alternance-fields .input-group .input-group-text {
     background-color: #e9ecef;
     border-left: 0;

@@ -1,0 +1,131 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Nouvelle mission' %}
+
+{% block page_actions %}
+    <a href="{{ path('admin_alternance_mission_index') }}" class="btn btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l14 0"/>
+            <path d="M5 12l6 -6"/>
+            <path d="M5 12l6 6"/>
+        </svg>
+        Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Informations de la mission</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form_label(form.title, 'Titre de la mission', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Saisir le titre de la mission'}}) }}
+                                {{ form_errors(form.title) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(form.complexity, 'Niveau de complexité', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.complexity, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.complexity) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.duration, 'Durée estimée', {'label_attr': {'class': 'form-label required'}}) }}
+                                {{ form_widget(form.duration, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.duration) }}
+                                <div class="form-hint">Durée estimée pour accomplir cette mission</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.term, 'Type de mission', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.term, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.term) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.context, 'Contexte', {'label_attr': {'class': 'form-label required'}}) }}
+                        {{ form_widget(form.context, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Contexte détaillé de la mission...'}}) }}
+                        {{ form_errors(form.context) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.objectives, 'Objectifs pédagogiques', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.objectives) }}
+                        {{ form_errors(form.objectives) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.prerequisites, 'Prérequis', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.prerequisites) }}
+                        {{ form_errors(form.prerequisites) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.requiredSkills, 'Compétences requises', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.requiredSkills) }}
+                        {{ form_errors(form.requiredSkills) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.skillsToAcquire, 'Compétences à acquérir', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.skillsToAcquire) }}
+                        {{ form_errors(form.skillsToAcquire) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.evaluationCriteria, 'Critères d\'évaluation', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.evaluationCriteria) }}
+                        {{ form_errors(form.evaluationCriteria) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-check form-switch">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    <span class="form-check-label">Mission active</span>
+                                </label>
+                                {{ form_errors(form.isActive) }}
+                                <div class="form-hint">Une mission active peut être assignée aux alternants</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_rest(form) }}
+                </div>
+                
+                <div class="card-footer text-end">
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 12l5 5l10 -10"/>
+                        </svg>
+                        Créer la mission
+                    </button>
+                </div>
+                
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
