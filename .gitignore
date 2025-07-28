@@ -23,3 +23,7 @@ mcp_settings.json
 .vscode/mcp.json
 
 /public/uploads/legal_documents/pdf
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###

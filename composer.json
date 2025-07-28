@@ -94,7 +94,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "cs-check": "php-cs-fixer fix --dry-run --diff --verbose",
+        "cs-fix": "php-cs-fixer fix --verbose",
+        "cs-fix-risky": "php-cs-fixer fix --allow-risky=yes --verbose"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -109,6 +112,7 @@
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.1",
         "fakerphp/faker": "^1.24",
+        "friendsofphp/php-cs-fixer": "^3.84",
         "phpunit/phpunit": "^12.2",
         "symfony/browser-kit": "7.3.*",
         "symfony/css-selector": "7.3.*",
