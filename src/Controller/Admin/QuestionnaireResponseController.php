@@ -1,22 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\Questionnaire;
+use App\Entity\Assessment\QuestionnaireResponse;
 use App\Repository\Assessment\QuestionnaireResponseRepository;
 use App\Repository\Assessment\QuestionResponseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use ZipArchive;
 
 /**
- * Admin controller for managing questionnaire responses and evaluation
+ * Admin controller for managing questionnaire responses and evaluation.
  */
 #[Route('/admin/questionnaire-responses', name: 'admin_questionnaire_response_')]
 class QuestionnaireResponseController extends AbstractController
@@ -24,9 +27,8 @@ class QuestionnaireResponseController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private QuestionnaireResponseRepository $responseRepository,
-        private QuestionResponseRepository $questionResponseRepository
-    ) {
-    }
+        private QuestionResponseRepository $questionResponseRepository,
+    ) {}
 
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -39,32 +41,38 @@ class QuestionnaireResponseController extends AbstractController
         $queryBuilder = $this->responseRepository->createQueryBuilder('r')
             ->leftJoin('r.questionnaire', 'q')
             ->leftJoin('r.formation', 'f')
-            ->addSelect('q', 'f');
+            ->addSelect('q', 'f')
+        ;
 
         if ($questionnaireId) {
             $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
             if ($questionnaire) {
                 $queryBuilder->andWhere('r.questionnaire = :questionnaire')
-                    ->setParameter('questionnaire', $questionnaire);
+                    ->setParameter('questionnaire', $questionnaire)
+                ;
             }
         }
 
         if ($status) {
             $queryBuilder->andWhere('r.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         if ($evaluationStatus) {
             $queryBuilder->andWhere('r.evaluationStatus = :evaluationStatus')
-                ->setParameter('evaluationStatus', $evaluationStatus);
+                ->setParameter('evaluationStatus', $evaluationStatus)
+            ;
         }
 
         $responses = $queryBuilder->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $questionnaires = $this->entityManager->getRepository(Questionnaire::class)
-            ->findBy(['status' => Questionnaire::STATUS_ACTIVE], ['title' => 'ASC']);
+            ->findBy(['status' => Questionnaire::STATUS_ACTIVE], ['title' => 'ASC'])
+        ;
 
         return $this->render('admin/questionnaire_response/index.html.twig', [
             'responses' => $responses,
@@ -76,13 +84,13 @@ class QuestionnaireResponseController extends AbstractController
                 QuestionnaireResponse::STATUS_STARTED => 'Démarré',
                 QuestionnaireResponse::STATUS_IN_PROGRESS => 'En cours',
                 QuestionnaireResponse::STATUS_COMPLETED => 'Terminé',
-                QuestionnaireResponse::STATUS_ABANDONED => 'Abandonné'
+                QuestionnaireResponse::STATUS_ABANDONED => 'Abandonné',
             ],
             'evaluation_statuses' => [
                 QuestionnaireResponse::EVALUATION_STATUS_PENDING => 'En attente',
                 QuestionnaireResponse::EVALUATION_STATUS_IN_REVIEW => 'En cours d\'évaluation',
-                QuestionnaireResponse::EVALUATION_STATUS_COMPLETED => 'Évalué'
-            ]
+                QuestionnaireResponse::EVALUATION_STATUS_COMPLETED => 'Évalué',
+            ],
         ]);
     }
 
@@ -92,7 +100,7 @@ class QuestionnaireResponseController extends AbstractController
         $responses = $this->responseRepository->findPendingEvaluation();
 
         return $this->render('admin/questionnaire_response/pending_evaluation.html.twig', [
-            'responses' => $responses
+            'responses' => $responses,
         ]);
     }
 
@@ -103,7 +111,7 @@ class QuestionnaireResponseController extends AbstractController
 
         return $this->render('admin/questionnaire_response/show.html.twig', [
             'response' => $response,
-            'question_responses' => $questionResponses
+            'question_responses' => $questionResponses,
         ]);
     }
 
@@ -112,6 +120,7 @@ class QuestionnaireResponseController extends AbstractController
     {
         if (!$response->isCompleted()) {
             $this->addFlash('error', 'Seules les réponses terminées peuvent être évaluées.');
+
             return $this->redirectToRoute('admin_questionnaire_response_show', ['id' => $response->getId()]);
         }
 
@@ -120,7 +129,8 @@ class QuestionnaireResponseController extends AbstractController
 
             $response->setEvaluationStatus($data['evaluation_status'] ?? QuestionnaireResponse::EVALUATION_STATUS_COMPLETED)
                 ->setEvaluatorNotes($data['evaluator_notes'] ?? null)
-                ->setRecommendation($data['recommendation'] ?? null);
+                ->setRecommendation($data['recommendation'] ?? null)
+            ;
 
             // Update individual question scores if provided
             if (isset($data['question_scores']) && is_array($data['question_scores'])) {
@@ -138,6 +148,7 @@ class QuestionnaireResponseController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'L\'évaluation a été enregistrée avec succès.');
+
             return $this->redirectToRoute('admin_questionnaire_response_show', ['id' => $response->getId()]);
         }
 
@@ -149,8 +160,8 @@ class QuestionnaireResponseController extends AbstractController
             'evaluation_statuses' => [
                 QuestionnaireResponse::EVALUATION_STATUS_PENDING => 'En attente',
                 QuestionnaireResponse::EVALUATION_STATUS_IN_REVIEW => 'En cours d\'évaluation',
-                QuestionnaireResponse::EVALUATION_STATUS_COMPLETED => 'Évalué'
-            ]
+                QuestionnaireResponse::EVALUATION_STATUS_COMPLETED => 'Évalué',
+            ],
         ]);
     }
 
@@ -184,7 +195,7 @@ class QuestionnaireResponseController extends AbstractController
                     $files[] = [
                         'path' => $filePath,
                         'name' => $questionResponse->getQuestion()->getQuestionText() . '_' . $questionResponse->getFileResponse(),
-                        'question' => $questionResponse->getQuestion()->getQuestionText()
+                        'question' => $questionResponse->getQuestion()->getQuestionText(),
                     ];
                 }
             }
@@ -192,6 +203,7 @@ class QuestionnaireResponseController extends AbstractController
 
         if (empty($files)) {
             $this->addFlash('error', 'Aucun fichier trouvé pour cette réponse.');
+
             return $this->redirectToRoute('admin_questionnaire_response_show', ['id' => $response->getId()]);
         }
 
@@ -200,21 +212,23 @@ class QuestionnaireResponseController extends AbstractController
             $file = $files[0];
             $binaryResponse = new BinaryFileResponse($file['path']);
             $binaryResponse->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $file['name']);
+
             return $binaryResponse;
         }
 
         // Multiple files - create a ZIP
         $zipPath = $this->createZipFromFiles($files, $response);
-        
+
         if (!$zipPath) {
             $this->addFlash('error', 'Erreur lors de la création de l\'archive.');
+
             return $this->redirectToRoute('admin_questionnaire_response_show', ['id' => $response->getId()]);
         }
 
         $binaryResponse = new BinaryFileResponse($zipPath);
         $binaryResponse->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            'questionnaire_' . $response->getId() . '_files.zip'
+            'questionnaire_' . $response->getId() . '_files.zip',
         );
 
         // Delete the temporary ZIP file after sending
@@ -236,7 +250,7 @@ class QuestionnaireResponseController extends AbstractController
         foreach ($questionnaire->getActiveQuestions() as $question) {
             $questionStats[] = [
                 'question' => $question,
-                'statistics' => $this->questionResponseRepository->getQuestionStatistics($question)
+                'statistics' => $this->questionResponseRepository->getQuestionStatistics($question),
             ];
         }
 
@@ -246,7 +260,7 @@ class QuestionnaireResponseController extends AbstractController
             'evaluation_stats' => $evaluationStats,
             'average_time' => $averageTime,
             'score_distribution' => $scoreDistribution,
-            'question_stats' => $questionStats
+            'question_stats' => $questionStats,
         ]);
     }
 
@@ -255,6 +269,7 @@ class QuestionnaireResponseController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('delete' . $response->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_questionnaire_response_index');
         }
 
@@ -262,15 +277,16 @@ class QuestionnaireResponseController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'La réponse a été supprimée avec succès.');
+
         return $this->redirectToRoute('admin_questionnaire_response_index');
     }
 
     private function createZipFromFiles(array $files, QuestionnaireResponse $response): ?string
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $zipPath = sys_get_temp_dir() . '/questionnaire_' . $response->getId() . '_' . time() . '.zip';
 
-        if ($zip->open($zipPath, \ZipArchive::CREATE) !== TRUE) {
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             return null;
         }
 

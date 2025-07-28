@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\AlternanceProgram;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for AlternanceProgram entity
- * 
+ * Repository for AlternanceProgram entity.
+ *
  * Provides query methods for alternance programs with filtering,
  * searching, and statistics functionality.
  *
@@ -22,10 +25,7 @@ class AlternanceProgramRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find program by session
-     *
-     * @param int $sessionId
-     * @return AlternanceProgram|null
+     * Find program by session.
      */
     public function findBySession(int $sessionId): ?AlternanceProgram
     {
@@ -33,14 +33,13 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->where('ap.session = :sessionId')
             ->setParameter('sessionId', $sessionId)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find programs by duration range
+     * Find programs by duration range.
      *
-     * @param int|null $minDuration
-     * @param int|null $maxDuration
      * @return AlternanceProgram[]
      */
     public function findByDurationRange(?int $minDuration = null, ?int $maxDuration = null): array
@@ -49,23 +48,25 @@ class AlternanceProgramRepository extends ServiceEntityRepository
 
         if ($minDuration) {
             $qb->andWhere('ap.totalDuration >= :minDuration')
-                ->setParameter('minDuration', $minDuration);
+                ->setParameter('minDuration', $minDuration)
+            ;
         }
 
         if ($maxDuration) {
             $qb->andWhere('ap.totalDuration <= :maxDuration')
-                ->setParameter('maxDuration', $maxDuration);
+                ->setParameter('maxDuration', $maxDuration)
+            ;
         }
 
         return $qb->orderBy('ap.totalDuration', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find programs by rhythm
+     * Find programs by rhythm.
      *
-     * @param string $rhythm
      * @return AlternanceProgram[]
      */
     public function findByRhythm(string $rhythm): array
@@ -75,13 +76,13 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->setParameter('rhythm', $rhythm)
             ->orderBy('ap.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find programs by formation
+     * Find programs by formation.
      *
-     * @param int $formationId
      * @return AlternanceProgram[]
      */
     public function findByFormation(int $formationId): array
@@ -92,47 +93,52 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->orderBy('ap.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search programs with filters
+     * Search programs with filters.
      *
-     * @param array $filters
      * @return AlternanceProgram[]
      */
     public function searchWithFilters(array $filters): array
     {
         $qb = $this->createQueryBuilder('ap')
             ->leftJoin('ap.session', 's')
-            ->leftJoin('s.formation', 'f');
+            ->leftJoin('s.formation', 'f')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere($qb->expr()->orX(
                 'ap.title LIKE :search',
                 'ap.description LIKE :search',
-                'f.title LIKE :search'
+                'f.title LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['rhythm'])) {
             $qb->andWhere('ap.rhythm = :rhythm')
-                ->setParameter('rhythm', $filters['rhythm']);
+                ->setParameter('rhythm', $filters['rhythm'])
+            ;
         }
 
         if (!empty($filters['minDuration'])) {
             $qb->andWhere('ap.totalDuration >= :minDuration')
-                ->setParameter('minDuration', $filters['minDuration']);
+                ->setParameter('minDuration', $filters['minDuration'])
+            ;
         }
 
         if (!empty($filters['maxDuration'])) {
             $qb->andWhere('ap.totalDuration <= :maxDuration')
-                ->setParameter('maxDuration', $filters['maxDuration']);
+                ->setParameter('maxDuration', $filters['maxDuration'])
+            ;
         }
 
         if (!empty($filters['formationId'])) {
             $qb->andWhere('s.formation = :formationId')
-                ->setParameter('formationId', $filters['formationId']);
+                ->setParameter('formationId', $filters['formationId'])
+            ;
         }
 
         $sortField = $filters['sort'] ?? 'title';
@@ -144,9 +150,7 @@ class AlternanceProgramRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get duration statistics
-     *
-     * @return array
+     * Get duration statistics.
      */
     public function getDurationStatistics(): array
     {
@@ -156,20 +160,19 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->addSelect('AVG(ap.totalDuration) as avgDuration')
             ->addSelect('COUNT(ap.id) as totalPrograms')
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'minDuration' => (int) $result['minDuration'],
             'maxDuration' => (int) $result['maxDuration'],
             'avgDuration' => round($result['avgDuration'], 1),
-            'totalPrograms' => (int) $result['totalPrograms']
+            'totalPrograms' => (int) $result['totalPrograms'],
         ];
     }
 
     /**
-     * Get rhythm statistics
-     *
-     * @return array
+     * Get rhythm statistics.
      */
     public function getRhythmStatistics(): array
     {
@@ -177,7 +180,8 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->select('ap.rhythm', 'COUNT(ap.id) as count')
             ->groupBy('ap.rhythm')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $statistics = [];
         foreach ($result as $row) {
@@ -188,9 +192,7 @@ class AlternanceProgramRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get center vs company duration statistics
-     *
-     * @return array
+     * Get center vs company duration statistics.
      */
     public function getCenterCompanyStatistics(): array
     {
@@ -200,16 +202,13 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->addSelect('AVG(ap.centerDuration / ap.totalDuration * 100) as avgCenterPercentage')
             ->addSelect('AVG(ap.companyDuration / ap.totalDuration * 100) as avgCompanyPercentage')
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
     }
 
     /**
-     * Find programs with relations for display
+     * Find programs with relations for display.
      *
-     * @param array $criteria
-     * @param array $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
      * @return AlternanceProgram[]
      */
     public function findWithRelations(array $criteria = [], array $orderBy = [], ?int $limit = null, ?int $offset = null): array
@@ -217,11 +216,13 @@ class AlternanceProgramRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('ap')
             ->leftJoin('ap.session', 's')
             ->leftJoin('s.formation', 'f')
-            ->addSelect('s', 'f');
+            ->addSelect('s', 'f')
+        ;
 
         foreach ($criteria as $field => $value) {
             $qb->andWhere("ap.{$field} = :{$field}")
-                ->setParameter($field, $value);
+                ->setParameter($field, $value)
+            ;
         }
 
         foreach ($orderBy as $field => $direction) {
@@ -240,10 +241,8 @@ class AlternanceProgramRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find programs by center modules count
+     * Find programs by center modules count.
      *
-     * @param int $count
-     * @param string $operator
      * @return AlternanceProgram[]
      */
     public function findByCenterModulesCount(int $count, string $operator = '>='): array
@@ -254,15 +253,19 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             case '=':
                 $qb->andWhere('JSON_LENGTH(ap.centerModules) = :count');
                 break;
+
             case '>=':
                 $qb->andWhere('JSON_LENGTH(ap.centerModules) >= :count');
                 break;
+
             case '<=':
                 $qb->andWhere('JSON_LENGTH(ap.centerModules) <= :count');
                 break;
+
             case '>':
                 $qb->andWhere('JSON_LENGTH(ap.centerModules) > :count');
                 break;
+
             case '<':
                 $qb->andWhere('JSON_LENGTH(ap.centerModules) < :count');
                 break;
@@ -272,14 +275,13 @@ class AlternanceProgramRepository extends ServiceEntityRepository
 
         return $qb->orderBy('ap.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find programs by company modules count
+     * Find programs by company modules count.
      *
-     * @param int $count
-     * @param string $operator
      * @return AlternanceProgram[]
      */
     public function findByCompanyModulesCount(int $count, string $operator = '>='): array
@@ -290,15 +292,19 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             case '=':
                 $qb->andWhere('JSON_LENGTH(ap.companyModules) = :count');
                 break;
+
             case '>=':
                 $qb->andWhere('JSON_LENGTH(ap.companyModules) >= :count');
                 break;
+
             case '<=':
                 $qb->andWhere('JSON_LENGTH(ap.companyModules) <= :count');
                 break;
+
             case '>':
                 $qb->andWhere('JSON_LENGTH(ap.companyModules) > :count');
                 break;
+
             case '<':
                 $qb->andWhere('JSON_LENGTH(ap.companyModules) < :count');
                 break;
@@ -308,18 +314,18 @@ class AlternanceProgramRepository extends ServiceEntityRepository
 
         return $qb->orderBy('ap.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get monthly creation statistics
+     * Get monthly creation statistics.
      *
      * @param int $months Number of months to look back
-     * @return array
      */
     public function getMonthlyCreationStatistics(int $months = 12): array
     {
-        $startDate = new \DateTime("-{$months} months");
+        $startDate = new DateTime("-{$months} months");
 
         return $this->createQueryBuilder('ap')
             ->select('DATE_FORMAT(ap.createdAt, \'%Y-%m\') as month', 'COUNT(ap.id) as count')
@@ -328,26 +334,25 @@ class AlternanceProgramRepository extends ServiceEntityRepository
             ->groupBy('month')
             ->orderBy('month', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count programs
-     *
-     * @return int
+     * Count programs.
      */
     public function countPrograms(): int
     {
         return $this->createQueryBuilder('ap')
             ->select('COUNT(ap.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find recent programs
+     * Find recent programs.
      *
-     * @param int $limit
      * @return AlternanceProgram[]
      */
     public function findRecent(int $limit = 10): array

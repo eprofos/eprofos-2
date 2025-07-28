@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\User;
 
 use App\Repository\User\AdminRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Admin entity for admin authentication
- * 
+ * Admin entity for admin authentication.
+ *
  * Represents an admin user with basic authentication capabilities.
  * Implements Symfony's UserInterface for security integration.
  */
@@ -50,19 +53,24 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastLoginAt = null;
+    private ?DateTimeImmutable $lastLoginAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->roles = ['ROLE_ADMIN'];
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFullName() ?: $this->email ?: '';
     }
 
     public function getId(): ?int
@@ -78,6 +86,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -93,6 +102,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     *
      * @return list<string>
      */
     public function getRoles(): array
@@ -110,6 +120,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
         return $this;
     }
 
@@ -124,6 +135,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -144,6 +156,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -155,6 +168,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -166,44 +180,48 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getLastLoginAt(): ?\DateTimeImmutable
+    public function getLastLoginAt(): ?DateTimeImmutable
     {
         return $this->lastLoginAt;
     }
 
-    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): static
+    public function setLastLoginAt(?DateTimeImmutable $lastLoginAt): static
     {
         $this->lastLoginAt = $lastLoginAt;
+
         return $this;
     }
 
     /**
-     * Get the full name of the admin user
+     * Get the full name of the admin user.
      */
     public function getFullName(): string
     {
@@ -211,35 +229,30 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Get the initials of the admin user for avatar display
+     * Get the initials of the admin user for avatar display.
      */
     public function getInitials(): string
     {
         $firstInitial = $this->firstName ? strtoupper(substr($this->firstName, 0, 1)) : '';
         $lastInitial = $this->lastName ? strtoupper(substr($this->lastName, 0, 1)) : '';
-        
+
         return $firstInitial . $lastInitial;
     }
 
     /**
-     * Update the last login timestamp
+     * Update the last login timestamp.
      */
     public function updateLastLogin(): void
     {
-        $this->lastLoginAt = new \DateTimeImmutable();
+        $this->lastLoginAt = new DateTimeImmutable();
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->getFullName() ?: $this->email ?: '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

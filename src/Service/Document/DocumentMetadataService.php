@@ -1,19 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentMetadata;
 use App\Repository\Document\DocumentMetadataRepository;
 use App\Repository\Document\DocumentRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 /**
- * Document Metadata Service
- * 
+ * Document Metadata Service.
+ *
  * Handles business logic for document metadata management:
  * - Metadata CRUD operations
  * - Metadata statistics and analytics
@@ -26,33 +31,36 @@ class DocumentMetadataService
         private EntityManagerInterface $entityManager,
         private DocumentMetadataRepository $documentMetadataRepository,
         private DocumentRepository $documentRepository,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Get all metadata with usage statistics
+     * Get all metadata with usage statistics.
      */
     public function getMetadataWithStats(array $filters = []): array
     {
         $qb = $this->documentMetadataRepository->createQueryBuilder('dm')
             ->leftJoin('dm.document', 'd')
-            ->addSelect('d');
+            ->addSelect('d')
+        ;
 
         // Apply filters
         if (!empty($filters['document'])) {
             $qb->andWhere('d.id = :document')
-               ->setParameter('document', $filters['document']);
+                ->setParameter('document', $filters['document'])
+            ;
         }
 
         if (!empty($filters['key'])) {
             $qb->andWhere('dm.metaKey LIKE :key')
-               ->setParameter('key', '%' . $filters['key'] . '%');
+                ->setParameter('key', '%' . $filters['key'] . '%')
+            ;
         }
 
         if (!empty($filters['value_type'])) {
             $qb->andWhere('dm.dataType = :value_type')
-               ->setParameter('value_type', $filters['value_type']);
+                ->setParameter('value_type', $filters['value_type'])
+            ;
         }
 
         $qb->orderBy('dm.createdAt', 'DESC');
@@ -66,7 +74,7 @@ class DocumentMetadataService
                 'document_title' => $meta->getDocument()?->getTitle(),
                 'document_type' => $meta->getDocument()?->getDocumentType()?->getName(),
                 'typed_value' => $meta->getTypedValue(),
-                'effective_display_name' => $meta->getEffectiveDisplayName()
+                'effective_display_name' => $meta->getEffectiveDisplayName(),
             ];
         }
 
@@ -74,7 +82,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Get aggregate statistics for metadata
+     * Get aggregate statistics for metadata.
      */
     public function getAggregateStatistics(): array
     {
@@ -86,7 +94,8 @@ class DocumentMetadataService
             ->select('dm.dataType as type, COUNT(dm.id) as count')
             ->groupBy('dm.dataType')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Count searchable vs non-searchable
         $searchableCount = $this->documentMetadataRepository->count(['isSearchable' => true]);
@@ -103,7 +112,8 @@ class DocumentMetadataService
             ->orderBy('count', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return [
             'total_count' => $totalCount,
@@ -112,20 +122,20 @@ class DocumentMetadataService
             'non_searchable_count' => $nonSearchableCount,
             'required_count' => $requiredCount,
             'optional_count' => $optionalCount,
-            'top_keys' => $topKeys
+            'top_keys' => $topKeys,
         ];
     }
 
     /**
-     * Create a new document metadata
+     * Create a new document metadata.
      */
     public function createDocumentMetadata(DocumentMetadata $documentMetadata): array
     {
         try {
             // Set created timestamp
-            $documentMetadata->setCreatedAt(new \DateTimeImmutable());
-            $documentMetadata->setUpdatedAt(new \DateTimeImmutable());
-            
+            $documentMetadata->setCreatedAt(new DateTimeImmutable());
+            $documentMetadata->setUpdatedAt(new DateTimeImmutable());
+
             // Validate metadata
             $validation = $this->validateDocumentMetadata($documentMetadata);
             if (!$validation['valid']) {
@@ -144,15 +154,14 @@ class DocumentMetadataService
             $this->logger->info('Document metadata created', [
                 'metadata_id' => $documentMetadata->getId(),
                 'key' => $documentMetadata->getMetaKey(),
-                'document_id' => $documentMetadata->getDocument()?->getId()
+                'document_id' => $documentMetadata->getDocument()?->getId(),
             ]);
 
             return ['success' => true, 'metadata' => $documentMetadata];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create document metadata', [
                 'error' => $e->getMessage(),
-                'key' => $documentMetadata->getMetaKey()
+                'key' => $documentMetadata->getMetaKey(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la création de la métadonnée: ' . $e->getMessage()];
@@ -160,14 +169,14 @@ class DocumentMetadataService
     }
 
     /**
-     * Update an existing document metadata
+     * Update an existing document metadata.
      */
     public function updateDocumentMetadata(DocumentMetadata $documentMetadata): array
     {
         try {
             // Set updated timestamp
-            $documentMetadata->setUpdatedAt(new \DateTimeImmutable());
-            
+            $documentMetadata->setUpdatedAt(new DateTimeImmutable());
+
             // Validate metadata
             $validation = $this->validateDocumentMetadata($documentMetadata);
             if (!$validation['valid']) {
@@ -184,15 +193,14 @@ class DocumentMetadataService
 
             $this->logger->info('Document metadata updated', [
                 'metadata_id' => $documentMetadata->getId(),
-                'key' => $documentMetadata->getMetaKey()
+                'key' => $documentMetadata->getMetaKey(),
             ]);
 
             return ['success' => true, 'metadata' => $documentMetadata];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update document metadata', [
                 'error' => $e->getMessage(),
-                'metadata_id' => $documentMetadata->getId()
+                'metadata_id' => $documentMetadata->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la modification de la métadonnée: ' . $e->getMessage()];
@@ -200,7 +208,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Delete a document metadata
+     * Delete a document metadata.
      */
     public function deleteDocumentMetadata(DocumentMetadata $documentMetadata): array
     {
@@ -213,15 +221,14 @@ class DocumentMetadataService
 
             $this->logger->info('Document metadata deleted', [
                 'metadata_id' => $metadataId,
-                'key' => $metadataKey
+                'key' => $metadataKey,
             ]);
 
             return ['success' => true];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to delete document metadata', [
                 'error' => $e->getMessage(),
-                'metadata_id' => $documentMetadata->getId()
+                'metadata_id' => $documentMetadata->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la suppression de la métadonnée: ' . $e->getMessage()];
@@ -229,7 +236,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Bulk delete metadata by IDs
+     * Bulk delete metadata by IDs.
      */
     public function bulkDeleteMetadata(array $ids): array
     {
@@ -237,21 +244,21 @@ class DocumentMetadataService
             $qb = $this->documentMetadataRepository->createQueryBuilder('dm')
                 ->delete()
                 ->where('dm.id IN (:ids)')
-                ->setParameter('ids', $ids);
+                ->setParameter('ids', $ids)
+            ;
 
             $deletedCount = $qb->getQuery()->execute();
 
             $this->logger->info('Bulk deleted document metadata', [
                 'deleted_count' => $deletedCount,
-                'ids' => $ids
+                'ids' => $ids,
             ]);
 
             return ['success' => true, 'deleted_count' => $deletedCount];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to bulk delete document metadata', [
                 'error' => $e->getMessage(),
-                'ids' => $ids
+                'ids' => $ids,
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la suppression en masse: ' . $e->getMessage()];
@@ -259,7 +266,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Export metadata to CSV
+     * Export metadata to CSV.
      */
     public function exportMetadataToCSV(array $filters = []): array
     {
@@ -280,25 +287,25 @@ class DocumentMetadataService
                     $meta->isRequired() ? 'Oui' : 'Non',
                     $meta->isSearchable() ? 'Oui' : 'Non',
                     $meta->isEditable() ? 'Oui' : 'Non',
-                    $meta->getCreatedAt()?->format('d/m/Y H:i:s') ?? ''
+                    $meta->getCreatedAt()?->format('d/m/Y H:i:s') ?? '',
                 );
             }
 
             $response = new Response($csvContent);
             $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
-            $response->headers->set('Content-Disposition', 
+            $response->headers->set(
+                'Content-Disposition',
                 $response->headers->makeDisposition(
                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    'metadata_export_' . date('Y-m-d_H-i-s') . '.csv'
-                )
+                    'metadata_export_' . date('Y-m-d_H-i-s') . '.csv',
+                ),
             );
 
             return ['success' => true, 'response' => $response];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to export metadata to CSV', [
                 'error' => $e->getMessage(),
-                'filters' => $filters
+                'filters' => $filters,
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de l\'export CSV: ' . $e->getMessage()];
@@ -306,7 +313,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Get statistics for a specific metadata key
+     * Get statistics for a specific metadata key.
      */
     public function getMetadataStatisticsByKey(string $key): array
     {
@@ -316,7 +323,7 @@ class DocumentMetadataService
             'total_count' => count($metadata),
             'data_types' => [],
             'value_distribution' => [],
-            'documents_count' => 0
+            'documents_count' => 0,
         ];
 
         $uniqueDocuments = [];
@@ -344,7 +351,7 @@ class DocumentMetadataService
         }
 
         $stats['documents_count'] = count($uniqueDocuments);
-        
+
         // Sort value distribution by count
         arsort($valueCount);
         $stats['value_distribution'] = array_slice($valueCount, 0, 10, true);
@@ -353,25 +360,27 @@ class DocumentMetadataService
     }
 
     /**
-     * Get available metadata keys with optional search
+     * Get available metadata keys with optional search.
      */
     public function getAvailableMetadataKeys(string $search = ''): array
     {
         $qb = $this->documentMetadataRepository->createQueryBuilder('dm')
             ->select('DISTINCT dm.metaKey as key, COUNT(dm.id) as usage_count')
             ->groupBy('dm.metaKey')
-            ->orderBy('usage_count', 'DESC');
+            ->orderBy('usage_count', 'DESC')
+        ;
 
         if (!empty($search)) {
             $qb->where('dm.metaKey LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%')
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Get document by ID
+     * Get document by ID.
      */
     public function getDocumentById(int $documentId): ?Document
     {
@@ -379,7 +388,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Validate document metadata
+     * Validate document metadata.
      */
     private function validateDocumentMetadata(DocumentMetadata $documentMetadata): array
     {
@@ -394,7 +403,7 @@ class DocumentMetadataService
         // Check for duplicate keys within the same document
         $existingMetadata = $this->documentMetadataRepository->findOneBy([
             'document' => $documentMetadata->getDocument(),
-            'metaKey' => $documentMetadata->getMetaKey()
+            'metaKey' => $documentMetadata->getMetaKey(),
         ]);
 
         if ($existingMetadata && $existingMetadata->getId() !== $documentMetadata->getId()) {
@@ -405,7 +414,7 @@ class DocumentMetadataService
     }
 
     /**
-     * Validate metadata value according to its data type
+     * Validate metadata value according to its data type.
      */
     private function validateMetadataValue(DocumentMetadata $documentMetadata): array
     {
@@ -421,7 +430,7 @@ class DocumentMetadataService
         if (!empty($value)) {
             switch ($dataType) {
                 case DocumentMetadata::TYPE_INTEGER:
-                    if (!is_numeric($value) || (int)$value != $value) {
+                    if (!is_numeric($value) || (int) $value !== $value) {
                         return ['valid' => false, 'error' => 'La valeur doit être un nombre entier.'];
                     }
                     break;
@@ -433,23 +442,23 @@ class DocumentMetadataService
                     break;
 
                 case DocumentMetadata::TYPE_BOOLEAN:
-                    if (!in_array(strtolower($value), ['true', 'false', '1', '0', 'yes', 'no', 'oui', 'non'])) {
+                    if (!in_array(strtolower($value), ['true', 'false', '1', '0', 'yes', 'no', 'oui', 'non'], true)) {
                         return ['valid' => false, 'error' => 'La valeur doit être un booléen (true/false, 1/0, oui/non).'];
                     }
                     break;
 
                 case DocumentMetadata::TYPE_DATE:
                     try {
-                        new \DateTime($value);
-                    } catch (\Exception $e) {
+                        new DateTime($value);
+                    } catch (Exception $e) {
                         return ['valid' => false, 'error' => 'La valeur doit être une date valide.'];
                     }
                     break;
 
                 case DocumentMetadata::TYPE_DATETIME:
                     try {
-                        new \DateTime($value);
-                    } catch (\Exception $e) {
+                        new DateTime($value);
+                    } catch (Exception $e) {
                         return ['valid' => false, 'error' => 'La valeur doit être une date et heure valide.'];
                     }
                     break;

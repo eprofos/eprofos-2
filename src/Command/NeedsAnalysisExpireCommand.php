@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,20 +17,20 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Command to automatically expire needs analysis requests that have passed their expiration date.
- * 
+ *
  * This command should be run regularly (e.g., daily via cron) to maintain data consistency
  * and ensure that expired requests are properly marked as expired.
  */
 #[AsCommand(
     name: 'app:needs-analysis:expire',
-    description: 'Mark expired needs analysis requests as expired'
+    description: 'Mark expired needs analysis requests as expired',
 )]
 class NeedsAnalysisExpireCommand extends Command
 {
     public function __construct(
         private readonly NeedsAnalysisRequestRepository $requestRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -44,18 +45,19 @@ class NeedsAnalysisExpireCommand extends Command
                 'dry-run',
                 'd',
                 InputOption::VALUE_NONE,
-                'Show what would be expired without actually updating the database'
+                'Show what would be expired without actually updating the database',
             )
             ->addOption(
                 'force',
                 'f',
                 InputOption::VALUE_NONE,
-                'Force expiration even if requests are not yet expired (for testing)'
+                'Force expiration even if requests are not yet expired (for testing)',
             )
             ->setHelp(
                 'This command finds all needs analysis requests that have passed their expiration date ' .
-                'and marks them as expired. Use --dry-run to see what would be expired without making changes.'
-            );
+                'and marks them as expired. Use --dry-run to see what would be expired without making changes.',
+            )
+        ;
     }
 
     /**
@@ -72,9 +74,10 @@ class NeedsAnalysisExpireCommand extends Command
         try {
             // Get expired requests
             $expiredRequests = $this->requestRepository->findExpiredRequests();
-            
+
             if (empty($expiredRequests)) {
                 $io->success('No expired requests found.');
+
                 return Command::SUCCESS;
             }
 
@@ -95,17 +98,19 @@ class NeedsAnalysisExpireCommand extends Command
 
             $io->table(
                 ['ID', 'Email', 'Type', 'Status', 'Created At', 'Expires At'],
-                $tableData
+                $tableData,
             );
 
             if ($isDryRun) {
                 $io->note('DRY RUN: No changes will be made to the database.');
+
                 return Command::SUCCESS;
             }
 
             // Confirm before proceeding (unless force is used)
             if (!$isForce && !$io->confirm('Do you want to mark these requests as expired?', false)) {
                 $io->info('Operation cancelled.');
+
                 return Command::SUCCESS;
             }
 
@@ -114,28 +119,27 @@ class NeedsAnalysisExpireCommand extends Command
 
             if ($expiredCount > 0) {
                 $this->entityManager->flush();
-                
+
                 $io->success(sprintf('Successfully marked %d request(s) as expired.', $expiredCount));
-                
+
                 // Log the operation
                 $this->logger->info('Needs analysis requests expired', [
                     'expired_count' => $expiredCount,
-                    'command' => 'app:needs-analysis:expire'
+                    'command' => 'app:needs-analysis:expire',
                 ]);
             } else {
                 $io->info('No requests were expired.');
             }
 
             return Command::SUCCESS;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $io->error(sprintf('An error occurred: %s', $e->getMessage()));
-            
+
             $this->logger->error('Error in needs analysis expiration command', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return Command::FAILURE;
         }
     }

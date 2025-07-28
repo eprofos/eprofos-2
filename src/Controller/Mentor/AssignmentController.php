@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Mentor;
 
 use App\Entity\Alternance\MissionAssignment;
-use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Form\Alternance\MissionAssignmentType;
-use App\Service\Alternance\MissionAssignmentService;
-use App\Repository\Alternance\MissionAssignmentRepository;
 use App\Repository\Alternance\CompanyMissionRepository;
+use App\Repository\Alternance\MissionAssignmentRepository;
+use App\Service\Alternance\MissionAssignmentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,8 +20,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Mentor Assignment Controller
- * 
+ * Mentor Assignment Controller.
+ *
  * Handles mission assignments management for mentors
  */
 #[Route('/mentor/assignments', name: 'mentor_assignments_')]
@@ -30,12 +32,11 @@ class AssignmentController extends AbstractController
         private MissionAssignmentService $assignmentService,
         private MissionAssignmentRepository $assignmentRepository,
         private CompanyMissionRepository $missionRepository,
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+    ) {}
 
     /**
-     * List all assignments managed by the mentor
+     * List all assignments managed by the mentor.
      */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -55,21 +56,25 @@ class AssignmentController extends AbstractController
             ->innerJoin('a.mission', 'm')
             ->where('m.supervisor = :mentor')
             ->setParameter('mentor', $mentor)
-            ->orderBy('a.startDate', 'DESC');
+            ->orderBy('a.startDate', 'DESC')
+        ;
 
         if ($status !== 'all') {
             $queryBuilder->andWhere('a.status = :status')
-                        ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         if ($student !== 'all') {
             $queryBuilder->andWhere('a.student = :student')
-                        ->setParameter('student', (int) $student);
+                ->setParameter('student', (int) $student)
+            ;
         }
 
         if ($mission !== 'all') {
             $queryBuilder->andWhere('m.id = :mission')
-                        ->setParameter('mission', (int) $mission);
+                ->setParameter('mission', (int) $mission)
+            ;
         }
 
         // Get total count
@@ -81,7 +86,8 @@ class AssignmentController extends AbstractController
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Get statistics
         $stats = $this->getAssignmentStats($mentor);
@@ -95,7 +101,8 @@ class AssignmentController extends AbstractController
             ->setParameter('mentor', $mentor)
             ->orderBy('s.lastName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Get missions for filter (missions supervised by this mentor)
         $availableMissions = $this->missionRepository
@@ -104,7 +111,8 @@ class AssignmentController extends AbstractController
             ->setParameter('mentor', $mentor)
             ->orderBy('m.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return $this->render('mentor/assignments/index.html.twig', [
             'assignments' => $assignments,
@@ -118,19 +126,19 @@ class AssignmentController extends AbstractController
             'complexity_colors' => [
                 'facile' => 'success',
                 'moyen' => 'warning',
-                'difficile' => 'danger'
+                'difficile' => 'danger',
             ],
             'filters' => [
                 'status' => $status,
                 'student' => $student,
-                'mission' => $mission
+                'mission' => $mission,
             ],
-            'page_title' => 'Assignations de Missions'
+            'page_title' => 'Assignations de Missions',
         ]);
     }
 
     /**
-     * Show assignment details
+     * Show assignment details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(MissionAssignment $assignment): Response
@@ -146,12 +154,12 @@ class AssignmentController extends AbstractController
         return $this->render('mentor/assignments/show.html.twig', [
             'assignment' => $assignment,
             'mentor' => $mentor,
-            'page_title' => 'Assignation - ' . $assignment->getMission()->getTitle()
+            'page_title' => 'Assignation - ' . $assignment->getMission()->getTitle(),
         ]);
     }
 
     /**
-     * Create a new assignment
+     * Create a new assignment.
      */
     #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
@@ -161,7 +169,7 @@ class AssignmentController extends AbstractController
 
         $assignment = new MissionAssignment();
         $form = $this->createForm(MissionAssignmentType::class, $assignment, [
-            'mentor' => $mentor
+            'mentor' => $mentor,
         ]);
         $form->handleRequest($request);
 
@@ -183,14 +191,14 @@ class AssignmentController extends AbstractController
                         'studentFeedback' => $assignment->getStudentFeedback(),
                         'mentorRating' => $assignment->getMentorRating(),
                         'studentSatisfaction' => $assignment->getStudentSatisfaction(),
-                        'competenciesAcquired' => $assignment->getCompetenciesAcquired()
-                    ]
+                        'competenciesAcquired' => $assignment->getCompetenciesAcquired(),
+                    ],
                 );
 
                 $this->addFlash('success', 'Assignation créée avec succès !');
-                return $this->redirectToRoute('mentor_assignments_show', ['id' => $createdAssignment->getId()]);
 
-            } catch (\Exception $e) {
+                return $this->redirectToRoute('mentor_assignments_show', ['id' => $createdAssignment->getId()]);
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création de l\'assignation : ' . $e->getMessage());
             }
         }
@@ -198,12 +206,12 @@ class AssignmentController extends AbstractController
         return $this->render('mentor/assignments/create.html.twig', [
             'form' => $form,
             'mentor' => $mentor,
-            'page_title' => 'Créer une Assignation'
+            'page_title' => 'Créer une Assignation',
         ]);
     }
 
     /**
-     * Edit an assignment
+     * Edit an assignment.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, MissionAssignment $assignment): Response
@@ -215,9 +223,9 @@ class AssignmentController extends AbstractController
         if ($assignment->getMission()->getSupervisor() !== $mentor) {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette assignation.');
         }
-        
+
         $form = $this->createForm(MissionAssignmentType::class, $assignment, [
-            'mentor' => $mentor
+            'mentor' => $mentor,
         ]);
         $form->handleRequest($request);
 
@@ -236,13 +244,13 @@ class AssignmentController extends AbstractController
                     'studentFeedback' => $assignment->getStudentFeedback(),
                     'mentorRating' => $assignment->getMentorRating(),
                     'studentSatisfaction' => $assignment->getStudentSatisfaction(),
-                    'competenciesAcquired' => $assignment->getCompetenciesAcquired()
+                    'competenciesAcquired' => $assignment->getCompetenciesAcquired(),
                 ]);
 
                 $this->addFlash('success', 'Assignation mise à jour avec succès !');
-                return $this->redirectToRoute('mentor_assignments_show', ['id' => $assignment->getId()]);
 
-            } catch (\Exception $e) {
+                return $this->redirectToRoute('mentor_assignments_show', ['id' => $assignment->getId()]);
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
             }
         }
@@ -251,12 +259,12 @@ class AssignmentController extends AbstractController
             'form' => $form,
             'assignment' => $assignment,
             'mentor' => $mentor,
-            'page_title' => 'Modifier l\'Assignation'
+            'page_title' => 'Modifier l\'Assignation',
         ]);
     }
 
     /**
-     * Update assignment progress
+     * Update assignment progress.
      */
     #[Route('/{id}/progress', name: 'progress', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateProgress(Request $request, MissionAssignment $assignment): Response
@@ -274,11 +282,10 @@ class AssignmentController extends AbstractController
 
         try {
             $this->assignmentService->updateProgress($assignment, $completionRate, [
-                'status' => $status
+                'status' => $status,
             ]);
             $this->addFlash('success', 'Progression mise à jour avec succès !');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
         }
 
@@ -286,7 +293,7 @@ class AssignmentController extends AbstractController
     }
 
     /**
-     * Complete an assignment
+     * Complete an assignment.
      */
     #[Route('/{id}/complete', name: 'complete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function complete(MissionAssignment $assignment): Response
@@ -302,8 +309,7 @@ class AssignmentController extends AbstractController
         try {
             $this->assignmentService->completeAssignment($assignment);
             $this->addFlash('success', 'Mission marquée comme terminée !');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la finalisation : ' . $e->getMessage());
         }
 
@@ -311,14 +317,15 @@ class AssignmentController extends AbstractController
     }
 
     /**
-     * Get assignment statistics for the mentor
+     * Get assignment statistics for the mentor.
      */
     private function getAssignmentStats(Mentor $mentor): array
     {
         $qb = $this->assignmentRepository->createQueryBuilder('a')
             ->innerJoin('a.mission', 'm')
             ->where('m.supervisor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         $total = count($qb->getQuery()->getResult());
 
@@ -329,7 +336,8 @@ class AssignmentController extends AbstractController
         $qb = $this->assignmentRepository->createQueryBuilder('a')
             ->innerJoin('a.mission', 'm')
             ->where('m.supervisor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         $inProgress = count($qb->andWhere('a.status = :status')
             ->setParameter('status', 'en_cours')
@@ -338,7 +346,8 @@ class AssignmentController extends AbstractController
         $qb = $this->assignmentRepository->createQueryBuilder('a')
             ->innerJoin('a.mission', 'm')
             ->where('m.supervisor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         $completed = count($qb->andWhere('a.status = :status')
             ->setParameter('status', 'terminee')
@@ -347,7 +356,8 @@ class AssignmentController extends AbstractController
         $qb = $this->assignmentRepository->createQueryBuilder('a')
             ->innerJoin('a.mission', 'm')
             ->where('m.supervisor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         $suspended = count($qb->andWhere('a.status = :status')
             ->setParameter('status', 'suspendue')
@@ -359,7 +369,7 @@ class AssignmentController extends AbstractController
             'in_progress' => $inProgress,
             'completed' => $completed,
             'suspended' => $suspended,
-            'completion_rate' => $total > 0 ? round(($completed / $total) * 100, 1) : 0
+            'completion_rate' => $total > 0 ? round(($completed / $total) * 100, 1) : 0,
         ];
     }
 }

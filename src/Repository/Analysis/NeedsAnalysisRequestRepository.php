@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Analysis;
 
 use App\Entity\Analysis\NeedsAnalysisRequest;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for NeedsAnalysisRequest entity
- * 
+ * Repository for NeedsAnalysisRequest entity.
+ *
  * Provides custom query methods for needs analysis requests
  * including filtering, statistics, and expiration management.
  */
@@ -20,7 +23,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save a needs analysis request
+     * Save a needs analysis request.
      */
     public function save(NeedsAnalysisRequest $entity, bool $flush = false): void
     {
@@ -32,7 +35,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a needs analysis request
+     * Remove a needs analysis request.
      */
     public function remove(NeedsAnalysisRequest $entity, bool $flush = false): void
     {
@@ -44,7 +47,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a request by its token
+     * Find a request by its token.
      */
     public function findByToken(string $token): ?NeedsAnalysisRequest
     {
@@ -52,11 +55,12 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->andWhere('nar.token = :token')
             ->setParameter('token', $token)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find requests by status
+     * Find requests by status.
      */
     public function findByStatus(string $status): array
     {
@@ -65,11 +69,12 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->setParameter('status', $status)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests by type
+     * Find requests by type.
      */
     public function findByType(string $type): array
     {
@@ -78,11 +83,12 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find expired requests that are still marked as sent
+     * Find expired requests that are still marked as sent.
      */
     public function findExpiredRequests(): array
     {
@@ -90,42 +96,45 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->andWhere('nar.status = :status')
             ->andWhere('nar.expiresAt < :now')
             ->setParameter('status', NeedsAnalysisRequest::STATUS_SENT)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests expiring soon (within specified days)
+     * Find requests expiring soon (within specified days).
      */
     public function findRequestsExpiringSoon(int $days = 7): array
     {
-        $expirationDate = new \DateTimeImmutable("+{$days} days");
-        
+        $expirationDate = new DateTimeImmutable("+{$days} days");
+
         return $this->createQueryBuilder('nar')
             ->andWhere('nar.status = :status')
             ->andWhere('nar.expiresAt <= :expirationDate')
             ->andWhere('nar.expiresAt > :now')
             ->setParameter('status', NeedsAnalysisRequest::STATUS_SENT)
             ->setParameter('expirationDate', $expirationDate)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->orderBy('nar.expiresAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for dashboard
+     * Get statistics for dashboard.
      */
     public function getStatistics(): array
     {
         $qb = $this->createQueryBuilder('nar');
-        
+
         $result = $qb
             ->select('nar.status, nar.type, COUNT(nar.id) as count')
             ->groupBy('nar.status, nar.type')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $stats = [
             'total' => 0,
@@ -160,7 +169,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count requests by status
+     * Count requests by status.
      */
     public function countByStatus(): array
     {
@@ -168,7 +177,8 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->select('nar.status, COUNT(nar.id) as count')
             ->groupBy('nar.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -179,7 +189,7 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count requests by type
+     * Count requests by type.
      */
     public function countByType(): array
     {
@@ -187,7 +197,8 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->select('nar.type, COUNT(nar.id) as count')
             ->groupBy('nar.type')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -198,60 +209,70 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find requests with filters for admin interface
+     * Find requests with filters for admin interface.
      */
     public function findWithFilters(array $filters = []): array
     {
         $qb = $this->createQueryBuilder('nar')
             ->leftJoin('nar.createdByUser', 'u')
             ->leftJoin('nar.formation', 'f')
-            ->addSelect('u', 'f');
+            ->addSelect('u', 'f')
+        ;
 
         if (!empty($filters['status'])) {
             $qb->andWhere('nar.status = :status')
-               ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['type'])) {
             $qb->andWhere('nar.type = :type')
-               ->setParameter('type', $filters['type']);
+                ->setParameter('type', $filters['type'])
+            ;
         }
 
         if (!empty($filters['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-               ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         if (!empty($filters['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-               ->setParameter('createdBy', $filters['created_by']);
+                ->setParameter('createdBy', $filters['created_by'])
+            ;
         }
 
         if (!empty($filters['search'])) {
             $qb->andWhere($qb->expr()->orX(
                 'nar.recipientName LIKE :search',
                 'nar.recipientEmail LIKE :search',
-                'nar.companyName LIKE :search'
+                'nar.companyName LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['date_from'])) {
             $qb->andWhere('nar.createdAt >= :dateFrom')
-               ->setParameter('dateFrom', $filters['date_from']);
+                ->setParameter('dateFrom', $filters['date_from'])
+            ;
         }
 
         if (!empty($filters['date_to'])) {
             $qb->andWhere('nar.createdAt <= :dateTo')
-               ->setParameter('dateTo', $filters['date_to']);
+                ->setParameter('dateTo', $filters['date_to'])
+            ;
         }
 
         return $qb->orderBy('nar.createdAt', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests created by a specific admin
+     * Find requests created by a specific admin.
+     *
+     * @param mixed $admin
      */
     public function findByCreatedByAdmin($admin): array
     {
@@ -260,11 +281,14 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->setParameter('admin', $admin)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests for a specific formation
+     * Find requests for a specific formation.
+     *
+     * @param mixed $formation
      */
     public function findByFormation($formation): array
     {
@@ -273,26 +297,28 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->setParameter('formation', $formation)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get recent requests (last 30 days)
+     * Get recent requests (last 30 days).
      */
     public function findRecentRequests(int $days = 30): array
     {
-        $since = new \DateTimeImmutable("-{$days} days");
-        
+        $since = new DateTimeImmutable("-{$days} days");
+
         return $this->createQueryBuilder('nar')
             ->andWhere('nar.createdAt >= :since')
             ->setParameter('since', $since)
             ->orderBy('nar.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Mark expired requests as expired
+     * Mark expired requests as expired.
      */
     public function markExpiredRequests(): int
     {
@@ -303,18 +329,19 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->andWhere('nar.expiresAt < :now')
             ->setParameter('expiredStatus', NeedsAnalysisRequest::STATUS_EXPIRED)
             ->setParameter('sentStatus', NeedsAnalysisRequest::STATUS_SENT)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     /**
-     * Get completion statistics by month
+     * Get completion statistics by month.
      */
     public function getCompletionStatsByMonth(int $months = 12): array
     {
-        $since = new \DateTimeImmutable("-{$months} months");
-        
+        $since = new DateTimeImmutable("-{$months} months");
+
         return $this->createQueryBuilder('nar')
             ->select('YEAR(nar.completedAt) as year, MONTH(nar.completedAt) as month, COUNT(nar.id) as count')
             ->andWhere('nar.status = :status')
@@ -324,160 +351,181 @@ class NeedsAnalysisRequestRepository extends ServiceEntityRepository
             ->groupBy('year, month')
             ->orderBy('year, month')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests by criteria with pagination
+     * Find requests by criteria with pagination.
      */
     public function findByCriteria(array $criteria = [], int $page = 1, int $limit = 20): array
     {
         $qb = $this->createQueryBuilder('nar')
             ->leftJoin('nar.createdByUser', 'u')
             ->leftJoin('nar.formation', 'f')
-            ->addSelect('u', 'f');
+            ->addSelect('u', 'f')
+        ;
 
         if (!empty($criteria['status'])) {
             $qb->andWhere('nar.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('nar.type = :type')
-               ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-               ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation'])
+            ;
         }
 
         if (!empty($criteria['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-               ->setParameter('createdBy', $criteria['created_by']);
+                ->setParameter('createdBy', $criteria['created_by'])
+            ;
         }
 
         $offset = ($page - 1) * $limit;
 
         return $qb->orderBy('nar.createdAt', 'DESC')
-                  ->setFirstResult($offset)
-                  ->setMaxResults($limit)
-                  ->getQuery()
-                  ->getResult();
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Count requests by criteria
+     * Count requests by criteria.
      */
     public function countByCriteria(array $criteria = []): int
     {
         $qb = $this->createQueryBuilder('nar')
-            ->select('COUNT(nar.id)');
+            ->select('COUNT(nar.id)')
+        ;
 
         if (!empty($criteria['status'])) {
             $qb->andWhere('nar.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('nar.type = :type')
-               ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-               ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation'])
+            ;
         }
 
         if (!empty($criteria['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-               ->setParameter('createdBy', $criteria['created_by']);
+                ->setParameter('createdBy', $criteria['created_by'])
+            ;
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Find requests by search term with pagination
+     * Find requests by search term with pagination.
      */
     public function findBySearchTerm(string $search, array $criteria = [], int $page = 1, int $limit = 20): array
     {
         $qb = $this->createQueryBuilder('nar')
             ->leftJoin('nar.createdByUser', 'u')
             ->leftJoin('nar.formation', 'f')
-            ->addSelect('u', 'f');
+            ->addSelect('u', 'f')
+        ;
 
         // Add search conditions
         $qb->andWhere($qb->expr()->orX(
             'nar.recipientName LIKE :search',
             'nar.recipientEmail LIKE :search',
-            'nar.companyName LIKE :search'
+            'nar.companyName LIKE :search',
         ))->setParameter('search', '%' . $search . '%');
 
         // Add criteria filters
         if (!empty($criteria['status'])) {
             $qb->andWhere('nar.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('nar.type = :type')
-               ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-               ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation'])
+            ;
         }
 
         if (!empty($criteria['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-               ->setParameter('createdBy', $criteria['created_by']);
+                ->setParameter('createdBy', $criteria['created_by'])
+            ;
         }
 
         $offset = ($page - 1) * $limit;
 
         return $qb->orderBy('nar.createdAt', 'DESC')
-                  ->setFirstResult($offset)
-                  ->setMaxResults($limit)
-                  ->getQuery()
-                  ->getResult();
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Count requests by search term
+     * Count requests by search term.
      */
     public function countBySearchTerm(string $search, array $criteria = []): int
     {
         $qb = $this->createQueryBuilder('nar')
-            ->select('COUNT(nar.id)');
+            ->select('COUNT(nar.id)')
+        ;
 
         // Add search conditions
         $qb->andWhere($qb->expr()->orX(
             'nar.recipientName LIKE :search',
             'nar.recipientEmail LIKE :search',
-            'nar.companyName LIKE :search'
+            'nar.companyName LIKE :search',
         ))->setParameter('search', '%' . $search . '%');
 
         // Add criteria filters
         if (!empty($criteria['status'])) {
             $qb->andWhere('nar.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('nar.type = :type')
-               ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('nar.formation = :formation')
-               ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation']);
         }
 
         if (!empty($criteria['created_by'])) {
             $qb->andWhere('nar.createdByUser = :createdBy')
-               ->setParameter('createdBy', $criteria['created_by']);
+                ->setParameter('createdBy', $criteria['created_by']);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();

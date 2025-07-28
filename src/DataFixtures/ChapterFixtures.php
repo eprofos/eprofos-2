@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Module;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
 class ChapterFixtures extends Fixture implements DependentFixtureInterface
@@ -24,39 +26,39 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
 
         foreach ($modules as $module) {
             $chapterCount = $faker->numberBetween(3, 8);
-            
+
             for ($i = 1; $i <= $chapterCount; $i++) {
                 $chapter = new Chapter();
-                
+
                 // Generate realistic chapter titles based on module context
                 $chapterTitles = $this->getChapterTitles($module->getTitle(), $i);
                 $title = $faker->randomElement($chapterTitles);
-                
+
                 $chapter->setTitle($title);
                 $chapter->setSlug($this->generateSlug($title, $module->getId(), $i));
                 $chapter->setDescription($this->generateRealisticDescription($title));
-                
+
                 // Content outline (required by Qualiopi)
                 $contentOutline = $this->generateContentOutline($faker, $title);
                 $chapter->setContentOutline($contentOutline);
-                
+
                 // Learning objectives (required by Qualiopi)
                 $learningObjectives = [];
                 for ($j = 0; $j < $faker->numberBetween(2, 4); $j++) {
                     $learningObjectives[] = $this->generateLearningObjective($faker, $title);
                 }
                 $chapter->setLearningObjectives($learningObjectives);
-                
+
                 // Learning outcomes (required by Qualiopi)
                 $learningOutcomes = [];
                 for ($k = 0; $k < $faker->numberBetween(2, 5); $k++) {
                     $learningOutcomes[] = $this->generateLearningOutcome($faker, $title);
                 }
                 $chapter->setLearningOutcomes($learningOutcomes);
-                
+
                 // Prerequisites
                 $chapter->setPrerequisites($faker->optional(0.6)->realText(150));
-                
+
                 // Teaching methods (required by Qualiopi)
                 $teachingMethods = $faker->optional(0.8)->randomElement([
                     'Présentation interactive avec support visuel',
@@ -67,10 +69,10 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                     'Jeu de rôle et simulation',
                     'Brainstorming et mind mapping',
                     'Questionnement socratique et débat',
-                    'Apprentissage par la découverte'
+                    'Apprentissage par la découverte',
                 ]);
                 $chapter->setTeachingMethods($teachingMethods);
-                
+
                 // Assessment methods (required by Qualiopi)
                 $assessmentMethods = $faker->optional(0.8)->randomElement([
                     'QCM de vérification des acquis',
@@ -80,10 +82,10 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                     'Questions-réponses interactives',
                     'Mise en situation et observation',
                     'Production d\'un livrable évaluable',
-                    'Réflexion écrite et synthèse personnelle'
+                    'Réflexion écrite et synthèse personnelle',
                 ]);
                 $chapter->setAssessmentMethods($assessmentMethods);
-                
+
                 // Resources
                 $resources = [];
                 $resourceTypes = [
@@ -94,37 +96,44 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                     'Cas pratiques',
                     'Outils numériques',
                     'Documentation complémentaire',
-                    'Références bibliographiques'
+                    'Références bibliographiques',
                 ];
                 for ($l = 0; $l < $faker->numberBetween(2, 5); $l++) {
                     $resources[] = $faker->randomElement($resourceTypes);
                 }
                 $chapter->setResources($resources);
-                
+
                 // Success criteria
                 $successCriteria = [];
                 for ($m = 0; $m < $faker->numberBetween(2, 4); $m++) {
                     $successCriteria[] = $this->generateSuccessCriteria($faker, $title);
                 }
                 $chapter->setSuccessCriteria($successCriteria);
-                
+
                 // Duration in minutes
                 $chapter->setDurationMinutes($faker->numberBetween(30, 120));
-                
+
                 // Order index
                 $chapter->setOrderIndex($i);
-                
+
                 $chapter->setModule($module);
                 $chapter->setIsActive($faker->boolean(95)); // 95% chance of being active
-                
+
                 $manager->persist($chapter);
-                
+
                 // Add reference for other fixtures
                 $this->addReference('chapter_' . $module->getId() . '_' . $i, $chapter);
             }
         }
 
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            ModuleFixtures::class,
+        ];
     }
 
     private function getChapterTitles(string $moduleTitle, int $chapterNumber): array
@@ -136,7 +145,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Syntaxe de base et variables',
                 'Structures de contrôle et boucles',
                 'Fonctions et portée des variables',
-                'Gestion des erreurs et debugging'
+                'Gestion des erreurs et debugging',
             ];
         }
 
@@ -146,7 +155,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Routing et contrôleurs',
                 'Twig et gestion des vues',
                 'Doctrine ORM et base de données',
-                'Formulaires et validation'
+                'Formulaires et validation',
             ];
         }
 
@@ -156,7 +165,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Fonctions logiques et conditionnelles',
                 'Fonctions de texte et manipulation de données',
                 'Fonctions de date et heure',
-                'Fonctions mathématiques avancées'
+                'Fonctions mathématiques avancées',
             ];
         }
 
@@ -166,7 +175,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Connexion aux sources de données',
                 'Modélisation des données',
                 'Création de visualisations',
-                'Publication et partage de rapports'
+                'Publication et partage de rapports',
             ];
         }
 
@@ -176,7 +185,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Vision et communication inspirante',
                 'Développement de l\'intelligence émotionnelle',
                 'Gestion du changement et influence',
-                'Coaching et développement des équipes'
+                'Coaching et développement des équipes',
             ];
         }
 
@@ -186,7 +195,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Stratégie de contenu et storytelling',
                 'SEO et référencement naturel',
                 'Publicité payante (SEA, Social Ads)',
-                'Marketing automation et lead nurturing'
+                'Marketing automation et lead nurturing',
             ];
         }
 
@@ -196,7 +205,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Journal et grand livre',
                 'Immobilisations et amortissements',
                 'Stocks et provisions',
-                'Rapprochement bancaire'
+                'Rapprochement bancaire',
             ];
         }
 
@@ -206,7 +215,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Grammaire appliquée au business',
                 'Techniques de conversation',
                 'Rédaction de e-mails professionnels',
-                'Présentations et prises de parole'
+                'Présentations et prises de parole',
             ];
         }
 
@@ -216,7 +225,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Événements Scrum (Sprint, Daily, Review)',
                 'Artefacts Scrum (Backlog, Increment)',
                 'Estimation et planification',
-                'Rétrospectives et amélioration'
+                'Rétrospectives et amélioration',
             ];
         }
 
@@ -226,7 +235,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Cartographie des flux de valeur',
                 'Outils Lean (5S, Kanban, Poka-yoke)',
                 'Amélioration continue (Kaizen)',
-                'Mesure et indicateurs de performance'
+                'Mesure et indicateurs de performance',
             ];
         }
 
@@ -236,7 +245,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Sourcing et recherche de candidats',
                 'Entretien structuré et évaluation',
                 'Tests et mises en situation',
-                'Prise de référence et décision'
+                'Prise de référence et décision',
             ];
         }
 
@@ -246,7 +255,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
                 'Analyse des vulnérabilités',
                 'Mise en place de pare-feu',
                 'Gestion des accès et authentification',
-                'Plan de reprise d\'activité'
+                'Plan de reprise d\'activité',
             ];
         }
 
@@ -259,7 +268,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'Mise en pratique',
             'Cas d\'étude concrets',
             'Bonnes pratiques',
-            'Évaluation et amélioration'
+            'Évaluation et amélioration',
         ];
     }
 
@@ -270,11 +279,9 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
         $slug = preg_replace('/\s+/', '-', $slug);
         $slug = preg_replace('/-+/', '-', $slug);
         $slug = trim($slug, '-');
-        
+
         // Add module ID and chapter index to ensure uniqueness
-        $slug = "module-{$moduleId}-chapter-{$chapterIndex}-{$slug}";
-        
-        return $slug;
+        return "module-{$moduleId}-chapter-{$chapterIndex}-{$slug}";
     }
 
     private function generateContentOutline($faker, string $title): string
@@ -286,7 +293,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             '4. Exemples pratiques',
             '5. Exercices d\'application',
             '6. Points de vigilance',
-            '7. Synthèse et takeaways'
+            '7. Synthèse et takeaways',
         ];
 
         // Add context-specific points
@@ -314,7 +321,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'Utiliser',
             'Développer',
             'Créer',
-            'Évaluer'
+            'Évaluer',
         ];
 
         $objectiveContexts = [
@@ -325,7 +332,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'les méthodes d\'analyse',
             'les stratégies efficaces',
             'les indicateurs clés',
-            'les processus d\'amélioration'
+            'les processus d\'amélioration',
         ];
 
         $starter = $faker->randomElement($objectiveStarters);
@@ -344,7 +351,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'Démontrer',
             'Appliquer',
             'Utiliser efficacement',
-            'Analyser correctement'
+            'Analyser correctement',
         ];
 
         $outcomeActions = [
@@ -355,7 +362,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'communiquer efficacement',
             'prendre des décisions éclairées',
             'gérer les situations complexes',
-            'collaborer avec les équipes'
+            'collaborer avec les équipes',
         ];
 
         $starter = $faker->randomElement($outcomeStarters);
@@ -373,7 +380,7 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'Répondre correctement aux questions de validation',
             'Produire un livrable conforme aux attentes',
             'Participer activement aux discussions',
-            'Compléter tous les exercices pratiques'
+            'Compléter tous les exercices pratiques',
         ];
 
         $template = $faker->randomElement($criteriaTemplates);
@@ -391,13 +398,13 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
             'Structures de contrôle et boucles' => 'Utilisation des conditions (if, switch) et des boucles (for, while, foreach) pour contrôler le flux du programme.',
             'Fonctions et portée des variables' => 'Création et utilisation des fonctions, gestion de la portée des variables (scope), et paramètres.',
             'Gestion des erreurs et debugging' => 'Techniques de débogage, gestion des erreurs et exceptions, et bonnes pratiques de développement.',
-            
+
             'Architecture MVC et composants Symfony' => 'Comprendre l\'architecture Modèle-Vue-Contrôleur et les composants fondamentaux de Symfony.',
             'Routing et contrôleurs' => 'Configuration des routes, création de contrôleurs, et gestion des requêtes HTTP.',
             'Twig et gestion des vues' => 'Utilisation du moteur de template Twig pour créer des vues dynamiques et maintenables.',
             'Doctrine ORM et base de données' => 'Intégration de Doctrine ORM pour la gestion des données et des relations entre entités.',
             'Formulaires et validation' => 'Création et validation de formulaires avec le composant Form de Symfony.',
-            
+
             'Fonctions de recherche et référence' => 'Maîtrise des fonctions RECHERCHEV, INDEX/EQUIV, et autres fonctions de recherche avancées.',
             'Fonctions logiques et conditionnelles' => 'Utilisation des fonctions SI, ET, OU, et création de formules conditionnelles complexes.',
             'Fonctions de texte et manipulation de données' => 'Manipulation de chaînes de caractères, concaténation, et extraction de données textuelles.',
@@ -406,12 +413,5 @@ class ChapterFixtures extends Fixture implements DependentFixtureInterface
         ];
 
         return $descriptions[$chapterTitle] ?? 'Ce chapitre traite des aspects pratiques de ' . strtolower($chapterTitle) . ' avec des exemples concrets et des exercices d\'application.';
-    }
-
-    public function getDependencies(): array
-    {
-        return [
-            ModuleFixtures::class,
-        ];
     }
 }

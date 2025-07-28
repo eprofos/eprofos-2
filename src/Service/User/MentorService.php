@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\User;
 
 use App\Entity\User\Mentor;
 use App\Repository\User\MentorRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -12,8 +17,8 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Mentor Service
- * 
+ * Mentor Service.
+ *
  * Handles business logic for mentor management including email notifications,
  * password reset functionality, invitation system, and data export capabilities.
  */
@@ -27,26 +32,25 @@ class MentorService
         private LoggerInterface $logger,
         private string $fromEmail = 'noreply@eprofos.fr',
         private string $fromName = 'EPROFOS - École Professionnelle de Formation Spécialisée',
-        private string $adminEmail = 'admin@eprofos.fr'
-    ) {
-    }
+        private string $adminEmail = 'admin@eprofos.fr',
+    ) {}
 
     /**
-     * Send welcome email to new mentor
+     * Send welcome email to new mentor.
      */
     public function sendWelcomeEmail(Mentor $mentor, ?string $plainPassword = null): bool
     {
         try {
             $this->logger->info('Sending welcome email to mentor', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             // Generate login URL
             $loginUrl = $this->urlGenerator->generate(
                 'mentor_login',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -58,21 +62,21 @@ class MentorService
                     'mentor' => $mentor,
                     'login_url' => $loginUrl,
                     'plain_password' => $plainPassword,
-                    'has_password' => $plainPassword !== null
-                ]);
+                    'has_password' => $plainPassword !== null,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Welcome email sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send welcome email', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -80,21 +84,21 @@ class MentorService
     }
 
     /**
-     * Send invitation email to potential mentor
+     * Send invitation email to potential mentor.
      */
     public function sendInvitationEmail(string $email, string $companyName, array $invitationData = []): bool
     {
         try {
             $this->logger->info('Sending invitation email to potential mentor', [
                 'email' => $email,
-                'company' => $companyName
+                'company' => $companyName,
             ]);
 
             // Generate registration URL
             $registrationUrl = $this->urlGenerator->generate(
                 'mentor_register',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -105,21 +109,21 @@ class MentorService
                 ->context([
                     'company_name' => $companyName,
                     'registration_url' => $registrationUrl,
-                    'invitation_data' => $invitationData
-                ]);
+                    'invitation_data' => $invitationData,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Invitation email sent successfully', [
-                'email' => $email
+                'email' => $email,
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send invitation email', [
                 'email' => $email,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -127,14 +131,14 @@ class MentorService
     }
 
     /**
-     * Send password reset email to mentor
+     * Send password reset email to mentor.
      */
     public function sendPasswordResetEmail(Mentor $mentor): bool
     {
         try {
             $this->logger->info('Sending password reset email to mentor', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             // Generate reset token
@@ -145,7 +149,7 @@ class MentorService
             $resetUrl = $this->urlGenerator->generate(
                 'mentor_reset_password',
                 ['token' => $resetToken],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -156,21 +160,21 @@ class MentorService
                 ->context([
                     'mentor' => $mentor,
                     'reset_url' => $resetUrl,
-                    'expires_at' => $mentor->getPasswordResetTokenExpiresAt()
-                ]);
+                    'expires_at' => $mentor->getPasswordResetTokenExpiresAt(),
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Password reset email sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send password reset email', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -178,14 +182,14 @@ class MentorService
     }
 
     /**
-     * Send email verification link to mentor
+     * Send email verification link to mentor.
      */
     public function sendEmailVerification(Mentor $mentor): bool
     {
         try {
             $this->logger->info('Sending email verification to mentor', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             // Generate verification token if not exists
@@ -198,7 +202,7 @@ class MentorService
             $verificationUrl = $this->urlGenerator->generate(
                 'mentor_verify_email',
                 ['token' => $mentor->getEmailVerificationToken()],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -208,21 +212,21 @@ class MentorService
                 ->htmlTemplate('emails/mentor_email_verification.html.twig')
                 ->context([
                     'mentor' => $mentor,
-                    'verification_url' => $verificationUrl
-                ]);
+                    'verification_url' => $verificationUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Email verification sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send email verification', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -230,21 +234,21 @@ class MentorService
     }
 
     /**
-     * Send new password email to mentor
+     * Send new password email to mentor.
      */
     public function sendNewPasswordEmail(Mentor $mentor, string $newPassword): bool
     {
         try {
             $this->logger->info('Sending new password email to mentor', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             // Generate login URL
             $loginUrl = $this->urlGenerator->generate(
                 'mentor_login',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -255,21 +259,21 @@ class MentorService
                 ->context([
                     'mentor' => $mentor,
                     'new_password' => $newPassword,
-                    'login_url' => $loginUrl
-                ]);
+                    'login_url' => $loginUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('New password email sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send new password email', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -277,27 +281,27 @@ class MentorService
     }
 
     /**
-     * Generate random password
+     * Generate random password.
      */
     public function generateRandomPassword(int $length = 12): string
     {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
         $password = '';
-        
+
         for ($i = 0; $i < $length; $i++) {
             $password .= $characters[random_int(0, strlen($characters) - 1)];
         }
-        
+
         return $password;
     }
 
     /**
-     * Export mentors data to CSV format
+     * Export mentors data to CSV format.
      */
     public function exportToCsv(array $mentors): string
     {
         $csvData = [];
-        
+
         // Headers
         $csvData[] = [
             'ID',
@@ -314,7 +318,7 @@ class MentorService
             'Actif',
             'Email vérifié',
             'Date de création',
-            'Dernière connexion'
+            'Dernière connexion',
         ];
 
         // Data rows
@@ -334,7 +338,7 @@ class MentorService
                 $mentor->isActive() ? 'Oui' : 'Non',
                 $mentor->isEmailVerified() ? 'Oui' : 'Non',
                 $mentor->getCreatedAt()->format('Y-m-d H:i:s'),
-                $mentor->getLastLoginAt() ? $mentor->getLastLoginAt()->format('Y-m-d H:i:s') : ''
+                $mentor->getLastLoginAt() ? $mentor->getLastLoginAt()->format('Y-m-d H:i:s') : '',
             ];
         }
 
@@ -351,59 +355,60 @@ class MentorService
     }
 
     /**
-     * Get dashboard statistics
+     * Get dashboard statistics.
      */
     public function getDashboardStatistics(): array
     {
         $statistics = $this->mentorRepository->getStatistics();
-        
+
         // Add additional calculated statistics
         $statistics['recent_registrations'] = $this->mentorRepository->findRecentlyRegistered(30);
         $statistics['unverified_emails'] = $this->mentorRepository->countUnverifiedEmails();
         $statistics['inactive_mentors'] = $this->mentorRepository->countInactive();
         $statistics['experience_stats'] = $this->mentorRepository->getExperienceStatistics();
         $statistics['education_distribution'] = $this->mentorRepository->getEducationLevelDistribution();
-        
+
         return $statistics;
     }
 
     /**
-     * Clean up expired password reset tokens
+     * Clean up expired password reset tokens.
      */
     public function cleanupExpiredTokens(): int
     {
         $this->logger->info('Cleaning up expired password reset tokens');
-        
+
         $qb = $this->entityManager->createQueryBuilder();
         $qb->update(Mentor::class, 'm')
-           ->set('m.passwordResetToken', 'NULL')
-           ->set('m.passwordResetTokenExpiresAt', 'NULL')
-           ->where('m.passwordResetTokenExpiresAt < :now')
-           ->setParameter('now', new \DateTimeImmutable());
-        
+            ->set('m.passwordResetToken', 'NULL')
+            ->set('m.passwordResetTokenExpiresAt', 'NULL')
+            ->where('m.passwordResetTokenExpiresAt < :now')
+            ->setParameter('now', new DateTimeImmutable())
+        ;
+
         $affected = $qb->getQuery()->execute();
-        
+
         $this->logger->info('Expired password reset tokens cleaned up', [
-            'affected_count' => $affected
+            'affected_count' => $affected,
         ]);
-        
+
         return $affected;
     }
 
     /**
-     * Send admin notification for new mentor registration
+     * Send admin notification for new mentor registration.
      */
     public function sendAdminNotificationForNewMentor(Mentor $mentor): bool
     {
         try {
             $this->logger->info('Sending admin notification for new mentor', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             $adminUrl = $this->urlGenerator->generate(
                 'admin_mentor_show',
                 ['id' => $mentor->getId()],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -413,21 +418,21 @@ class MentorService
                 ->htmlTemplate('emails/admin_new_mentor_notification.html.twig')
                 ->context([
                     'mentor' => $mentor,
-                    'admin_url' => $adminUrl
-                ]);
+                    'admin_url' => $adminUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Admin notification sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send admin notification', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -435,7 +440,7 @@ class MentorService
     }
 
     /**
-     * Validate mentor data
+     * Validate mentor data.
      */
     public function validateMentorData(Mentor $mentor): array
     {
@@ -497,7 +502,7 @@ class MentorService
     }
 
     /**
-     * Find available mentors for apprentice matching
+     * Find available mentors for apprentice matching.
      */
     public function findAvailableMentorsForMatching(array $criteria = [], int $maxApprenticesPerMentor = 3): array
     {
@@ -506,69 +511,47 @@ class MentorService
 
         // Filter by criteria if provided
         if (!empty($criteria['expertise_domains'])) {
-            $mentors = array_filter($mentors, function (Mentor $mentor) use ($criteria) {
+            $mentors = array_filter($mentors, static function (Mentor $mentor) use ($criteria) {
                 foreach ($criteria['expertise_domains'] as $domain) {
                     if ($mentor->hasExpertiseDomain($domain)) {
                         return true;
                     }
                 }
+
                 return false;
             });
         }
 
         if (!empty($criteria['min_experience'])) {
-            $mentors = array_filter($mentors, function (Mentor $mentor) use ($criteria) {
-                return $mentor->getExperienceYears() >= $criteria['min_experience'];
-            });
+            $mentors = array_filter($mentors, static fn (Mentor $mentor) => $mentor->getExperienceYears() >= $criteria['min_experience']);
         }
 
         if (!empty($criteria['education_level'])) {
-            $mentors = array_filter($mentors, function (Mentor $mentor) use ($criteria) {
-                return $mentor->getEducationLevel() === $criteria['education_level'];
-            });
+            $mentors = array_filter($mentors, static fn (Mentor $mentor) => $mentor->getEducationLevel() === $criteria['education_level']);
         }
 
         return array_values($mentors);
     }
 
     /**
-     * Get mentor statistics for specific company
+     * Get mentor statistics for specific company.
      */
     public function getCompanyStatistics(string $companyName): array
     {
         $mentors = $this->mentorRepository->findByCompanyName($companyName);
-        
+
         return [
             'total_mentors' => count($mentors),
-            'active_mentors' => count(array_filter($mentors, fn($m) => $m->isActive())),
-            'verified_mentors' => count(array_filter($mentors, fn($m) => $m->isEmailVerified())),
-            'average_experience' => count($mentors) > 0 ? 
-                array_sum(array_map(fn($m) => $m->getExperienceYears(), $mentors)) / count($mentors) : 0,
+            'active_mentors' => count(array_filter($mentors, static fn ($m) => $m->isActive())),
+            'verified_mentors' => count(array_filter($mentors, static fn ($m) => $m->isEmailVerified())),
+            'average_experience' => count($mentors) > 0 ?
+                array_sum(array_map(static fn ($m) => $m->getExperienceYears(), $mentors)) / count($mentors) : 0,
             'expertise_domains' => $this->getCompanyExpertiseDomains($mentors),
         ];
     }
 
     /**
-     * Get expertise domains for a company's mentors
-     */
-    private function getCompanyExpertiseDomains(array $mentors): array
-    {
-        $domains = [];
-        foreach ($mentors as $mentor) {
-            foreach ($mentor->getExpertiseDomains() as $domain) {
-                if (!isset($domains[$domain])) {
-                    $domains[$domain] = 0;
-                }
-                $domains[$domain]++;
-            }
-        }
-        
-        arsort($domains);
-        return $domains;
-    }
-
-    /**
-     * Check if mentor can supervise new apprentice
+     * Check if mentor can supervise new apprentice.
      */
     public function canSuperviseNewApprentice(Mentor $mentor, int $maxApprenticesPerMentor = 3): bool
     {
@@ -578,19 +561,19 @@ class MentorService
     }
 
     /**
-     * Send apprentice assignment notification to mentor
+     * Send apprentice assignment notification to mentor.
      */
     public function sendApprenticeAssignmentNotification(Mentor $mentor, array $apprenticeData): bool
     {
         try {
             $this->logger->info('Sending apprentice assignment notification to mentor', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             $dashboardUrl = $this->urlGenerator->generate(
                 'mentor_dashboard',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -601,21 +584,21 @@ class MentorService
                 ->context([
                     'mentor' => $mentor,
                     'apprentice_data' => $apprenticeData,
-                    'dashboard_url' => $dashboardUrl
-                ]);
+                    'dashboard_url' => $dashboardUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Apprentice assignment notification sent successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send apprentice assignment notification', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -623,7 +606,7 @@ class MentorService
     }
 
     /**
-     * Set configuration parameters
+     * Set configuration parameters.
      */
     public function setEmailConfig(string $fromEmail, string $fromName, string $adminEmail): void
     {
@@ -633,7 +616,7 @@ class MentorService
     }
 
     /**
-     * Calculate performance metrics for a mentor
+     * Calculate performance metrics for a mentor.
      */
     public function calculatePerformanceMetrics(Mentor $mentor): array
     {
@@ -649,7 +632,7 @@ class MentorService
     }
 
     /**
-     * Get recent activity for a mentor
+     * Get recent activity for a mentor.
      */
     public function getRecentActivity(Mentor $mentor): array
     {
@@ -658,7 +641,7 @@ class MentorService
     }
 
     /**
-     * Get detailed performance metrics for a mentor over a period
+     * Get detailed performance metrics for a mentor over a period.
      */
     public function getDetailedPerformance(Mentor $mentor, int $months): array
     {
@@ -672,22 +655,44 @@ class MentorService
     }
 
     /**
-     * Export mentors to various formats
+     * Export mentors to various formats.
      */
     public function exportMentors(array $mentors, string $format): string
     {
         switch ($format) {
             case 'csv':
                 return $this->exportToCsv($mentors);
+
             case 'xlsx':
                 return $this->exportToExcel($mentors);
+
             default:
-                throw new \InvalidArgumentException("Unsupported export format: {$format}");
+                throw new InvalidArgumentException("Unsupported export format: {$format}");
         }
     }
 
     /**
-     * Export mentors to Excel format
+     * Get expertise domains for a company's mentors.
+     */
+    private function getCompanyExpertiseDomains(array $mentors): array
+    {
+        $domains = [];
+        foreach ($mentors as $mentor) {
+            foreach ($mentor->getExpertiseDomains() as $domain) {
+                if (!isset($domains[$domain])) {
+                    $domains[$domain] = 0;
+                }
+                $domains[$domain]++;
+            }
+        }
+
+        arsort($domains);
+
+        return $domains;
+    }
+
+    /**
+     * Export mentors to Excel format.
      */
     private function exportToExcel(array $mentors): string
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\CRM\ContactRequest;
@@ -14,8 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Contact Request Controller
- * 
+ * Admin Contact Request Controller.
+ *
  * Handles CRUD operations for contact requests in the admin interface.
  * Provides full management capabilities for EPROFOS contact requests.
  */
@@ -24,18 +26,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ContactRequestController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * List all contact requests with filtering and pagination
+     * List all contact requests with filtering and pagination.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, ContactRequestRepository $contactRequestRepository): Response
     {
         $this->logger->info('Admin contact requests list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $status = $request->query->get('status');
@@ -45,16 +46,19 @@ class ContactRequestController extends AbstractController
             ->leftJoin('cr.formation', 'f')
             ->leftJoin('cr.service', 's')
             ->addSelect('f', 's')
-            ->orderBy('cr.createdAt', 'DESC');
+            ->orderBy('cr.createdAt', 'DESC')
+        ;
 
         if ($status) {
             $queryBuilder->andWhere('cr.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         if ($type) {
             $queryBuilder->andWhere('cr.type = :type')
-                ->setParameter('type', $type);
+                ->setParameter('type', $type)
+            ;
         }
 
         $contactRequests = $queryBuilder->getQuery()->getResult();
@@ -74,20 +78,20 @@ class ContactRequestController extends AbstractController
             'page_title' => 'Gestion des demandes de contact',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Demandes de contact', 'url' => null]
-            ]
+                ['label' => 'Demandes de contact', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show contact request details
+     * Show contact request details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ContactRequest $contactRequest): Response
     {
         $this->logger->info('Admin contact request details viewed', [
             'contact_request_id' => $contactRequest->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/contact_request/show.html.twig', [
@@ -96,13 +100,13 @@ class ContactRequestController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Demandes de contact', 'url' => $this->generateUrl('admin_contact_request_index')],
-                ['label' => 'Demande #' . $contactRequest->getId(), 'url' => null]
-            ]
+                ['label' => 'Demande #' . $contactRequest->getId(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing contact request (status and admin notes)
+     * Edit an existing contact request (status and admin notes).
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
@@ -121,7 +125,7 @@ class ContactRequestController extends AbstractController
             $this->logger->info('Contact request updated', [
                 'contact_request_id' => $contactRequest->getId(),
                 'new_status' => $contactRequest->getStatus(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La demande de contact a été modifiée avec succès.');
@@ -137,35 +141,35 @@ class ContactRequestController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Demandes de contact', 'url' => $this->generateUrl('admin_contact_request_index')],
                 ['label' => 'Demande #' . $contactRequest->getId(), 'url' => $this->generateUrl('admin_contact_request_show', ['id' => $contactRequest->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Update contact request status
+     * Update contact request status.
      */
     #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
-        
-        if ($this->isCsrfTokenValid('update_status'.$contactRequest->getId(), $request->getPayload()->get('_token'))) {
+
+        if ($this->isCsrfTokenValid('update_status' . $contactRequest->getId(), $request->getPayload()->get('_token'))) {
             $oldStatus = $contactRequest->getStatus();
             $contactRequest->setStatus($newStatus);
-            
+
             // Mark as processed if status changed from pending
             if ($newStatus !== 'pending' && !$contactRequest->getProcessedAt()) {
                 $contactRequest->markAsProcessed();
             }
-            
+
             $entityManager->flush();
 
             $this->logger->info('Contact request status updated', [
                 'contact_request_id' => $contactRequest->getId(),
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le statut de la demande a été mis à jour avec succès.');
@@ -175,19 +179,19 @@ class ContactRequestController extends AbstractController
     }
 
     /**
-     * Delete a contact request
+     * Delete a contact request.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$contactRequest->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $contactRequest->getId(), $request->getPayload()->get('_token'))) {
             $contactRequestId = $contactRequest->getId();
             $entityManager->remove($contactRequest);
             $entityManager->flush();
 
             $this->logger->info('Contact request deleted', [
                 'contact_request_id' => $contactRequestId,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La demande de contact a été supprimée avec succès.');
@@ -197,7 +201,7 @@ class ContactRequestController extends AbstractController
     }
 
     /**
-     * Export contact requests to CSV
+     * Export contact requests to CSV.
      */
     #[Route('/export', name: 'export', methods: ['GET'])]
     public function export(ContactRequestRepository $contactRequestRepository): Response
@@ -209,7 +213,7 @@ class ContactRequestController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="demandes_contact_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://output', 'w');
-        
+
         // CSV headers
         fputcsv($output, [
             'ID',
@@ -225,7 +229,7 @@ class ContactRequestController extends AbstractController
             'Formation',
             'Service',
             'Créé le',
-            'Traité le'
+            'Traité le',
         ]);
 
         // CSV data
@@ -244,7 +248,7 @@ class ContactRequestController extends AbstractController
                 $request->getFormation()?->getTitle(),
                 $request->getService()?->getTitle(),
                 $request->getCreatedAt()?->format('d/m/Y H:i'),
-                $request->getProcessedAt()?->format('d/m/Y H:i')
+                $request->getProcessedAt()?->format('d/m/Y H:i'),
             ]);
         }
 
@@ -252,7 +256,7 @@ class ContactRequestController extends AbstractController
 
         $this->logger->info('Contact requests exported', [
             'count' => count($contactRequests),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $response;

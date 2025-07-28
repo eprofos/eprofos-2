@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Document\DocumentUITemplate;
 use App\Entity\Document\DocumentType;
+use App\Entity\Document\DocumentUITemplate;
 use App\Entity\User\Admin;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document UI Template Fixtures - Creates UI layout templates for documents
- * 
+ * Document UI Template Fixtures - Creates UI layout templates for documents.
+ *
  * Provides various pre-configured templates for different document types
  * with professional layouts, styling, and component structures.
  */
@@ -19,12 +21,19 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
 {
     // Template references for other fixtures
     public const STANDARD_TEMPLATE_REFERENCE = 'ui-template-standard';
+
     public const LETTERHEAD_TEMPLATE_REFERENCE = 'ui-template-letterhead';
+
     public const CERTIFICATE_TEMPLATE_REFERENCE = 'ui-template-certificate';
+
     public const LEGAL_TEMPLATE_REFERENCE = 'ui-template-legal';
+
     public const HANDBOOK_TEMPLATE_REFERENCE = 'ui-template-handbook';
+
     public const QUALITY_TEMPLATE_REFERENCE = 'ui-template-quality';
+
     public const MINIMAL_TEMPLATE_REFERENCE = 'ui-template-minimal';
+
     public const REPORT_TEMPLATE_REFERENCE = 'ui-template-report';
 
     public function load(ObjectManager $manager): void
@@ -52,11 +61,11 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => true,
                     'numbering_position' => 'bottom-right',
                     'show_date' => true,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'headerFooterConfig' => [
                     'header' => '<div class="header-content">{{company_logo}} <span class="company-name">EPROFOS</span></div>',
-                    'footer' => '<div class="footer-content">{{company_address}} | {{company_phone}} | {{company_email}}</div>'
+                    'footer' => '<div class="footer-content">{{company_address}} | {{company_phone}} | {{company_email}}</div>',
                 ],
                 'variables' => [
                     'company_logo' => ['type' => 'image', 'default' => '/images/logo-eprofos.png', 'description' => 'Logo de l\'entreprise'],
@@ -67,7 +76,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::STANDARD_TEMPLATE_REFERENCE,
                 'sortOrder' => 1,
-                'usageCount' => 15
+                'usageCount' => 15,
             ],
             [
                 'name' => 'Template Papier à En-tête',
@@ -91,11 +100,11 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => true,
                     'numbering_position' => 'bottom-center',
                     'show_date' => true,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'headerFooterConfig' => [
                     'header' => '<div class="letterhead-header">{{official_logo}}<div class="company-info"><h1>{{company_name}}</h1><p>{{company_tagline}}</p></div></div>',
-                    'footer' => '<div class="letterhead-footer">{{legal_info}} | {{registration_number}}</div>'
+                    'footer' => '<div class="letterhead-footer">{{legal_info}} | {{registration_number}}</div>',
                 ],
                 'variables' => [
                     'official_logo' => ['type' => 'image', 'default' => '/images/logo-official.png', 'description' => 'Logo officiel'],
@@ -105,7 +114,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::LETTERHEAD_TEMPLATE_REFERENCE,
                 'sortOrder' => 2,
-                'usageCount' => 8
+                'usageCount' => 8,
             ],
             [
                 'name' => 'Template Certificat',
@@ -129,7 +138,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => false,
                     'show_date' => false,
                     'show_watermark' => true,
-                    'watermark_text' => 'CERTIFIÉ'
+                    'watermark_text' => 'CERTIFIÉ',
                 ],
                 'variables' => [
                     'certificate_title' => ['type' => 'text', 'default' => 'CERTIFICAT DE FORMATION', 'description' => 'Titre du certificat'],
@@ -142,7 +151,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::CERTIFICATE_TEMPLATE_REFERENCE,
                 'sortOrder' => 3,
-                'usageCount' => 12
+                'usageCount' => 12,
             ],
             [
                 'name' => 'Template Document Légal',
@@ -166,7 +175,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => true,
                     'numbering_position' => 'bottom-center',
                     'show_date' => true,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'variables' => [
                     'document_reference' => ['type' => 'text', 'default' => '', 'description' => 'Référence du document'],
@@ -176,7 +185,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::LEGAL_TEMPLATE_REFERENCE,
                 'sortOrder' => 4,
-                'usageCount' => 6
+                'usageCount' => 6,
             ],
             [
                 'name' => 'Template Livret d\'Accueil',
@@ -200,7 +209,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => true,
                     'numbering_position' => 'bottom-right',
                     'show_date' => true,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'variables' => [
                     'academic_year' => ['type' => 'text', 'default' => '2024-2025', 'description' => 'Année académique'],
@@ -210,7 +219,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::HANDBOOK_TEMPLATE_REFERENCE,
                 'sortOrder' => 5,
-                'usageCount' => 4
+                'usageCount' => 4,
             ],
             [
                 'name' => 'Template Qualité Qualiopi',
@@ -235,7 +244,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering_position' => 'bottom-center',
                     'show_date' => true,
                     'show_watermark' => true,
-                    'watermark_text' => 'QUALIOPI'
+                    'watermark_text' => 'QUALIOPI',
                 ],
                 'variables' => [
                     'qualiopi_criterion' => ['type' => 'text', 'default' => '', 'description' => 'Critère Qualiopi'],
@@ -245,7 +254,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::QUALITY_TEMPLATE_REFERENCE,
                 'sortOrder' => 6,
-                'usageCount' => 3
+                'usageCount' => 3,
             ],
             [
                 'name' => 'Template Minimal',
@@ -268,12 +277,12 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 'pageSettings' => [
                     'numbering' => false,
                     'show_date' => false,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'variables' => [],
                 'reference' => self::MINIMAL_TEMPLATE_REFERENCE,
                 'sortOrder' => 7,
-                'usageCount' => 2
+                'usageCount' => 2,
             ],
             [
                 'name' => 'Template Rapport d\'Activité',
@@ -297,7 +306,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'numbering' => true,
                     'numbering_position' => 'bottom-right',
                     'show_date' => true,
-                    'show_watermark' => false
+                    'show_watermark' => false,
                 ],
                 'variables' => [
                     'report_title' => ['type' => 'text', 'default' => 'Rapport d\'Activité', 'description' => 'Titre du rapport'],
@@ -307,36 +316,37 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                 ],
                 'reference' => self::REPORT_TEMPLATE_REFERENCE,
                 'sortOrder' => 8,
-                'usageCount' => 1
+                'usageCount' => 1,
             ],
         ];
 
         foreach ($templates as $templateData) {
             $template = new DocumentUITemplate();
             $template->setName($templateData['name'])
-                    ->setSlug($templateData['slug'])
-                    ->setDescription($templateData['description'])
-                    ->setDocumentType($templateData['documentType'] ? $this->getReference($templateData['documentType'], DocumentType::class) : null)
-                    ->setHtmlTemplate($templateData['htmlTemplate'])
-                    ->setCssStyles($templateData['cssStyles'])
-                    ->setPageSettings($templateData['pageSettings'])
-                    ->setHeaderFooterConfig($templateData['headerFooterConfig'] ?? null)
-                    ->setVariables($templateData['variables'])
-                    ->setOrientation($templateData['orientation'])
-                    ->setPaperSize($templateData['paperSize'])
-                    ->setMarginTop($templateData['marginTop'])
-                    ->setMarginRight($templateData['marginRight'])
-                    ->setMarginBottom($templateData['marginBottom'])
-                    ->setMarginLeft($templateData['marginLeft'])
-                    ->setShowPageNumbers($templateData['showPageNumbers'])
-                    ->setIcon($templateData['icon'])
-                    ->setColor($templateData['color'])
-                    ->setIsActive(true)
-                    ->setIsDefault($templateData['isDefault'])
-                    ->setIsGlobal($templateData['isGlobal'])
-                    ->setSortOrder($templateData['sortOrder'])
-                    ->setUsageCount($templateData['usageCount'])
-                    ->setCreatedBy($this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class));
+                ->setSlug($templateData['slug'])
+                ->setDescription($templateData['description'])
+                ->setDocumentType($templateData['documentType'] ? $this->getReference($templateData['documentType'], DocumentType::class) : null)
+                ->setHtmlTemplate($templateData['htmlTemplate'])
+                ->setCssStyles($templateData['cssStyles'])
+                ->setPageSettings($templateData['pageSettings'])
+                ->setHeaderFooterConfig($templateData['headerFooterConfig'] ?? null)
+                ->setVariables($templateData['variables'])
+                ->setOrientation($templateData['orientation'])
+                ->setPaperSize($templateData['paperSize'])
+                ->setMarginTop($templateData['marginTop'])
+                ->setMarginRight($templateData['marginRight'])
+                ->setMarginBottom($templateData['marginBottom'])
+                ->setMarginLeft($templateData['marginLeft'])
+                ->setShowPageNumbers($templateData['showPageNumbers'])
+                ->setIcon($templateData['icon'])
+                ->setColor($templateData['color'])
+                ->setIsActive(true)
+                ->setIsDefault($templateData['isDefault'])
+                ->setIsGlobal($templateData['isGlobal'])
+                ->setSortOrder($templateData['sortOrder'])
+                ->setUsageCount($templateData['usageCount'])
+                ->setCreatedBy($this->getReference(UserFixtures::ADMIN_USER_REFERENCE, Admin::class))
+            ;
 
             $manager->persist($template);
             $this->addReference($templateData['reference'], $template);
@@ -354,7 +364,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
     }
 
     /**
-     * Template HTML definitions
+     * Template HTML definitions.
      */
     private function getStandardTemplate(): string
     {

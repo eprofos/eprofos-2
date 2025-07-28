@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Training\Formation;
 use App\Entity\Assessment\Question;
 use App\Entity\Assessment\Questionnaire;
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\QuestionResponse;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -14,8 +16,8 @@ use Faker\Factory;
 use Faker\Generator;
 
 /**
- * QuestionnaireResponse fixtures for EPROFOS platform
- * 
+ * QuestionnaireResponse fixtures for EPROFOS platform.
+ *
  * Creates realistic questionnaire responses with various completion states
  * to test the questionnaire system functionality
  */
@@ -29,7 +31,7 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Load questionnaire response fixtures
+     * Load questionnaire response fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -46,7 +48,17 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Create responses for PHP/Symfony positioning questionnaire
+     * Define fixture dependencies.
+     */
+    public function getDependencies(): array
+    {
+        return [
+            QuestionOptionFixtures::class,
+        ];
+    }
+
+    /**
+     * Create responses for PHP/Symfony positioning questionnaire.
      */
     private function createPhpSymfonyResponses(ObjectManager $manager): void
     {
@@ -70,16 +82,16 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 // Completed responses
                 $response->setStatus(QuestionnaireResponse::STATUS_COMPLETED);
                 $response->markAsCompleted();
-                $response->setCompletedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 30) . ' days'));
+                $response->setCompletedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 30) . ' days'));
                 $response->setDurationMinutes($this->faker->numberBetween(15, 35));
-                
+
                 $this->createPhpSymfonyQuestionResponses($manager, $response, $questionnaire);
                 $response->calculateScore();
-                
+
                 // Some responses are evaluated
                 if ($i <= 7) {
                     $response->markAsEvaluated();
-                    $response->setEvaluatedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 25) . ' days'));
+                    $response->setEvaluatedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 25) . ' days'));
                     $response->setEvaluatorNotes($this->generateEvaluatorNotes('PHP'));
                     $scorePercentage = $response->getScorePercentage() ?? '0';
                     $response->setRecommendation($this->generateRecommendation($scorePercentage));
@@ -89,13 +101,13 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 $response->setStatus(QuestionnaireResponse::STATUS_IN_PROGRESS);
                 $response->markAsInProgress();
                 $response->setCurrentStep($this->faker->numberBetween(1, 3));
-                $response->setStartedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 7) . ' days'));
-                
+                $response->setStartedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 7) . ' days'));
+
                 $this->createPartialPhpSymfonyQuestionResponses($manager, $response, $questionnaire, $response->getCurrentStep());
             } else {
                 // Started but abandoned responses
                 $response->setStatus(QuestionnaireResponse::STATUS_ABANDONED);
-                $response->setStartedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(5, 60) . ' days'));
+                $response->setStartedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(5, 60) . ' days'));
                 $response->setCurrentStep(1);
             }
 
@@ -104,81 +116,92 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Create complete question responses for PHP/Symfony questionnaire
+     * Create complete question responses for PHP/Symfony questionnaire.
      */
     private function createPhpSymfonyQuestionResponses(ObjectManager $manager, QuestionnaireResponse $response, Questionnaire $questionnaire): void
     {
         $questions = $questionnaire->getQuestions();
-        
+
         foreach ($questions as $question) {
             $questionResponse = new QuestionResponse();
             $questionResponse->setQuestion($question);
             $questionResponse->setQuestionnaireResponse($response);
-            
+
             switch ($question->getType()) {
                 case 'single_choice':
                     $this->setRandomSingleChoice($questionResponse, $question);
                     break;
+
                 case 'multiple_choice':
                     $this->setRandomMultipleChoice($questionResponse, $question);
                     break;
+
                 case 'text':
                     $this->setPhpTextResponse($questionResponse, $question);
                     break;
+
                 case 'textarea':
                     $this->setPhpTextareaResponse($questionResponse, $question);
                     break;
+
                 case 'number':
                     $this->setRandomNumberResponse($questionResponse, $question);
                     break;
+
                 case 'file_upload':
                     if ($this->faker->boolean(30)) { // 30% chance of file upload
                         $questionResponse->setFileResponse('cv_' . $this->faker->uuid . '.pdf');
                     }
                     break;
             }
-            
+
             $questionResponse->calculateScore();
             $manager->persist($questionResponse);
         }
     }
 
     /**
-     * Create partial question responses for in-progress questionnaires
+     * Create partial question responses for in-progress questionnaires.
      */
     private function createPartialPhpSymfonyQuestionResponses(ObjectManager $manager, QuestionnaireResponse $response, Questionnaire $questionnaire, int $currentStep): void
     {
         $questions = $questionnaire->getQuestions();
         $questionsPerStep = $questionnaire->getQuestionsPerStep();
         $maxQuestionIndex = $currentStep * $questionsPerStep;
-        
+
         $questionIndex = 0;
         foreach ($questions as $question) {
-            if ($questionIndex >= $maxQuestionIndex) break;
-            
+            if ($questionIndex >= $maxQuestionIndex) {
+                break;
+            }
+
             $questionResponse = new QuestionResponse();
             $questionResponse->setQuestion($question);
             $questionResponse->setQuestionnaireResponse($response);
-            
+
             // Similar response logic but only for completed steps
             switch ($question->getType()) {
                 case 'single_choice':
                     $this->setRandomSingleChoice($questionResponse, $question);
                     break;
+
                 case 'multiple_choice':
                     $this->setRandomMultipleChoice($questionResponse, $question);
                     break;
+
                 case 'text':
                     $this->setPhpTextResponse($questionResponse, $question);
                     break;
+
                 case 'textarea':
                     $this->setPhpTextareaResponse($questionResponse, $question);
                     break;
+
                 case 'number':
                     $this->setRandomNumberResponse($questionResponse, $question);
                     break;
             }
-            
+
             $questionResponse->calculateScore();
             $manager->persist($questionResponse);
             $questionIndex++;
@@ -186,7 +209,7 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Create responses for Leadership evaluation questionnaire
+     * Create responses for Leadership evaluation questionnaire.
      */
     private function createLeadershipResponses(ObjectManager $manager): void
     {
@@ -209,15 +232,15 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 // Completed responses
                 $response->setStatus(QuestionnaireResponse::STATUS_COMPLETED);
                 $response->markAsCompleted();
-                $response->setCompletedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 20) . ' days'));
+                $response->setCompletedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 20) . ' days'));
                 $response->setDurationMinutes($this->faker->numberBetween(30, 50));
-                
+
                 $this->createLeadershipQuestionResponses($manager, $response, $questionnaire);
                 $response->calculateScore();
-                
+
                 if ($i <= 6) {
                     $response->markAsEvaluated();
-                    $response->setEvaluatedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 15) . ' days'));
+                    $response->setEvaluatedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 15) . ' days'));
                     $response->setEvaluatorNotes($this->generateEvaluatorNotes('Leadership'));
                     $scorePercentage = $response->getScorePercentage() ?? '0';
                     $response->setRecommendation($this->generateRecommendation($scorePercentage));
@@ -227,7 +250,7 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 $response->setStatus(QuestionnaireResponse::STATUS_IN_PROGRESS);
                 $response->markAsInProgress();
                 $response->setCurrentStep($this->faker->numberBetween(1, 2));
-                $response->setStartedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 5) . ' days'));
+                $response->setStartedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 5) . ' days'));
             }
 
             $manager->persist($response);
@@ -235,39 +258,42 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Create question responses for Leadership questionnaire
+     * Create question responses for Leadership questionnaire.
      */
     private function createLeadershipQuestionResponses(ObjectManager $manager, QuestionnaireResponse $response, Questionnaire $questionnaire): void
     {
         $questions = $questionnaire->getQuestions();
-        
+
         foreach ($questions as $question) {
             $questionResponse = new QuestionResponse();
             $questionResponse->setQuestion($question);
             $questionResponse->setQuestionnaireResponse($response);
-            
+
             switch ($question->getType()) {
                 case 'single_choice':
                     $this->setRandomSingleChoice($questionResponse, $question);
                     break;
+
                 case 'multiple_choice':
                     $this->setRandomMultipleChoice($questionResponse, $question);
                     break;
+
                 case 'textarea':
                     $this->setLeadershipTextareaResponse($questionResponse, $question);
                     break;
+
                 case 'number':
                     $this->setRandomNumberResponse($questionResponse, $question);
                     break;
             }
-            
+
             $questionResponse->calculateScore();
             $manager->persist($questionResponse);
         }
     }
 
     /**
-     * Create responses for other questionnaires (simplified)
+     * Create responses for other questionnaires (simplified).
      */
     private function createCybersecurityResponses(ObjectManager $manager): void
     {
@@ -295,7 +321,7 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Generic method to create responses for any questionnaire
+     * Generic method to create responses for any questionnaire.
      */
     private function createGenericResponses(ObjectManager $manager, string $questionnaireReference, int $count): void
     {
@@ -317,9 +343,9 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
             if ($i <= ($count * 0.8)) {
                 $response->setStatus(QuestionnaireResponse::STATUS_COMPLETED);
                 $response->markAsCompleted();
-                $response->setCompletedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 90) . ' days'));
+                $response->setCompletedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 90) . ' days'));
                 $response->setDurationMinutes($this->faker->numberBetween(10, 60));
-                
+
                 $this->createGenericQuestionResponses($manager, $response, $questionnaire);
                 $response->calculateScore();
             } elseif ($i <= ($count * 0.95)) {
@@ -327,11 +353,11 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 $response->setStatus(QuestionnaireResponse::STATUS_IN_PROGRESS);
                 $response->markAsInProgress();
                 $response->setCurrentStep($this->faker->numberBetween(1, $questionnaire->getStepCount()));
-                $response->setStartedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(1, 10) . ' days'));
+                $response->setStartedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(1, 10) . ' days'));
             } else {
                 // Few abandoned
                 $response->setStatus(QuestionnaireResponse::STATUS_ABANDONED);
-                $response->setStartedAt(new \DateTimeImmutable('-' . $this->faker->numberBetween(10, 180) . ' days'));
+                $response->setStartedAt(new DateTimeImmutable('-' . $this->faker->numberBetween(10, 180) . ' days'));
             }
 
             $manager->persist($response);
@@ -339,58 +365,65 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     }
 
     /**
-     * Create generic question responses
+     * Create generic question responses.
      */
     private function createGenericQuestionResponses(ObjectManager $manager, QuestionnaireResponse $response, Questionnaire $questionnaire): void
     {
         $questions = $questionnaire->getQuestions();
-        
+
         foreach ($questions as $question) {
             // Skip some optional questions randomly
             if (!$question->isRequired() && $this->faker->boolean(30)) {
                 continue;
             }
-            
+
             $questionResponse = new QuestionResponse();
             $questionResponse->setQuestion($question);
             $questionResponse->setQuestionnaireResponse($response);
-            
+
             switch ($question->getType()) {
                 case 'single_choice':
                     $this->setRandomSingleChoice($questionResponse, $question);
                     break;
+
                 case 'multiple_choice':
                     $this->setRandomMultipleChoice($questionResponse, $question);
                     break;
+
                 case 'text':
                     $this->setGenericTextResponse($questionResponse, $question);
                     break;
+
                 case 'textarea':
                     $this->setGenericTextareaResponse($questionResponse, $question);
                     break;
+
                 case 'number':
                     $this->setRandomNumberResponse($questionResponse, $question);
                     break;
+
                 case 'date':
                     $this->setRandomDateResponse($questionResponse);
                     break;
+
                 case 'email':
                     $questionResponse->setTextResponse($this->faker->email);
                     break;
+
                 case 'file_upload':
                     if ($this->faker->boolean(20)) {
                         $questionResponse->setFileResponse('file_' . $this->faker->uuid . '.pdf');
                     }
                     break;
             }
-            
+
             $questionResponse->calculateScore();
             $manager->persist($questionResponse);
         }
     }
 
     /**
-     * Helper methods for setting specific response types
+     * Helper methods for setting specific response types.
      */
     private function setRandomSingleChoice(QuestionResponse $questionResponse, Question $question): void
     {
@@ -407,7 +440,7 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
         if (!empty($options)) {
             $selectedCount = $this->faker->numberBetween(1, min(3, count($options)));
             $selectedOptions = $this->faker->randomElements($options, $selectedCount);
-            $selectedIds = array_map(fn($option) => $option->getId(), $selectedOptions);
+            $selectedIds = array_map(static fn ($option) => $option->getId(), $selectedOptions);
             $questionResponse->setChoiceResponse($selectedIds);
         }
     }
@@ -416,12 +449,12 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     {
         // Context-specific number generation
         $questionText = strtolower($question->getQuestionText());
-        
-        if (strpos($questionText, 'année') !== false || strpos($questionText, 'expérience') !== false) {
+
+        if (str_contains($questionText, 'année') || str_contains($questionText, 'expérience')) {
             $questionResponse->setNumberResponse($this->faker->numberBetween(0, 15));
-        } elseif (strpos($questionText, 'échelle') !== false || strpos($questionText, '1 à 10') !== false) {
+        } elseif (str_contains($questionText, 'échelle') || str_contains($questionText, '1 à 10')) {
             $questionResponse->setNumberResponse($this->faker->numberBetween(1, 10));
-        } elseif (strpos($questionText, 'toeic') !== false) {
+        } elseif (str_contains($questionText, 'toeic')) {
             $questionResponse->setNumberResponse($this->faker->numberBetween(300, 990));
         } else {
             $questionResponse->setNumberResponse($this->faker->numberBetween(1, 100));
@@ -436,14 +469,14 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     private function setPhpTextResponse(QuestionResponse $questionResponse, Question $question): void
     {
         $questionText = strtolower($question->getQuestionText());
-        
-        if (strpos($questionText, 'symfony') !== false) {
+
+        if (str_contains($questionText, 'symfony')) {
             $responses = [
                 'Symfony 6.2 pour un projet e-commerce',
                 'Symfony 5.4 pour une application interne',
                 'Symfony 7.0 en cours d\'apprentissage',
                 'Quelques projets avec Symfony 4',
-                'Non, mais j\'ai de l\'expérience avec Laravel'
+                'Non, mais j\'ai de l\'expérience avec Laravel',
             ];
             $questionResponse->setTextResponse($this->faker->randomElement($responses));
         } else {
@@ -465,8 +498,8 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
     private function setLeadershipTextareaResponse(QuestionResponse $questionResponse, Question $question): void
     {
         $questionText = strtolower($question->getQuestionText());
-        
-        if (strpos($questionText, 'situation') !== false) {
+
+        if (str_contains($questionText, 'situation')) {
             $responses = [
                 'Récemment, j\'ai appliqué la technique de l\'écoute active lors d\'un conflit entre deux membres de mon équipe. J\'ai organisé une réunion de médiation qui a permis de résoudre le malentendu et d\'améliorer la collaboration.',
                 'J\'ai mis en place des entretiens individuels hebdomadaires avec mes collaborateurs pour mieux comprendre leurs besoins et les accompagner dans leur développement.',
@@ -479,26 +512,26 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 'La motivation d\'équipes multigénérationnelles reste un défi constant que je dois relever.',
             ];
         }
-        
+
         $questionResponse->setTextResponse($this->faker->randomElement($responses));
     }
 
     private function setGenericTextResponse(QuestionResponse $questionResponse, Question $question): void
     {
         $maxLength = $question->getMaxLength() ?? 200;
-        $wordCount = min(intval($maxLength / 10), 30);
+        $wordCount = min((int) ($maxLength / 10), 30);
         $questionResponse->setTextResponse($this->faker->sentence($this->faker->numberBetween(3, $wordCount)));
     }
 
     private function setGenericTextareaResponse(QuestionResponse $questionResponse, Question $question): void
     {
         $maxLength = $question->getMaxLength() ?? 500;
-        $sentenceCount = min(intval($maxLength / 50), 8);
+        $sentenceCount = min((int) ($maxLength / 50), 8);
         $questionResponse->setTextResponse($this->faker->paragraph($this->faker->numberBetween(1, $sentenceCount)));
     }
 
     /**
-     * Generate evaluator notes based on domain
+     * Generate evaluator notes based on domain.
      */
     private function generateEvaluatorNotes(string $domain): string
     {
@@ -516,36 +549,29 @@ class QuestionnaireResponseFixtures extends Fixture implements DependentFixtureI
                 'Bonnes capacités d\'écoute et de communication. À poursuivre avec modules avancés.',
             ],
         ];
-        
+
         $domainNotes = $notes[$domain] ?? ['Évaluation en cours d\'analyse.'];
+
         return $this->faker->randomElement($domainNotes);
     }
 
     /**
-     * Generate recommendation based on score
+     * Generate recommendation based on score.
      */
     private function generateRecommendation(string $scorePercentage): string
     {
-        $score = floatval($scorePercentage);
-        
+        $score = (float) $scorePercentage;
+
         if ($score >= 80) {
             return 'Excellent niveau. Recommandé pour modules avancés ou rôle de mentor.';
-        } elseif ($score >= 60) {
-            return 'Bon niveau. Formation adaptée, suivi personnalisé recommandé.';
-        } elseif ($score >= 40) {
-            return 'Niveau correct. Renforcement sur points identifiés nécessaire.';
-        } else {
-            return 'Niveau à consolider. Formation de base recommandée avant progression.';
         }
-    }
+        if ($score >= 60) {
+            return 'Bon niveau. Formation adaptée, suivi personnalisé recommandé.';
+        }
+        if ($score >= 40) {
+            return 'Niveau correct. Renforcement sur points identifiés nécessaire.';
+        }
 
-    /**
-     * Define fixture dependencies
-     */
-    public function getDependencies(): array
-    {
-        return [
-            QuestionOptionFixtures::class,
-        ];
+        return 'Niveau à consolider. Formation de base recommandée avant progression.';
     }
 }

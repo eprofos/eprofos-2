@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Document;
 
 use App\Entity\Document\DocumentType;
 use App\Repository\Document\DocumentTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Document Type Service
- * 
+ * Document Type Service.
+ *
  * Provides business logic for managing document types.
  * Handles type creation, validation, and business rules.
  */
@@ -20,12 +23,11 @@ class DocumentTypeService
         private EntityManagerInterface $entityManager,
         private DocumentTypeRepository $documentTypeRepository,
         private SluggerInterface $slugger,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Create a new document type with automatic slug generation
+     * Create a new document type with automatic slug generation.
      */
     public function createDocumentType(DocumentType $documentType): array
     {
@@ -41,7 +43,7 @@ class DocumentTypeService
             if ($existing && $existing->getId() !== $documentType->getId()) {
                 return [
                     'success' => false,
-                    'error' => 'Un type de document avec ce code existe déjà.'
+                    'error' => 'Un type de document avec ce code existe déjà.',
                 ];
             }
 
@@ -51,7 +53,7 @@ class DocumentTypeService
                     'auto_version' => true,
                     'track_downloads' => true,
                     'enable_comments' => false,
-                    'require_review' => false
+                    'require_review' => false,
                 ]);
             }
 
@@ -61,7 +63,7 @@ class DocumentTypeService
                     'draft',
                     'under_review',
                     'published',
-                    'archived'
+                    'archived',
                 ]);
             }
 
@@ -71,29 +73,28 @@ class DocumentTypeService
             $this->logger->info('Document type created', [
                 'type_id' => $documentType->getId(),
                 'code' => $documentType->getCode(),
-                'name' => $documentType->getName()
+                'name' => $documentType->getName(),
             ]);
 
             return [
                 'success' => true,
-                'document_type' => $documentType
+                'document_type' => $documentType,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating document type', [
                 'error' => $e->getMessage(),
-                'code' => $documentType->getCode()
+                'code' => $documentType->getCode(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors de la création du type de document: ' . $e->getMessage()
+                'error' => 'Erreur lors de la création du type de document: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Update an existing document type
+     * Update an existing document type.
      */
     public function updateDocumentType(DocumentType $documentType): array
     {
@@ -103,7 +104,7 @@ class DocumentTypeService
             if ($existing && $existing->getId() !== $documentType->getId()) {
                 return [
                     'success' => false,
-                    'error' => 'Un type de document avec ce code existe déjà.'
+                    'error' => 'Un type de document avec ce code existe déjà.',
                 ];
             }
 
@@ -112,29 +113,28 @@ class DocumentTypeService
             $this->logger->info('Document type updated', [
                 'type_id' => $documentType->getId(),
                 'code' => $documentType->getCode(),
-                'name' => $documentType->getName()
+                'name' => $documentType->getName(),
             ]);
 
             return [
                 'success' => true,
-                'document_type' => $documentType
+                'document_type' => $documentType,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating document type', [
                 'error' => $e->getMessage(),
-                'type_id' => $documentType->getId()
+                'type_id' => $documentType->getId(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors de la mise à jour du type de document: ' . $e->getMessage()
+                'error' => 'Erreur lors de la mise à jour du type de document: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Delete a document type (only if no documents exist)
+     * Delete a document type (only if no documents exist).
      */
     public function deleteDocumentType(DocumentType $documentType): array
     {
@@ -143,7 +143,7 @@ class DocumentTypeService
             if ($documentType->getDocuments()->count() > 0) {
                 return [
                     'success' => false,
-                    'error' => 'Impossible de supprimer ce type car il contient des documents.'
+                    'error' => 'Impossible de supprimer ce type car il contient des documents.',
                 ];
             }
 
@@ -155,28 +155,27 @@ class DocumentTypeService
 
             $this->logger->info('Document type deleted', [
                 'type_id' => $typeId,
-                'name' => $typeName
+                'name' => $typeName,
             ]);
 
             return [
-                'success' => true
+                'success' => true,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error deleting document type', [
                 'error' => $e->getMessage(),
-                'type_id' => $documentType->getId()
+                'type_id' => $documentType->getId(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors de la suppression du type de document: ' . $e->getMessage()
+                'error' => 'Erreur lors de la suppression du type de document: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Get document types with statistics
+     * Get document types with statistics.
      */
     public function getDocumentTypesWithStats(): array
     {
@@ -188,7 +187,7 @@ class DocumentTypeService
                 'type' => $type,
                 'document_count' => $type->getDocuments()->count(),
                 'template_count' => $type->getTemplates()->count(),
-                'published_count' => $type->getDocuments()->filter(fn($doc) => $doc->getStatus() === 'published')->count()
+                'published_count' => $type->getDocuments()->filter(static fn ($doc) => $doc->getStatus() === 'published')->count(),
             ];
         }
 
@@ -196,24 +195,7 @@ class DocumentTypeService
     }
 
     /**
-     * Generate unique code from name
-     */
-    private function generateUniqueCode(string $name): string
-    {
-        $baseCode = $this->slugger->slug($name)->lower();
-        $code = $baseCode;
-        $counter = 1;
-
-        while ($this->documentTypeRepository->findByCode($code)) {
-            $code = $baseCode . '_' . $counter;
-            $counter++;
-        }
-
-        return $code;
-    }
-
-    /**
-     * Validate document type business rules
+     * Validate document type business rules.
      */
     public function validateDocumentType(DocumentType $documentType): array
     {
@@ -235,7 +217,7 @@ class DocumentTypeService
 
         // Business logic validation
         if (!$documentType->isAllowMultiplePublished() && $documentType->getDocuments()->count() > 1) {
-            $publishedCount = $documentType->getDocuments()->filter(fn($doc) => $doc->getStatus() === 'published')->count();
+            $publishedCount = $documentType->getDocuments()->filter(static fn ($doc) => $doc->getStatus() === 'published')->count();
             if ($publishedCount > 1) {
                 $issues[] = 'Ce type ne permet qu\'un seul document publié à la fois.';
             }
@@ -243,12 +225,12 @@ class DocumentTypeService
 
         return [
             'is_valid' => empty($issues),
-            'issues' => $issues
+            'issues' => $issues,
         ];
     }
 
     /**
-     * Toggle document type active status
+     * Toggle document type active status.
      */
     public function toggleActiveStatus(DocumentType $documentType): array
     {
@@ -260,29 +242,28 @@ class DocumentTypeService
 
             $this->logger->info('Document type status toggled', [
                 'type_id' => $documentType->getId(),
-                'new_status' => $documentType->isActive()
+                'new_status' => $documentType->isActive(),
             ]);
 
             return [
                 'success' => true,
-                'message' => "Le type de document a été {$status} avec succès."
+                'message' => "Le type de document a été {$status} avec succès.",
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error toggling document type status', [
                 'error' => $e->getMessage(),
-                'type_id' => $documentType->getId()
+                'type_id' => $documentType->getId(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors du changement de statut: ' . $e->getMessage()
+                'error' => 'Erreur lors du changement de statut: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Get next sort order for document types
+     * Get next sort order for document types.
      */
     public function getNextSortOrder(): int
     {
@@ -290,8 +271,26 @@ class DocumentTypeService
             ->select('MAX(dt.sortOrder)')
             ->from(DocumentType::class, 'dt')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return ($maxOrder ?? 0) + 1;
+    }
+
+    /**
+     * Generate unique code from name.
+     */
+    private function generateUniqueCode(string $name): string
+    {
+        $baseCode = $this->slugger->slug($name)->lower();
+        $code = $baseCode;
+        $counter = 1;
+
+        while ($this->documentTypeRepository->findByCode($code)) {
+            $code = $baseCode . '_' . $counter;
+            $counter++;
+        }
+
+        return $code;
     }
 }

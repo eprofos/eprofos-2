@@ -1,21 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Form\MentorType;
-use App\Repository\User\MentorRepository;
 use App\Repository\Alternance\AlternanceContractRepository;
-use App\Service\User\MentorService;
+use App\Repository\User\MentorRepository;
 use App\Service\User\MentorAuthenticationService;
+use App\Service\User\MentorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/alternance/mentors')]
 #[IsGranted('ROLE_ADMIN')]
@@ -27,7 +30,7 @@ class MentorController extends AbstractController
         private MentorService $mentorService,
         private MentorAuthenticationService $authService,
         private EntityManagerInterface $entityManager,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
     ) {}
 
     #[Route('', name: 'admin_alternance_mentor_index', methods: ['GET'])]
@@ -71,19 +74,19 @@ class MentorController extends AbstractController
             try {
                 // Generate authentication credentials
                 $credentials = $this->authService->generateCredentials($mentor);
-                
+
                 $this->entityManager->persist($mentor);
                 $this->entityManager->flush();
 
                 // Send invitation email
                 $this->sendInvitationEmail($mentor, $credentials);
-                
+
                 $this->addFlash('success', 'Mentor créé avec succès. Un email d\'invitation a été envoyé.');
 
                 return $this->redirectToRoute('admin_alternance_mentor_show', [
-                    'id' => $mentor->getId()
+                    'id' => $mentor->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création du mentor : ' . $e->getMessage());
             }
         }
@@ -122,9 +125,9 @@ class MentorController extends AbstractController
                 $this->addFlash('success', 'Mentor modifié avec succès.');
 
                 return $this->redirectToRoute('admin_alternance_mentor_show', [
-                    'id' => $mentor->getId()
+                    'id' => $mentor->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du mentor : ' . $e->getMessage());
             }
         }
@@ -139,7 +142,7 @@ class MentorController extends AbstractController
     public function performance(Mentor $mentor, Request $request): Response
     {
         $period = $request->query->get('period', '12'); // months
-        $performance = $this->mentorService->getDetailedPerformance($mentor, (int)$period);
+        $performance = $this->mentorService->getDetailedPerformance($mentor, (int) $period);
 
         return $this->render('admin/alternance/mentor/performance.html.twig', [
             'mentor' => $mentor,
@@ -155,7 +158,7 @@ class MentorController extends AbstractController
             $mentor->setIsActive(true);
             $this->entityManager->flush();
             $this->addFlash('success', 'Mentor activé avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'activation : ' . $e->getMessage());
         }
 
@@ -170,13 +173,14 @@ class MentorController extends AbstractController
             $activeContracts = $this->contractRepository->findActiveContractsByMentor($mentor);
             if (!empty($activeContracts)) {
                 $this->addFlash('error', 'Impossible de désactiver un mentor avec des contrats actifs.');
+
                 return $this->redirectToRoute('admin_alternance_mentor_show', ['id' => $mentor->getId()]);
             }
 
             $mentor->setIsActive(false);
             $this->entityManager->flush();
             $this->addFlash('success', 'Mentor désactivé avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la désactivation : ' . $e->getMessage());
         }
 
@@ -190,9 +194,9 @@ class MentorController extends AbstractController
             // Reset credentials and send new invitation
             $credentials = $this->authService->resetCredentials($mentor);
             $this->sendInvitationEmail($mentor, $credentials);
-            
+
             $this->addFlash('success', 'Invitation renvoyée avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'envoi de l\'invitation : ' . $e->getMessage());
         }
 
@@ -202,19 +206,20 @@ class MentorController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_alternance_mentor_delete', methods: ['POST'])]
     public function delete(Request $request, Mentor $mentor): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$mentor->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $mentor->getId(), $request->request->get('_token'))) {
             try {
                 // Check if mentor has any contracts
                 $contracts = $this->contractRepository->findBy(['mentor' => $mentor]);
                 if (!empty($contracts)) {
                     $this->addFlash('error', 'Impossible de supprimer un mentor avec des contrats associés.');
+
                     return $this->redirectToRoute('admin_alternance_mentor_show', ['id' => $mentor->getId()]);
                 }
 
                 $this->entityManager->remove($mentor);
                 $this->entityManager->flush();
                 $this->addFlash('success', 'Mentor supprimé avec succès.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
             }
         }
@@ -227,22 +232,24 @@ class MentorController extends AbstractController
     {
         $mentorIds = $request->request->all('mentor_ids');
         $action = $request->request->get('action');
-        
+
         if (empty($mentorIds) || !$action) {
             $this->addFlash('error', 'Veuillez sélectionner des mentors et une action.');
+
             return $this->redirectToRoute('admin_alternance_mentor_index');
         }
 
         try {
             $mentors = $this->mentorRepository->findBy(['id' => $mentorIds]);
             $processed = 0;
-            
+
             foreach ($mentors as $mentor) {
                 switch ($action) {
                     case 'activate':
                         $mentor->setIsActive(true);
                         $processed++;
                         break;
+
                     case 'deactivate':
                         // Check for active contracts
                         $activeContracts = $this->contractRepository->findActiveContractsByMentor($mentor);
@@ -251,6 +258,7 @@ class MentorController extends AbstractController
                             $processed++;
                         }
                         break;
+
                     case 'resend_invitation':
                         $credentials = $this->authService->resetCredentials($mentor);
                         $this->sendInvitationEmail($mentor, $credentials);
@@ -258,10 +266,10 @@ class MentorController extends AbstractController
                         break;
                 }
             }
-            
+
             $this->entityManager->flush();
             $this->addFlash('success', sprintf('%d mentor(s) traité(s) avec succès.', $processed));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du traitement : ' . $e->getMessage());
         }
 
@@ -283,11 +291,12 @@ class MentorController extends AbstractController
 
             $response = new Response($data);
             $response->headers->set('Content-Type', $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="mentors_export.'.$format.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="mentors_export.' . $format . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_mentor_index');
         }
     }
@@ -314,7 +323,8 @@ class MentorController extends AbstractController
             ->html($this->renderView('emails/mentor_invitation.html.twig', [
                 'mentor' => $mentor,
                 'credentials' => $credentials,
-            ]));
+            ]))
+        ;
 
         $this->mailer->send($email);
     }

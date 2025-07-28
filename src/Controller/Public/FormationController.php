@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Public;
 
 use App\Entity\Training\Formation;
-use App\Repository\Training\FormationRepository;
 use App\Repository\Training\CategoryRepository;
+use App\Repository\Training\FormationRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Psr\Log\LoggerInterface;
 
 /**
- * Formation controller for the public formation catalog
- * 
+ * Formation controller for the public formation catalog.
+ *
  * Handles formation listing, filtering, search, and detailed views
  * with Ajax support for dynamic filtering and pagination.
  */
@@ -24,40 +26,40 @@ class FormationController extends AbstractController
     public function __construct(
         private FormationRepository $formationRepository,
         private CategoryRepository $categoryRepository,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Display the formation catalog with filtering capabilities
+     * Display the formation catalog with filtering capabilities.
      */
     #[Route('', name: 'app_formations_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         // Get filter parameters from request
         $filters = $this->extractFilters($request);
-        
+
         // Get formations based on filters
         $queryBuilder = $this->formationRepository->createCatalogQueryBuilder($filters);
-        
+
         // Handle pagination
         $page = max(1, $request->query->getInt('page', 1));
         $limit = 12; // Formations per page
         $offset = ($page - 1) * $limit;
-        
+
         $formations = $queryBuilder
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
-        
+            ->getResult()
+        ;
+
         // Get total count for pagination
         $totalFormations = $this->formationRepository->countByFilters($filters);
         $totalPages = ceil($totalFormations / $limit);
-        
+
         // Get filter options for the form
         $filterOptions = $this->getFilterOptions();
-        
+
         // Get active categories for navigation
         $categories = $this->categoryRepository->findCategoriesWithActiveFormations();
 
@@ -83,13 +85,13 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Display formations by category
+     * Display formations by category.
      */
     #[Route('/categorie/{slug}', name: 'app_formations_by_category', methods: ['GET'])]
     public function byCategory(string $slug, Request $request): Response
     {
         $category = $this->categoryRepository->findBySlugWithActiveFormations($slug);
-        
+
         if (!$category) {
             throw $this->createNotFoundException('Catégorie non trouvée');
         }
@@ -97,25 +99,25 @@ class FormationController extends AbstractController
         // Add category filter and redirect to main index
         $queryParams = $request->query->all();
         $queryParams['category'] = $slug;
-        
+
         return $this->redirectToRoute('app_formations_index', $queryParams);
     }
 
     /**
-     * Display detailed view of a formation
+     * Display detailed view of a formation.
      */
     #[Route('/{slug}', name: 'app_formation_show', methods: ['GET'])]
     public function show(string $slug): Response
     {
         $formation = $this->formationRepository->findBySlugWithCategory($slug);
-        
+
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
         // Get upcoming sessions for this formation
         $upcomingSessions = $formation->getUpcomingSessions();
-        
+
         // Get open sessions (available for registration)
         $openSessions = $formation->getOpenSessions();
 
@@ -127,7 +129,7 @@ class FormationController extends AbstractController
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
             'upcoming_sessions_count' => $upcomingSessions->count(),
-            'user_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+            'user_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         return $this->render('public/formation/show.html.twig', [
@@ -139,13 +141,13 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Ajax endpoint for formation search
+     * Ajax endpoint for formation search.
      */
     #[Route('/api/search', name: 'app_formations_search', methods: ['GET'])]
     public function search(Request $request): JsonResponse
     {
         $query = $request->query->get('q', '');
-        
+
         if (strlen($query) < 2) {
             return $this->json([]);
         }
@@ -155,7 +157,8 @@ class FormationController extends AbstractController
             ->createCatalogQueryBuilder($filters)
             ->setMaxResults(10)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $results = [];
         foreach ($formations as $formation) {
@@ -173,28 +176,29 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Ajax endpoint for formation filtering
+     * Ajax endpoint for formation filtering.
      */
     #[Route('/api/filter', name: 'app_formations_ajax_filter', methods: ['GET'])]
     public function ajaxFilter(Request $request): Response
     {
         // Get filter parameters from request
         $filters = $this->extractFilters($request);
-        
+
         // Get formations based on filters
         $queryBuilder = $this->formationRepository->createCatalogQueryBuilder($filters);
-        
+
         // Handle pagination
         $page = max(1, $request->query->getInt('page', 1));
         $limit = 12; // Formations per page
         $offset = ($page - 1) * $limit;
-        
+
         $formations = $queryBuilder
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
-        
+            ->getResult()
+        ;
+
         // Get total count for pagination
         $totalFormations = $this->formationRepository->countByFilters($filters);
         $totalPages = ceil($totalFormations / $limit);
@@ -208,8 +212,8 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Extract filters from request parameters
-     * 
+     * Extract filters from request parameters.
+     *
      * @return array<string, mixed>
      */
     private function extractFilters(Request $request): array
@@ -260,8 +264,8 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Get available filter options for the filter form
-     * 
+     * Get available filter options for the filter form.
+     *
      * @return array<string, mixed>
      */
     private function getFilterOptions(): array

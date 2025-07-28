@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Entity\Training\Module;
 use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
 use App\Form\Training\ModuleType;
-use App\Repository\Training\ModuleRepository;
 use App\Repository\Training\FormationRepository;
+use App\Repository\Training\ModuleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +25,7 @@ class ModuleController extends AbstractController
         private EntityManagerInterface $entityManager,
         private ModuleRepository $moduleRepository,
         private FormationRepository $formationRepository,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
     ) {}
 
     #[Route('', name: 'admin_modules_index', methods: ['GET'])]
@@ -31,7 +33,7 @@ class ModuleController extends AbstractController
     {
         $formationId = $request->query->get('formation');
         $formation = null;
-        
+
         if ($formationId) {
             $formation = $this->formationRepository->find($formationId);
             if (!$formation) {
@@ -62,7 +64,7 @@ class ModuleController extends AbstractController
             // Auto-generate slug if not provided
             if (!$module->getSlug()) {
                 $slug = $this->slugger->slug($module->getTitle())->lower();
-                $module->setSlug($slug);
+                $module->setSlug((string)$slug);
             }
 
             // Set order index if not provided
@@ -77,7 +79,7 @@ class ModuleController extends AbstractController
             $this->addFlash('success', 'Module créé avec succès.');
 
             return $this->redirectToRoute('admin_modules_index', [
-                'formation' => $module->getFormation()->getId()
+                'formation' => $module->getFormation()->getId(),
             ]);
         }
 
@@ -107,7 +109,7 @@ class ModuleController extends AbstractController
             $this->addFlash('success', 'Module modifié avec succès.');
 
             return $this->redirectToRoute('admin_modules_index', [
-                'formation' => $module->getFormation()->getId()
+                'formation' => $module->getFormation()->getId(),
             ]);
         }
 
@@ -129,7 +131,7 @@ class ModuleController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_modules_index', [
-            'formation' => $formationId ?? null
+            'formation' => $formationId ?? null,
         ]);
     }
 
@@ -145,7 +147,7 @@ class ModuleController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_modules_index', [
-            'formation' => $module->getFormation()->getId()
+            'formation' => $module->getFormation()->getId(),
         ]);
     }
 
@@ -153,14 +155,14 @@ class ModuleController extends AbstractController
     public function reorder(Request $request): Response
     {
         $moduleIds = $request->request->all('modules');
-        
+
         if (!empty($moduleIds)) {
             $this->moduleRepository->updateOrderIndexes($moduleIds);
             $this->addFlash('success', 'Ordre des modules mis à jour avec succès.');
         }
 
         return $this->redirectToRoute('admin_modules_index', [
-            'formation' => $request->request->get('formation_id')
+            'formation' => $request->request->get('formation_id'),
         ]);
     }
 

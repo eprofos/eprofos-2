@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\Alternance\MissionAssignment;
 use App\Form\Alternance\CompanyMissionType;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Repository\Alternance\CompanyMissionRepository;
 use App\Repository\Alternance\MissionAssignmentRepository;
-use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\CompanyMissionService;
 use App\Service\Alternance\MissionAssignmentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +31,7 @@ class MissionController extends AbstractController
         private AlternanceContractRepository $contractRepository,
         private CompanyMissionService $missionService,
         private MissionAssignmentService $assignmentService,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_mission_index', methods: ['GET'])]
@@ -71,13 +75,13 @@ class MissionController extends AbstractController
             try {
                 $this->entityManager->persist($mission);
                 $this->entityManager->flush();
-                
+
                 $this->addFlash('success', 'Mission créée avec succès.');
 
                 return $this->redirectToRoute('admin_alternance_mission_show', [
-                    'id' => $mission->getId()
+                    'id' => $mission->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création de la mission : ' . $e->getMessage());
             }
         }
@@ -93,7 +97,7 @@ class MissionController extends AbstractController
     {
         // Get mission assignments
         $assignments = $this->assignmentRepository->findBy(['mission' => $mission]);
-        
+
         // Get mission progress data
         $progressData = $this->missionService->getMissionProgressData($mission);
 
@@ -116,9 +120,9 @@ class MissionController extends AbstractController
                 $this->addFlash('success', 'Mission modifiée avec succès.');
 
                 return $this->redirectToRoute('admin_alternance_mission_show', [
-                    'id' => $mission->getId()
+                    'id' => $mission->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification de la mission : ' . $e->getMessage());
             }
         }
@@ -148,13 +152,14 @@ class MissionController extends AbstractController
 
         if (!$contract) {
             $this->addFlash('error', 'Contrat non trouvé.');
+
             return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
         }
 
         try {
             $assignment = $this->assignmentService->assignMissionToContract($mission, $contract);
             $this->addFlash('success', 'Mission assignée avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'assignation : ' . $e->getMessage());
         }
 
@@ -164,19 +169,20 @@ class MissionController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_alternance_mission_delete', methods: ['POST'])]
     public function delete(Request $request, CompanyMission $mission): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$mission->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $mission->getId(), $request->request->get('_token'))) {
             try {
                 // Check if mission has assignments
                 $assignments = $this->assignmentRepository->findBy(['mission' => $mission]);
                 if (!empty($assignments)) {
                     $this->addFlash('error', 'Impossible de supprimer une mission avec des assignations.');
+
                     return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
                 }
 
                 $this->entityManager->remove($mission);
                 $this->entityManager->flush();
                 $this->addFlash('success', 'Mission supprimée avec succès.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
             }
         }
@@ -188,9 +194,10 @@ class MissionController extends AbstractController
     public function changeAssignmentStatus(Request $request, MissionAssignment $assignment): Response
     {
         $newStatus = $request->request->get('status');
-        
-        if (!in_array($newStatus, ['assigned', 'in_progress', 'completed', 'cancelled'])) {
+
+        if (!in_array($newStatus, ['assigned', 'in_progress', 'completed', 'cancelled'], true)) {
             $this->addFlash('error', 'Statut invalide.');
+
             return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $assignment->getMission()->getId()]);
         }
 
@@ -199,9 +206,9 @@ class MissionController extends AbstractController
             // Note: setCompletedAt method doesn't exist on the entity
             // In a real implementation, you might need to add this field
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'Statut de l\'assignation modifié avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
         }
 
@@ -213,32 +220,34 @@ class MissionController extends AbstractController
     {
         $missionIds = $request->request->all('mission_ids');
         $action = $request->request->get('action');
-        
+
         if (empty($missionIds) || !$action) {
             $this->addFlash('error', 'Veuillez sélectionner des missions et une action.');
+
             return $this->redirectToRoute('admin_alternance_mission_index');
         }
 
         try {
             $missions = $this->missionRepository->findBy(['id' => $missionIds]);
             $processed = 0;
-            
+
             foreach ($missions as $mission) {
                 switch ($action) {
                     case 'activate':
                         $mission->setIsActive(true);
                         $processed++;
                         break;
+
                     case 'deactivate':
                         $mission->setIsActive(false);
                         $processed++;
                         break;
                 }
             }
-            
+
             $this->entityManager->flush();
             $this->addFlash('success', sprintf('%d mission(s) traitée(s) avec succès.', $processed));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du traitement : ' . $e->getMessage());
         }
 
@@ -260,11 +269,12 @@ class MissionController extends AbstractController
 
             $response = new Response($data);
             $response->headers->set('Content-Type', $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="missions_export.'.$format.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="missions_export.' . $format . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_mission_index');
         }
     }
@@ -292,7 +302,7 @@ class MissionController extends AbstractController
     {
         $totalAssignments = $this->assignmentRepository->count([]);
         $completedAssignments = $this->assignmentRepository->countByStatus('completed');
-        
+
         return $totalAssignments > 0 ? round(($completedAssignments / $totalAssignments) * 100, 1) : 0;
     }
 
@@ -307,7 +317,7 @@ class MissionController extends AbstractController
     {
         if ($format === 'csv') {
             $output = fopen('php://temp', 'r+');
-            
+
             // Headers
             fputcsv($output, [
                 'Titre',
@@ -315,9 +325,9 @@ class MissionController extends AbstractController
                 'Difficulté',
                 'Durée estimée',
                 'Statut',
-                'Date de création'
+                'Date de création',
             ]);
-            
+
             // Data
             foreach ($missions as $mission) {
                 fputcsv($output, [
@@ -326,17 +336,17 @@ class MissionController extends AbstractController
                     $mission->getComplexityLabel(),
                     $mission->getDuration(),
                     $mission->isActive() ? 'Actif' : 'Inactif',
-                    $mission->getCreatedAt()->format('d/m/Y')
+                    $mission->getCreatedAt()->format('d/m/Y'),
                 ]);
             }
-            
+
             rewind($output);
             $content = stream_get_contents($output);
             fclose($output);
-            
+
             return $content;
         }
 
-        throw new \InvalidArgumentException("Format d'export non supporté: {$format}");
+        throw new InvalidArgumentException("Format d'export non supporté: {$format}");
     }
 }

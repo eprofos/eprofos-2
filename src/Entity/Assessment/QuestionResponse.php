@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Assessment;
 
 use App\Repository\Assessment\QuestionResponseRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * QuestionResponse entity representing a user's response to a specific question
- * 
+ * QuestionResponse entity representing a user's response to a specific question.
+ *
  * Stores the actual answer given by the user for a question
  */
 #[ORM\Entity(repositoryClass: QuestionResponseRepository::class)]
@@ -34,16 +38,16 @@ class QuestionResponse
     private ?int $numberResponse = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $dateResponse = null;
+    private ?DateTimeInterface $dateResponse = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $scoreEarned = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Question::class, inversedBy: 'responses')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -55,8 +59,13 @@ class QuestionResponse
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFormattedResponse();
     }
 
     public function getId(): ?int
@@ -72,6 +81,7 @@ class QuestionResponse
     public function setTextResponse(?string $textResponse): static
     {
         $this->textResponse = $textResponse;
+
         return $this;
     }
 
@@ -83,6 +93,7 @@ class QuestionResponse
     public function setChoiceResponse(?array $choiceResponse): static
     {
         $this->choiceResponse = $choiceResponse;
+
         return $this;
     }
 
@@ -94,6 +105,7 @@ class QuestionResponse
     public function setFileResponse(?string $fileResponse): static
     {
         $this->fileResponse = $fileResponse;
+
         return $this;
     }
 
@@ -105,17 +117,19 @@ class QuestionResponse
     public function setNumberResponse(?int $numberResponse): static
     {
         $this->numberResponse = $numberResponse;
+
         return $this;
     }
 
-    public function getDateResponse(): ?\DateTimeInterface
+    public function getDateResponse(): ?DateTimeInterface
     {
         return $this->dateResponse;
     }
 
-    public function setDateResponse(?\DateTimeInterface $dateResponse): static
+    public function setDateResponse(?DateTimeInterface $dateResponse): static
     {
         $this->dateResponse = $dateResponse;
+
         return $this;
     }
 
@@ -127,28 +141,31 @@ class QuestionResponse
     public function setScoreEarned(?int $scoreEarned): static
     {
         $this->scoreEarned = $scoreEarned;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -160,6 +177,7 @@ class QuestionResponse
     public function setQuestion(?Question $question): static
     {
         $this->question = $question;
+
         return $this;
     }
 
@@ -171,11 +189,12 @@ class QuestionResponse
     public function setQuestionnaireResponse(?QuestionnaireResponse $questionnaireResponse): static
     {
         $this->questionnaireResponse = $questionnaireResponse;
+
         return $this;
     }
 
     /**
-     * Get the response value based on question type
+     * Get the response value based on question type.
      */
     public function getResponseValue(): mixed
     {
@@ -194,7 +213,7 @@ class QuestionResponse
     }
 
     /**
-     * Set the response value based on question type
+     * Set the response value based on question type.
      */
     public function setResponseValue(mixed $value): static
     {
@@ -208,23 +227,28 @@ class QuestionResponse
             case Question::TYPE_EMAIL:
                 $this->textResponse = $value;
                 break;
+
             case Question::TYPE_SINGLE_CHOICE:
             case Question::TYPE_MULTIPLE_CHOICE:
                 $this->choiceResponse = is_array($value) ? $value : [$value];
                 break;
+
             case Question::TYPE_FILE_UPLOAD:
                 $this->fileResponse = $value;
                 break;
+
             case Question::TYPE_NUMBER:
                 $this->numberResponse = (int) $value;
                 break;
+
             case Question::TYPE_DATE:
-                if ($value instanceof \DateTimeInterface) {
+                if ($value instanceof DateTimeInterface) {
                     $this->dateResponse = $value;
                 } elseif (is_string($value)) {
-                    $this->dateResponse = new \DateTime($value);
+                    $this->dateResponse = new DateTime($value);
                 }
                 break;
+
             default:
                 $this->textResponse = $value;
         }
@@ -233,25 +257,25 @@ class QuestionResponse
     }
 
     /**
-     * Check if the response has any answer
+     * Check if the response has any answer.
      */
     public function hasAnswer(): bool
     {
         $value = $this->getResponseValue();
-        
+
         if ($value === null || $value === '') {
             return false;
         }
-        
+
         if (is_array($value)) {
             return !empty($value);
         }
-        
+
         return true;
     }
 
     /**
-     * Get the response as formatted text for display
+     * Get the response as formatted text for display.
      */
     public function getFormattedResponse(): string
     {
@@ -271,26 +295,7 @@ class QuestionResponse
     }
 
     /**
-     * Format choice response for display
-     */
-    private function formatChoiceResponse(): string
-    {
-        if (!$this->choiceResponse || !$this->question) {
-            return 'Aucune sélection';
-        }
-
-        $selectedOptions = [];
-        foreach ($this->question->getOptions() as $option) {
-            if (in_array($option->getId(), $this->choiceResponse)) {
-                $selectedOptions[] = $option->getOptionText();
-            }
-        }
-
-        return implode(', ', $selectedOptions);
-    }
-
-    /**
-     * Calculate score for this response
+     * Calculate score for this response.
      */
     public function calculateScore(): int
     {
@@ -309,44 +314,7 @@ class QuestionResponse
     }
 
     /**
-     * Calculate score for choice questions
-     */
-    private function calculateChoiceScore(): int
-    {
-        if (!$this->choiceResponse) {
-            return 0;
-        }
-
-        $correctOptions = $this->question->getCorrectOptions();
-        $correctOptionIds = $correctOptions->map(fn($option) => $option->getId())->toArray();
-        
-        // Calculate score based on correct selections
-        $score = 0;
-        $maxScore = $this->question->getPoints() ?? 0;
-        
-        if ($this->question->getType() === Question::TYPE_SINGLE_CHOICE) {
-            // Single choice: full points if correct, 0 if wrong
-            if (count($this->choiceResponse) === 1 && in_array($this->choiceResponse[0], $correctOptionIds)) {
-                $score = $maxScore;
-            }
-        } else {
-            // Multiple choice: proportional scoring
-            $totalCorrect = count($correctOptionIds);
-            $correctSelections = count(array_intersect($this->choiceResponse, $correctOptionIds));
-            $incorrectSelections = count(array_diff($this->choiceResponse, $correctOptionIds));
-            
-            if ($totalCorrect > 0) {
-                // Score = (correct selections - incorrect selections) / total correct * max points
-                $score = max(0, (($correctSelections - $incorrectSelections) / $totalCorrect) * $maxScore);
-            }
-        }
-
-        $this->scoreEarned = (int) $score;
-        return $this->scoreEarned;
-    }
-
-    /**
-     * Check if the response is correct (for QCM questions)
+     * Check if the response is correct (for QCM questions).
      */
     public function isCorrect(): bool
     {
@@ -355,8 +323,8 @@ class QuestionResponse
         }
 
         $correctOptions = $this->question->getCorrectOptions();
-        $correctOptionIds = $correctOptions->map(fn($option) => $option->getId())->toArray();
-        
+        $correctOptionIds = $correctOptions->map(static fn ($option) => $option->getId())->toArray();
+
         if (!$this->choiceResponse) {
             return false;
         }
@@ -365,33 +333,85 @@ class QuestionResponse
         sort($correctOptionIds);
         $selectedIds = $this->choiceResponse;
         sort($selectedIds);
-        
+
         return $correctOptionIds === $selectedIds;
     }
 
     /**
-     * Get file path for uploaded files
+     * Get file path for uploaded files.
      */
     public function getFilePath(): ?string
     {
         if (!$this->fileResponse) {
             return null;
         }
-        
+
         return 'uploads/questionnaire_files/' . $this->fileResponse;
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
-    public function __toString(): string
+    /**
+     * Format choice response for display.
+     */
+    private function formatChoiceResponse(): string
     {
-        return $this->getFormattedResponse();
+        if (!$this->choiceResponse || !$this->question) {
+            return 'Aucune sélection';
+        }
+
+        $selectedOptions = [];
+        foreach ($this->question->getOptions() as $option) {
+            if (in_array($option->getId(), $this->choiceResponse, true)) {
+                $selectedOptions[] = $option->getOptionText();
+            }
+        }
+
+        return implode(', ', $selectedOptions);
+    }
+
+    /**
+     * Calculate score for choice questions.
+     */
+    private function calculateChoiceScore(): int
+    {
+        if (!$this->choiceResponse) {
+            return 0;
+        }
+
+        $correctOptions = $this->question->getCorrectOptions();
+        $correctOptionIds = $correctOptions->map(static fn ($option) => $option->getId())->toArray();
+
+        // Calculate score based on correct selections
+        $score = 0;
+        $maxScore = $this->question->getPoints() ?? 0;
+
+        if ($this->question->getType() === Question::TYPE_SINGLE_CHOICE) {
+            // Single choice: full points if correct, 0 if wrong
+            if (count($this->choiceResponse) === 1 && in_array($this->choiceResponse[0], $correctOptionIds, true)) {
+                $score = $maxScore;
+            }
+        } else {
+            // Multiple choice: proportional scoring
+            $totalCorrect = count($correctOptionIds);
+            $correctSelections = count(array_intersect($this->choiceResponse, $correctOptionIds));
+            $incorrectSelections = count(array_diff($this->choiceResponse, $correctOptionIds));
+
+            if ($totalCorrect > 0) {
+                // Score = (correct selections - incorrect selections) / total correct * max points
+                $score = max(0, (($correctSelections - $incorrectSelections) / $totalCorrect) * $maxScore);
+            }
+        }
+
+        $this->scoreEarned = (int) $score;
+
+        return $this->scoreEarned;
     }
 }

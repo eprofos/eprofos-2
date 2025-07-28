@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Alternance;
 
 use App\Entity\Alternance\CompanyMission;
-use App\Entity\User\Mentor;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -24,24 +25,24 @@ class CompanyMissionType extends AbstractType
                 'label' => 'Titre de la mission',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Titre descriptif de la mission'
-                ]
+                    'placeholder' => 'Titre descriptif de la mission',
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description détaillée',
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 4,
-                    'placeholder' => 'Décrivez en détail la mission et ses enjeux'
-                ]
+                    'placeholder' => 'Décrivez en détail la mission et ses enjeux',
+                ],
             ])
             ->add('context', TextareaType::class, [
                 'label' => 'Contexte entreprise',
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Contexte métier et environnement de la mission'
-                ]
+                    'placeholder' => 'Contexte métier et environnement de la mission',
+                ],
             ])
             ->add('objectives', CollectionType::class, [
                 'label' => 'Objectifs de la mission',
@@ -49,22 +50,22 @@ class CompanyMissionType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control mb-2',
-                        'placeholder' => 'Objectif de la mission'
-                    ]
+                        'placeholder' => 'Objectif de la mission',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
                 'attr' => [
                     'data-controller' => 'collection',
-                    'data-collection-add-label' => 'Ajouter un objectif'
+                    'data-collection-add-label' => 'Ajouter un objectif',
                 ],
                 'constraints' => [
                     new Assert\Count(
                         min: 1,
-                        minMessage: 'Au moins un objectif doit être défini.'
-                    )
-                ]
+                        minMessage: 'Au moins un objectif doit être défini.',
+                    ),
+                ],
             ])
             ->add('requiredSkills', CollectionType::class, [
                 'label' => 'Compétences requises',
@@ -72,22 +73,22 @@ class CompanyMissionType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control mb-2',
-                        'placeholder' => 'Compétence requise'
-                    ]
+                        'placeholder' => 'Compétence requise',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
                 'attr' => [
                     'data-controller' => 'collection',
-                    'data-collection-add-label' => 'Ajouter une compétence'
+                    'data-collection-add-label' => 'Ajouter une compétence',
                 ],
                 'constraints' => [
                     new Assert\Count(
                         min: 1,
-                        minMessage: 'Au moins une compétence requise doit être définie.'
-                    )
-                ]
+                        minMessage: 'Au moins une compétence requise doit être définie.',
+                    ),
+                ],
             ])
             ->add('skillsToAcquire', CollectionType::class, [
                 'label' => 'Compétences à acquérir',
@@ -95,55 +96,55 @@ class CompanyMissionType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control mb-2',
-                        'placeholder' => 'Compétence à acquérir'
-                    ]
+                        'placeholder' => 'Compétence à acquérir',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
                 'attr' => [
                     'data-controller' => 'collection',
-                    'data-collection-add-label' => 'Ajouter une compétence'
+                    'data-collection-add-label' => 'Ajouter une compétence',
                 ],
                 'constraints' => [
                     new Assert\Count(
                         min: 1,
-                        minMessage: 'Au moins une compétence à acquérir doit être définie.'
-                    )
-                ]
+                        minMessage: 'Au moins une compétence à acquérir doit être définie.',
+                    ),
+                ],
             ])
             ->add('duration', ChoiceType::class, [
                 'label' => 'Durée estimée',
                 'choices' => array_combine(
                     CompanyMission::DURATION_OPTIONS,
-                    CompanyMission::DURATION_OPTIONS
+                    CompanyMission::DURATION_OPTIONS,
                 ),
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('complexity', ChoiceType::class, [
                 'label' => 'Niveau de complexité',
                 'choices' => CompanyMission::COMPLEXITY_LEVELS,
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('term', ChoiceType::class, [
                 'label' => 'Type de mission',
                 'choices' => CompanyMission::TERMS,
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('department', ChoiceType::class, [
                 'label' => 'Service/Département',
                 'choices' => CompanyMission::DEPARTMENTS,
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('orderIndex', IntegerType::class, [
                 'label' => 'Ordre dans la progression',
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 1,
-                    'placeholder' => 'Position dans la progression (auto-calculé si vide)'
+                    'placeholder' => 'Position dans la progression (auto-calculé si vide)',
                 ],
                 'required' => false,
-                'help' => 'Laissez vide pour un calcul automatique basé sur la complexité et le type'
+                'help' => 'Laissez vide pour un calcul automatique basé sur la complexité et le type',
             ])
             ->add('prerequisites', CollectionType::class, [
                 'label' => 'Prérequis pédagogiques',
@@ -151,8 +152,8 @@ class CompanyMissionType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control mb-2',
-                        'placeholder' => 'Prérequis nécessaire'
-                    ]
+                        'placeholder' => 'Prérequis nécessaire',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
@@ -160,8 +161,8 @@ class CompanyMissionType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'data-controller' => 'collection',
-                    'data-collection-add-label' => 'Ajouter un prérequis'
-                ]
+                    'data-collection-add-label' => 'Ajouter un prérequis',
+                ],
             ])
             ->add('evaluationCriteria', CollectionType::class, [
                 'label' => 'Critères d\'évaluation',
@@ -169,29 +170,29 @@ class CompanyMissionType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control mb-2',
-                        'placeholder' => 'Critère d\'évaluation'
-                    ]
+                        'placeholder' => 'Critère d\'évaluation',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
                 'attr' => [
                     'data-controller' => 'collection',
-                    'data-collection-add-label' => 'Ajouter un critère'
+                    'data-collection-add-label' => 'Ajouter un critère',
                 ],
                 'constraints' => [
                     new Assert\Count(
                         min: 1,
-                        minMessage: 'Au moins un critère d\'évaluation doit être défini.'
-                    )
-                ]
+                        minMessage: 'Au moins un critère d\'évaluation doit être défini.',
+                    ),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Mission active',
                 'help' => 'Une mission inactive ne peut pas recevoir de nouvelles affectations',
                 'required' => false,
                 'attr' => ['class' => 'form-check-input'],
-                'label_attr' => ['class' => 'form-check-label']
+                'label_attr' => ['class' => 'form-check-label'],
             ])
         ;
     }
@@ -201,8 +202,8 @@ class CompanyMissionType extends AbstractType
         $resolver->setDefaults([
             'data_class' => CompanyMission::class,
             'attr' => [
-                'novalidate' => 'novalidate'
-            ]
+                'novalidate' => 'novalidate',
+            ],
         ]);
     }
 }

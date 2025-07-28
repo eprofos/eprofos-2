@@ -4,58 +4,55 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Analysis\CompanyNeedsAnalysis;
 use App\Entity\Analysis\IndividualNeedsAnalysis;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\User\Admin;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\Analysis\NeedsAnalysisService;
 use App\Service\Core\TokenGeneratorService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Functional tests for the complete needs analysis workflow
- * 
+ * Functional tests for the complete needs analysis workflow.
+ *
  * Tests the entire process from request creation to completion,
  * including public forms, email notifications, and admin interface.
  */
 class NeedsAnalysisWorkflowTest extends WebTestCase
 {
     private ?EntityManagerInterface $entityManager = null;
+
     private ?NeedsAnalysisRequestRepository $requestRepository = null;
+
     private ?NeedsAnalysisService $needsAnalysisService = null;
+
     private ?TokenGeneratorService $tokenGenerator = null;
+
     private ?Admin $testAdmin = null;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Reset test admin for each test
         $this->testAdmin = null;
-        
+
         // Clean database before each test
         $this->cleanDatabase();
     }
-    
-    /**
-     * Get container services for testing
-     */
-    private function getServices(): void
+
+    protected function tearDown(): void
     {
-        if (!$this->entityManager) {
-            $container = static::getContainer();
-            $this->entityManager = $container->get(EntityManagerInterface::class);
-            $this->requestRepository = $container->get(NeedsAnalysisRequestRepository::class);
-            $this->needsAnalysisService = $container->get(NeedsAnalysisService::class);
-            $this->tokenGenerator = $container->get(TokenGeneratorService::class);
-        }
+        parent::tearDown();
+        $this->cleanDatabase();
     }
 
     /**
-     * Test complete workflow for company needs analysis
+     * Test complete workflow for company needs analysis.
      */
     public function testCompanyNeedsAnalysisWorkflow(): void
     {
@@ -77,30 +74,30 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->assertSelectorExists('form[name="company_needs_analysis"]');
 
         // Debug: Log the page content to see what's actually rendered
-        error_log("=== COMPANY FORM PAGE DEBUG ===");
-        error_log("Page title: " . $crawler->filter('title')->text());
-        
+        error_log('=== COMPANY FORM PAGE DEBUG ===');
+        error_log('Page title: ' . $crawler->filter('title')->text());
+
         // Look for any submit buttons
         $allButtons = $crawler->filter('button[type="submit"]');
-        error_log("Found " . $allButtons->count() . " submit buttons");
-        
-        $allButtons->each(function ($node, $i) {
-            error_log("Button $i content: '" . trim($node->text()) . "'");
-            error_log("Button $i HTML: " . $node->outerHtml());
+        error_log('Found ' . $allButtons->count() . ' submit buttons');
+
+        $allButtons->each(static function ($node, $i) {
+            error_log("Button {$i} content: '" . trim($node->text()) . "'");
+            error_log("Button {$i} HTML: " . $node->outerHtml());
         });
-        
+
         // Look for forms
         $forms = $crawler->filter('form');
-        error_log("Found " . $forms->count() . " forms");
-        
-        $forms->each(function ($node, $i) {
-            error_log("Form $i name: " . $node->attr('name'));
+        error_log('Found ' . $forms->count() . ' forms');
+
+        $forms->each(static function ($node, $i) {
+            error_log("Form {$i} name: " . $node->attr('name'));
         });
 
         // Step 4: Submit the company form
         $formData = $this->getCompanyFormData();
         $client->submitForm('Envoyer l\'analyse des besoins', $formData);
-        
+
         // Should redirect to success page
         $this->assertResponseRedirects();
         $client->followRedirect();
@@ -117,7 +114,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Test complete workflow for individual needs analysis
+     * Test complete workflow for individual needs analysis.
      */
     public function testIndividualNeedsAnalysisWorkflow(): void
     {
@@ -136,7 +133,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         // Step 3: Submit the individual form
         $formData = $this->getIndividualFormData();
         $client->submitForm('Envoyer l\'analyse des besoins', $formData);
-        
+
         // Should redirect to success page
         $this->assertResponseRedirects();
         $client->followRedirect();
@@ -149,7 +146,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Test expired token handling
+     * Test expired token handling.
      */
     public function testExpiredTokenHandling(): void
     {
@@ -166,7 +163,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Test invalid token handling
+     * Test invalid token handling.
      */
     public function testInvalidTokenHandling(): void
     {
@@ -179,7 +176,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Test admin interface for viewing completed analysis
+     * Test admin interface for viewing completed analysis.
      */
     public function testAdminViewCompletedAnalysis(): void
     {
@@ -194,7 +191,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $this->entityManager->flush();
 
         // Authenticate as admin user
-    $adminUser = $this->createTestAdmin();
+        $adminUser = $this->createTestAdmin();
         $client->loginUser($adminUser);
 
         // Access admin show page
@@ -204,7 +201,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Test form validation errors
+     * Test form validation errors.
      */
     public function testFormValidationErrors(): void
     {
@@ -224,7 +221,21 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Create a test user for needs analysis requests (singleton pattern)
+     * Get container services for testing.
+     */
+    private function getServices(): void
+    {
+        if (!$this->entityManager) {
+            $container = static::getContainer();
+            $this->entityManager = $container->get(EntityManagerInterface::class);
+            $this->requestRepository = $container->get(NeedsAnalysisRequestRepository::class);
+            $this->needsAnalysisService = $container->get(NeedsAnalysisService::class);
+            $this->tokenGenerator = $container->get(TokenGeneratorService::class);
+        }
+    }
+
+    /**
+     * Create a test user for needs analysis requests (singleton pattern).
      */
     private function createTestAdmin(): Admin
     {
@@ -245,12 +256,12 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Create a company needs analysis request for testing
+     * Create a company needs analysis request for testing.
      */
     private function createCompanyRequest(): NeedsAnalysisRequest
     {
         $admin = $this->createTestAdmin();
-        
+
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
         $request->setRecipientEmail('test@company.com');
@@ -258,8 +269,8 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $request->setCompanyName('Test Company Ltd');
         $request->setToken($this->tokenGenerator->generateToken());
         $request->setStatus('sent');
-        $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
-        $request->setSentAt(new \DateTimeImmutable());
+        $request->setExpiresAt(new DateTimeImmutable('+30 days'));
+        $request->setSentAt(new DateTimeImmutable());
         $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
@@ -269,20 +280,20 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Create an individual needs analysis request for testing
+     * Create an individual needs analysis request for testing.
      */
     private function createIndividualRequest(): NeedsAnalysisRequest
     {
         $admin = $this->createTestAdmin();
-        
+
         $request = new NeedsAnalysisRequest();
         $request->setType('individual');
         $request->setRecipientEmail('test@individual.com');
         $request->setRecipientName('Test Individual');
         $request->setToken($this->tokenGenerator->generateToken());
         $request->setStatus('sent');
-        $request->setExpiresAt(new \DateTimeImmutable('+30 days'));
-        $request->setSentAt(new \DateTimeImmutable());
+        $request->setExpiresAt(new DateTimeImmutable('+30 days'));
+        $request->setSentAt(new DateTimeImmutable());
         $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
@@ -292,20 +303,20 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Create an expired request for testing
+     * Create an expired request for testing.
      */
     private function createExpiredRequest(): NeedsAnalysisRequest
     {
         $admin = $this->createTestAdmin();
-        
+
         $request = new NeedsAnalysisRequest();
         $request->setType('company');
         $request->setRecipientEmail('test@expired.com');
         $request->setRecipientName('Test Expired');
         $request->setToken($this->tokenGenerator->generateToken());
         $request->setStatus('expired');
-        $request->setExpiresAt(new \DateTimeImmutable('-1 day'));
-        $request->setSentAt(new \DateTimeImmutable('-31 days'));
+        $request->setExpiresAt(new DateTimeImmutable('-1 day'));
+        $request->setSentAt(new DateTimeImmutable('-31 days'));
         $request->setCreatedByAdmin($admin);
 
         $this->entityManager->persist($request);
@@ -315,7 +326,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Create a company analysis for testing
+     * Create a company analysis for testing.
      */
     private function createCompanyAnalysis(NeedsAnalysisRequest $request): CompanyNeedsAnalysis
     {
@@ -330,7 +341,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
         $analysis->setEmployeeCount(75);
         $analysis->setTraineesInfo([
             ['first_name' => 'Alice', 'last_name' => 'Smith', 'position' => 'Developer'],
-            ['first_name' => 'Bob', 'last_name' => 'Johnson', 'position' => 'Team Lead']
+            ['first_name' => 'Bob', 'last_name' => 'Johnson', 'position' => 'Team Lead'],
         ]);
         $analysis->setTrainingTitle('Advanced Web Development');
         $analysis->setTrainingDurationHours(40);
@@ -345,7 +356,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Get sample form data for company analysis
+     * Get sample form data for company analysis.
      */
     private function getCompanyFormData(): array
     {
@@ -366,7 +377,7 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Get sample form data for individual analysis
+     * Get sample form data for individual analysis.
      */
     private function getIndividualFormData(): array
     {
@@ -389,26 +400,20 @@ class NeedsAnalysisWorkflowTest extends WebTestCase
     }
 
     /**
-     * Clean the database before each test
+     * Clean the database before each test.
      */
     private function cleanDatabase(): void
     {
         if (!$this->entityManager) {
             return; // Skip cleaning if no entity manager yet
         }
-        
+
         // Remove all test data in correct order (respecting foreign key constraints)
         $this->entityManager->createQuery('DELETE FROM App\Entity\CompanyNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\IndividualNeedsAnalysis')->execute();
         $this->entityManager->createQuery('DELETE FROM App\Entity\NeedsAnalysisRequest')->execute();
-    $this->entityManager->createQuery('DELETE FROM App\Entity\User\Admin')->execute();
-        
-        $this->entityManager->clear();
-    }
+        $this->entityManager->createQuery('DELETE FROM App\Entity\User\Admin')->execute();
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->cleanDatabase();
+        $this->entityManager->clear();
     }
 }

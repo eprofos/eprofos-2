@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Repository\Alternance\AlternanceContractRepository;
+use App\Repository\Alternance\CompanyMissionRepository;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Alternance\SkillsAssessmentRepository;
-use App\Repository\Alternance\CompanyMissionRepository;
 use App\Repository\User\MentorRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +29,7 @@ class ReportingController extends AbstractController
         private SkillsAssessmentRepository $skillsRepository,
         private CompanyMissionRepository $missionRepository,
         private MentorRepository $mentorRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_reporting_index', methods: ['GET'])]
@@ -145,26 +150,28 @@ class ReportingController extends AbstractController
                 'formation' => $formation,
             ]);
 
-            $contentType = match($format) {
+            $contentType = match ($format) {
                 'pdf' => 'application/pdf',
                 'excel' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'csv' => 'text/csv',
                 default => 'application/octet-stream'
             };
 
-            $filename = sprintf('rapport_%s_%s.%s', 
-                $reportType, 
-                date('Y-m-d'), 
-                $format === 'excel' ? 'xlsx' : $format
+            $filename = sprintf(
+                'rapport_%s_%s.%s',
+                $reportType,
+                date('Y-m-d'),
+                $format === 'excel' ? 'xlsx' : $format,
             );
 
             $response = new Response($data);
             $response->headers->set('Content-Type', $contentType);
-            $response->headers->set('Content-Disposition', 'attachment; filename="'.$filename.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_reporting_index');
         }
     }
@@ -174,11 +181,11 @@ class ReportingController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $scheduleData = $request->request->all('schedule');
-            
+
             try {
                 $this->scheduleAutomaticReport($scheduleData);
                 $this->addFlash('success', 'Rapport programmé avec succès.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la programmation : ' . $e->getMessage());
             }
 
@@ -284,7 +291,7 @@ class ReportingController extends AbstractController
                     'excellent' => 25,
                     'good' => 45,
                     'average' => 20,
-                    'needs_improvement' => 10
+                    'needs_improvement' => 10,
                 ],
             ],
             'skills_metrics' => [
@@ -293,12 +300,12 @@ class ReportingController extends AbstractController
                 'top_performing_skills' => [
                     'Techniques métier' => 3.8,
                     'Adaptation' => 3.6,
-                    'Autonomie' => 3.4
+                    'Autonomie' => 3.4,
                 ],
                 'skills_needing_attention' => [
                     'Communication' => 2.8,
                     'Gestion de projet' => 2.9,
-                    'Leadership' => 2.7
+                    'Leadership' => 2.7,
                 ],
             ],
             'attendance_metrics' => [
@@ -333,12 +340,12 @@ class ReportingController extends AbstractController
                 'by_company_size' => [
                     'PME' => 28,
                     'ETI' => 15,
-                    'Grande entreprise' => 5
+                    'Grande entreprise' => 5,
                 ],
                 'by_sector' => [
                     'Tech' => 32,
                     'Service' => 12,
-                    'Industrie' => 4
+                    'Industrie' => 4,
                 ],
             ],
             'training_needs' => [
@@ -464,32 +471,32 @@ class ReportingController extends AbstractController
 
     private function getPeriodDateRange(string $period): array
     {
-        $now = new \DateTime();
-        
-        return match($period) {
+        $now = new DateTime();
+
+        return match ($period) {
             'current_month' => [
                 'start' => (clone $now)->modify('first day of this month'),
-                'end' => (clone $now)->modify('last day of this month')
+                'end' => (clone $now)->modify('last day of this month'),
             ],
             'last_month' => [
                 'start' => (clone $now)->modify('first day of last month'),
-                'end' => (clone $now)->modify('last day of last month')
+                'end' => (clone $now)->modify('last day of last month'),
             ],
             'current_semester' => [
                 'start' => (clone $now)->modify('-6 months'),
-                'end' => $now
+                'end' => $now,
             ],
             'current_year' => [
                 'start' => (clone $now)->modify('first day of January this year'),
-                'end' => (clone $now)->modify('last day of December this year')
+                'end' => (clone $now)->modify('last day of December this year'),
             ],
             'last_year' => [
                 'start' => (clone $now)->modify('first day of January last year'),
-                'end' => (clone $now)->modify('last day of December last year')
+                'end' => (clone $now)->modify('last day of December last year'),
             ],
             default => [
                 'start' => (clone $now)->modify('-1 year'),
-                'end' => $now
+                'end' => $now,
             ]
         };
     }
@@ -499,7 +506,7 @@ class ReportingController extends AbstractController
         // For demonstration, return CSV data
         if ($format === 'csv') {
             $output = fopen('php://temp', 'r+');
-            
+
             // Sample data based on report type
             if ($reportType === 'overview') {
                 fputcsv($output, ['Métrique', 'Valeur', 'Tendance']);
@@ -507,15 +514,15 @@ class ReportingController extends AbstractController
                 fputcsv($output, ['Taux de réussite', '78.5%', 'En hausse']);
                 fputcsv($output, ['Satisfaction moyenne', '4.3/5', 'Stable']);
             }
-            
+
             rewind($output);
             $content = stream_get_contents($output);
             fclose($output);
-            
+
             return $content;
         }
 
-        throw new \InvalidArgumentException("Format d'export non supporté: {$format}");
+        throw new InvalidArgumentException("Format d'export non supporté: {$format}");
     }
 
     private function scheduleAutomaticReport(array $scheduleData): void
@@ -523,7 +530,7 @@ class ReportingController extends AbstractController
         // Implementation would create scheduled report entries
         // For now, just validate the data
         if (empty($scheduleData['report_type']) || empty($scheduleData['frequency'])) {
-            throw new \InvalidArgumentException('Type de rapport et fréquence requis');
+            throw new InvalidArgumentException('Type de rapport et fréquence requis');
         }
     }
 
@@ -534,18 +541,18 @@ class ReportingController extends AbstractController
                 'id' => 1,
                 'report_type' => 'overview',
                 'frequency' => 'weekly',
-                'next_execution' => new \DateTime('+3 days'),
+                'next_execution' => new DateTime('+3 days'),
                 'recipients' => ['admin@eprofos.fr', 'direction@eprofos.fr'],
-                'status' => 'active'
+                'status' => 'active',
             ],
             [
                 'id' => 2,
                 'report_type' => 'qualiopi',
                 'frequency' => 'monthly',
-                'next_execution' => new \DateTime('+15 days'),
+                'next_execution' => new DateTime('+15 days'),
                 'recipients' => ['qualite@eprofos.fr'],
-                'status' => 'active'
-            ]
+                'status' => 'active',
+            ],
         ];
     }
 }

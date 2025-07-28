@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Training\Category;
@@ -10,8 +12,8 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Formation fixtures for EPROFOS platform
- * 
+ * Formation fixtures for EPROFOS platform.
+ *
  * Creates realistic professional training courses with detailed content,
  * objectives, prerequisites, programs, and pricing information.
  */
@@ -25,7 +27,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Load formation fixtures
+     * Load formation fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -41,28 +43,28 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
                     'Implémenter un système d\'authentification sécurisé',
                     'Développer des API REST documentées avec API Platform',
                     'Mettre en place des tests unitaires et fonctionnels',
-                    'Déployer une application sur un serveur de production'
+                    'Déployer une application sur un serveur de production',
                 ],
                 'evaluableObjectives' => [
                     'Créer une application e-commerce fonctionnelle en moins de 40h',
                     'Atteindre 90% de couverture de code par les tests',
                     'Implémenter une API REST avec temps de réponse < 200ms',
                     'Sécuriser l\'application selon les standards OWASP',
-                    'Optimiser les performances avec un score PageSpeed > 85'
+                    'Optimiser les performances avec un score PageSpeed > 85',
                 ],
                 'evaluationCriteria' => [
                     'QCM final avec 80% de bonnes réponses minimum',
                     'Projet d\'application web évalué sur 20 critères techniques',
                     'Code review avec respect des standards PSR',
                     'Présentation technique de 15 minutes devant jury',
-                    'Documentation technique complète et claire'
+                    'Documentation technique complète et claire',
                 ],
                 'successIndicators' => [
                     'Taux de réussite des participants > 90%',
                     'Note moyenne projet > 16/20',
                     'Satisfaction formation > 4.5/5',
                     'Taux d\'insertion professionnelle > 85% à 6 mois',
-                    'Nombre d\'applications déployées en production'
+                    'Nombre d\'applications déployées en production',
                 ],
                 'prerequisites' => 'Connaissances de base en programmation et HTML/CSS. Expérience préalable en PHP recommandée.',
                 'program' => "Module 1: Fondamentaux PHP 8.3 (14h)\n- Nouveautés PHP 8.3\n- Programmation orientée objet avancée\n- Gestion des erreurs et exceptions\n\nModule 2: Framework Symfony 7 (21h)\n- Architecture MVC\n- Routing et contrôleurs\n- Templates Twig\n- Formulaires et validation\n\nModule 3: Base de données et Doctrine (14h)\n- ORM Doctrine\n- Migrations et fixtures\n- Relations entre entités\n\nModule 4: Sécurité et API (14h)\n- Authentification et autorisation\n- Développement d'API REST\n- Tests unitaires et fonctionnels",
@@ -138,28 +140,28 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
                     'Animer des réunions d\'équipe efficaces et participatives',
                     'Déléguer des tâches avec suivi et accompagnement',
                     'Gérer les conflits par la médiation et la négociation',
-                    'Accompagner le changement et gérer les résistances'
+                    'Accompagner le changement et gérer les résistances',
                 ],
                 'evaluableObjectives' => [
                     'Améliorer de 20% l\'engagement de son équipe en 3 mois',
                     'Réduire de 50% le nombre de conflits non résolus',
                     'Augmenter de 25% l\'autonomie des collaborateurs',
                     'Diminuer le taux d\'absentéisme de 15%',
-                    'Atteindre 90% de satisfaction lors des entretiens annuels'
+                    'Atteindre 90% de satisfaction lors des entretiens annuels',
                 ],
                 'evaluationCriteria' => [
                     'Évaluation 360° avec amélioration de 2 points minimum',
                     'Mise en situation managériale notée par jury d\'experts',
                     'Plan d\'action personnalisé avec objectifs SMART',
                     'Présentation d\'un cas de résolution de conflit',
-                    'Autoévaluation des compétences avant/après formation'
+                    'Autoévaluation des compétences avant/après formation',
                 ],
                 'successIndicators' => [
                     'Taux de satisfaction des participants > 4.6/5',
                     'Note moyenne évaluation 360° > 4.2/5',
                     'Taux d\'application des acquis > 80% à 3 mois',
                     'Progression moyenne des compétences > 30%',
-                    'Recommandation de la formation > 90%'
+                    'Recommandation de la formation > 90%',
                 ],
                 'prerequisites' => 'Expérience en encadrement d\'équipe ou projet de prise de responsabilités managériales.',
                 'program' => "Module 1: Fondamentaux du leadership (7h)\n- Styles de leadership\n- Intelligence émotionnelle\n- Communication assertive\n\nModule 2: Management d'équipe (14h)\n- Motivation et engagement\n- Gestion des personnalités\n- Entretiens individuels\n- Feedback constructif\n\nModule 3: Gestion des conflits (7h)\n- Prévention des conflits\n- Médiation et négociation\n- Résolution collaborative\n\nModule 4: Conduite du changement (7h)\n- Accompagnement du changement\n- Gestion des résistances\n- Communication du changement",
@@ -326,7 +328,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
         foreach ($formations as $formationData) {
             $formation = new Formation();
             $formation->setTitle($formationData['title']);
-            $formation->setSlug($this->slugger->slug($formationData['title'])->lower());
+            $formation->setSlug((string)$this->slugger->slug($formationData['title'])->lower());
             $formation->setDescription($formationData['description']);
             $formation->setObjectives($formationData['objectives']);
             $formation->setPrerequisites($formationData['prerequisites']);
@@ -337,12 +339,12 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
             $formation->setFormat($formationData['format']);
             $formation->setIsFeatured($formationData['isFeatured']);
             $formation->setIsActive(true);
-            
+
             // Set image if provided
             if (isset($formationData['image'])) {
                 $formation->setImage($formationData['image']);
             }
-            
+
             // Set Qualiopi required properties
             $formation->setTargetAudience($formationData['targetAudience']);
             $formation->setAccessModalities($formationData['accessModalities']);
@@ -352,7 +354,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
             $formation->setContactInfo($formationData['contactInfo']);
             $formation->setTrainingLocation($formationData['trainingLocation']);
             $formation->setFundingModalities($formationData['fundingModalities']);
-            
+
             // Set structured objectives for Qualiopi 2.5 compliance
             if (isset($formationData['operationalObjectives'])) {
                 $formation->setOperationalObjectives($formationData['operationalObjectives']);
@@ -366,7 +368,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
             if (isset($formationData['successIndicators'])) {
                 $formation->setSuccessIndicators($formationData['successIndicators']);
             }
-            
+
             // Set category reference
             $category = $this->getReference($formationData['category'], Category::class);
             $formation->setCategory($category);
@@ -378,7 +380,7 @@ class FormationFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Define fixture dependencies
+     * Define fixture dependencies.
      */
     public function getDependencies(): array
     {

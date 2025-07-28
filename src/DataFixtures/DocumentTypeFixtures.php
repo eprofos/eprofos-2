@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentType;
@@ -7,17 +9,24 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document Type Fixtures - Creates various document types for testing
+ * Document Type Fixtures - Creates various document types for testing.
  */
 class DocumentTypeFixtures extends Fixture
 {
     public const LEGAL_TYPE_REFERENCE = 'document-type-legal';
+
     public const POLICY_TYPE_REFERENCE = 'document-type-policy';
+
     public const PROCEDURE_TYPE_REFERENCE = 'document-type-procedure';
+
     public const HANDBOOK_TYPE_REFERENCE = 'document-type-handbook';
+
     public const TERMS_TYPE_REFERENCE = 'document-type-terms';
+
     public const ACCESSIBILITY_TYPE_REFERENCE = 'document-type-accessibility';
+
     public const QUALITY_TYPE_REFERENCE = 'document-type-quality';
+
     public const TRAINING_TYPE_REFERENCE = 'document-type-training';
 
     public function load(ObjectManager $manager): void
@@ -39,10 +48,10 @@ class DocumentTypeFixtures extends Fixture
                     'approval_workflow' => true,
                     'version_control' => true,
                     'automatic_archiving' => true,
-                    'notification_recipients' => ['legal@eprofos.fr', 'direction@eprofos.fr']
+                    'notification_recipients' => ['legal@eprofos.fr', 'direction@eprofos.fr'],
                 ],
                 'reference' => self::LEGAL_TYPE_REFERENCE,
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'code' => 'internal_policy',
@@ -59,10 +68,10 @@ class DocumentTypeFixtures extends Fixture
                 'configuration' => [
                     'approval_workflow' => true,
                     'version_control' => true,
-                    'department_specific' => true
+                    'department_specific' => true,
                 ],
                 'reference' => self::POLICY_TYPE_REFERENCE,
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'code' => 'procedure',
@@ -79,10 +88,10 @@ class DocumentTypeFixtures extends Fixture
                 'configuration' => [
                     'step_by_step' => true,
                     'multimedia_support' => true,
-                    'user_feedback' => true
+                    'user_feedback' => true,
                 ],
                 'reference' => self::PROCEDURE_TYPE_REFERENCE,
-                'sortOrder' => 3
+                'sortOrder' => 3,
             ],
             [
                 'code' => 'student_handbook',
@@ -99,10 +108,10 @@ class DocumentTypeFixtures extends Fixture
                 'configuration' => [
                     'multilingual' => true,
                     'downloadable' => true,
-                    'print_friendly' => true
+                    'print_friendly' => true,
                 ],
                 'reference' => self::HANDBOOK_TYPE_REFERENCE,
-                'sortOrder' => 4
+                'sortOrder' => 4,
             ],
             [
                 'code' => 'terms_conditions',
@@ -119,10 +128,10 @@ class DocumentTypeFixtures extends Fixture
                 'configuration' => [
                     'legal_review_required' => true,
                     'customer_notification' => true,
-                    'archive_previous_versions' => true
+                    'archive_previous_versions' => true,
                 ],
                 'reference' => self::TERMS_TYPE_REFERENCE,
-                'sortOrder' => 5
+                'sortOrder' => 5,
             ],
             [
                 'code' => 'accessibility_document',
@@ -140,10 +149,10 @@ class DocumentTypeFixtures extends Fixture
                     'accessibility_compliant' => true,
                     'screen_reader_friendly' => true,
                     'high_contrast' => true,
-                    'multiple_formats' => true
+                    'multiple_formats' => true,
                 ],
                 'reference' => self::ACCESSIBILITY_TYPE_REFERENCE,
-                'sortOrder' => 6
+                'sortOrder' => 6,
             ],
             [
                 'code' => 'quality_document',
@@ -161,10 +170,10 @@ class DocumentTypeFixtures extends Fixture
                     'qualiopi_compliance' => true,
                     'audit_trail' => true,
                     'continuous_improvement' => true,
-                    'performance_indicators' => true
+                    'performance_indicators' => true,
                 ],
                 'reference' => self::QUALITY_TYPE_REFERENCE,
-                'sortOrder' => 7
+                'sortOrder' => 7,
             ],
             [
                 'code' => 'training_material',
@@ -182,29 +191,30 @@ class DocumentTypeFixtures extends Fixture
                     'interactive_content' => true,
                     'multimedia_support' => true,
                     'progress_tracking' => true,
-                    'downloadable_resources' => true
+                    'downloadable_resources' => true,
                 ],
                 'reference' => self::TRAINING_TYPE_REFERENCE,
-                'sortOrder' => 8
-            ]
+                'sortOrder' => 8,
+            ],
         ];
 
         foreach ($documentTypes as $typeData) {
             $documentType = new DocumentType();
             $documentType->setCode($typeData['code'])
-                        ->setName($typeData['name'])
-                        ->setDescription($typeData['description'])
-                        ->setIcon($typeData['icon'])
-                        ->setColor($typeData['color'])
-                        ->setRequiresApproval($typeData['requiresApproval'])
-                        ->setAllowMultiplePublished($typeData['allowMultiplePublished'])
-                        ->setHasExpiration($typeData['hasExpiration'])
-                        ->setGeneratesPdf($typeData['generatesPdf'])
-                        ->setAllowedStatuses($typeData['allowedStatuses'])
-                        ->setRequiredMetadata($typeData['requiredMetadata'])
-                        ->setConfiguration($typeData['configuration'])
-                        ->setSortOrder($typeData['sortOrder'])
-                        ->setIsActive(true);
+                ->setName($typeData['name'])
+                ->setDescription($typeData['description'])
+                ->setIcon($typeData['icon'])
+                ->setColor($typeData['color'])
+                ->setRequiresApproval($typeData['requiresApproval'])
+                ->setAllowMultiplePublished($typeData['allowMultiplePublished'])
+                ->setHasExpiration($typeData['hasExpiration'])
+                ->setGeneratesPdf($typeData['generatesPdf'])
+                ->setAllowedStatuses($typeData['allowedStatuses'])
+                ->setRequiredMetadata($typeData['requiredMetadata'])
+                ->setConfiguration($typeData['configuration'])
+                ->setSortOrder($typeData['sortOrder'])
+                ->setIsActive(true)
+            ;
 
             $manager->persist($documentType);
             $this->addReference($typeData['reference'], $documentType);

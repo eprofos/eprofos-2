@@ -1,31 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
-use App\Entity\Alternance\MissionAssignment;
 use App\Entity\Alternance\CompanyMission;
-use App\Entity\User\Student;
+use App\Entity\Alternance\MissionAssignment;
 use App\Entity\User\Mentor;
+use App\Entity\User\Student;
 use App\Repository\Alternance\MissionAssignmentRepository;
+use DateInterval;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
- * Service for managing mission assignments
- * 
+ * Service for managing mission assignments.
+ *
  * Handles assignment creation, progress tracking, evaluation,
  * and business logic for mission assignments in the alternance system.
  */
 class MissionAssignmentService
 {
     private EntityManagerInterface $entityManager;
+
     private MissionAssignmentRepository $assignmentRepository;
+
     private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         MissionAssignmentRepository $assignmentRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->entityManager = $entityManager;
         $this->assignmentRepository = $assignmentRepository;
@@ -33,12 +41,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Create a new mission assignment
-     *
-     * @param CompanyMission $mission
-     * @param Student $student
-     * @param array $data
-     * @return MissionAssignment
+     * Create a new mission assignment.
      */
     public function createAssignment(CompanyMission $mission, Student $student, array $data): MissionAssignment
     {
@@ -76,11 +79,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Update an existing assignment
-     *
-     * @param MissionAssignment $assignment
-     * @param array $data
-     * @return MissionAssignment
+     * Update an existing assignment.
      */
     public function updateAssignment(MissionAssignment $assignment, array $data): MissionAssignment
     {
@@ -141,15 +140,12 @@ class MissionAssignmentService
     }
 
     /**
-     * Start an assignment (change status to in progress)
-     *
-     * @param MissionAssignment $assignment
-     * @return void
+     * Start an assignment (change status to in progress).
      */
     public function startAssignment(MissionAssignment $assignment): void
     {
         if ($assignment->getStatus() !== 'planifiee') {
-            throw new \RuntimeException('Only planned assignments can be started.');
+            throw new RuntimeException('Only planned assignments can be started.');
         }
 
         $assignment->start();
@@ -163,16 +159,12 @@ class MissionAssignmentService
     }
 
     /**
-     * Complete an assignment
-     *
-     * @param MissionAssignment $assignment
-     * @param array $completionData
-     * @return void
+     * Complete an assignment.
      */
     public function completeAssignment(MissionAssignment $assignment, array $completionData = []): void
     {
-        if (!in_array($assignment->getStatus(), ['planifiee', 'en_cours'])) {
-            throw new \RuntimeException('Only planned or in-progress assignments can be completed.');
+        if (!in_array($assignment->getStatus(), ['planifiee', 'en_cours'], true)) {
+            throw new RuntimeException('Only planned or in-progress assignments can be completed.');
         }
 
         $assignment->complete();
@@ -199,16 +191,12 @@ class MissionAssignmentService
     }
 
     /**
-     * Suspend an assignment
-     *
-     * @param MissionAssignment $assignment
-     * @param string $reason
-     * @return void
+     * Suspend an assignment.
      */
     public function suspendAssignment(MissionAssignment $assignment, string $reason): void
     {
-        if (!in_array($assignment->getStatus(), ['planifiee', 'en_cours'])) {
-            throw new \RuntimeException('Only planned or in-progress assignments can be suspended.');
+        if (!in_array($assignment->getStatus(), ['planifiee', 'en_cours'], true)) {
+            throw new RuntimeException('Only planned or in-progress assignments can be suspended.');
         }
 
         $assignment->suspend();
@@ -218,7 +206,7 @@ class MissionAssignmentService
         $difficulties[] = [
             'type' => 'suspension',
             'reason' => $reason,
-            'date' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'date' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
         ];
         $assignment->setDifficulties($difficulties);
 
@@ -231,15 +219,12 @@ class MissionAssignmentService
     }
 
     /**
-     * Resume a suspended assignment
-     *
-     * @param MissionAssignment $assignment
-     * @return void
+     * Resume a suspended assignment.
      */
     public function resumeAssignment(MissionAssignment $assignment): void
     {
         if ($assignment->getStatus() !== 'suspendue') {
-            throw new \RuntimeException('Only suspended assignments can be resumed.');
+            throw new RuntimeException('Only suspended assignments can be resumed.');
         }
 
         $assignment->resume();
@@ -251,12 +236,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Update assignment progress
-     *
-     * @param MissionAssignment $assignment
-     * @param float $completionRate
-     * @param array $progressData
-     * @return void
+     * Update assignment progress.
      */
     public function updateProgress(MissionAssignment $assignment, float $completionRate, array $progressData = []): void
     {
@@ -290,23 +270,17 @@ class MissionAssignmentService
     }
 
     /**
-     * Add mentor evaluation
-     *
-     * @param MissionAssignment $assignment
-     * @param int $rating
-     * @param string $feedback
-     * @param array $competenciesAcquired
-     * @return void
+     * Add mentor evaluation.
      */
     public function addMentorEvaluation(MissionAssignment $assignment, int $rating, string $feedback, array $competenciesAcquired = []): void
     {
         if ($assignment->getStatus() !== 'terminee') {
-            throw new \RuntimeException('Only completed assignments can be evaluated.');
+            throw new RuntimeException('Only completed assignments can be evaluated.');
         }
 
         $assignment->setMentorRating($rating);
         $assignment->setMentorFeedback($feedback);
-        
+
         if (!empty($competenciesAcquired)) {
             $assignment->setCompetenciesAcquired($competenciesAcquired);
         }
@@ -321,12 +295,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Add student satisfaction feedback
-     *
-     * @param MissionAssignment $assignment
-     * @param int $satisfaction
-     * @param string $feedback
-     * @return void
+     * Add student satisfaction feedback.
      */
     public function addStudentFeedback(MissionAssignment $assignment, int $satisfaction, string $feedback): void
     {
@@ -342,10 +311,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Get assignment statistics for a student
-     *
-     * @param Student $student
-     * @return array
+     * Get assignment statistics for a student.
      */
     public function getStudentAssignmentStats(Student $student): array
     {
@@ -353,10 +319,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Get assignment statistics for a mentor
-     *
-     * @param Mentor $mentor
-     * @return array
+     * Get assignment statistics for a mentor.
      */
     public function getMentorAssignmentStats(Mentor $mentor): array
     {
@@ -364,10 +327,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Find assignments needing attention
-     *
-     * @param Mentor|null $mentor
-     * @return array
+     * Find assignments needing attention.
      */
     public function findAssignmentsNeedingAttention(?Mentor $mentor = null): array
     {
@@ -380,10 +340,7 @@ class MissionAssignmentService
     }
 
     /**
-     * Get dashboard data for a mentor
-     *
-     * @param Mentor $mentor
-     * @return array
+     * Get dashboard data for a mentor.
      */
     public function getMentorDashboard(Mentor $mentor): array
     {
@@ -391,74 +348,14 @@ class MissionAssignmentService
     }
 
     /**
-     * Validate assignment prerequisites
+     * Bulk update assignment status.
      *
-     * @param CompanyMission $mission
-     * @param Student $student
-     * @return void
-     * @throws \RuntimeException
-     */
-    private function validateAssignmentPrerequisites(CompanyMission $mission, Student $student): void
-    {
-        // Check if student already has an active assignment for this mission
-        $existingAssignment = $this->assignmentRepository->findOneBy([
-            'mission' => $mission,
-            'student' => $student,
-            'status' => ['planifiee', 'en_cours']
-        ]);
-
-        if ($existingAssignment) {
-            throw new \RuntimeException('Student already has an active assignment for this mission.');
-        }
-
-        // Check mission prerequisites (would need to implement prerequisite logic)
-        $prerequisites = $mission->getPrerequisites();
-        if (!empty($prerequisites)) {
-            // This would check if the student meets the prerequisites
-            // For now, we'll just log it
-            $this->logger->info('Mission has prerequisites that should be validated', [
-                'mission_id' => $mission->getId(),
-                'student_id' => $student->getId(),
-                'prerequisites' => $prerequisites,
-            ]);
-        }
-    }
-
-    /**
-     * Generate intermediate objectives based on mission objectives
-     *
-     * @param CompanyMission $mission
-     * @return array
-     */
-    private function generateIntermediateObjectives(CompanyMission $mission): array
-    {
-        $objectives = $mission->getObjectives();
-        $intermediateObjectives = [];
-
-        foreach ($objectives as $index => $objective) {
-            $intermediateObjectives[] = [
-                'id' => $index + 1,
-                'title' => $objective,
-                'completed' => false,
-                'completion_date' => null,
-                'notes' => '',
-            ];
-        }
-
-        return $intermediateObjectives;
-    }
-
-    /**
-     * Bulk update assignment status
-     *
-     * @param array $assignmentIds
-     * @param string $status
      * @return int Number of updated assignments
      */
     public function bulkUpdateAssignmentStatus(array $assignmentIds, string $status): int
     {
         $updatedCount = 0;
-        
+
         foreach ($assignmentIds as $assignmentId) {
             $assignment = $this->assignmentRepository->find($assignmentId);
             if ($assignment) {
@@ -479,15 +376,12 @@ class MissionAssignmentService
     }
 
     /**
-     * Export assignment data for reporting
-     *
-     * @param array $filters
-     * @return array
+     * Export assignment data for reporting.
      */
     public function exportAssignmentData(array $filters = []): array
     {
         $assignments = $this->assignmentRepository->findAll();
-        
+
         $exportData = [];
         foreach ($assignments as $assignment) {
             $exportData[] = [
@@ -509,18 +403,15 @@ class MissionAssignmentService
     }
 
     /**
-     * Calculate assignment duration statistics
-     *
-     * @param array $filters
-     * @return array
+     * Calculate assignment duration statistics.
      */
     public function calculateDurationStatistics(array $filters = []): array
     {
         $assignments = $this->assignmentRepository->findByStatus('terminee');
-        
+
         $durations = [];
         $totalDuration = 0;
-        
+
         foreach ($assignments as $assignment) {
             $duration = $assignment->getDurationInDays();
             $durations[] = $duration;
@@ -544,27 +435,29 @@ class MissionAssignmentService
             'average' => round($totalDuration / $count, 2),
             'min' => min($durations),
             'max' => max($durations),
-            'median' => $count % 2 === 0 
-                ? ($durations[$count/2 - 1] + $durations[$count/2]) / 2
-                : $durations[floor($count/2)],
+            'median' => $count % 2 === 0
+                ? ($durations[$count / 2 - 1] + $durations[$count / 2]) / 2
+                : $durations[floor($count / 2)],
         ];
     }
 
     /**
-     * Assign mission to contract
+     * Assign mission to contract.
+     *
+     * @param mixed $contract
      */
     public function assignMissionToContract(CompanyMission $mission, $contract): MissionAssignment
     {
         $assignment = new MissionAssignment();
         $assignment->setMission($mission);
         $assignment->setStudent($contract->getStudent());
-        $assignment->setStartDate(new \DateTime());
+        $assignment->setStartDate(new DateTime());
         $assignment->setEndDate($this->calculateExpectedEndDate($mission));
         $assignment->setStatus('planifiee');
-        
+
         $this->entityManager->persist($assignment);
         $this->entityManager->flush();
-        
+
         $this->logger->info('Mission assigned to contract', [
             'mission_id' => $mission->getId(),
             'contract_id' => $contract->getId(),
@@ -575,11 +468,64 @@ class MissionAssignmentService
     }
 
     /**
-     * Calculate expected end date based on mission duration
+     * Validate assignment prerequisites.
+     *
+     * @throws RuntimeException
      */
-    private function calculateExpectedEndDate(CompanyMission $mission): \DateTime
+    private function validateAssignmentPrerequisites(CompanyMission $mission, Student $student): void
+    {
+        // Check if student already has an active assignment for this mission
+        $existingAssignment = $this->assignmentRepository->findOneBy([
+            'mission' => $mission,
+            'student' => $student,
+            'status' => ['planifiee', 'en_cours'],
+        ]);
+
+        if ($existingAssignment) {
+            throw new RuntimeException('Student already has an active assignment for this mission.');
+        }
+
+        // Check mission prerequisites (would need to implement prerequisite logic)
+        $prerequisites = $mission->getPrerequisites();
+        if (!empty($prerequisites)) {
+            // This would check if the student meets the prerequisites
+            // For now, we'll just log it
+            $this->logger->info('Mission has prerequisites that should be validated', [
+                'mission_id' => $mission->getId(),
+                'student_id' => $student->getId(),
+                'prerequisites' => $prerequisites,
+            ]);
+        }
+    }
+
+    /**
+     * Generate intermediate objectives based on mission objectives.
+     */
+    private function generateIntermediateObjectives(CompanyMission $mission): array
+    {
+        $objectives = $mission->getObjectives();
+        $intermediateObjectives = [];
+
+        foreach ($objectives as $index => $objective) {
+            $intermediateObjectives[] = [
+                'id' => $index + 1,
+                'title' => $objective,
+                'completed' => false,
+                'completion_date' => null,
+                'notes' => '',
+            ];
+        }
+
+        return $intermediateObjectives;
+    }
+
+    /**
+     * Calculate expected end date based on mission duration.
+     */
+    private function calculateExpectedEndDate(CompanyMission $mission): DateTime
     {
         $duration = $mission->getDuration() ?? 30; // Default 30 days
-        return (new \DateTime())->add(new \DateInterval("P{$duration}D"));
+
+        return (new DateTime())->add(new DateInterval("P{$duration}D"));
     }
 }

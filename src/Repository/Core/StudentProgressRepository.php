@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Core;
 
-use App\Entity\User\Student;
 use App\Entity\Core\StudentProgress;
 use App\Entity\Training\Formation;
+use App\Entity\User\Student;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * StudentProgressRepository for managing student progress data and analytics
- * 
+ * StudentProgressRepository for managing student progress data and analytics.
+ *
  * Critical for Qualiopi Criterion 12 compliance - provides methods for tracking
  * student engagement, detecting dropout risks, and generating compliance reports.
  */
@@ -23,20 +26,20 @@ class StudentProgressRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find or create student progress for a specific formation
+     * Find or create student progress for a specific formation.
      */
     public function findOrCreateForStudentAndFormation(Student $student, Formation $formation): StudentProgress
     {
         $progress = $this->findOneBy([
             'student' => $student,
-            'formation' => $formation
+            'formation' => $formation,
         ]);
 
         if (!$progress) {
             $progress = new StudentProgress();
             $progress->setStudent($student);
             $progress->setFormation($formation);
-            
+
             $this->getEntityManager()->persist($progress);
             $this->getEntityManager()->flush();
         }
@@ -45,7 +48,7 @@ class StudentProgressRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find students at risk of dropout
+     * Find students at risk of dropout.
      */
     public function findAtRiskStudents(): array
     {
@@ -54,11 +57,12 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('atRisk', true)
             ->orderBy('sp.riskScore', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students with low engagement (critical for Qualiopi)
+     * Find students with low engagement (critical for Qualiopi).
      */
     public function findLowEngagementStudents(int $threshold = 40): array
     {
@@ -67,26 +71,28 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('threshold', $threshold)
             ->orderBy('sp.engagementScore', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find inactive students (no activity for X days)
+     * Find inactive students (no activity for X days).
      */
     public function findInactiveStudents(int $days = 7): array
     {
-        $threshold = new \DateTime('-' . $days . ' days');
-        
+        $threshold = new DateTime('-' . $days . ' days');
+
         return $this->createQueryBuilder('sp')
             ->where('sp.lastActivity < :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('sp.lastActivity', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students needing follow-up (for intervention)
+     * Find students needing follow-up (for intervention).
      */
     public function findStudentsNeedingFollowUp(): array
     {
@@ -95,14 +101,15 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->andWhere('sp.lastRiskAssessment IS NULL OR sp.lastRiskAssessment < :assessmentThreshold')
             ->setParameter('atRisk', true)
             ->setParameter('engagementThreshold', 50)
-            ->setParameter('assessmentThreshold', new \DateTime('-3 days'))
+            ->setParameter('assessmentThreshold', new DateTime('-3 days'))
             ->orderBy('sp.riskScore', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get completion statistics for a formation
+     * Get completion statistics for a formation.
      */
     public function getFormationCompletionStats(Formation $formation): array
     {
@@ -113,16 +120,17 @@ class StudentProgressRepository extends ServiceEntityRepository
                 'SUM(CASE WHEN sp.completedAt IS NOT NULL THEN 1 ELSE 0 END) as completedStudents',
                 'SUM(CASE WHEN sp.atRiskOfDropout = true THEN 1 ELSE 0 END) as atRiskStudents',
                 'AVG(sp.engagementScore) as averageEngagement',
-                'AVG(sp.attendanceRate) as averageAttendance'
+                'AVG(sp.attendanceRate) as averageAttendance',
             ])
             ->where('sp.formation = :formation')
-            ->setParameter('formation', $formation);
+            ->setParameter('formation', $formation)
+        ;
 
         return $qb->getQuery()->getSingleResult();
     }
 
     /**
-     * Get engagement metrics for dashboard
+     * Get engagement metrics for dashboard.
      */
     public function getEngagementMetrics(): array
     {
@@ -134,15 +142,16 @@ class StudentProgressRepository extends ServiceEntityRepository
                 'SUM(CASE WHEN sp.engagementScore < 60 THEN 1 ELSE 0 END) as lowEngagement',
                 'SUM(CASE WHEN sp.atRiskOfDropout = true THEN 1 ELSE 0 END) as atRiskCount',
                 'AVG(sp.engagementScore) as averageEngagement',
-                'AVG(sp.completionPercentage) as averageCompletion'
+                'AVG(sp.completionPercentage) as averageCompletion',
             ])
-            ->where('sp.completedAt IS NULL'); // Only active trainings
+            ->where('sp.completedAt IS NULL') // Only active trainings
+        ;
 
         return $qb->getQuery()->getSingleResult();
     }
 
     /**
-     * Find progress records for a specific student
+     * Find progress records for a specific student.
      */
     public function findByStudent(Student $student): array
     {
@@ -154,11 +163,12 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('sp.startedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students by completion percentage range
+     * Find students by completion percentage range.
      */
     public function findByCompletionRange(float $minPercentage, float $maxPercentage): array
     {
@@ -168,11 +178,12 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('max', $maxPercentage)
             ->orderBy('sp.completionPercentage', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get retention statistics (Qualiopi requirement)
+     * Get retention statistics (Qualiopi requirement).
      */
     public function getRetentionStats(): array
     {
@@ -183,26 +194,27 @@ class StudentProgressRepository extends ServiceEntityRepository
                 'SUM(CASE WHEN sp.atRiskOfDropout = true THEN 1 ELSE 0 END) as atRisk',
                 'SUM(CASE WHEN sp.lastActivity < :inactiveThreshold THEN 1 ELSE 0 END) as inactive',
                 'AVG(sp.attendanceRate) as averageAttendance',
-                'SUM(CASE WHEN sp.attendanceRate < 70 THEN 1 ELSE 0 END) as poorAttendance'
+                'SUM(CASE WHEN sp.attendanceRate < 70 THEN 1 ELSE 0 END) as poorAttendance',
             ])
-            ->setParameter('inactiveThreshold', new \DateTime('-14 days'));
+            ->setParameter('inactiveThreshold', new DateTime('-14 days'))
+        ;
 
         $result = $qb->getQuery()->getSingleResult();
-        
+
         // Calculate dropout rate
         $totalActive = $result['totalEnrollments'] - $result['completions'];
-        $result['dropoutRate'] = $totalActive > 0 ? 
+        $result['dropoutRate'] = $totalActive > 0 ?
             (($result['atRisk'] + $result['inactive']) / $totalActive) * 100 : 0;
-        
+
         // Calculate completion rate
-        $result['completionRate'] = $result['totalEnrollments'] > 0 ? 
+        $result['completionRate'] = $result['totalEnrollments'] > 0 ?
             ($result['completions'] / $result['totalEnrollments']) * 100 : 0;
 
         return $result;
     }
 
     /**
-     * Find students requiring immediate intervention
+     * Find students requiring immediate intervention.
      */
     public function findCriticalRiskStudents(): array
     {
@@ -212,32 +224,34 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('criticalThreshold', 60)
             ->orderBy('sp.riskScore', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get activity trends over time
+     * Get activity trends over time.
      */
     public function getActivityTrends(int $days = 30): array
     {
-        $startDate = new \DateTime('-' . $days . ' days');
-        
+        $startDate = new DateTime('-' . $days . ' days');
+
         return $this->createQueryBuilder('sp')
             ->select([
                 'SUBSTRING(sp.lastActivity, 1, 10) as activityDate',
                 'COUNT(sp.id) as activeStudents',
-                'AVG(sp.engagementScore) as averageEngagement'
+                'AVG(sp.engagementScore) as averageEngagement',
             ])
             ->where('sp.lastActivity >= :startDate')
             ->setParameter('startDate', $startDate)
             ->groupBy('activityDate')
             ->orderBy('activityDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Export data for Qualiopi compliance reporting
+     * Export data for Qualiopi compliance reporting.
      */
     public function getQualiopi12ComplianceData(): array
     {
@@ -245,7 +259,7 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->select([
                 'sp.id',
                 's.firstName',
-                's.lastName', 
+                's.lastName',
                 's.email',
                 'f.title as formationTitle',
                 'sp.completionPercentage',
@@ -258,17 +272,18 @@ class StudentProgressRepository extends ServiceEntityRepository
                 'sp.lastActivity',
                 'sp.missedSessions',
                 'sp.totalTimeSpent',
-                'sp.loginCount'
+                'sp.loginCount',
             ])
             ->leftJoin('sp.student', 's')
             ->leftJoin('sp.formation', 'f')
             ->orderBy('sp.riskScore', 'DESC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Find progress records with specific difficulty signals
+     * Find progress records with specific difficulty signals.
      */
     public function findByDifficultySignal(string $signal): array
     {
@@ -277,18 +292,20 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('signal', json_encode($signal))
             ->orderBy('sp.lastActivity', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Update risk assessment for all active students
+     * Update risk assessment for all active students.
      */
     public function updateAllRiskAssessments(): int
     {
         $activeProgress = $this->createQueryBuilder('sp')
             ->where('sp.completedAt IS NULL')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $updatedCount = 0;
         foreach ($activeProgress as $progress) {
@@ -297,11 +314,12 @@ class StudentProgressRepository extends ServiceEntityRepository
         }
 
         $this->getEntityManager()->flush();
+
         return $updatedCount;
     }
 
     /**
-     * Get students with poor attendance (Qualiopi metric)
+     * Get students with poor attendance (Qualiopi metric).
      */
     public function findPoorAttendanceStudents(float $threshold = 70.0): array
     {
@@ -311,11 +329,12 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('threshold', $threshold)
             ->orderBy('sp.attendanceRate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Create query builder for advanced filtering
+     * Create query builder for advanced filtering.
      */
     public function createAdvancedFilterQuery(): QueryBuilder
     {
@@ -323,11 +342,12 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->leftJoin('sp.student', 's')
             ->leftJoin('sp.formation', 'f')
             ->leftJoin('sp.currentModule', 'm')
-            ->leftJoin('sp.currentChapter', 'c');
+            ->leftJoin('sp.currentChapter', 'c')
+        ;
     }
 
     /**
-     * Save entity
+     * Save entity.
      */
     public function save(StudentProgress $entity, bool $flush = false): void
     {
@@ -339,7 +359,7 @@ class StudentProgressRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove entity
+     * Remove entity.
      */
     public function remove(StudentProgress $entity, bool $flush = false): void
     {

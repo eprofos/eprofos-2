@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Service\Core\DropoutPreventionService;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,11 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Command to verify Qualiopi Criterion 12 compliance implementation
+ * Command to verify Qualiopi Criterion 12 compliance implementation.
  */
 #[AsCommand(
     name: 'qualiopi:verify-compliance',
-    description: 'Verify that Qualiopi Criterion 12 compliance features are working correctly'
+    description: 'Verify that Qualiopi Criterion 12 compliance features are working correctly',
 )]
 class VerifyQualiopiComplianceCommand extends Command
 {
@@ -34,42 +37,46 @@ class VerifyQualiopiComplianceCommand extends Command
 
         // Test 1: At-Risk Student Detection
         $io->section('1. At-Risk Student Detection');
+
         try {
             $atRiskStudents = $this->dropoutPreventionService->detectAtRiskStudents();
             $atRiskCount = count($atRiskStudents);
-            
+
             if ($atRiskCount > 0) {
                 $io->success("✅ Detected {$atRiskCount} at-risk students");
-                
+
                 // Show details of first few at-risk students
                 $io->table(
                     ['Student', 'Formation', 'Risk Score', 'Completion %', 'Engagement Score'],
-                    array_slice(array_map(function($student) {
+                    array_slice(array_map(static function ($student) {
                         $progress = $student['progress'];
+
                         return [
                             $student['student']->getFirstName() . ' ' . $student['student']->getLastName(),
                             $progress->getFormation()->getTitle(),
                             $progress->getRiskScore(),
                             $progress->getCompletionPercentage() . '%',
-                            $progress->getEngagementScore()
+                            $progress->getEngagementScore(),
                         ];
-                    }, $atRiskStudents), 0, 5)
+                    }, $atRiskStudents), 0, 5),
                 );
             } else {
-                $io->warning("⚠️  No at-risk students detected (this might indicate an issue with test data)");
+                $io->warning('⚠️  No at-risk students detected (this might indicate an issue with test data)');
             }
-        } catch (\Exception $e) {
-            $io->error("❌ Error detecting at-risk students: " . $e->getMessage());
+        } catch (Exception $e) {
+            $io->error('❌ Error detecting at-risk students: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
 
         // Test 2: Engagement Scoring
         $io->section('2. Engagement Scoring System');
+
         try {
             $allStudents = $this->dropoutPreventionService->getAllStudentProgress();
             $totalStudents = count($allStudents);
             $engagementStats = $this->calculateEngagementStats($allStudents);
-            
+
             $io->success("✅ Engagement scoring working for {$totalStudents} students");
             $io->table(
                 ['Metric', 'Value'],
@@ -79,19 +86,21 @@ class VerifyQualiopiComplianceCommand extends Command
                     ['Average Completion Rate', round($engagementStats['avg_completion'], 2) . '%'],
                     ['Students with High Engagement (>70)', $engagementStats['high_engagement']],
                     ['Students with Low Engagement (<30)', $engagementStats['low_engagement']],
-                ]
+                ],
             );
-        } catch (\Exception $e) {
-            $io->error("❌ Error calculating engagement scores: " . $e->getMessage());
+        } catch (Exception $e) {
+            $io->error('❌ Error calculating engagement scores: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
 
         // Test 3: Retention Report Generation
         $io->section('3. Retention Report Generation');
+
         try {
             $retentionReport = $this->dropoutPreventionService->generateRetentionReport();
-            
-            $io->success("✅ Retention report generated successfully");
+
+            $io->success('✅ Retention report generated successfully');
             $io->table(
                 ['Metric', 'Value'],
                 [
@@ -100,37 +109,38 @@ class VerifyQualiopiComplianceCommand extends Command
                     ['At-Risk Students', $retentionReport['at_risk_count']],
                     ['Overall Risk Rate', round($retentionReport['risk_rate'], 2) . '%'],
                     ['Average Engagement Score', round($retentionReport['avg_engagement'], 2)],
-                ]
+                ],
             );
-        } catch (\Exception $e) {
-            $io->error("❌ Error generating retention report: " . $e->getMessage());
+        } catch (Exception $e) {
+            $io->error('❌ Error generating retention report: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
 
         // Test 4: Attendance Tracking
         $io->section('4. Attendance Tracking');
+
         try {
             $attendanceStats = $this->dropoutPreventionService->getAttendanceStatistics();
-            
-            $io->success("✅ Attendance tracking operational");
+
+            $io->success('✅ Attendance tracking operational');
             $io->table(
                 ['Status', 'Count', 'Percentage'],
-                array_map(function($status, $data) {
-                    return [
-                        ucfirst($status),
-                        $data['count'],
-                        round($data['percentage'], 2) . '%'
-                    ];
-                }, array_keys($attendanceStats), array_values($attendanceStats))
+                array_map(static fn ($status, $data) => [
+                    ucfirst($status),
+                    $data['count'],
+                    round($data['percentage'], 2) . '%',
+                ], array_keys($attendanceStats), array_values($attendanceStats)),
             );
-        } catch (\Exception $e) {
-            $io->error("❌ Error retrieving attendance statistics: " . $e->getMessage());
+        } catch (Exception $e) {
+            $io->error('❌ Error retrieving attendance statistics: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
 
         // Final Assessment
         $io->section('🏆 Qualiopi Compliance Assessment');
-        
+
         $complianceChecks = [
             '✅ Student progress tracking' => true,
             '✅ Engagement scoring algorithm' => true,
@@ -148,21 +158,22 @@ class VerifyQualiopiComplianceCommand extends Command
         }
 
         if ($passedChecks === $totalChecks) {
-            $io->success("🎉 All Qualiopi Criterion 12 compliance requirements are implemented and functional!");
+            $io->success('🎉 All Qualiopi Criterion 12 compliance requirements are implemented and functional!');
             $io->note([
-                "📋 Your system now provides:",
-                "• Comprehensive student progress tracking",
-                "• Automated at-risk student detection",
-                "• Detailed attendance monitoring",
-                "• Engagement scoring and analytics",
-                "• Retention reports for audit compliance",
-                "• Complete audit trail for Qualiopi certification"
+                '📋 Your system now provides:',
+                '• Comprehensive student progress tracking',
+                '• Automated at-risk student detection',
+                '• Detailed attendance monitoring',
+                '• Engagement scoring and analytics',
+                '• Retention reports for audit compliance',
+                '• Complete audit trail for Qualiopi certification',
             ]);
+
             return Command::SUCCESS;
-        } else {
-            $io->warning("⚠️  Some compliance checks failed. Review the implementation.");
-            return Command::FAILURE;
         }
+        $io->warning('⚠️  Some compliance checks failed. Review the implementation.');
+
+        return Command::FAILURE;
     }
 
     private function calculateEngagementStats(array $students): array
@@ -172,7 +183,7 @@ class VerifyQualiopiComplianceCommand extends Command
                 'avg_engagement' => 0,
                 'avg_completion' => 0,
                 'high_engagement' => 0,
-                'low_engagement' => 0
+                'low_engagement' => 0,
             ];
         }
 
@@ -199,7 +210,7 @@ class VerifyQualiopiComplianceCommand extends Command
             'avg_engagement' => $totalEngagement / count($students),
             'avg_completion' => $totalCompletion / count($students),
             'high_engagement' => $highEngagement,
-            'low_engagement' => $lowEngagement
+            'low_engagement' => $lowEngagement,
         ];
     }
 }

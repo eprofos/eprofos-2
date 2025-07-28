@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\User\Student;
@@ -7,18 +9,19 @@ use App\Form\StudentType;
 use App\Repository\User\StudentRepository;
 use App\Service\Core\StudentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Admin Student Controller
- * 
+ * Admin Student Controller.
+ *
  * Handles CRUD operations and management for students in the admin interface.
  * Provides comprehensive student management capabilities including password reset,
  * email verification management, and detailed filtering options.
@@ -30,19 +33,18 @@ class StudentController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private StudentService $studentService,
-        private UserPasswordHasherInterface $passwordHasher
-    ) {
-    }
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {}
 
     /**
-     * List all students with advanced filtering and pagination
+     * List all students with advanced filtering and pagination.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, StudentRepository $studentRepository): Response
     {
         $this->logger->info('Admin students list accessed', [
             'user' => $this->getUser()?->getUserIdentifier(),
-            'ip' => $request->getClientIp()
+            'ip' => $request->getClientIp(),
         ]);
 
         $page = max(1, $request->query->getInt('page', 1));
@@ -87,14 +89,14 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Show detailed student information
+     * Show detailed student information.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Student $student): Response
     {
         $this->logger->info('Student details viewed', [
             'student_id' => $student->getId(),
-            'viewed_by' => $this->getUser()?->getUserIdentifier()
+            'viewed_by' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/student/show.html.twig', [
@@ -103,7 +105,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Create new student
+     * Create new student.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -134,17 +136,16 @@ class StudentController extends AbstractController
                 }
 
                 $this->addFlash('success', 'Étudiant créé avec succès.');
-                
+
                 $this->logger->info('Student created successfully', [
                     'student_id' => $student->getId(),
                     'created_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 return $this->redirectToRoute('admin_student_show', ['id' => $student->getId()]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to create student', [
                     'error' => $e->getMessage(),
                     'created_by' => $this->getUser()?->getUserIdentifier(),
@@ -159,7 +160,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Edit existing student
+     * Edit existing student.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Student $student, EntityManagerInterface $entityManager): Response
@@ -175,7 +176,7 @@ class StudentController extends AbstractController
                 if ($plainPassword) {
                     $hashedPassword = $this->passwordHasher->hashPassword($student, $plainPassword);
                     $student->setPassword($hashedPassword);
-                    
+
                     $this->logger->info('Student password updated', [
                         'student_id' => $student->getId(),
                         'updated_by' => $this->getUser()?->getUserIdentifier(),
@@ -188,17 +189,16 @@ class StudentController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Étudiant modifié avec succès.');
-                
+
                 $this->logger->info('Student updated successfully', [
                     'student_id' => $student->getId(),
                     'updated_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 return $this->redirectToRoute('admin_student_show', ['id' => $student->getId()]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to update student', [
                     'student_id' => $student->getId(),
                     'error' => $e->getMessage(),
@@ -214,7 +214,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Delete student (soft delete - deactivate)
+     * Delete student (soft delete - deactivate).
      */
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Student $student, EntityManagerInterface $entityManager): Response
@@ -226,15 +226,14 @@ class StudentController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Étudiant désactivé avec succès.');
-                
+
                 $this->logger->info('Student deactivated', [
                     'student_id' => $student->getId(),
                     'deactivated_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la désactivation : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to deactivate student', [
                     'student_id' => $student->getId(),
                     'error' => $e->getMessage(),
@@ -247,7 +246,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Activate/deactivate student
+     * Activate/deactivate student.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Student $student, EntityManagerInterface $entityManager): Response
@@ -259,16 +258,15 @@ class StudentController extends AbstractController
 
                 $status = $student->isActive() ? 'activé' : 'désactivé';
                 $this->addFlash('success', "Étudiant {$status} avec succès.");
-                
+
                 $this->logger->info('Student status toggled', [
                     'student_id' => $student->getId(),
                     'new_status' => $student->isActive(),
                     'updated_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to toggle student status', [
                     'student_id' => $student->getId(),
                     'error' => $e->getMessage(),
@@ -281,7 +279,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Send password reset link to student
+     * Send password reset link to student.
      */
     #[Route('/{id}/send-password-reset', name: 'send_password_reset', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sendPasswordReset(Request $request, Student $student): JsonResponse
@@ -300,17 +298,16 @@ class StudentController extends AbstractController
                 ]);
 
                 return new JsonResponse([
-                    'success' => true, 
-                    'message' => 'Email de réinitialisation envoyé avec succès.'
+                    'success' => true,
+                    'message' => 'Email de réinitialisation envoyé avec succès.',
                 ]);
-            } else {
-                return new JsonResponse([
-                    'success' => false, 
-                    'message' => 'Erreur lors de l\'envoi de l\'email.'
-                ], 500);
             }
 
-        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'email.',
+            ], 500);
+        } catch (Exception $e) {
             $this->logger->error('Failed to send password reset email', [
                 'student_id' => $student->getId(),
                 'error' => $e->getMessage(),
@@ -318,14 +315,14 @@ class StudentController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'success' => false, 
-                'message' => 'Erreur lors de l\'envoi : ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Send email verification link to student
+     * Send email verification link to student.
      */
     #[Route('/{id}/send-email-verification', name: 'send_email_verification', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sendEmailVerification(Request $request, Student $student): JsonResponse
@@ -344,17 +341,16 @@ class StudentController extends AbstractController
                 ]);
 
                 return new JsonResponse([
-                    'success' => true, 
-                    'message' => 'Email de vérification envoyé avec succès.'
+                    'success' => true,
+                    'message' => 'Email de vérification envoyé avec succès.',
                 ]);
-            } else {
-                return new JsonResponse([
-                    'success' => false, 
-                    'message' => 'Erreur lors de l\'envoi de l\'email.'
-                ], 500);
             }
 
-        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'email.',
+            ], 500);
+        } catch (Exception $e) {
             $this->logger->error('Failed to send email verification', [
                 'student_id' => $student->getId(),
                 'error' => $e->getMessage(),
@@ -362,14 +358,14 @@ class StudentController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'success' => false, 
-                'message' => 'Erreur lors de l\'envoi : ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Manually verify student email
+     * Manually verify student email.
      */
     #[Route('/{id}/verify-email', name: 'verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function verifyEmail(Request $request, Student $student, EntityManagerInterface $entityManager): Response
@@ -380,15 +376,14 @@ class StudentController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Email vérifié manuellement avec succès.');
-                
+
                 $this->logger->info('Student email manually verified', [
                     'student_id' => $student->getId(),
                     'verified_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la vérification : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to manually verify student email', [
                     'student_id' => $student->getId(),
                     'error' => $e->getMessage(),
@@ -401,7 +396,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Generate new password for student
+     * Generate new password for student.
      */
     #[Route('/{id}/generate-password', name: 'generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function generatePassword(Request $request, Student $student, EntityManagerInterface $entityManager): JsonResponse
@@ -414,10 +409,10 @@ class StudentController extends AbstractController
             $newPassword = $this->studentService->generateRandomPassword();
             $hashedPassword = $this->passwordHasher->hashPassword($student, $newPassword);
             $student->setPassword($hashedPassword);
-            
+
             // Clear any existing password reset tokens
             $student->clearPasswordResetToken();
-            
+
             $entityManager->flush();
 
             // Send the new password via email
@@ -430,14 +425,13 @@ class StudentController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'success' => true, 
-                'message' => $emailSent ? 
-                    'Nouveau mot de passe généré et envoyé par email.' : 
+                'success' => true,
+                'message' => $emailSent ?
+                    'Nouveau mot de passe généré et envoyé par email.' :
                     'Nouveau mot de passe généré (erreur d\'envoi email).',
-                'password' => $newPassword // Only for admin to see in case email fails
+                'password' => $newPassword, // Only for admin to see in case email fails
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate new password', [
                 'student_id' => $student->getId(),
                 'error' => $e->getMessage(),
@@ -445,20 +439,20 @@ class StudentController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'success' => false, 
-                'message' => 'Erreur lors de la génération : ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Erreur lors de la génération : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Export students data to CSV
+     * Export students data to CSV.
      */
     #[Route('/export', name: 'export', methods: ['GET'])]
     public function export(Request $request, StudentRepository $studentRepository): Response
     {
         $this->logger->info('Students data export requested', [
-            'exported_by' => $this->getUser()?->getUserIdentifier()
+            'exported_by' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -480,20 +474,20 @@ class StudentController extends AbstractController
             $response->headers->set('Content-Disposition', 'attachment; filename="etudiants_' . date('Y-m-d') . '.csv"');
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to export students data', [
                 'error' => $e->getMessage(),
                 'exported_by' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_student_index');
         }
     }
 
     /**
-     * Bulk actions on students
+     * Bulk actions on students.
      */
     #[Route('/bulk-action', name: 'bulk_action', methods: ['POST'])]
     public function bulkAction(Request $request, StudentRepository $studentRepository, EntityManagerInterface $entityManager): Response
@@ -503,11 +497,13 @@ class StudentController extends AbstractController
 
         if (empty($studentIds)) {
             $this->addFlash('warning', 'Aucun étudiant sélectionné.');
+
             return $this->redirectToRoute('admin_student_index');
         }
 
         if (!$this->isCsrfTokenValid('bulk_action', $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_student_index');
         }
 
@@ -521,16 +517,19 @@ class StudentController extends AbstractController
                         $student->setIsActive(true);
                         $count++;
                         break;
+
                     case 'deactivate':
                         $student->setIsActive(false);
                         $count++;
                         break;
+
                     case 'verify_email':
                         if (!$student->isEmailVerified()) {
                             $student->verifyEmail();
                             $count++;
                         }
                         break;
+
                     case 'send_password_reset':
                         if ($this->studentService->sendPasswordResetEmail($student)) {
                             $count++;
@@ -557,10 +556,9 @@ class StudentController extends AbstractController
                 'student_count' => $count,
                 'performed_by' => $this->getUser()?->getUserIdentifier(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'action groupée : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to perform bulk action', [
                 'action' => $action,
                 'error' => $e->getMessage(),
@@ -572,7 +570,7 @@ class StudentController extends AbstractController
     }
 
     /**
-     * Get client IP address
+     * Get client IP address.
      */
     private function getClientIp(): ?string
     {

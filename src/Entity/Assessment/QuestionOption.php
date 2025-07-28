@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Assessment;
 
 use App\Repository\Assessment\QuestionOptionRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * QuestionOption entity for multiple choice questions
- * 
+ * QuestionOption entity for multiple choice questions.
+ *
  * Represents an option/choice for single or multiple choice questions
  */
 #[ORM\Entity(repositoryClass: QuestionOptionRepository::class)]
@@ -27,7 +30,7 @@ class QuestionOption
         min: 1,
         max: 500,
         minMessage: 'Le texte de l\'option doit contenir au moins {{ limit }} caractère.',
-        maxMessage: 'Le texte de l\'option ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le texte de l\'option ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $optionText = null;
 
@@ -49,10 +52,10 @@ class QuestionOption
     private ?string $explanation = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Question::class, inversedBy: 'options')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -60,8 +63,13 @@ class QuestionOption
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->optionText ?? '';
     }
 
     public function getId(): ?int
@@ -77,6 +85,7 @@ class QuestionOption
     public function setOptionText(string $optionText): static
     {
         $this->optionText = $optionText;
+
         return $this;
     }
 
@@ -88,6 +97,7 @@ class QuestionOption
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -99,6 +109,7 @@ class QuestionOption
     public function setIsCorrect(bool $isCorrect): static
     {
         $this->isCorrect = $isCorrect;
+
         return $this;
     }
 
@@ -110,6 +121,7 @@ class QuestionOption
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -121,6 +133,7 @@ class QuestionOption
     public function setPoints(?int $points): static
     {
         $this->points = $points;
+
         return $this;
     }
 
@@ -132,28 +145,31 @@ class QuestionOption
     public function setExplanation(?string $explanation): static
     {
         $this->explanation = $explanation;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -165,20 +181,16 @@ class QuestionOption
     public function setQuestion(?Question $question): static
     {
         $this->question = $question;
+
         return $this;
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->optionText ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

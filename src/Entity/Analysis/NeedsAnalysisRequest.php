@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Analysis;
 
 use App\Entity\CRM\Prospect;
 use App\Entity\Training\Formation;
 use App\Entity\User\Admin;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Needs Analysis Request Entity
- * 
+ * Needs Analysis Request Entity.
+ *
  * Represents a request for needs analysis sent to companies or individuals
  * to comply with Qualiopi 2.4 criteria. Contains secure token-based access
  * and tracks the complete lifecycle of the analysis request.
@@ -23,12 +26,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 class NeedsAnalysisRequest
 {
     public const TYPE_COMPANY = 'company';
+
     public const TYPE_INDIVIDUAL = 'individual';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     #[ORM\Id]
@@ -41,7 +49,7 @@ class NeedsAnalysisRequest
     #[Assert\Choice(
         choices: [self::TYPE_COMPANY, self::TYPE_INDIVIDUAL],
         message: 'Type de demande invalide.',
-        groups: ['Default', 'admin_form']
+        groups: ['Default', 'admin_form'],
     )]
     private ?string $type = null;
 
@@ -56,7 +64,7 @@ class NeedsAnalysisRequest
     #[Assert\Length(
         max: 180,
         maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.',
-        groups: ['Default', 'admin_form']
+        groups: ['Default', 'admin_form'],
     )]
     private ?string $recipientEmail = null;
 
@@ -67,7 +75,7 @@ class NeedsAnalysisRequest
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
-        groups: ['Default', 'admin_form']
+        groups: ['Default', 'admin_form'],
     )]
     private ?string $recipientName = null;
 
@@ -75,7 +83,7 @@ class NeedsAnalysisRequest
     #[Assert\Length(
         max: 255,
         maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.',
-        groups: ['Default', 'admin_form']
+        groups: ['Default', 'admin_form'],
     )]
     private ?string $companyName = null;
 
@@ -87,27 +95,27 @@ class NeedsAnalysisRequest
             self::STATUS_SENT,
             self::STATUS_COMPLETED,
             self::STATUS_EXPIRED,
-            self::STATUS_CANCELLED
+            self::STATUS_CANCELLED,
         ],
         message: 'Statut invalide.',
-        groups: ['Default', 'admin_form']
+        groups: ['Default', 'admin_form'],
     )]
     private string $status = self::STATUS_PENDING;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $sentAt = null;
+    private ?DateTimeImmutable $sentAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $completedAt = null;
+    private ?DateTimeImmutable $completedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $expiresAt = null;
+    private ?DateTimeImmutable $expiresAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $lastReminderSentAt = null;
+    private ?DateTimeImmutable $lastReminderSentAt = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $adminNotes = null;
@@ -132,26 +140,28 @@ class NeedsAnalysisRequest
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
         $this->setDefaultExpiration();
     }
 
-    /**
-     * Set default expiration to 30 days from creation
-     */
-    private function setDefaultExpiration(): void
+    public function __toString(): string
     {
-        $this->expiresAt = $this->createdAt->modify('+30 days');
+        return sprintf(
+            '%s - %s (%s)',
+            $this->getTypeLabel(),
+            $this->recipientName ?? 'Sans nom',
+            $this->getStatusLabel(),
+        );
     }
 
     /**
-     * Lifecycle callback executed before persisting the entity
+     * Lifecycle callback executed before persisting the entity.
      */
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
         if ($this->createdAt === null) {
-            $this->createdAt = new \DateTimeImmutable();
+            $this->createdAt = new DateTimeImmutable();
         }
         if ($this->expiresAt === null) {
             $this->setDefaultExpiration();
@@ -159,15 +169,15 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Check if the request is expired
+     * Check if the request is expired.
      */
     public function isExpired(): bool
     {
-        return $this->expiresAt < new \DateTimeImmutable();
+        return $this->expiresAt < new DateTimeImmutable();
     }
 
     /**
-     * Check if the request is pending
+     * Check if the request is pending.
      */
     public function isPending(): bool
     {
@@ -175,7 +185,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Check if the request is sent
+     * Check if the request is sent.
      */
     public function isSent(): bool
     {
@@ -183,7 +193,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Check if the request is completed
+     * Check if the request is completed.
      */
     public function isCompleted(): bool
     {
@@ -191,7 +201,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Check if the request is cancelled
+     * Check if the request is cancelled.
      */
     public function isCancelled(): bool
     {
@@ -199,25 +209,25 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Mark the request as sent
+     * Mark the request as sent.
      */
     public function markAsSent(): void
     {
         $this->status = self::STATUS_SENT;
-        $this->sentAt = new \DateTimeImmutable();
+        $this->sentAt = new DateTimeImmutable();
     }
 
     /**
-     * Mark the request as completed
+     * Mark the request as completed.
      */
     public function markAsCompleted(): void
     {
         $this->status = self::STATUS_COMPLETED;
-        $this->completedAt = new \DateTimeImmutable();
+        $this->completedAt = new DateTimeImmutable();
     }
 
     /**
-     * Mark the request as expired
+     * Mark the request as expired.
      */
     public function markAsExpired(): void
     {
@@ -225,7 +235,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Mark the request as cancelled
+     * Mark the request as cancelled.
      */
     public function markAsCancelled(): void
     {
@@ -233,7 +243,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -245,7 +255,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -260,7 +270,7 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -275,25 +285,24 @@ class NeedsAnalysisRequest
     }
 
     /**
-     * Get days until expiration
+     * Get days until expiration.
      */
     public function getDaysUntilExpiration(): int
     {
-        $now = new \DateTimeImmutable();
+        $now = new DateTimeImmutable();
         if ($this->expiresAt <= $now) {
             return 0;
         }
-        
+
         return $now->diff($this->expiresAt)->days;
     }
 
     /**
-     * Get the public URL for this analysis request
+     * Get the public URL for this analysis request.
      */
     public function getPublicUrl(): string
     {
-        $baseUrl = '/needs-analysis/form/' . $this->token;
-        return $baseUrl;
+        return '/needs-analysis/form/' . $this->token;
     }
 
     // Getters and Setters
@@ -311,6 +320,7 @@ class NeedsAnalysisRequest
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -322,6 +332,7 @@ class NeedsAnalysisRequest
     public function setToken(string $token): static
     {
         $this->token = $token;
+
         return $this;
     }
 
@@ -333,6 +344,7 @@ class NeedsAnalysisRequest
     public function setRecipientEmail(string $recipientEmail): static
     {
         $this->recipientEmail = $recipientEmail;
+
         return $this;
     }
 
@@ -344,6 +356,7 @@ class NeedsAnalysisRequest
     public function setRecipientName(string $recipientName): static
     {
         $this->recipientName = $recipientName;
+
         return $this;
     }
 
@@ -355,6 +368,7 @@ class NeedsAnalysisRequest
     public function setCompanyName(?string $companyName): static
     {
         $this->companyName = $companyName;
+
         return $this;
     }
 
@@ -366,50 +380,55 @@ class NeedsAnalysisRequest
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getSentAt(): ?\DateTimeImmutable
+    public function getSentAt(): ?DateTimeImmutable
     {
         return $this->sentAt;
     }
 
-    public function setSentAt(?\DateTimeImmutable $sentAt): static
+    public function setSentAt(?DateTimeImmutable $sentAt): static
     {
         $this->sentAt = $sentAt;
+
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeImmutable
+    public function getCompletedAt(): ?DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    public function setCompletedAt(?DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
-    public function getExpiresAt(): ?\DateTimeImmutable
+    public function getExpiresAt(): ?DateTimeImmutable
     {
         return $this->expiresAt;
     }
 
-    public function setExpiresAt(\DateTimeImmutable $expiresAt): static
+    public function setExpiresAt(DateTimeImmutable $expiresAt): static
     {
         $this->expiresAt = $expiresAt;
+
         return $this;
     }
 
@@ -421,13 +440,14 @@ class NeedsAnalysisRequest
     public function setAdminNotes(?string $adminNotes): static
     {
         $this->adminNotes = $adminNotes;
+
         return $this;
     }
 
     /**
      * Get the date when the last reminder was sent.
      */
-    public function getLastReminderSentAt(): ?\DateTimeImmutable
+    public function getLastReminderSentAt(): ?DateTimeImmutable
     {
         return $this->lastReminderSentAt;
     }
@@ -435,9 +455,10 @@ class NeedsAnalysisRequest
     /**
      * Set the date when the last reminder was sent.
      */
-    public function setLastReminderSentAt(?\DateTimeImmutable $lastReminderSentAt): static
+    public function setLastReminderSentAt(?DateTimeImmutable $lastReminderSentAt): static
     {
         $this->lastReminderSentAt = $lastReminderSentAt;
+
         return $this;
     }
 
@@ -449,6 +470,7 @@ class NeedsAnalysisRequest
     public function setCreatedByAdmin(?Admin $createdByAdmin): static
     {
         $this->createdByAdmin = $createdByAdmin;
+
         return $this;
     }
 
@@ -460,6 +482,7 @@ class NeedsAnalysisRequest
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -471,6 +494,7 @@ class NeedsAnalysisRequest
     public function setProspect(?Prospect $prospect): static
     {
         $this->prospect = $prospect;
+
         return $this;
     }
 
@@ -482,12 +506,12 @@ class NeedsAnalysisRequest
     public function setCompanyAnalysis(?CompanyNeedsAnalysis $companyAnalysis): static
     {
         $this->companyAnalysis = $companyAnalysis;
-        
+
         // Set the owning side of the relation if necessary
         if ($companyAnalysis !== null && $companyAnalysis->getNeedsAnalysisRequest() !== $this) {
             $companyAnalysis->setNeedsAnalysisRequest($this);
         }
-        
+
         return $this;
     }
 
@@ -499,22 +523,20 @@ class NeedsAnalysisRequest
     public function setIndividualAnalysis(?IndividualNeedsAnalysis $individualAnalysis): static
     {
         $this->individualAnalysis = $individualAnalysis;
-        
+
         // Set the owning side of the relation if necessary
         if ($individualAnalysis !== null && $individualAnalysis->getNeedsAnalysisRequest() !== $this) {
             $individualAnalysis->setNeedsAnalysisRequest($this);
         }
-        
+
         return $this;
     }
 
-    public function __toString(): string
+    /**
+     * Set default expiration to 30 days from creation.
+     */
+    private function setDefaultExpiration(): void
     {
-        return sprintf(
-            '%s - %s (%s)',
-            $this->getTypeLabel(),
-            $this->recipientName ?? 'Sans nom',
-            $this->getStatusLabel()
-        );
+        $this->expiresAt = $this->createdAt->modify('+30 days');
     }
 }

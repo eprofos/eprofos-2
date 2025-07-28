@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Service;
 
 use App\Entity\Service\Service;
@@ -8,11 +10,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for Service entity
- * 
+ * Repository for Service entity.
+ *
  * Provides query methods for retrieving EPROFOS services
  * with category filtering and organization.
- * 
+ *
  * @extends ServiceEntityRepository<Service>
  */
 class ServiceRepository extends ServiceEntityRepository
@@ -23,8 +25,8 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active services ordered by title
-     * 
+     * Find all active services ordered by title.
+     *
      * @return Service[]
      */
     public function findActiveServices(): array
@@ -36,12 +38,13 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('s.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find services by category
-     * 
+     * Find services by category.
+     *
      * @return Service[]
      */
     public function findByCategory(ServiceCategory $category): array
@@ -53,11 +56,12 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('s.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find service by slug with category
+     * Find service by slug with category.
      */
     public function findBySlugWithCategory(string $slug): ?Service
     {
@@ -69,12 +73,13 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find services grouped by category
-     * 
+     * Find services grouped by category.
+     *
      * @return array<string, Service[]>
      */
     public function findServicesGroupedByCategory(): array
@@ -87,7 +92,8 @@ class ServiceRepository extends ServiceEntityRepository
             ->orderBy('sc.name', 'ASC')
             ->addOrderBy('s.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $grouped = [];
         foreach ($services as $service) {
@@ -102,8 +108,8 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find featured services for homepage
-     * 
+     * Find featured services for homepage.
+     *
      * @return Service[]
      */
     public function findFeaturedServices(int $limit = 4): array
@@ -116,12 +122,13 @@ class ServiceRepository extends ServiceEntityRepository
             ->orderBy('s.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search services by title and description
-     * 
+     * Search services by title and description.
+     *
      * @return Service[]
      */
     public function searchServices(string $query): array
@@ -135,12 +142,13 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('s.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count services by category
-     * 
+     * Count services by category.
+     *
      * @return array<string, int>
      */
     public function countByCategory(): array
@@ -153,7 +161,8 @@ class ServiceRepository extends ServiceEntityRepository
             ->groupBy('sc.id')
             ->orderBy('sc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -164,7 +173,7 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save a service entity
+     * Save a service entity.
      */
     public function save(Service $entity, bool $flush = false): void
     {
@@ -176,7 +185,7 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a service entity
+     * Remove a service entity.
      */
     public function remove(Service $entity, bool $flush = false): void
     {

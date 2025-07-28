@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Service\Service;
@@ -10,8 +12,8 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Service fixtures for EPROFOS platform
- * 
+ * Service fixtures for EPROFOS platform.
+ *
  * Creates realistic services for each service category including
  * consulting, custom training, certification, coaching, and audit services.
  */
@@ -25,7 +27,7 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Load service fixtures
+     * Load service fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -149,12 +151,12 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
         foreach ($services as $serviceData) {
             $service = new Service();
             $service->setTitle($serviceData['title']);
-            $service->setSlug($this->slugger->slug($serviceData['title'])->lower());
+            $service->setSlug((string)$this->slugger->slug($serviceData['title'])->lower());
             $service->setDescription($serviceData['description']);
             $service->setBenefits($serviceData['benefits']);
             $service->setIcon($serviceData['icon']);
             $service->setIsActive(true);
-            
+
             // Set service category reference
             $serviceCategory = $this->getReference($serviceData['serviceCategory'], ServiceCategory::class);
             $service->setServiceCategory($serviceCategory);
@@ -166,7 +168,7 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Define fixture dependencies
+     * Define fixture dependencies.
      */
     public function getDependencies(): array
     {

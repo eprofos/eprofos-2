@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Training\Formation;
@@ -16,8 +18,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Admin Formation Controller
- * 
+ * Admin Formation Controller.
+ *
  * Handles CRUD operations for formations in the admin interface.
  * Provides comprehensive management capabilities for EPROFOS formations
  * with Qualiopi compliance and image upload support.
@@ -28,18 +30,17 @@ class FormationController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private SluggerInterface $slugger
-    ) {
-    }
+        private SluggerInterface $slugger,
+    ) {}
 
     /**
-     * List all formations with pagination and filtering
+     * List all formations with pagination and filtering.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, FormationRepository $formationRepository): Response
     {
         $this->logger->info('Admin formations list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         // Get filter parameters
@@ -50,43 +51,48 @@ class FormationController extends AbstractController
             'format' => $request->query->get('format', ''),
             'status' => $request->query->get('status', ''),
             'sortBy' => $request->query->get('sortBy', 'createdAt'),
-            'sortOrder' => $request->query->get('sortOrder', 'DESC')
+            'sortOrder' => $request->query->get('sortOrder', 'DESC'),
         ];
 
         // Create a copy for query building (without empty values)
-        $activeFilters = array_filter($filters, fn($value) => $value !== null && $value !== '');
+        $activeFilters = array_filter($filters, static fn ($value) => $value !== null && $value !== '');
 
         // Build query with filters
         $queryBuilder = $formationRepository->createQueryBuilder('f')
             ->leftJoin('f.category', 'c')
-            ->addSelect('c');
+            ->addSelect('c')
+        ;
 
         // Apply search filter
         if (!empty($activeFilters['search'])) {
             $queryBuilder
                 ->andWhere('f.title LIKE :search OR f.description LIKE :search')
-                ->setParameter('search', '%' . $activeFilters['search'] . '%');
+                ->setParameter('search', '%' . $activeFilters['search'] . '%')
+            ;
         }
 
         // Apply category filter
         if (!empty($activeFilters['category'])) {
             $queryBuilder
                 ->andWhere('c.slug = :category')
-                ->setParameter('category', $activeFilters['category']);
+                ->setParameter('category', $activeFilters['category'])
+            ;
         }
 
         // Apply level filter
         if (!empty($activeFilters['level'])) {
             $queryBuilder
                 ->andWhere('f.level = :level')
-                ->setParameter('level', $activeFilters['level']);
+                ->setParameter('level', $activeFilters['level'])
+            ;
         }
 
         // Apply format filter
         if (!empty($activeFilters['format'])) {
             $queryBuilder
                 ->andWhere('f.format = :format')
-                ->setParameter('format', $activeFilters['format']);
+                ->setParameter('format', $activeFilters['format'])
+            ;
         }
 
         // Apply status filter
@@ -94,7 +100,8 @@ class FormationController extends AbstractController
             $isActive = $activeFilters['status'] === 'active';
             $queryBuilder
                 ->andWhere('f.isActive = :status')
-                ->setParameter('status', $isActive);
+                ->setParameter('status', $isActive)
+            ;
         }
 
         // Apply sorting
@@ -105,15 +112,19 @@ class FormationController extends AbstractController
             case 'title':
                 $queryBuilder->orderBy('f.title', $sortOrder);
                 break;
+
             case 'category':
                 $queryBuilder->orderBy('c.name', $sortOrder);
                 break;
+
             case 'price':
                 $queryBuilder->orderBy('f.price', $sortOrder);
                 break;
+
             case 'level':
                 $queryBuilder->orderBy('f.level', $sortOrder);
                 break;
+
             default:
                 $queryBuilder->orderBy('f.createdAt', $sortOrder);
         }
@@ -127,7 +138,8 @@ class FormationController extends AbstractController
             ->where('c.id IS NOT NULL')
             ->orderBy('c.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $levels = $formationRepository->getAvailableLevels();
         $formats = $formationRepository->getAvailableFormats();
@@ -141,20 +153,20 @@ class FormationController extends AbstractController
             'page_title' => 'Gestion des formations',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Formations', 'url' => null]
-            ]
+                ['label' => 'Formations', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show formation details
+     * Show formation details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Formation $formation): Response
     {
         $this->logger->info('Admin formation details viewed', [
             'formation_id' => $formation->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/formation/show.html.twig', [
@@ -163,13 +175,13 @@ class FormationController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Formations', 'url' => $this->generateUrl('admin_formation_index')],
-                ['label' => $formation->getTitle(), 'url' => null]
-            ]
+                ['label' => $formation->getTitle(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new formation
+     * Create a new formation.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -181,7 +193,7 @@ class FormationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Generate slug from title
             $slug = $this->slugger->slug($formation->getTitle())->lower();
-            $formation->setSlug($slug);
+            $formation->setSlug((string)$slug);
 
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();
@@ -193,7 +205,7 @@ class FormationController extends AbstractController
                 try {
                     $imageFile->move(
                         $this->getParameter('formations_images_directory') ?? 'public/uploads/formations',
-                        $newFilename
+                        $newFilename,
                     );
                     $formation->setImage($newFilename);
                 } catch (FileException $e) {
@@ -207,7 +219,7 @@ class FormationController extends AbstractController
             $this->logger->info('New formation created', [
                 'formation_id' => $formation->getId(),
                 'formation_title' => $formation->getTitle(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La formation a été créée avec succès.');
@@ -222,13 +234,13 @@ class FormationController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Formations', 'url' => $this->generateUrl('admin_formation_index')],
-                ['label' => 'Nouvelle formation', 'url' => null]
-            ]
+                ['label' => 'Nouvelle formation', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing formation
+     * Edit an existing formation.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
@@ -239,7 +251,7 @@ class FormationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Update slug if title changed
             $slug = $this->slugger->slug($formation->getTitle())->lower();
-            $formation->setSlug($slug);
+            $formation->setSlug((string)$slug);
 
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();
@@ -259,7 +271,7 @@ class FormationController extends AbstractController
                 try {
                     $imageFile->move(
                         $this->getParameter('formations_images_directory') ?? 'public/uploads/formations',
-                        $newFilename
+                        $newFilename,
                     );
                     $formation->setImage($newFilename);
                 } catch (FileException $e) {
@@ -272,7 +284,7 @@ class FormationController extends AbstractController
             $this->logger->info('Formation updated', [
                 'formation_id' => $formation->getId(),
                 'formation_title' => $formation->getTitle(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La formation a été modifiée avec succès.');
@@ -288,21 +300,22 @@ class FormationController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Formations', 'url' => $this->generateUrl('admin_formation_index')],
                 ['label' => $formation->getTitle(), 'url' => $this->generateUrl('admin_formation_show', ['id' => $formation->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a formation
+     * Delete a formation.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$formation->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $formation->getId(), $request->getPayload()->get('_token'))) {
             // Check if formation has contact requests
             if ($formation->getContactRequests()->count() > 0) {
                 $this->addFlash('error', 'Impossible de supprimer cette formation car elle a des demandes de contact associées.');
+
                 return $this->redirectToRoute('admin_formation_index');
             }
 
@@ -321,7 +334,7 @@ class FormationController extends AbstractController
             $this->logger->info('Formation deleted', [
                 'formation_id' => $formation->getId(),
                 'formation_title' => $formationTitle,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La formation a été supprimée avec succès.');
@@ -331,12 +344,12 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Toggle formation active status
+     * Toggle formation active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('toggle_status'.$formation->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle_status' . $formation->getId(), $request->getPayload()->get('_token'))) {
             $formation->setIsActive(!$formation->isActive());
             $entityManager->flush();
 
@@ -345,7 +358,7 @@ class FormationController extends AbstractController
                 'formation_id' => $formation->getId(),
                 'formation_title' => $formation->getTitle(),
                 'new_status' => $formation->isActive(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', "La formation a été {$status} avec succès.");
@@ -355,12 +368,12 @@ class FormationController extends AbstractController
     }
 
     /**
-     * Toggle formation featured status
+     * Toggle formation featured status.
      */
     #[Route('/{id}/toggle-featured', name: 'toggle_featured', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleFeatured(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('toggle_featured'.$formation->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle_featured' . $formation->getId(), $request->getPayload()->get('_token'))) {
             $formation->setIsFeatured(!$formation->isFeatured());
             $entityManager->flush();
 
@@ -369,7 +382,7 @@ class FormationController extends AbstractController
                 'formation_id' => $formation->getId(),
                 'formation_title' => $formation->getTitle(),
                 'new_featured_status' => $formation->isFeatured(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', "La formation a été {$status} avec succès.");

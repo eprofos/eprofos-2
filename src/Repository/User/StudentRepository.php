@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
 use App\Entity\User\Student;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -10,12 +13,13 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * StudentRepository
- * 
+ * StudentRepository.
+ *
  * Repository for Student entity with security integration.
  * Provides methods for student authentication and user management.
- * 
+ *
  * @extends ServiceEntityRepository<Student>
+ *
  * @implements PasswordUpgraderInterface<Student>
  */
 class StudentRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -40,7 +44,7 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
-     * Find student by email
+     * Find student by email.
      */
     public function findByEmail(string $email): ?Student
     {
@@ -48,11 +52,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.email = :email')
             ->setParameter('email', $email)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find student by email verification token
+     * Find student by email verification token.
      */
     public function findByEmailVerificationToken(string $token): ?Student
     {
@@ -60,11 +65,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.emailVerificationToken = :token')
             ->setParameter('token', $token)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find student by password reset token
+     * Find student by password reset token.
      */
     public function findByPasswordResetToken(string $token): ?Student
     {
@@ -72,13 +78,14 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.passwordResetToken = :token')
             ->andWhere('s.passwordResetTokenExpiresAt > :now')
             ->setParameter('token', $token)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find active students
+     * Find active students.
      */
     public function findActive(): array
     {
@@ -88,11 +95,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students with verified emails
+     * Find students with verified emails.
      */
     public function findVerified(): array
     {
@@ -102,37 +110,40 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students registered in the last N days
+     * Find students registered in the last N days.
      */
     public function findRecentlyRegistered(int $days = 7): array
     {
-        $since = new \DateTimeImmutable(sprintf('-%d days', $days));
+        $since = new DateTimeImmutable(sprintf('-%d days', $days));
 
         return $this->createQueryBuilder('s')
             ->andWhere('s.createdAt >= :since')
             ->setParameter('since', $since)
             ->orderBy('s.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count total students
+     * Count total students.
      */
     public function countTotal(): int
     {
         return $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count active students
+     * Count active students.
      */
     public function countActive(): int
     {
@@ -141,11 +152,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count verified students
+     * Count verified students.
      */
     public function countVerified(): int
     {
@@ -154,11 +166,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.emailVerified = :verified')
             ->setParameter('verified', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Search students by name or email
+     * Search students by name or email.
      */
     public function searchByNameOrEmail(string $query): array
     {
@@ -168,11 +181,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students by city
+     * Find students by city.
      */
     public function findByCity(string $city): array
     {
@@ -182,11 +196,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students by profession
+     * Find students by profession.
      */
     public function findByProfession(string $profession): array
     {
@@ -196,11 +211,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for dashboard
+     * Get statistics for dashboard.
      */
     public function getStatistics(): array
     {
@@ -213,7 +229,7 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
-     * Find students with advanced filters
+     * Find students with advanced filters.
      */
     public function findWithFilters(array $filters, ?int $page = null, ?int $limit = null): array
     {
@@ -222,62 +238,76 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
         // Apply filters
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('s.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('s.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('s.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('s.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['city']) && $filters['city'] !== '') {
             $qb->andWhere('s.city = :city')
-               ->setParameter('city', $filters['city']);
+                ->setParameter('city', $filters['city'])
+            ;
         }
 
         if (!empty($filters['profession']) && $filters['profession'] !== '') {
             $qb->andWhere('s.profession = :profession')
-               ->setParameter('profession', $filters['profession']);
+                ->setParameter('profession', $filters['profession'])
+            ;
         }
 
         if (!empty($filters['registration_period']) && $filters['registration_period'] !== '') {
             $period = $filters['registration_period'];
-            $now = new \DateTimeImmutable();
-            
+            $now = new DateTimeImmutable();
+
             switch ($period) {
                 case 'today':
                     $qb->andWhere('DATE(s.createdAt) = :date')
-                       ->setParameter('date', $now->format('Y-m-d'));
+                        ->setParameter('date', $now->format('Y-m-d'))
+                    ;
                     break;
+
                 case 'week':
                     $weekAgo = $now->modify('-1 week');
                     $qb->andWhere('s.createdAt >= :weekAgo')
-                       ->setParameter('weekAgo', $weekAgo);
+                        ->setParameter('weekAgo', $weekAgo)
+                    ;
                     break;
+
                 case 'month':
                     $monthAgo = $now->modify('-1 month');
                     $qb->andWhere('s.createdAt >= :monthAgo')
-                       ->setParameter('monthAgo', $monthAgo);
+                        ->setParameter('monthAgo', $monthAgo)
+                    ;
                     break;
+
                 case 'year':
                     $yearAgo = $now->modify('-1 year');
                     $qb->andWhere('s.createdAt >= :yearAgo')
-                       ->setParameter('yearAgo', $yearAgo);
+                        ->setParameter('yearAgo', $yearAgo)
+                    ;
                     break;
             }
         }
@@ -289,79 +319,95 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
         if ($page !== null && $limit !== null) {
             $offset = ($page - 1) * $limit;
             $qb->setFirstResult($offset)
-               ->setMaxResults($limit);
+                ->setMaxResults($limit)
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Count students with filters
+     * Count students with filters.
      */
     public function countWithFilters(array $filters): int
     {
         $qb = $this->createQueryBuilder('s')
-                   ->select('COUNT(s.id)');
+            ->select('COUNT(s.id)')
+        ;
 
         // Apply same filters as findWithFilters but without pagination
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('s.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('s.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('s.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('s.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['city']) && $filters['city'] !== '') {
             $qb->andWhere('s.city = :city')
-               ->setParameter('city', $filters['city']);
+                ->setParameter('city', $filters['city'])
+            ;
         }
 
         if (!empty($filters['profession']) && $filters['profession'] !== '') {
             $qb->andWhere('s.profession = :profession')
-               ->setParameter('profession', $filters['profession']);
+                ->setParameter('profession', $filters['profession'])
+            ;
         }
 
         if (!empty($filters['registration_period']) && $filters['registration_period'] !== '') {
             $period = $filters['registration_period'];
-            $now = new \DateTimeImmutable();
-            
+            $now = new DateTimeImmutable();
+
             switch ($period) {
                 case 'today':
                     $qb->andWhere('DATE(s.createdAt) = :date')
-                       ->setParameter('date', $now->format('Y-m-d'));
+                        ->setParameter('date', $now->format('Y-m-d'))
+                    ;
                     break;
+
                 case 'week':
                     $weekAgo = $now->modify('-1 week');
                     $qb->andWhere('s.createdAt >= :weekAgo')
-                       ->setParameter('weekAgo', $weekAgo);
+                        ->setParameter('weekAgo', $weekAgo)
+                    ;
                     break;
+
                 case 'month':
                     $monthAgo = $now->modify('-1 month');
                     $qb->andWhere('s.createdAt >= :monthAgo')
-                       ->setParameter('monthAgo', $monthAgo);
+                        ->setParameter('monthAgo', $monthAgo)
+                    ;
                     break;
+
                 case 'year':
                     $yearAgo = $now->modify('-1 year');
                     $qb->andWhere('s.createdAt >= :yearAgo')
-                       ->setParameter('yearAgo', $yearAgo);
+                        ->setParameter('yearAgo', $yearAgo)
+                    ;
                     break;
             }
         }
@@ -370,7 +416,7 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
-     * Get distinct cities for filter dropdown
+     * Get distinct cities for filter dropdown.
      */
     public function getDistinctCities(): array
     {
@@ -381,13 +427,14 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setParameter('empty', '')
             ->orderBy('s.city', 'ASC')
             ->getQuery()
-            ->getArrayResult();
-            
+            ->getArrayResult()
+        ;
+
         return $result ?: [];
     }
 
     /**
-     * Get distinct professions for filter dropdown
+     * Get distinct professions for filter dropdown.
      */
     public function getDistinctProfessions(): array
     {
@@ -398,13 +445,14 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setParameter('empty', '')
             ->orderBy('s.profession', 'ASC')
             ->getQuery()
-            ->getArrayResult();
-            
+            ->getArrayResult()
+        ;
+
         return $result ?: [];
     }
 
     /**
-     * Count students with unverified emails
+     * Count students with unverified emails.
      */
     public function countUnverifiedEmails(): int
     {
@@ -413,11 +461,12 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.emailVerified = :verified')
             ->setParameter('verified', false)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count inactive students
+     * Count inactive students.
      */
     public function countInactive(): int
     {
@@ -426,28 +475,30 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('s.isActive = :active')
             ->setParameter('active', false)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find students with expired password reset tokens
+     * Find students with expired password reset tokens.
      */
     public function findWithExpiredPasswordResetTokens(): array
     {
         return $this->createQueryBuilder('s')
             ->andWhere('s.passwordResetToken IS NOT NULL')
             ->andWhere('s.passwordResetTokenExpiresAt < :now')
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students who haven't logged in for specified days
+     * Find students who haven't logged in for specified days.
      */
     public function findInactiveForDays(int $days): array
     {
-        $cutoffDate = new \DateTimeImmutable(sprintf('-%d days', $days));
+        $cutoffDate = new DateTimeImmutable(sprintf('-%d days', $days));
 
         return $this->createQueryBuilder('s')
             ->andWhere('s.isActive = :active')

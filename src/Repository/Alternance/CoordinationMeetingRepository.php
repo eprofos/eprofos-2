@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\CoordinationMeeting;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,7 +22,7 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find upcoming meetings by student
+     * Find upcoming meetings by student.
      */
     public function findUpcomingByStudent(Student $student): array
     {
@@ -28,35 +32,39 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->andWhere('cm.date > :now')
             ->setParameter('student', $student)
             ->setParameter('status', CoordinationMeeting::STATUS_PLANNED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('cm.date', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find meetings by period and type
+     * Find meetings by period and type.
      */
-    public function findByPeriodAndType(\DateTimeInterface $startDate, \DateTimeInterface $endDate, ?string $type = null): array
+    public function findByPeriodAndType(DateTimeInterface $startDate, DateTimeInterface $endDate, ?string $type = null): array
     {
         $qb = $this->createQueryBuilder('cm')
             ->andWhere('cm.date >= :startDate')
             ->andWhere('cm.date <= :endDate')
             ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate);
+            ->setParameter('endDate', $endDate)
+        ;
 
         if ($type) {
             $qb->andWhere('cm.type = :type')
-               ->setParameter('type', $type);
+                ->setParameter('type', $type)
+            ;
         }
 
         return $qb->orderBy('cm.date', 'ASC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find missed meetings (planned meetings in the past without completion)
+     * Find missed meetings (planned meetings in the past without completion).
      */
     public function findMissedMeetings(): array
     {
@@ -64,14 +72,15 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->andWhere('cm.status = :status')
             ->andWhere('cm.date < :now')
             ->setParameter('status', CoordinationMeeting::STATUS_PLANNED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('cm.date', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find meetings requiring follow-up
+     * Find meetings requiring follow-up.
      */
     public function findRequiringFollowUp(): array
     {
@@ -81,13 +90,14 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->setParameter('status', CoordinationMeeting::STATUS_COMPLETED)
             ->orderBy('cm.date', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get coordination statistics for a period
+     * Get coordination statistics for a period.
      */
-    public function getCoordinationStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function getCoordinationStatistics(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('cm')
             ->select('
@@ -105,7 +115,8 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->setParameter('completed', CoordinationMeeting::STATUS_COMPLETED)
             ->setParameter('cancelled', CoordinationMeeting::STATUS_CANCELLED)
             ->setParameter('planned', CoordinationMeeting::STATUS_PLANNED)
-            ->setParameter('now', new \DateTime());
+            ->setParameter('now', new DateTime())
+        ;
 
         $result = $qb->getQuery()->getSingleResult();
 
@@ -114,53 +125,63 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             'completed_meetings' => (int) $result['completed_meetings'],
             'cancelled_meetings' => (int) $result['cancelled_meetings'],
             'missed_meetings' => (int) $result['missed_meetings'],
-            'completion_rate' => $result['total_meetings'] > 0 ? 
+            'completion_rate' => $result['total_meetings'] > 0 ?
                 round(($result['completed_meetings'] / $result['total_meetings']) * 100, 2) : 0,
             'avg_satisfaction' => $result['avg_satisfaction'] ? round($result['avg_satisfaction'], 2) : null,
-            'avg_duration' => $result['avg_duration'] ? round($result['avg_duration']) : null
+            'avg_duration' => $result['avg_duration'] ? round($result['avg_duration']) : null,
         ];
     }
 
     /**
-     * Find meetings by mentor
+     * Find meetings by mentor.
+     *
+     * @param mixed $mentor
      */
     public function findByMentor($mentor, ?string $status = null): array
     {
         $qb = $this->createQueryBuilder('cm')
             ->andWhere('cm.mentor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         if ($status) {
             $qb->andWhere('cm.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         return $qb->orderBy('cm.date', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find meetings by pedagogical supervisor
+     * Find meetings by pedagogical supervisor.
+     *
+     * @param mixed $teacher
      */
     public function findByPedagogicalSupervisor($teacher, ?string $status = null): array
     {
         $qb = $this->createQueryBuilder('cm')
             ->andWhere('cm.pedagogicalSupervisor = :teacher')
-            ->setParameter('teacher', $teacher);
+            ->setParameter('teacher', $teacher)
+        ;
 
         if ($status) {
             $qb->andWhere('cm.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         return $qb->orderBy('cm.date', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent meetings for dashboard
+     * Find recent meetings for dashboard.
      */
     public function findRecentMeetings(int $limit = 10): array
     {
@@ -168,11 +189,12 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->orderBy('cm.date', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count meetings by status
+     * Count meetings by status.
      */
     public function countByStatus(): array
     {
@@ -180,7 +202,8 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
             ->select('cm.status, COUNT(cm.id) as count')
             ->groupBy('cm.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -191,11 +214,11 @@ class CoordinationMeetingRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find meetings needing scheduling (students without recent meetings)
+     * Find meetings needing scheduling (students without recent meetings).
      */
     public function findStudentsNeedingMeetings(int $daysSinceLastMeeting = 30): array
     {
-        $cutoffDate = new \DateTime('-' . $daysSinceLastMeeting . ' days');
+        $cutoffDate = new DateTime('-' . $daysSinceLastMeeting . ' days');
 
         return $this->createQueryBuilder('cm')
             ->select('DISTINCT s.id as student_id, s.firstName, s.lastName, MAX(cm.date) as last_meeting_date')

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentUIComponent;
@@ -10,8 +12,8 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document UI Component Fixtures - Creates UI components for templates
- * 
+ * Document UI Component Fixtures - Creates UI components for templates.
+ *
  * Provides various pre-configured components for document templates
  * including headers, footers, content sections, images, tables, etc.
  */
@@ -39,7 +41,7 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
     }
 
     /**
-     * Create components for Standard template
+     * Create components for Standard template.
      */
     private function createStandardTemplateComponents(ObjectManager $manager): void
     {
@@ -55,19 +57,19 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'max-height' => '40px',
                     'max-width' => '120px',
-                    'float' => 'left'
+                    'float' => 'left',
                 ],
                 'positionConfig' => [
                     'position' => 'absolute',
                     'top' => '5mm',
-                    'left' => '0'
+                    'left' => '0',
                 ],
                 'dataBinding' => [
                     'src' => 'company.logo',
-                    'alt' => 'company.name'
+                    'alt' => 'company.name',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Nom Entreprise',
@@ -78,13 +80,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-size' => '18pt',
                     'font-weight' => 'bold',
                     'color' => '#007bff',
-                    'text-align' => 'center'
+                    'text-align' => 'center',
                 ],
                 'dataBinding' => [
-                    'text' => 'company.name'
+                    'text' => 'company.name',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Date Document',
@@ -94,13 +96,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '10pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'positionConfig' => [
-                    'float' => 'right'
+                    'float' => 'right',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Titre Document',
@@ -112,13 +114,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-weight' => 'bold',
                     'color' => '#007bff',
                     'text-align' => 'center',
-                    'margin-bottom' => '15mm'
+                    'margin-bottom' => '15mm',
                 ],
                 'dataBinding' => [
-                    'text' => 'document.title'
+                    'text' => 'document.title',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Contenu Principal',
@@ -127,13 +129,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{content}}',
                 'styleConfig' => [
                     'text-align' => 'justify',
-                    'line-height' => '1.4'
+                    'line-height' => '1.4',
                 ],
                 'dataBinding' => [
-                    'text' => 'document.content'
+                    'text' => 'document.content',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Informations Contact',
@@ -143,15 +145,15 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'left'
+                    'text-align' => 'left',
                 ],
                 'dataBinding' => [
                     'address' => 'company.address',
                     'phone' => 'company.phone',
-                    'email' => 'company.email'
+                    'email' => 'company.email',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Numéro de Page',
@@ -161,21 +163,21 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'positionConfig' => [
-                    'float' => 'right'
+                    'float' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
-            ]
+                'isRequired' => false,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Letterhead template
+     * Create components for Letterhead template.
      */
     private function createLetterheadTemplateComponents(ObjectManager $manager): void
     {
@@ -190,13 +192,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '/images/logo-official.png',
                 'styleConfig' => [
                     'max-height' => '60px',
-                    'max-width' => '100px'
+                    'max-width' => '100px',
                 ],
                 'dataBinding' => [
-                    'src' => 'company.official_logo'
+                    'src' => 'company.official_logo',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'En-tête Entreprise',
@@ -213,10 +215,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'text-align' => 'right',
                     'flex' => '1',
-                    'margin-left' => '20mm'
+                    'margin-left' => '20mm',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Date Courrier',
@@ -226,10 +228,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'text-align' => 'right',
                     'font-size' => '11pt',
-                    'margin-bottom' => '10mm'
+                    'margin-bottom' => '10mm',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Objet',
@@ -238,13 +240,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '<strong>Objet:</strong> {{title}}',
                 'styleConfig' => [
                     'margin-bottom' => '8mm',
-                    'font-size' => '12pt'
+                    'font-size' => '12pt',
                 ],
                 'conditionalDisplay' => [
-                    ['field' => 'document.title', 'operator' => 'not_empty', 'value' => '']
+                    ['field' => 'document.title', 'operator' => 'not_empty', 'value' => ''],
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Corps de Lettre',
@@ -254,10 +256,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'text-align' => 'justify',
                     'text-indent' => '8mm',
-                    'line-height' => '1.5'
+                    'line-height' => '1.5',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Signature',
@@ -266,15 +268,15 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => 'Cordialement,',
                 'styleConfig' => [
                     'margin-top' => '15mm',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'dataBinding' => [
                     'name' => 'signature.name',
                     'title' => 'signature.title',
-                    'image' => 'signature.image'
+                    'image' => 'signature.image',
                 ],
                 'sortOrder' => 4,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Mentions Légales',
@@ -284,18 +286,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'center'
+                    'text-align' => 'center',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Certificate template
+     * Create components for Certificate template.
      */
     private function createCertificateTemplateComponents(ObjectManager $manager): void
     {
@@ -315,10 +317,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'top' => '0',
                     'left' => '0',
                     'right' => '0',
-                    'bottom' => '0'
+                    'bottom' => '0',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Logo Certificat',
@@ -330,10 +332,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'margin-bottom' => '10mm',
                     'display' => 'block',
                     'margin-left' => 'auto',
-                    'margin-right' => 'auto'
+                    'margin-right' => 'auto',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Titre Certificat',
@@ -345,13 +347,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-weight' => 'bold',
                     'color' => '#ffc107',
                     'text-align' => 'center',
-                    'text-shadow' => '1px 1px 2px rgba(0,0,0,0.1)'
+                    'text-shadow' => '1px 1px 2px rgba(0,0,0,0.1)',
                 ],
                 'dataBinding' => [
-                    'text' => 'certificate.title'
+                    'text' => 'certificate.title',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Texte Certification',
@@ -362,10 +364,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-size' => '14pt',
                     'color' => '#333',
                     'text-align' => 'center',
-                    'margin' => '5mm 0'
+                    'margin' => '5mm 0',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Nom Bénéficiaire',
@@ -379,13 +381,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'text-align' => 'center',
                     'margin' => '10mm 0',
                     'text-decoration' => 'underline',
-                    'text-decoration-color' => '#ffc107'
+                    'text-decoration-color' => '#ffc107',
                 ],
                 'dataBinding' => [
-                    'text' => 'recipient.name'
+                    'text' => 'recipient.name',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Texte Achèvement',
@@ -396,10 +398,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-size' => '14pt',
                     'color' => '#333',
                     'text-align' => 'center',
-                    'margin' => '5mm 0'
+                    'margin' => '5mm 0',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Titre Formation',
@@ -412,13 +414,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'color' => '#dc3545',
                     'text-align' => 'center',
                     'margin' => '8mm 0',
-                    'font-style' => 'italic'
+                    'font-style' => 'italic',
                 ],
                 'dataBinding' => [
-                    'text' => 'formation.title'
+                    'text' => 'formation.title',
                 ],
                 'sortOrder' => 4,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Détails Formation',
@@ -432,14 +434,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'font-size' => '12pt',
                     'color' => '#666',
                     'text-align' => 'center',
-                    'margin' => '8mm 0'
+                    'margin' => '8mm 0',
                 ],
                 'dataBinding' => [
                     'duration' => 'formation.duration',
-                    'completion_date' => 'completion.date'
+                    'completion_date' => 'completion.date',
                 ],
                 'sortOrder' => 5,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Signature Responsable',
@@ -450,14 +452,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'text-align' => 'center',
                     'position' => 'absolute',
                     'bottom' => '15mm',
-                    'left' => '20mm'
+                    'left' => '20mm',
                 ],
                 'dataBinding' => [
                     'name' => 'signature.name',
-                    'image' => 'signature.image'
+                    'image' => 'signature.image',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Date Délivrance',
@@ -469,18 +471,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'color' => '#666',
                     'position' => 'absolute',
                     'bottom' => '15mm',
-                    'right' => '20mm'
+                    'right' => '20mm',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Legal template
+     * Create components for Legal template.
      */
     private function createLegalTemplateComponents(ObjectManager $manager): void
     {
@@ -498,14 +500,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 </div>',
                 'styleConfig' => [
                     'font-size' => '9pt',
-                    'color' => '#666'
+                    'color' => '#666',
                 ],
                 'dataBinding' => [
                     'document_reference' => 'document.reference',
-                    'legal_reference' => 'document.legal_reference'
+                    'legal_reference' => 'document.legal_reference',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Dates Légales',
@@ -518,14 +520,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'dataBinding' => [
                     'effective_date' => 'document.effective_date',
-                    'review_date' => 'document.review_date'
+                    'review_date' => 'document.review_date',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Titre Légal',
@@ -538,10 +540,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'color' => '#dc3545',
                     'text-align' => 'center',
                     'margin' => '10mm 0',
-                    'text-transform' => 'uppercase'
+                    'text-transform' => 'uppercase',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Table des Matières',
@@ -550,16 +552,16 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{table_of_contents}}',
                 'styleConfig' => [
                     'margin' => '10mm 0',
-                    'padding-left' => '5mm'
+                    'padding-left' => '5mm',
                 ],
                 'dataBinding' => [
-                    'list_data' => 'document.table_of_contents'
+                    'list_data' => 'document.table_of_contents',
                 ],
                 'conditionalDisplay' => [
-                    ['field' => 'document.table_of_contents', 'operator' => 'not_empty', 'value' => '']
+                    ['field' => 'document.table_of_contents', 'operator' => 'not_empty', 'value' => ''],
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Contenu Légal',
@@ -568,10 +570,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{content}}',
                 'styleConfig' => [
                     'text-align' => 'justify',
-                    'line-height' => '1.6'
+                    'line-height' => '1.6',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Mention Confidentialité',
@@ -580,10 +582,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{company_name}} - Document confidentiel',
                 'styleConfig' => [
                     'font-size' => '9pt',
-                    'color' => '#666'
+                    'color' => '#666',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Pagination Légale',
@@ -593,18 +595,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Handbook template
+     * Create components for Handbook template.
      */
     private function createHandbookTemplateComponents(ObjectManager $manager): void
     {
@@ -625,14 +627,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'color' => 'white',
                     'padding' => '10mm',
                     'border-radius' => '10px',
-                    'text-align' => 'center'
+                    'text-align' => 'center',
                 ],
                 'dataBinding' => [
                     'welcome_message' => 'welcome.message',
-                    'academic_year' => 'academic.year'
+                    'academic_year' => 'academic.year',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Informations Étudiant',
@@ -648,14 +650,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'border' => '1px solid #dee2e6',
                     'border-radius' => '5px',
                     'padding' => '8mm',
-                    'margin-bottom' => '10mm'
+                    'margin-bottom' => '10mm',
                 ],
                 'dataBinding' => [
                     'student_name' => 'student.name',
-                    'program_name' => 'program.name'
+                    'program_name' => 'program.name',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Table des Matières Livret',
@@ -665,10 +667,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'list-style-type' => 'decimal',
                     'margin' => '8mm 0',
-                    'padding-left' => '8mm'
+                    'padding-left' => '8mm',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Contenu Livret',
@@ -677,10 +679,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{content}}',
                 'styleConfig' => [
                     'text-align' => 'justify',
-                    'line-height' => '1.5'
+                    'line-height' => '1.5',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Encadré Information',
@@ -694,10 +696,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'background' => '#e3f2fd',
                     'border-left' => '4px solid #2196f3',
                     'padding' => '5mm',
-                    'margin' => '5mm 0'
+                    'margin' => '5mm 0',
                 ],
                 'sortOrder' => 4,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Contact Livret',
@@ -706,10 +708,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{company_name}} | {{company_phone}} | {{company_email}}',
                 'styleConfig' => [
                     'font-size' => '9pt',
-                    'color' => '#666'
+                    'color' => '#666',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Page Livret',
@@ -719,18 +721,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Quality template
+     * Create components for Quality template.
      */
     private function createQualityTemplateComponents(ObjectManager $manager): void
     {
@@ -752,13 +754,13 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'padding' => '8mm',
                     'border-radius' => '10px',
                     'text-align' => 'center',
-                    'min-width' => '40mm'
+                    'min-width' => '40mm',
                 ],
                 'dataBinding' => [
-                    'qualiopi_criterion' => 'qualiopi.criterion'
+                    'qualiopi_criterion' => 'qualiopi.criterion',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Informations Document Qualité',
@@ -773,14 +775,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 </div>',
                 'styleConfig' => [
                     'flex' => '1',
-                    'margin-left' => '15mm'
+                    'margin-left' => '15mm',
                 ],
                 'dataBinding' => [
                     'version_number' => 'document.version',
-                    'title' => 'document.title'
+                    'title' => 'document.title',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Informations Audit',
@@ -796,14 +798,14 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'border' => '1px solid #ffc107',
                     'border-radius' => '5px',
                     'padding' => '8mm',
-                    'margin-bottom' => '10mm'
+                    'margin-bottom' => '10mm',
                 ],
                 'dataBinding' => [
                     'audit_date' => 'audit.date',
-                    'responsible_person' => 'responsible.person'
+                    'responsible_person' => 'responsible.person',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Indicateur Qualité',
@@ -817,10 +819,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'background' => '#f0f8ff',
                     'border-left' => '4px solid #007bff',
                     'padding' => '5mm',
-                    'margin' => '5mm 0'
+                    'margin' => '5mm 0',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Contenu Qualité',
@@ -829,10 +831,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{content}}',
                 'styleConfig' => [
                     'text-align' => 'justify',
-                    'line-height' => '1.5'
+                    'line-height' => '1.5',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Note Conformité',
@@ -847,10 +849,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'border-radius' => '3px',
                     'padding' => '5mm',
                     'margin' => '5mm 0',
-                    'font-size' => '10pt'
+                    'font-size' => '10pt',
                 ],
                 'sortOrder' => 4,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Footer Qualité',
@@ -859,10 +861,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => 'Document qualité certifié Qualiopi',
                 'styleConfig' => [
                     'font-size' => '9pt',
-                    'color' => '#666'
+                    'color' => '#666',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Pagination Qualité',
@@ -872,18 +874,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Create components for Report template
+     * Create components for Report template.
      */
     private function createReportTemplateComponents(ObjectManager $manager): void
     {
@@ -907,10 +909,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'report_title' => 'report.title',
                     'report_period' => 'report.period',
                     'author_name' => 'author.name',
-                    'department' => 'author.department'
+                    'department' => 'author.department',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Date Rapport',
@@ -920,10 +922,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '10pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Résumé Exécutif',
@@ -938,16 +940,16 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'border' => '1px solid #dee2e6',
                     'border-radius' => '5px',
                     'padding' => '8mm',
-                    'margin' => '8mm 0'
+                    'margin' => '8mm 0',
                 ],
                 'dataBinding' => [
-                    'executive_summary' => 'report.executive_summary'
+                    'executive_summary' => 'report.executive_summary',
                 ],
                 'conditionalDisplay' => [
-                    ['field' => 'report.executive_summary', 'operator' => 'not_empty', 'value' => '']
+                    ['field' => 'report.executive_summary', 'operator' => 'not_empty', 'value' => ''],
                 ],
                 'sortOrder' => 1,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Indicateurs Clés',
@@ -965,18 +967,18 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'background' => '#e8f5e8',
                     'border-left' => '4px solid #28a745',
                     'padding' => '5mm',
-                    'margin' => '5mm 0'
+                    'margin' => '5mm 0',
                 ],
                 'dataBinding' => [
                     'main_objective' => 'kpi.main_objective',
                     'result_achieved' => 'kpi.result_achieved',
-                    'success_rate' => 'kpi.success_rate'
+                    'success_rate' => 'kpi.success_rate',
                 ],
                 'conditionalDisplay' => [
-                    ['field' => 'kpi', 'operator' => 'not_empty', 'value' => '']
+                    ['field' => 'kpi', 'operator' => 'not_empty', 'value' => ''],
                 ],
                 'sortOrder' => 2,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Graphique Placeholder',
@@ -994,10 +996,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                     'justify-content' => 'center',
                     'color' => '#666',
                     'font-style' => 'italic',
-                    'margin' => '8mm 0'
+                    'margin' => '8mm 0',
                 ],
                 'sortOrder' => 3,
-                'isRequired' => false
+                'isRequired' => false,
             ],
             [
                 'name' => 'Contenu Rapport',
@@ -1006,10 +1008,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{content}}',
                 'styleConfig' => [
                     'text-align' => 'justify',
-                    'line-height' => '1.4'
+                    'line-height' => '1.4',
                 ],
                 'sortOrder' => 4,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Footer Confidentiel',
@@ -1018,10 +1020,10 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'content' => '{{company_name}} - Rapport confidentiel',
                 'styleConfig' => [
                     'font-size' => '9pt',
-                    'color' => '#666'
+                    'color' => '#666',
                 ],
                 'sortOrder' => 1,
-                'isRequired' => true
+                'isRequired' => true,
             ],
             [
                 'name' => 'Pagination Rapport',
@@ -1031,43 +1033,44 @@ class DocumentUIComponentFixtures extends Fixture implements DependentFixtureInt
                 'styleConfig' => [
                     'font-size' => '9pt',
                     'color' => '#666',
-                    'text-align' => 'right'
+                    'text-align' => 'right',
                 ],
                 'sortOrder' => 2,
-                'isRequired' => true
-            ]
+                'isRequired' => true,
+            ],
         ];
 
         $this->createComponentsForTemplate($manager, $template, $admin, $components);
     }
 
     /**
-     * Helper method to create components for a template
+     * Helper method to create components for a template.
      */
     private function createComponentsForTemplate(
         ObjectManager $manager,
         DocumentUITemplate $template,
         Admin $admin,
-        array $componentsData
+        array $componentsData,
     ): void {
         foreach ($componentsData as $componentData) {
             $component = new DocumentUIComponent();
             $component->setName($componentData['name'])
-                     ->setType($componentData['type'])
-                     ->setZone($componentData['zone'])
-                     ->setContent($componentData['content'] ?? null)
-                     ->setHtmlContent($componentData['htmlContent'] ?? null)
-                     ->setStyleConfig($componentData['styleConfig'] ?? [])
-                     ->setPositionConfig($componentData['positionConfig'] ?? [])
-                     ->setDataBinding($componentData['dataBinding'] ?? null)
-                     ->setConditionalDisplay($componentData['conditionalDisplay'] ?? null)
-                     ->setIsActive(true)
-                     ->setIsRequired($componentData['isRequired'] ?? false)
-                     ->setSortOrder($componentData['sortOrder'])
-                     ->setCssClass($componentData['cssClass'] ?? null)
-                     ->setElementId($componentData['elementId'] ?? null)
-                     ->setUiTemplate($template)
-                     ->setCreatedBy($admin);
+                ->setType($componentData['type'])
+                ->setZone($componentData['zone'])
+                ->setContent($componentData['content'] ?? null)
+                ->setHtmlContent($componentData['htmlContent'] ?? null)
+                ->setStyleConfig($componentData['styleConfig'] ?? [])
+                ->setPositionConfig($componentData['positionConfig'] ?? [])
+                ->setDataBinding($componentData['dataBinding'] ?? null)
+                ->setConditionalDisplay($componentData['conditionalDisplay'] ?? null)
+                ->setIsActive(true)
+                ->setIsRequired($componentData['isRequired'] ?? false)
+                ->setSortOrder($componentData['sortOrder'])
+                ->setCssClass($componentData['cssClass'] ?? null)
+                ->setElementId($componentData['elementId'] ?? null)
+                ->setUiTemplate($template)
+                ->setCreatedBy($admin)
+            ;
 
             $manager->persist($component);
         }

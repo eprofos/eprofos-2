@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Alternance;
 
 use App\DTO\Alternance\IntermediateObjectiveDTO;
@@ -20,9 +22,9 @@ class IntermediateObjectiveType extends AbstractType
                 'label' => 'Titre de l\'objectif',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: Analyser l\'existant et définir la cible'
+                    'placeholder' => 'Ex: Analyser l\'existant et définir la cible',
                 ],
-                'help' => 'Titre court et précis de l\'objectif à atteindre'
+                'help' => 'Titre court et précis de l\'objectif à atteindre',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description détaillée',
@@ -30,9 +32,9 @@ class IntermediateObjectiveType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 2,
-                    'placeholder' => 'Description optionnelle de l\'objectif'
+                    'placeholder' => 'Description optionnelle de l\'objectif',
                 ],
-                'help' => 'Description optionnelle pour préciser l\'objectif'
+                'help' => 'Description optionnelle pour préciser l\'objectif',
             ])
             ->add('completed', CheckboxType::class, [
                 'label' => 'Objectif atteint',
@@ -40,8 +42,8 @@ class IntermediateObjectiveType extends AbstractType
                 'attr' => [
                     'class' => 'form-check-input',
                     'data-controller' => 'objective-completion',
-                    'data-action' => 'change->objective-completion#toggle'
-                ]
+                    'data-action' => 'change->objective-completion#toggle',
+                ],
             ])
             ->add('completionDate', DateType::class, [
                 'label' => 'Date d\'achèvement',
@@ -49,9 +51,9 @@ class IntermediateObjectiveType extends AbstractType
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-control',
-                    'data-objective-completion-target' => 'dateField'
+                    'data-objective-completion-target' => 'dateField',
                 ],
-                'help' => 'Date à laquelle l\'objectif a été atteint'
+                'help' => 'Date à laquelle l\'objectif a été atteint',
             ])
         ;
     }

@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Student;
 
 use App\Entity\User\Student;
 use App\Form\StudentRegistrationFormType;
 use App\Repository\User\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,8 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
- * Student Security Controller
- * 
+ * Student Security Controller.
+ *
  * Handles authentication, registration, and password management for students.
  * Provides login, registration, and password reset functionality.
  */
@@ -26,13 +29,12 @@ class SecurityController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
-    ) {
-    }
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {}
 
     /**
-     * Student login page
-     * 
+     * Student login page.
+     *
      * Displays the login form for student users.
      */
     #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
@@ -45,7 +47,7 @@ class SecurityController extends AbstractController
 
         // Get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        
+
         // Last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
@@ -53,20 +55,20 @@ class SecurityController extends AbstractController
             $this->logger->warning('Student login failed', [
                 'username' => $lastUsername,
                 'error' => $error->getMessage(),
-                'ip' => $this->getClientIp()
+                'ip' => $this->getClientIp(),
             ]);
         }
 
         return $this->render('student/security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'page_title' => 'Connexion Étudiant'
+            'page_title' => 'Connexion Étudiant',
         ]);
     }
 
     /**
-     * Student registration page
-     * 
+     * Student registration page.
+     *
      * Allows new students to create an account.
      */
     #[Route('/register', name: 'register', methods: ['GET', 'POST'])]
@@ -85,7 +87,7 @@ class SecurityController extends AbstractController
             // Hash the password
             $hashedPassword = $this->passwordHasher->hashPassword(
                 $student,
-                $form->get('plainPassword')->getData()
+                $form->get('plainPassword')->getData(),
             );
             $student->setPassword($hashedPassword);
 
@@ -99,7 +101,7 @@ class SecurityController extends AbstractController
             $this->logger->info('New student registered', [
                 'student_id' => $student->getId(),
                 'email' => $student->getEmail(),
-                'ip' => $this->getClientIp()
+                'ip' => $this->getClientIp(),
             ]);
 
             // TODO: Send email verification email
@@ -110,24 +112,24 @@ class SecurityController extends AbstractController
 
         return $this->render('student/security/register.html.twig', [
             'registrationForm' => $form,
-            'page_title' => 'Inscription Étudiant'
+            'page_title' => 'Inscription Étudiant',
         ]);
     }
 
     /**
-     * Student logout
-     * 
+     * Student logout.
+     *
      * This method can be blank - it will be intercepted by the logout key on your firewall.
      */
     #[Route('/logout', name: 'logout', methods: ['GET'])]
     public function logout(): void
     {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+        throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
     /**
-     * Email verification
-     * 
+     * Email verification.
+     *
      * Verifies student email address using the verification token.
      */
     #[Route('/verify-email/{token}', name: 'verify_email', methods: ['GET'])]
@@ -137,6 +139,7 @@ class SecurityController extends AbstractController
 
         if (!$student) {
             $this->addFlash('error', 'Token de vérification invalide ou expiré.');
+
             return $this->redirectToRoute('student_login');
         }
 
@@ -145,7 +148,7 @@ class SecurityController extends AbstractController
 
         $this->logger->info('Student email verified', [
             'student_id' => $student->getId(),
-            'email' => $student->getEmail()
+            'email' => $student->getEmail(),
         ]);
 
         $this->addFlash('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
@@ -154,8 +157,8 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Password reset request page
-     * 
+     * Password reset request page.
+     *
      * Allows students to request a password reset email.
      */
     #[Route('/forgot-password', name: 'forgot_password', methods: ['GET', 'POST'])]
@@ -172,7 +175,7 @@ class SecurityController extends AbstractController
                 $this->logger->info('Password reset requested', [
                     'student_id' => $student->getId(),
                     'email' => $student->getEmail(),
-                    'ip' => $this->getClientIp()
+                    'ip' => $this->getClientIp(),
                 ]);
 
                 // TODO: Send password reset email
@@ -180,17 +183,18 @@ class SecurityController extends AbstractController
 
             // Always show success message for security reasons
             $this->addFlash('success', 'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation.');
+
             return $this->redirectToRoute('student_login');
         }
 
         return $this->render('student/security/forgot_password.html.twig', [
-            'page_title' => 'Mot de passe oublié'
+            'page_title' => 'Mot de passe oublié',
         ]);
     }
 
     /**
-     * Password reset page
-     * 
+     * Password reset page.
+     *
      * Allows students to reset their password using a reset token.
      */
     #[Route('/reset-password/{token}', name: 'reset_password', methods: ['GET', 'POST'])]
@@ -200,6 +204,7 @@ class SecurityController extends AbstractController
 
         if (!$student || !$student->isPasswordResetTokenValid()) {
             $this->addFlash('error', 'Token de réinitialisation invalide ou expiré.');
+
             return $this->redirectToRoute('student_login');
         }
 
@@ -209,17 +214,19 @@ class SecurityController extends AbstractController
 
             if ($newPassword !== $confirmPassword) {
                 $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+
                 return $this->render('student/security/reset_password.html.twig', [
                     'token' => $token,
-                    'page_title' => 'Nouveau mot de passe'
+                    'page_title' => 'Nouveau mot de passe',
                 ]);
             }
 
             if (strlen($newPassword) < 6) {
                 $this->addFlash('error', 'Le mot de passe doit contenir au moins 6 caractères.');
+
                 return $this->render('student/security/reset_password.html.twig', [
                     'token' => $token,
-                    'page_title' => 'Nouveau mot de passe'
+                    'page_title' => 'Nouveau mot de passe',
                 ]);
             }
 
@@ -232,26 +239,27 @@ class SecurityController extends AbstractController
             $this->logger->info('Student password reset', [
                 'student_id' => $student->getId(),
                 'email' => $student->getEmail(),
-                'ip' => $this->getClientIp()
+                'ip' => $this->getClientIp(),
             ]);
 
             $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès.');
+
             return $this->redirectToRoute('student_login');
         }
 
         return $this->render('student/security/reset_password.html.twig', [
             'token' => $token,
-            'page_title' => 'Nouveau mot de passe'
+            'page_title' => 'Nouveau mot de passe',
         ]);
     }
 
     /**
-     * Get client IP address for logging
+     * Get client IP address for logging.
      */
     private function getClientIp(): ?string
     {
         $request = $this->container->get('request_stack')->getCurrentRequest();
-        
+
         if (!$request) {
             return null;
         }

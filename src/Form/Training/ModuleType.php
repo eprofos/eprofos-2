@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Training;
 
-use App\Entity\Training\Module;
 use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -25,8 +27,8 @@ class ModuleType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\Length(['max' => 255])
-                ]
+                    new Assert\Length(['max' => 255]),
+                ],
             ])
             ->add('slug', TextType::class, [
                 'label' => 'Slug (URL)',
@@ -37,19 +39,19 @@ class ModuleType extends AbstractType
                     new Assert\Length(['max' => 255]),
                     new Assert\Regex([
                         'pattern' => '/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                        'message' => 'Le slug ne peut contenir que des lettres minuscules, des chiffres et des tirets'
-                    ])
-                ]
+                        'message' => 'Le slug ne peut contenir que des lettres minuscules, des chiffres et des tirets',
+                    ]),
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => true,
                 'attr' => [
-                    'rows' => 5
+                    'rows' => 5,
                 ],
                 'constraints' => [
-                    new Assert\NotBlank()
-                ]
+                    new Assert\NotBlank(),
+                ],
             ])
             ->add('learningObjectives', CollectionType::class, [
                 'label' => 'Objectifs pédagogiques',
@@ -57,63 +59,63 @@ class ModuleType extends AbstractType
                 'entry_options' => [
                     'label' => false,
                     'attr' => [
-                        'placeholder' => 'Objectif pédagogique'
-                    ]
+                        'placeholder' => 'Objectif pédagogique',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
                 'prototype' => true,
                 'required' => false,
-                'help' => 'Objectifs concrets et mesurables (requis par Qualiopi)'
+                'help' => 'Objectifs concrets et mesurables (requis par Qualiopi)',
             ])
             ->add('prerequisites', TextareaType::class, [
                 'label' => 'Prérequis',
                 'required' => false,
                 'attr' => [
-                    'rows' => 3
+                    'rows' => 3,
                 ],
-                'help' => 'Connaissances ou compétences nécessaires avant ce module'
+                'help' => 'Connaissances ou compétences nécessaires avant ce module',
             ])
             ->add('durationHours', IntegerType::class, [
                 'label' => 'Durée (en heures)',
                 'required' => true,
                 'attr' => [
                     'min' => 1,
-                    'max' => 200
+                    'max' => 200,
                 ],
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\Range(['min' => 1, 'max' => 200])
-                ]
+                    new Assert\Range(['min' => 1, 'max' => 200]),
+                ],
             ])
             ->add('orderIndex', IntegerType::class, [
                 'label' => 'Ordre',
                 'required' => true,
                 'attr' => [
-                    'min' => 1
+                    'min' => 1,
                 ],
                 'help' => 'Position du module dans la formation',
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\GreaterThan(0)
-                ]
+                    new Assert\GreaterThan(0),
+                ],
             ])
             ->add('evaluationMethods', TextareaType::class, [
                 'label' => 'Méthodes d\'évaluation',
                 'required' => false,
                 'attr' => [
-                    'rows' => 3
+                    'rows' => 3,
                 ],
-                'help' => 'Comment les acquis sont évalués (requis par Qualiopi)'
+                'help' => 'Comment les acquis sont évalués (requis par Qualiopi)',
             ])
             ->add('teachingMethods', TextareaType::class, [
                 'label' => 'Méthodes pédagogiques',
                 'required' => false,
                 'attr' => [
-                    'rows' => 3
+                    'rows' => 3,
                 ],
-                'help' => 'Approches et techniques pédagogiques utilisées'
+                'help' => 'Approches et techniques pédagogiques utilisées',
             ])
             ->add('resources', CollectionType::class, [
                 'label' => 'Ressources et supports',
@@ -121,15 +123,15 @@ class ModuleType extends AbstractType
                 'entry_options' => [
                     'label' => false,
                     'attr' => [
-                        'placeholder' => 'Ressource pédagogique'
-                    ]
+                        'placeholder' => 'Ressource pédagogique',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
                 'prototype' => true,
                 'required' => false,
-                'help' => 'Documents, outils et matériel pédagogique'
+                'help' => 'Documents, outils et matériel pédagogique',
             ])
             ->add('successCriteria', CollectionType::class, [
                 'label' => 'Critères de réussite',
@@ -137,15 +139,15 @@ class ModuleType extends AbstractType
                 'entry_options' => [
                     'label' => false,
                     'attr' => [
-                        'placeholder' => 'Critère de réussite'
-                    ]
+                        'placeholder' => 'Critère de réussite',
+                    ],
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
                 'prototype' => true,
                 'required' => false,
-                'help' => 'Indicateurs mesurables de réussite du module'
+                'help' => 'Indicateurs mesurables de réussite du module',
             ])
             ->add('formation', EntityType::class, [
                 'class' => Formation::class,
@@ -154,14 +156,15 @@ class ModuleType extends AbstractType
                 'required' => true,
                 'placeholder' => 'Choisir une formation',
                 'constraints' => [
-                    new Assert\NotBlank()
-                ]
+                    new Assert\NotBlank(),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Actif',
                 'required' => false,
-                'help' => 'Module visible et accessible'
-            ]);
+                'help' => 'Module visible et accessible',
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

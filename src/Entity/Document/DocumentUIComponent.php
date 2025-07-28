@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentUIComponentRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentUIComponent entity - Individual UI Components for Templates
- * 
+ * DocumentUIComponent entity - Individual UI Components for Templates.
+ *
  * Represents individual components within a UI template (header, footer, body sections, etc.)
  * Each component has its own styling, content, and positioning configuration.
  */
@@ -19,6 +22,49 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class DocumentUIComponent
 {
+    // Component type constants
+    public const TYPE_TEXT = 'text';
+
+    public const TYPE_IMAGE = 'image';
+
+    public const TYPE_LOGO = 'logo';
+
+    public const TYPE_TABLE = 'table';
+
+    public const TYPE_LIST = 'list';
+
+    public const TYPE_SIGNATURE = 'signature';
+
+    public const TYPE_DATE = 'date';
+
+    public const TYPE_PAGE_NUMBER = 'page_number';
+
+    public const TYPE_BARCODE = 'barcode';
+
+    public const TYPE_QR_CODE = 'qr_code';
+
+    public const TYPE_DIVIDER = 'divider';
+
+    public const TYPE_SPACER = 'spacer';
+
+    public const TYPE_CUSTOM_HTML = 'custom_html';
+
+    public const TYPES = [
+        self::TYPE_TEXT => 'Texte',
+        self::TYPE_IMAGE => 'Image',
+        self::TYPE_LOGO => 'Logo',
+        self::TYPE_TABLE => 'Tableau',
+        self::TYPE_LIST => 'Liste',
+        self::TYPE_SIGNATURE => 'Signature',
+        self::TYPE_DATE => 'Date',
+        self::TYPE_PAGE_NUMBER => 'Numéro de page',
+        self::TYPE_BARCODE => 'Code-barres',
+        self::TYPE_QR_CODE => 'QR Code',
+        self::TYPE_DIVIDER => 'Séparateur',
+        self::TYPE_SPACER => 'Espacement',
+        self::TYPE_CUSTOM_HTML => 'HTML personnalisé',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,7 +76,7 @@ class DocumentUIComponent
         min: 3,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $name = null;
 
@@ -38,7 +84,7 @@ class DocumentUIComponent
     #[Assert\NotBlank(message: 'Le type est obligatoire.')]
     #[Assert\Choice(
         callback: 'getValidTypes',
-        message: 'Type de composant invalide.'
+        message: 'Type de composant invalide.',
     )]
     private string $type = self::TYPE_TEXT;
 
@@ -46,7 +92,7 @@ class DocumentUIComponent
     #[Assert\NotBlank(message: 'La zone est obligatoire.')]
     #[Assert\Choice(
         callback: 'getValidZones',
-        message: 'Zone invalide.'
+        message: 'Zone invalide.',
     )]
     private string $zone = DocumentUITemplate::ZONE_BODY;
 
@@ -84,10 +130,10 @@ class DocumentUIComponent
     private ?string $elementId = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: DocumentUITemplate::class, inversedBy: 'components')]
     #[ORM\JoinColumn(nullable: false)]
@@ -101,54 +147,28 @@ class DocumentUIComponent
     #[ORM\JoinColumn(nullable: true)]
     private ?Admin $updatedBy = null;
 
-    // Component type constants
-    public const TYPE_TEXT = 'text';
-    public const TYPE_IMAGE = 'image';
-    public const TYPE_LOGO = 'logo';
-    public const TYPE_TABLE = 'table';
-    public const TYPE_LIST = 'list';
-    public const TYPE_SIGNATURE = 'signature';
-    public const TYPE_DATE = 'date';
-    public const TYPE_PAGE_NUMBER = 'page_number';
-    public const TYPE_BARCODE = 'barcode';
-    public const TYPE_QR_CODE = 'qr_code';
-    public const TYPE_DIVIDER = 'divider';
-    public const TYPE_SPACER = 'spacer';
-    public const TYPE_CUSTOM_HTML = 'custom_html';
-
-    public const TYPES = [
-        self::TYPE_TEXT => 'Texte',
-        self::TYPE_IMAGE => 'Image',
-        self::TYPE_LOGO => 'Logo',
-        self::TYPE_TABLE => 'Tableau',
-        self::TYPE_LIST => 'Liste',
-        self::TYPE_SIGNATURE => 'Signature',
-        self::TYPE_DATE => 'Date',
-        self::TYPE_PAGE_NUMBER => 'Numéro de page',
-        self::TYPE_BARCODE => 'Code-barres',
-        self::TYPE_QR_CODE => 'QR Code',
-        self::TYPE_DIVIDER => 'Séparateur',
-        self::TYPE_SPACER => 'Espacement',
-        self::TYPE_CUSTOM_HTML => 'HTML personnalisé',
-    ];
-
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->styleConfig = [];
         $this->positionConfig = [
             'width' => '100%',
             'height' => 'auto',
             'margin' => '0',
-            'padding' => '0'
+            'padding' => '0',
         ];
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?: 'Component #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -164,6 +184,7 @@ class DocumentUIComponent
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -175,6 +196,7 @@ class DocumentUIComponent
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -186,6 +208,7 @@ class DocumentUIComponent
     public function setZone(string $zone): static
     {
         $this->zone = $zone;
+
         return $this;
     }
 
@@ -197,6 +220,7 @@ class DocumentUIComponent
     public function setContent(?string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -208,6 +232,7 @@ class DocumentUIComponent
     public function setHtmlContent(?string $htmlContent): static
     {
         $this->htmlContent = $htmlContent;
+
         return $this;
     }
 
@@ -219,6 +244,7 @@ class DocumentUIComponent
     public function setStyleConfig(?array $styleConfig): static
     {
         $this->styleConfig = $styleConfig;
+
         return $this;
     }
 
@@ -230,6 +256,7 @@ class DocumentUIComponent
     public function setPositionConfig(?array $positionConfig): static
     {
         $this->positionConfig = $positionConfig;
+
         return $this;
     }
 
@@ -241,6 +268,7 @@ class DocumentUIComponent
     public function setDataBinding(?array $dataBinding): static
     {
         $this->dataBinding = $dataBinding;
+
         return $this;
     }
 
@@ -252,6 +280,7 @@ class DocumentUIComponent
     public function setConditionalDisplay(?array $conditionalDisplay): static
     {
         $this->conditionalDisplay = $conditionalDisplay;
+
         return $this;
     }
 
@@ -263,6 +292,7 @@ class DocumentUIComponent
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -274,6 +304,7 @@ class DocumentUIComponent
     public function setIsRequired(bool $isRequired): static
     {
         $this->isRequired = $isRequired;
+
         return $this;
     }
 
@@ -285,6 +316,7 @@ class DocumentUIComponent
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -296,6 +328,7 @@ class DocumentUIComponent
     public function setCssClass(?string $cssClass): static
     {
         $this->cssClass = $cssClass;
+
         return $this;
     }
 
@@ -307,28 +340,31 @@ class DocumentUIComponent
     public function setElementId(?string $elementId): static
     {
         $this->elementId = $elementId;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -340,6 +376,7 @@ class DocumentUIComponent
     public function setUiTemplate(?DocumentUITemplate $uiTemplate): static
     {
         $this->uiTemplate = $uiTemplate;
+
         return $this;
     }
 
@@ -351,6 +388,7 @@ class DocumentUIComponent
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -362,15 +400,16 @@ class DocumentUIComponent
     public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
+
         return $this;
     }
 
     /**
-     * Business logic methods
+     * Business logic methods.
      */
 
     /**
-     * Render component HTML
+     * Render component HTML.
      */
     public function renderHtml(array $data = []): string
     {
@@ -384,7 +423,134 @@ class DocumentUIComponent
     }
 
     /**
-     * Generate HTML based on component type
+     * Set style configuration value.
+     */
+    public function setStyleValue(string $property, string $value): self
+    {
+        $config = $this->styleConfig ?? [];
+        $config[$property] = $value;
+        $this->styleConfig = $config;
+
+        return $this;
+    }
+
+    /**
+     * Set data binding.
+     */
+    public function setDataBindingValue(string $variable, string $path): self
+    {
+        $binding = $this->dataBinding ?? [];
+        $binding[$variable] = $path;
+        $this->dataBinding = $binding;
+
+        return $this;
+    }
+
+    /**
+     * Check if component has conditional display rules.
+     */
+    public function isConditional(): bool
+    {
+        return !empty($this->conditionalDisplay);
+    }
+
+    /**
+     * Check if component should be displayed based on conditions.
+     */
+    public function shouldDisplay(array $data = []): bool
+    {
+        if (!$this->conditionalDisplay) {
+            return $this->isActive;
+        }
+
+        foreach ($this->conditionalDisplay as $condition) {
+            $field = $condition['field'] ?? '';
+            $operator = $condition['operator'] ?? '=';
+            $value = $condition['value'] ?? '';
+
+            $fieldValue = $this->getNestedValue($data, $field);
+
+            $result = match ($operator) {
+                '=' => $fieldValue === $value,
+                '!=' => $fieldValue !== $value,
+                '>' => $fieldValue > $value,
+                '<' => $fieldValue < $value,
+                '>=' => $fieldValue >= $value,
+                '<=' => $fieldValue <= $value,
+                'contains' => str_contains((string) $fieldValue, (string) $value),
+                'not_contains' => !str_contains((string) $fieldValue, (string) $value),
+                'empty' => empty($fieldValue),
+                'not_empty' => !empty($fieldValue),
+                default => true,
+            };
+
+            if (!$result) {
+                return false;
+            }
+        }
+
+        return $this->isActive;
+    }
+
+    /**
+     * Get type label.
+     */
+    public function getTypeLabel(): string
+    {
+        return self::TYPES[$this->type] ?? $this->type;
+    }
+
+    /**
+     * Get zone label.
+     */
+    public function getZoneLabel(): string
+    {
+        return DocumentUITemplate::ZONES[$this->zone] ?? $this->zone;
+    }
+
+    /**
+     * Clone component.
+     */
+    public function cloneComponent(): self
+    {
+        $clone = new self();
+        $clone->setName($this->name . ' (Copie)')
+            ->setType($this->type)
+            ->setZone($this->zone)
+            ->setContent($this->content)
+            ->setHtmlContent($this->htmlContent)
+            ->setStyleConfig($this->styleConfig)
+            ->setPositionConfig($this->positionConfig)
+            ->setDataBinding($this->dataBinding)
+            ->setConditionalDisplay($this->conditionalDisplay)
+            ->setIsActive($this->isActive)
+            ->setIsRequired($this->isRequired)
+            ->setSortOrder($this->sortOrder + 1)
+            ->setCssClass($this->cssClass)
+            ->setElementId($this->elementId ? $this->elementId . '_copy' : null)
+        ;
+
+        return $clone;
+    }
+
+    /**
+     * Get valid types for validation.
+     */
+    public static function getValidTypes(): array
+    {
+        return array_keys(self::TYPES);
+    }
+
+    /**
+     * Get valid zones for validation.
+     */
+    public static function getValidZones(): array
+    {
+        return array_keys(DocumentUITemplate::ZONES);
+    }
+
+    /**
+     * Generate HTML based on component type.
      */
     private function generateHtmlByType(array $data = []): string
     {
@@ -398,7 +564,7 @@ class DocumentUIComponent
             self::TYPE_TABLE => $this->generateTableHtml($data),
             self::TYPE_LIST => $this->generateListHtml($data),
             self::TYPE_SIGNATURE => $this->generateSignatureHtml($data),
-            self::TYPE_DATE => "<span{$attrs}>" . date('d/m/Y') . "</span>",
+            self::TYPE_DATE => "<span{$attrs}>" . date('d/m/Y') . '</span>',
             self::TYPE_PAGE_NUMBER => "<span{$attrs} class='page-number'>{{page_number}}</span>",
             self::TYPE_BARCODE => $this->generateBarcodeHtml($data),
             self::TYPE_QR_CODE => $this->generateQrCodeHtml($data),
@@ -410,20 +576,20 @@ class DocumentUIComponent
     }
 
     /**
-     * Generate HTML attributes
+     * Generate HTML attributes.
      */
     private function generateHtmlAttributes(): string
     {
         $attrs = [];
-        
+
         if ($this->elementId) {
             $attrs[] = 'id="' . htmlspecialchars($this->elementId) . '"';
         }
-        
+
         if ($this->cssClass) {
             $attrs[] = 'class="' . htmlspecialchars($this->cssClass) . '"';
         }
-        
+
         if ($this->styleConfig) {
             $styles = [];
             foreach ($this->styleConfig as $property => $value) {
@@ -438,77 +604,77 @@ class DocumentUIComponent
     }
 
     /**
-     * Generate image HTML
+     * Generate image HTML.
      */
     private function generateImageHtml(array $data = []): string
     {
         $src = $data['image_src'] ?? $this->getDataBindingValue('src', $data) ?? '';
         $alt = $data['image_alt'] ?? $this->getDataBindingValue('alt', $data) ?? '';
         $attrs = $this->generateHtmlAttributes();
-        
+
         return "<img{$attrs} src=\"{$src}\" alt=\"{$alt}\">";
     }
 
     /**
-     * Generate logo HTML
+     * Generate logo HTML.
      */
     private function generateLogoHtml(array $data = []): string
     {
         $src = $data['logo_src'] ?? '/images/logo.png';
         $attrs = $this->generateHtmlAttributes();
-        
+
         return "<img{$attrs} src=\"{$src}\" alt=\"Logo\" class=\"logo\">";
     }
 
     /**
-     * Generate table HTML
+     * Generate table HTML.
      */
     private function generateTableHtml(array $data = []): string
     {
         $tableData = $data['table_data'] ?? [];
         $attrs = $this->generateHtmlAttributes();
-        
+
         if (empty($tableData)) {
             return "<div{$attrs}>Aucune donnée de tableau disponible</div>";
         }
 
         $html = "<table{$attrs}>";
-        
+
         // Headers
         if (isset($tableData[0]) && is_array($tableData[0])) {
-            $html .= "<thead><tr>";
+            $html .= '<thead><tr>';
             foreach (array_keys($tableData[0]) as $header) {
-                $html .= "<th>" . htmlspecialchars($header) . "</th>";
+                $html .= '<th>' . htmlspecialchars($header) . '</th>';
             }
-            $html .= "</tr></thead>";
+            $html .= '</tr></thead>';
         }
-        
+
         // Rows
-        $html .= "<tbody>";
+        $html .= '<tbody>';
         foreach ($tableData as $row) {
-            $html .= "<tr>";
+            $html .= '<tr>';
             foreach ($row as $cell) {
-                $html .= "<td>" . htmlspecialchars($cell) . "</td>";
+                $html .= '<td>' . htmlspecialchars($cell) . '</td>';
             }
-            $html .= "</tr>";
+            $html .= '</tr>';
         }
-        $html .= "</tbody></table>";
+        $html .= '</tbody></table>';
 
         return $html;
     }
 
     /**
-     * Generate list HTML
+     * Generate list HTML.
      */
     private function generateListHtml(array $data = []): string
     {
         $listData = $data['list_data'] ?? explode("\n", $this->content ?? '');
         $listType = $this->getStyleValue('list-type', 'ul');
         $attrs = $this->generateHtmlAttributes();
-        
+
         $html = "<{$listType}{$attrs}>";
         foreach ($listData as $item) {
-            $html .= "<li>" . htmlspecialchars(trim($item)) . "</li>";
+            $html .= '<li>' . htmlspecialchars(trim($item)) . '</li>';
         }
         $html .= "</{$listType}>";
 
@@ -516,7 +682,7 @@ class DocumentUIComponent
     }
 
     /**
-     * Generate signature HTML
+     * Generate signature HTML.
      */
     private function generateSignatureHtml(array $data = []): string
     {
@@ -524,7 +690,7 @@ class DocumentUIComponent
         $signatureTitle = $data['signature_title'] ?? $this->getDataBindingValue('title', $data) ?? '';
         $signatureImage = $data['signature_image'] ?? $this->getDataBindingValue('image', $data) ?? '';
         $attrs = $this->generateHtmlAttributes();
-        
+
         $html = "<div{$attrs} class=\"signature-block\">";
         if ($signatureImage) {
             $html .= "<img src=\"{$signatureImage}\" alt=\"Signature\" class=\"signature-image\">";
@@ -533,35 +699,35 @@ class DocumentUIComponent
         if ($signatureTitle) {
             $html .= "<div class=\"signature-title\">{$signatureTitle}</div>";
         }
-        $html .= "</div>";
+        $html .= '</div>';
 
         return $html;
     }
 
     /**
-     * Generate barcode HTML
+     * Generate barcode HTML.
      */
     private function generateBarcodeHtml(array $data = []): string
     {
         $value = $data['barcode_value'] ?? $this->getDataBindingValue('value', $data) ?? '';
         $attrs = $this->generateHtmlAttributes();
-        
+
         return "<div{$attrs} class=\"barcode\" data-value=\"{$value}\">{$value}</div>";
     }
 
     /**
-     * Generate QR code HTML
+     * Generate QR code HTML.
      */
     private function generateQrCodeHtml(array $data = []): string
     {
         $value = $data['qr_value'] ?? $this->getDataBindingValue('value', $data) ?? '';
         $attrs = $this->generateHtmlAttributes();
-        
+
         return "<div{$attrs} class=\"qr-code\" data-value=\"{$value}\">{$value}</div>";
     }
 
     /**
-     * Process variables in content
+     * Process variables in content.
      */
     private function processVariables(string $content, array $data): string
     {
@@ -584,13 +750,13 @@ class DocumentUIComponent
     }
 
     /**
-     * Get nested value from data array
+     * Get nested value from data array.
      */
     private function getNestedValue(array $data, string $path)
     {
         $keys = explode('.', $path);
         $value = $data;
-        
+
         foreach ($keys as $key) {
             if (is_array($value) && isset($value[$key])) {
                 $value = $value[$key];
@@ -598,156 +764,27 @@ class DocumentUIComponent
                 return null;
             }
         }
-        
+
         return $value;
     }
 
     /**
-     * Get data binding value
+     * Get data binding value.
      */
     private function getDataBindingValue(string $key, array $data)
     {
         if (!$this->dataBinding || !isset($this->dataBinding[$key])) {
             return null;
         }
-        
+
         return $this->getNestedValue($data, $this->dataBinding[$key]);
     }
 
     /**
-     * Get style configuration value
+     * Get style configuration value.
      */
     private function getStyleValue(string $property, string $default = ''): string
     {
         return $this->styleConfig[$property] ?? $default;
-    }
-
-    /**
-     * Set style configuration value
-     */
-    public function setStyleValue(string $property, string $value): self
-    {
-        $config = $this->styleConfig ?? [];
-        $config[$property] = $value;
-        $this->styleConfig = $config;
-        return $this;
-    }
-
-    /**
-     * Set data binding
-     */
-    public function setDataBindingValue(string $variable, string $path): self
-    {
-        $binding = $this->dataBinding ?? [];
-        $binding[$variable] = $path;
-        $this->dataBinding = $binding;
-        return $this;
-    }
-
-    /**
-     * Check if component has conditional display rules
-     */
-    public function isConditional(): bool
-    {
-        return !empty($this->conditionalDisplay);
-    }
-
-    /**
-     * Check if component should be displayed based on conditions
-     */
-    public function shouldDisplay(array $data = []): bool
-    {
-        if (!$this->conditionalDisplay) {
-            return $this->isActive;
-        }
-
-        foreach ($this->conditionalDisplay as $condition) {
-            $field = $condition['field'] ?? '';
-            $operator = $condition['operator'] ?? '=';
-            $value = $condition['value'] ?? '';
-            
-            $fieldValue = $this->getNestedValue($data, $field);
-            
-            $result = match ($operator) {
-                '=' => $fieldValue == $value,
-                '!=' => $fieldValue != $value,
-                '>' => $fieldValue > $value,
-                '<' => $fieldValue < $value,
-                '>=' => $fieldValue >= $value,
-                '<=' => $fieldValue <= $value,
-                'contains' => str_contains((string)$fieldValue, (string)$value),
-                'not_contains' => !str_contains((string)$fieldValue, (string)$value),
-                'empty' => empty($fieldValue),
-                'not_empty' => !empty($fieldValue),
-                default => true,
-            };
-            
-            if (!$result) {
-                return false;
-            }
-        }
-
-        return $this->isActive;
-    }
-
-    /**
-     * Get type label
-     */
-    public function getTypeLabel(): string
-    {
-        return self::TYPES[$this->type] ?? $this->type;
-    }
-
-    /**
-     * Get zone label
-     */
-    public function getZoneLabel(): string
-    {
-        return DocumentUITemplate::ZONES[$this->zone] ?? $this->zone;
-    }
-
-    /**
-     * Clone component
-     */
-    public function cloneComponent(): self
-    {
-        $clone = new self();
-        $clone->setName($this->name . ' (Copie)')
-              ->setType($this->type)
-              ->setZone($this->zone)
-              ->setContent($this->content)
-              ->setHtmlContent($this->htmlContent)
-              ->setStyleConfig($this->styleConfig)
-              ->setPositionConfig($this->positionConfig)
-              ->setDataBinding($this->dataBinding)
-              ->setConditionalDisplay($this->conditionalDisplay)
-              ->setIsActive($this->isActive)
-              ->setIsRequired($this->isRequired)
-              ->setSortOrder($this->sortOrder + 1)
-              ->setCssClass($this->cssClass)
-              ->setElementId($this->elementId ? $this->elementId . '_copy' : null);
-
-        return $clone;
-    }
-
-    /**
-     * Get valid types for validation
-     */
-    public static function getValidTypes(): array
-    {
-        return array_keys(self::TYPES);
-    }
-
-    /**
-     * Get valid zones for validation
-     */
-    public static function getValidZones(): array
-    {
-        return array_keys(DocumentUITemplate::ZONES);
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?: 'Component #' . $this->id;
     }
 }

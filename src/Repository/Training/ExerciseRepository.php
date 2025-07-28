@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\Exercise;
@@ -17,7 +19,9 @@ class ExerciseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active exercises for a specific course
+     * Find active exercises for a specific course.
+     *
+     * @param mixed $courseId
      */
     public function findActiveByCourse($courseId): array
     {
@@ -28,11 +32,12 @@ class ExerciseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('e.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find exercises by type
+     * Find exercises by type.
      */
     public function findByType(string $type): array
     {
@@ -43,11 +48,12 @@ class ExerciseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('e.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find exercises by difficulty
+     * Find exercises by difficulty.
      */
     public function findByDifficulty(string $difficulty): array
     {
@@ -58,11 +64,14 @@ class ExerciseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('e.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get total estimated duration by course
+     * Get total estimated duration by course.
+     *
+     * @param mixed $courseId
      */
     public function getTotalEstimatedDurationByCourse($courseId): int
     {
@@ -73,13 +82,14 @@ class ExerciseRepository extends ServiceEntityRepository
             ->setParameter('courseId', $courseId)
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ? (int) $result : 0;
     }
 
     /**
-     * Find exercises with specific evaluation criteria
+     * Find exercises with specific evaluation criteria.
      */
     public function findWithEvaluationCriteria(): array
     {

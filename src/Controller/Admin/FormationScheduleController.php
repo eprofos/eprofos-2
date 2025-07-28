@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Training\Formation;
@@ -12,8 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Formation Schedule Controller
- * 
+ * Admin Formation Schedule Controller.
+ *
  * Handles schedule calculation and display for formations in the admin interface.
  * Provides detailed daily schedule breakdown (morning/afternoon) with durations.
  */
@@ -23,19 +25,18 @@ class FormationScheduleController extends AbstractController
 {
     public function __construct(
         private FormationScheduleService $scheduleService,
-        private Pdf $knpSnappyPdf
-    ) {
-    }
+        private Pdf $knpSnappyPdf,
+    ) {}
 
     /**
-     * Display the daily schedule for a formation
+     * Display the daily schedule for a formation.
      */
     #[Route('', name: 'show', methods: ['GET'])]
     public function show(Formation $formation): Response
     {
         // Calculate the complete schedule
         $scheduleData = $this->scheduleService->calculateFormationSchedule($formation);
-        
+
         return $this->render('admin/formation/schedule.html.twig', [
             'formation' => $formation,
             'scheduleData' => $scheduleData,
@@ -45,20 +46,20 @@ class FormationScheduleController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Formations', 'url' => $this->generateUrl('admin_formation_index')],
                 ['label' => $formation->getTitle(), 'url' => $this->generateUrl('admin_formation_show', ['id' => $formation->getId()])],
-                ['label' => 'Planning', 'url' => null]
-            ]
+                ['label' => 'Planning', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Download the daily schedule as PDF
+     * Download the daily schedule as PDF.
      */
     #[Route('/pdf', name: 'pdf', methods: ['GET'])]
     public function downloadPdf(Formation $formation): Response
     {
         // Calculate the complete schedule
         $scheduleData = $this->scheduleService->calculateFormationSchedule($formation);
-        
+
         // Render the PDF template
         $html = $this->renderView('admin/formation/schedule_pdf.html.twig', [
             'formation' => $formation,
@@ -87,12 +88,12 @@ class FormationScheduleController extends AbstractController
         $filename = sprintf(
             'planning_%s_%s.pdf',
             $formation->getSlug(),
-            date('Y-m-d')
+            date('Y-m-d'),
         );
 
         return new PdfResponse(
             $this->knpSnappyPdf->getOutputFromHtml($html, $options),
-            $filename
+            $filename,
         );
     }
 }

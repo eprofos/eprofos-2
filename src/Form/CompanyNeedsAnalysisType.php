@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form;
 
-use App\Entity\Analysis\CompanyNeedsAnalysis;
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,8 +17,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Form type for company needs analysis
- * 
+ * Form type for company needs analysis.
+ *
  * Comprehensive form for collecting company training needs analysis
  * data to comply with Qualiopi 2.4 criteria.
  */
@@ -68,7 +67,7 @@ class CompanyNeedsAnalysisType extends AbstractType
                     'placeholder' => 'Adresse complète de l\'entreprise',
                 ],
             ])
-            
+
             // Company Details
             ->add('activity_sector', TextType::class, [
                 'label' => 'Secteur d\'activité',
@@ -111,7 +110,7 @@ class CompanyNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'Opérateur de compétences (si connu)',
             ])
-            
+
             // Training Information
             ->add('training_title', TextType::class, [
                 'label' => 'Intitulé de la formation souhaitée',
@@ -178,7 +177,7 @@ class CompanyNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'Précisez si des aménagements sont nécessaires pour l\'accessibilité',
             ])
-            
+
             // Training Needs Analysis
             ->add('training_expectations', TextareaType::class, [
                 'label' => 'Objectifs et attentes de la formation',
@@ -197,7 +196,8 @@ class CompanyNeedsAnalysisType extends AbstractType
                     'placeholder' => 'Contexte professionnel, contraintes particulières, besoins spécifiques...',
                 ],
                 'help' => 'Précisez le contexte et les besoins particuliers de votre entreprise',
-            ]);
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -209,7 +209,7 @@ class CompanyNeedsAnalysisType extends AbstractType
                 'novalidate' => 'novalidate',
             ],
         ]);
-        
+
         $resolver->setAllowedTypes('needs_analysis_request', ['null', NeedsAnalysisRequest::class]);
     }
 }

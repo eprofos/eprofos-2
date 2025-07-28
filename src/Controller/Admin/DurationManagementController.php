@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Service\Training\DurationCalculationService;
-use App\Entity\Training\Formation;
-use App\Entity\Training\Module;
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Course;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
+use App\Service\Training\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -21,9 +24,8 @@ class DurationManagementController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DurationCalculationService $durationService
-    ) {
-    }
+        private DurationCalculationService $durationService,
+    ) {}
 
     #[Route('/', name: 'index')]
     public function index(): Response
@@ -42,7 +44,7 @@ class DurationManagementController extends AbstractController
         ];
 
         return $this->render('admin/duration/statistics.html.twig', [
-            'stats' => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -68,7 +70,7 @@ class DurationManagementController extends AbstractController
 
         return $this->render('admin/duration/analyze.html.twig', [
             'entity_type' => $entityType,
-            'results' => $results
+            'results' => $results,
         ]);
     }
 
@@ -97,12 +99,12 @@ class DurationManagementController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Duration updated successfully',
-                'stats' => $stats
+                'stats' => $stats,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Error updating duration: ' . $e->getMessage()
+                'message' => 'Error updating duration: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -115,19 +117,19 @@ class DurationManagementController extends AbstractController
 
         try {
             $count = 0;
-            
+
             if ($entityType === 'all' || $entityType === 'course') {
                 $count += $this->syncEntities(Course::class, $batchSize);
             }
-            
+
             if ($entityType === 'all' || $entityType === 'chapter') {
                 $count += $this->syncEntities(Chapter::class, $batchSize);
             }
-            
+
             if ($entityType === 'all' || $entityType === 'module') {
                 $count += $this->syncEntities(Module::class, $batchSize);
             }
-            
+
             if ($entityType === 'all' || $entityType === 'formation') {
                 $count += $this->syncEntities(Formation::class, $batchSize);
             }
@@ -135,12 +137,12 @@ class DurationManagementController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => "Synchronized {$count} entities",
-                'count' => $count
+                'count' => $count,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Error synchronizing durations: ' . $e->getMessage()
+                'message' => 'Error synchronizing durations: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -153,12 +155,12 @@ class DurationManagementController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Duration caches cleared successfully'
+                'message' => 'Duration caches cleared successfully',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Error clearing caches: ' . $e->getMessage()
+                'message' => 'Error clearing caches: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -179,7 +181,7 @@ class DurationManagementController extends AbstractController
         return [
             'total' => $total,
             'inconsistencies' => $inconsistencies,
-            'percentage' => $total > 0 ? round(($inconsistencies / $total) * 100, 2) : 0
+            'percentage' => $total > 0 ? round(($inconsistencies / $total) * 100, 2) : 0,
         ];
     }
 
@@ -190,17 +192,18 @@ class DurationManagementController extends AbstractController
 
         foreach (array_chunk($entities, $batchSize) as $batch) {
             $this->entityManager->beginTransaction();
-            
+
             try {
                 foreach ($batch as $entity) {
                     $this->durationService->updateEntityDuration($entity);
                     $count++;
                 }
-                
+
                 $this->entityManager->flush();
                 $this->entityManager->commit();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->entityManager->rollback();
+
                 throw $e;
             }
         }

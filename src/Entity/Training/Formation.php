@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Entity\CRM\ContactRequest;
 use App\Repository\Training\FormationRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,8 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Formation entity representing a training course
- * 
+ * Formation entity representing a training course.
+ *
  * Contains all information about a formation including description,
  * objectives, prerequisites, program, pricing, and categorization.
  */
@@ -43,7 +47,7 @@ class Formation
     private ?string $objectives = null;
 
     /**
-     * Operational objectives that participants will achieve (required by Qualiopi 2.5)
+     * Operational objectives that participants will achieve (required by Qualiopi 2.5).
      *
      * These are concrete, actionable objectives that define what participants
      * will be able to do after completing the training.
@@ -53,7 +57,7 @@ class Formation
     private ?array $operationalObjectives = null;
 
     /**
-     * Evaluable objectives with measurable criteria (required by Qualiopi 2.5)
+     * Evaluable objectives with measurable criteria (required by Qualiopi 2.5).
      *
      * These are objectives that can be measured and evaluated with specific
      * criteria and success indicators.
@@ -63,7 +67,7 @@ class Formation
     private ?array $evaluableObjectives = null;
 
     /**
-     * Evaluation criteria for measuring objective achievement (required by Qualiopi 2.5)
+     * Evaluation criteria for measuring objective achievement (required by Qualiopi 2.5).
      *
      * Specific criteria and methods used to evaluate whether the objectives
      * have been achieved by participants.
@@ -73,7 +77,7 @@ class Formation
     private ?array $evaluationCriteria = null;
 
     /**
-     * Success indicators for tracking objective achievement (required by Qualiopi 2.5)
+     * Success indicators for tracking objective achievement (required by Qualiopi 2.5).
      *
      * Measurable indicators that demonstrate successful achievement of the
      * training objectives.
@@ -117,13 +121,13 @@ class Formation
     private ?string $image = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     /**
-     * Target audience for the formation (required by Qualiopi)
+     * Target audience for the formation (required by Qualiopi).
      *
      * Description of the target audience concerned by the training
      * (e.g., employees, job seekers, students, professionals, etc.)
@@ -133,7 +137,7 @@ class Formation
     private ?string $targetAudience = null;
 
     /**
-     * Access modalities and deadlines for the formation (required by Qualiopi)
+     * Access modalities and deadlines for the formation (required by Qualiopi).
      *
      * Information about how and when participants can access the training,
      * including registration deadlines, prerequisites validation, etc.
@@ -143,7 +147,7 @@ class Formation
     private ?string $accessModalities = null;
 
     /**
-     * Accessibility for people with disabilities (required by Qualiopi)
+     * Accessibility for people with disabilities (required by Qualiopi).
      *
      * Description of accommodations and accessibility measures available
      * for participants with disabilities or special needs.
@@ -153,7 +157,7 @@ class Formation
     private ?string $handicapAccessibility = null;
 
     /**
-     * Teaching methods used in the formation (required by Qualiopi)
+     * Teaching methods used in the formation (required by Qualiopi).
      *
      * Description of pedagogical approaches, methodologies, and techniques
      * employed during the training (e.g., lectures, workshops, case studies, etc.)
@@ -163,7 +167,7 @@ class Formation
     private ?string $teachingMethods = null;
 
     /**
-     * Evaluation methods for learning outcomes (required by Qualiopi)
+     * Evaluation methods for learning outcomes (required by Qualiopi).
      *
      * Description of how participant knowledge and skills are assessed
      * throughout and at the end of the training program.
@@ -173,7 +177,7 @@ class Formation
     private ?string $evaluationMethods = null;
 
     /**
-     * Contact information for pedagogical and administrative support (required by Qualiopi)
+     * Contact information for pedagogical and administrative support (required by Qualiopi).
      *
      * Contact details of the pedagogical coordinator or administrative
      * reference person for the training program.
@@ -183,7 +187,7 @@ class Formation
     private ?string $contactInfo = null;
 
     /**
-     * Training location(s) information (required by Qualiopi)
+     * Training location(s) information (required by Qualiopi).
      *
      * Description of where the training takes place, including physical
      * addresses, online platforms, or hybrid arrangements.
@@ -193,7 +197,7 @@ class Formation
     private ?string $trainingLocation = null;
 
     /**
-     * Available funding modalities for the formation (required by Qualiopi)
+     * Available funding modalities for the formation (required by Qualiopi).
      *
      * Information about possible funding options such as CPF, OPCO,
      * company funding, personal payment, etc.
@@ -231,8 +235,13 @@ class Formation
         $this->contactRequests = new ArrayCollection();
         $this->modules = new ArrayCollection();
         $this->sessions = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -248,6 +257,7 @@ class Formation
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -259,6 +269,7 @@ class Formation
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -270,6 +281,7 @@ class Formation
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -281,6 +293,7 @@ class Formation
     public function setObjectives(?string $objectives): static
     {
         $this->objectives = $objectives;
+
         return $this;
     }
 
@@ -292,6 +305,7 @@ class Formation
     public function setOperationalObjectives(?array $operationalObjectives): static
     {
         $this->operationalObjectives = $operationalObjectives;
+
         return $this;
     }
 
@@ -303,6 +317,7 @@ class Formation
     public function setEvaluableObjectives(?array $evaluableObjectives): static
     {
         $this->evaluableObjectives = $evaluableObjectives;
+
         return $this;
     }
 
@@ -314,6 +329,7 @@ class Formation
     public function setEvaluationCriteria(?array $evaluationCriteria): static
     {
         $this->evaluationCriteria = $evaluationCriteria;
+
         return $this;
     }
 
@@ -325,6 +341,7 @@ class Formation
     public function setSuccessIndicators(?array $successIndicators): static
     {
         $this->successIndicators = $successIndicators;
+
         return $this;
     }
 
@@ -336,6 +353,7 @@ class Formation
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -347,6 +365,7 @@ class Formation
     public function setDurationHours(int $durationHours): static
     {
         $this->durationHours = $durationHours;
+
         return $this;
     }
 
@@ -358,6 +377,7 @@ class Formation
     public function setPrice(string $price): static
     {
         $this->price = $price;
+
         return $this;
     }
 
@@ -369,6 +389,7 @@ class Formation
     public function setLevel(string $level): static
     {
         $this->level = $level;
+
         return $this;
     }
 
@@ -380,6 +401,7 @@ class Formation
     public function setFormat(string $format): static
     {
         $this->format = $format;
+
         return $this;
     }
 
@@ -391,6 +413,7 @@ class Formation
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -402,6 +425,7 @@ class Formation
     public function setIsFeatured(bool $isFeatured): static
     {
         $this->isFeatured = $isFeatured;
+
         return $this;
     }
 
@@ -413,11 +437,12 @@ class Formation
     public function setImagePath(?string $imagePath): static
     {
         $this->imagePath = $imagePath;
+
         return $this;
     }
 
     /**
-     * Get the image filename for the formation
+     * Get the image filename for the formation.
      */
     public function getImage(): ?string
     {
@@ -425,33 +450,36 @@ class Formation
     }
 
     /**
-     * Set the image filename for the formation
+     * Set the image filename for the formation.
      */
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -463,6 +491,7 @@ class Formation
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
         return $this;
     }
 
@@ -557,68 +586,62 @@ class Formation
     }
 
     /**
-     * Get active modules for this formation
-     * 
+     * Get active modules for this formation.
+     *
      * @return Collection<int, Module>
      */
     public function getActiveModules(): Collection
     {
-        return $this->modules->filter(function (Module $module) {
-            return $module->isActive();
-        });
+        return $this->modules->filter(static fn (Module $module) => $module->isActive());
     }
 
     /**
-     * Get upcoming sessions for this formation
-     * 
+     * Get upcoming sessions for this formation.
+     *
      * @return Collection<int, Session>
      */
     public function getUpcomingSessions(): Collection
     {
-        $now = new \DateTime();
-        return $this->sessions->filter(function (Session $session) use ($now) {
-            return $session->isActive() && $session->getStartDate() > $now;
-        });
+        $now = new DateTime();
+
+        return $this->sessions->filter(static fn (Session $session) => $session->isActive() && $session->getStartDate() > $now);
     }
 
     /**
-     * Get open sessions for this formation (available for registration)
-     * 
+     * Get open sessions for this formation (available for registration).
+     *
      * @return Collection<int, Session>
      */
     public function getOpenSessions(): Collection
     {
-        $now = new \DateTime();
-        return $this->sessions->filter(function (Session $session) use ($now) {
-            return $session->isActive() 
+        $now = new DateTime();
+
+        return $this->sessions->filter(static fn (Session $session) => $session->isActive()
                 && $session->getStatus() === 'open'
                 && $session->getStartDate() > $now
                 && !$session->isFull()
-                && $session->isRegistrationOpen();
-        });
+                && $session->isRegistrationOpen());
     }
 
     /**
-     * Get the next upcoming session
+     * Get the next upcoming session.
      */
     public function getNextSession(): ?Session
     {
         $upcomingSessions = $this->getUpcomingSessions();
-        
+
         if ($upcomingSessions->isEmpty()) {
             return null;
         }
 
         $sessionsArray = $upcomingSessions->toArray();
-        usort($sessionsArray, function (Session $a, Session $b) {
-            return $a->getStartDate() <=> $b->getStartDate();
-        });
+        usort($sessionsArray, static fn (Session $a, Session $b) => $a->getStartDate() <=> $b->getStartDate());
 
         return $sessionsArray[0];
     }
 
     /**
-     * Check if formation has available sessions for registration
+     * Check if formation has available sessions for registration.
      */
     public function hasAvailableSessions(): bool
     {
@@ -626,7 +649,7 @@ class Formation
     }
 
     /**
-     * Get total duration of all modules in this formation
+     * Get total duration of all modules in this formation.
      */
     public function getTotalModulesDuration(): int
     {
@@ -634,6 +657,7 @@ class Formation
         foreach ($this->modules as $module) {
             $totalDuration += $module->getDurationHours();
         }
+
         return $totalDuration;
     }
 
@@ -645,6 +669,7 @@ class Formation
     public function setTargetAudience(?string $targetAudience): static
     {
         $this->targetAudience = $targetAudience;
+
         return $this;
     }
 
@@ -656,6 +681,7 @@ class Formation
     public function setAccessModalities(?string $accessModalities): static
     {
         $this->accessModalities = $accessModalities;
+
         return $this;
     }
 
@@ -667,6 +693,7 @@ class Formation
     public function setHandicapAccessibility(?string $handicapAccessibility): static
     {
         $this->handicapAccessibility = $handicapAccessibility;
+
         return $this;
     }
 
@@ -678,6 +705,7 @@ class Formation
     public function setTeachingMethods(?string $teachingMethods): static
     {
         $this->teachingMethods = $teachingMethods;
+
         return $this;
     }
 
@@ -689,6 +717,7 @@ class Formation
     public function setEvaluationMethods(?string $evaluationMethods): static
     {
         $this->evaluationMethods = $evaluationMethods;
+
         return $this;
     }
 
@@ -700,6 +729,7 @@ class Formation
     public function setContactInfo(?string $contactInfo): static
     {
         $this->contactInfo = $contactInfo;
+
         return $this;
     }
 
@@ -711,6 +741,7 @@ class Formation
     public function setTrainingLocation(?string $trainingLocation): static
     {
         $this->trainingLocation = $trainingLocation;
+
         return $this;
     }
 
@@ -722,11 +753,12 @@ class Formation
     public function setFundingModalities(?string $fundingModalities): static
     {
         $this->fundingModalities = $fundingModalities;
+
         return $this;
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -738,7 +770,7 @@ class Formation
             return $this->durationHours . 'h';
         }
 
-        $days = intval($this->durationHours / 8);
+        $days = (int) ($this->durationHours / 8);
         $remainingHours = $this->durationHours % 8;
 
         if ($remainingHours === 0) {
@@ -749,7 +781,7 @@ class Formation
     }
 
     /**
-     * Get formatted price with currency
+     * Get formatted price with currency.
      */
     public function getFormattedPrice(): string
     {
@@ -757,31 +789,31 @@ class Formation
     }
 
     /**
-     * Generate program content from modules and chapters
+     * Generate program content from modules and chapters.
      */
     public function getGeneratedProgram(): string
     {
         $program = '';
         $activeModules = $this->getActiveModules();
-        
+
         if ($activeModules->isEmpty()) {
             return 'Aucun module configuré pour cette formation.';
         }
-        
+
         foreach ($activeModules as $index => $module) {
             $moduleNumber = $index + 1;
             $program .= "Module {$moduleNumber}: {$module->getTitle()}";
-            
+
             if ($module->getDurationHours()) {
                 $program .= " ({$module->getFormattedDuration()})";
             }
-            
+
             $program .= "\n";
-            
+
             if ($module->getDescription()) {
                 $program .= "- {$module->getDescription()}\n";
             }
-            
+
             // Add learning objectives if available
             if ($module->getLearningObjectives()) {
                 $program .= "Objectifs :\n";
@@ -789,7 +821,7 @@ class Formation
                     $program .= "• {$objective}\n";
                 }
             }
-            
+
             // Add chapters if available
             $activeChapters = $module->getActiveChapters();
             if (!$activeChapters->isEmpty()) {
@@ -802,15 +834,15 @@ class Formation
                     $program .= "\n";
                 }
             }
-            
+
             $program .= "\n";
         }
-        
+
         return $program;
     }
 
     /**
-     * Get program content - always returns generated program from modules and chapters
+     * Get program content - always returns generated program from modules and chapters.
      */
     public function getProgramContent(): string
     {
@@ -818,16 +850,11 @@ class Formation
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

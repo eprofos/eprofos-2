@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Repository\Document\DocumentCategoryRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentCategory entity - Provides hierarchical organization capability
- * 
+ * DocumentCategory entity - Provides hierarchical organization capability.
+ *
  * This entity enables hierarchical organization of documents in nested categories,
  * which is impossible with the current flat structure of LegalDocument.
  * Supports unlimited nesting levels for flexible document organization.
@@ -32,7 +35,7 @@ class DocumentCategory
         min: 2,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $name = null;
 
@@ -42,11 +45,11 @@ class DocumentCategory
         min: 2,
         max: 500,
         minMessage: 'Le slug doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-z0-9\-\/]+$/',
-        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.'
+        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.',
     )]
     private ?string $slug = null;
 
@@ -77,10 +80,10 @@ class DocumentCategory
     private bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Document::class)]
     private Collection $documents;
@@ -89,18 +92,23 @@ class DocumentCategory
     {
         $this->children = new ArrayCollection();
         $this->documents = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?: 'Catégorie #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     /**
-     * Calculate and update the level based on parent hierarchy
+     * Calculate and update the level based on parent hierarchy.
      */
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
@@ -122,6 +130,7 @@ class DocumentCategory
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -133,6 +142,7 @@ class DocumentCategory
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -144,6 +154,7 @@ class DocumentCategory
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -155,6 +166,7 @@ class DocumentCategory
     public function setParent(?self $parent): static
     {
         $this->parent = $parent;
+
         return $this;
     }
 
@@ -167,10 +179,11 @@ class DocumentCategory
     }
 
     /**
-     * Set children collection (used for tree building)
-     * @param Collection<int, self>|array<self> $children
+     * Set children collection (used for tree building).
+     *
+     * @param array<self>|Collection<int, self> $children
      */
-    public function setChildren(Collection|array $children): static
+    public function setChildren(array|Collection $children): static
     {
         if (is_array($children)) {
             $this->children = new ArrayCollection($children);
@@ -211,6 +224,7 @@ class DocumentCategory
     public function setLevel(int $level): static
     {
         $this->level = $level;
+
         return $this;
     }
 
@@ -222,6 +236,7 @@ class DocumentCategory
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -233,6 +248,7 @@ class DocumentCategory
     public function setIcon(?string $icon): static
     {
         $this->icon = $icon;
+
         return $this;
     }
 
@@ -244,6 +260,7 @@ class DocumentCategory
     public function setColor(?string $color): static
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -255,28 +272,31 @@ class DocumentCategory
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -311,11 +331,11 @@ class DocumentCategory
     }
 
     /**
-     * Business logic methods
+     * Business logic methods.
      */
 
     /**
-     * Check if this category is a root category (no parent)
+     * Check if this category is a root category (no parent).
      */
     public function isRoot(): bool
     {
@@ -323,7 +343,7 @@ class DocumentCategory
     }
 
     /**
-     * Check if this category has children
+     * Check if this category has children.
      */
     public function hasChildren(): bool
     {
@@ -331,74 +351,71 @@ class DocumentCategory
     }
 
     /**
-     * Get all descendants recursively
-     * 
+     * Get all descendants recursively.
+     *
      * @return array<self>
      */
     public function getAllDescendants(): array
     {
         $descendants = [];
-        
+
         foreach ($this->children as $child) {
             $descendants[] = $child;
             $descendants = array_merge($descendants, $child->getAllDescendants());
         }
-        
+
         return $descendants;
     }
 
     /**
-     * Get path from root to this category
-     * 
+     * Get path from root to this category.
+     *
      * @return array<self>
      */
     public function getPath(): array
     {
         $path = [];
         $current = $this;
-        
+
         while ($current !== null) {
             array_unshift($path, $current);
             $current = $current->getParent();
         }
-        
+
         return $path;
     }
 
     /**
-     * Get breadcrumb names as string
+     * Get breadcrumb names as string.
      */
     public function getBreadcrumb(string $separator = ' > '): string
     {
         $path = $this->getPath();
-        return implode($separator, array_map(fn(self $cat) => $cat->getName(), $path));
+
+        return implode($separator, array_map(static fn (self $cat) => $cat->getName(), $path));
     }
 
     /**
-     * Get full slug path
+     * Get full slug path.
      */
     public function getFullSlug(): string
     {
         $path = $this->getPath();
-        return implode('/', array_map(fn(self $cat) => $cat->getSlug(), $path));
+
+        return implode('/', array_map(static fn (self $cat) => $cat->getSlug(), $path));
     }
 
     /**
-     * Count all documents in this category and its children
+     * Count all documents in this category and its children.
      */
     public function getTotalDocumentsCount(): int
     {
         $count = $this->documents->count();
-        
+
         foreach ($this->children as $child) {
             $count += $child->getTotalDocumentsCount();
         }
-        
-        return $count;
-    }
 
-    public function __toString(): string
-    {
-        return $this->name ?: 'Catégorie #' . $this->id;
+        return $count;
     }
 }

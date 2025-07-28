@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Assessment;
 
 use App\Entity\Assessment\Questionnaire;
@@ -17,7 +19,7 @@ class QuestionnaireRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active questionnaires
+     * Find active questionnaires.
      */
     public function findActive(): array
     {
@@ -26,11 +28,12 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('status', Questionnaire::STATUS_ACTIVE)
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find questionnaires by type
+     * Find questionnaires by type.
      */
     public function findByType(string $type): array
     {
@@ -39,11 +42,12 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('q.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find questionnaires for a specific formation
+     * Find questionnaires for a specific formation.
      */
     public function findByFormation(int $formationId): array
     {
@@ -54,11 +58,12 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('status', Questionnaire::STATUS_ACTIVE)
             ->orderBy('q.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find questionnaire by slug with questions
+     * Find questionnaire by slug with questions.
      */
     public function findBySlugWithQuestions(string $slug): ?Questionnaire
     {
@@ -71,11 +76,12 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('status', Questionnaire::STATUS_ACTIVE)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find questionnaires with statistics
+     * Find questionnaires with statistics.
      */
     public function findWithStatistics(): array
     {
@@ -89,11 +95,12 @@ class QuestionnaireRepository extends ServiceEntityRepository
             ->setParameter('completed', 'completed')
             ->orderBy('q.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search questionnaires by title or description
+     * Search questionnaires by title or description.
      */
     public function search(string $query): array
     {

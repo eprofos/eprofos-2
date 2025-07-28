@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\User\Mentor;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class MentorFixtures extends Fixture
 {
     public const MENTOR_REFERENCE = 'mentor_';
-    
+
     private UserPasswordHasherInterface $passwordHasher;
 
     public function __construct(UserPasswordHasherInterface $passwordHasher)
@@ -47,7 +50,7 @@ class MentorFixtures extends Fixture
             'Lead Developer',
             'Product Owner',
             'Scrum Master',
-            'Architecte Solution'
+            'Architecte Solution',
         ];
 
         $expertiseDomains = [
@@ -60,25 +63,26 @@ class MentorFixtures extends Fixture
             ['Data Science', 'Python', 'Machine Learning'],
             ['DevOps', 'Docker', 'AWS'],
             ['Mobile', 'React Native', 'Flutter'],
-            ['Finance', 'Comptabilité', 'Analyse Financière']
+            ['Finance', 'Comptabilité', 'Analyse Financière'],
         ];
 
         $educationLevels = [
             'bac+2',
             'bac+3',
             'bac+5',
-            'bac+8'
+            'bac+8',
         ];
 
         for ($i = 0; $i < 10; $i++) {
             $mentor = new Mentor();
             $company = $companies[$i];
-            
+
             // Informations personnelles
             $mentor->setFirstName($faker->firstName())
-                   ->setLastName($faker->lastName())
-                   ->setEmail($faker->unique()->safeEmail())
-                   ->setPhone($faker->phoneNumber());
+                ->setLastName($faker->lastName())
+                ->setEmail($faker->unique()->safeEmail())
+                ->setPhone($faker->phoneNumber())
+            ;
 
             // Mot de passe hashé (password123)
             $hashedPassword = $this->passwordHasher->hashPassword($mentor, 'password123');
@@ -86,25 +90,27 @@ class MentorFixtures extends Fixture
 
             // Informations professionnelles
             $mentor->setPosition($positions[$i])
-                   ->setCompanyName($company['name'])
-                   ->setCompanySiret($company['siret'])
-                   ->setExperienceYears($faker->numberBetween(3, 15))
-                   ->setEducationLevel($faker->randomElement($educationLevels))
-                   ->setExpertiseDomains($expertiseDomains[$i]);
+                ->setCompanyName($company['name'])
+                ->setCompanySiret($company['siret'])
+                ->setExperienceYears($faker->numberBetween(3, 15))
+                ->setEducationLevel($faker->randomElement($educationLevels))
+                ->setExpertiseDomains($expertiseDomains[$i])
+            ;
 
             // Status et vérification
             $mentor->setIsActive(true)
-                   ->setEmailVerified($faker->boolean(85)) // 85% des mentors ont vérifié leur email
-                   ->setCreatedAt(new \DateTimeImmutable($faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d H:i:s')))
-                   ->setUpdatedAt(new \DateTimeImmutable());
+                ->setEmailVerified($faker->boolean(85)) // 85% des mentors ont vérifié leur email
+                ->setCreatedAt(new DateTimeImmutable($faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d H:i:s')))
+                ->setUpdatedAt(new DateTimeImmutable())
+            ;
 
             // Quelques mentors ont une dernière connexion
             if ($faker->boolean(70)) {
-                $mentor->setLastLoginAt(new \DateTimeImmutable($faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s')));
+                $mentor->setLastLoginAt(new DateTimeImmutable($faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s')));
             }
 
             $manager->persist($mentor);
-            
+
             // Créer une référence pour pouvoir lier les mentors à d'autres entités plus tard
             $this->addReference(self::MENTOR_REFERENCE . $i, $mentor);
         }
@@ -112,20 +118,21 @@ class MentorFixtures extends Fixture
         // Créer un mentor de test avec des identifiants connus
         $testMentor = new Mentor();
         $testMentor->setFirstName('Jean')
-                   ->setLastName('Dupont')
-                   ->setEmail('mentor@eprofos.fr')
-                   ->setPhone('+33 6 12 34 56 78')
-                   ->setPosition('Directeur Technique')
-                   ->setCompanyName('EPROFOS Corp')
-                   ->setCompanySiret('12345678901234')
-                   ->setExperienceYears(10)
-                   ->setEducationLevel('bac+5')
-                   ->setExpertiseDomains(['Développement Web', 'PHP', 'Symfony', 'Management'])
-                   ->setIsActive(true)
-                   ->setEmailVerified(true)
-                   ->setCreatedAt(new \DateTimeImmutable('-3 months'))
-                   ->setUpdatedAt(new \DateTimeImmutable())
-                   ->setLastLoginAt(new \DateTimeImmutable('-1 day'));
+            ->setLastName('Dupont')
+            ->setEmail('mentor@eprofos.fr')
+            ->setPhone('+33 6 12 34 56 78')
+            ->setPosition('Directeur Technique')
+            ->setCompanyName('EPROFOS Corp')
+            ->setCompanySiret('12345678901234')
+            ->setExperienceYears(10)
+            ->setEducationLevel('bac+5')
+            ->setExpertiseDomains(['Développement Web', 'PHP', 'Symfony', 'Management'])
+            ->setIsActive(true)
+            ->setEmailVerified(true)
+            ->setCreatedAt(new DateTimeImmutable('-3 months'))
+            ->setUpdatedAt(new DateTimeImmutable())
+            ->setLastLoginAt(new DateTimeImmutable('-1 day'))
+        ;
 
         $hashedPassword = $this->passwordHasher->hashPassword($testMentor, 'password123');
         $testMentor->setPassword($hashedPassword);

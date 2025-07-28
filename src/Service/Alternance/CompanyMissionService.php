@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\CompanyMission;
@@ -8,23 +10,26 @@ use App\Entity\User\Student;
 use App\Repository\Alternance\CompanyMissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
- * Service for managing company missions
- * 
+ * Service for managing company missions.
+ *
  * Handles CRUD operations, progression logic, and business rules
  * for company missions in the alternance system.
  */
 class CompanyMissionService
 {
     private EntityManagerInterface $entityManager;
+
     private CompanyMissionRepository $missionRepository;
+
     private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         CompanyMissionRepository $missionRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->entityManager = $entityManager;
         $this->missionRepository = $missionRepository;
@@ -32,11 +37,7 @@ class CompanyMissionService
     }
 
     /**
-     * Create a new company mission
-     *
-     * @param array $data
-     * @param Mentor $supervisor
-     * @return CompanyMission
+     * Create a new company mission.
      */
     public function createMission(array $data, Mentor $supervisor): CompanyMission
     {
@@ -82,11 +83,7 @@ class CompanyMissionService
     }
 
     /**
-     * Update an existing mission
-     *
-     * @param CompanyMission $mission
-     * @param array $data
-     * @return CompanyMission
+     * Update an existing mission.
      */
     public function updateMission(CompanyMission $mission, array $data): CompanyMission
     {
@@ -161,18 +158,15 @@ class CompanyMissionService
     }
 
     /**
-     * Delete a mission (soft delete by setting inactive)
-     *
-     * @param CompanyMission $mission
-     * @return void
+     * Delete a mission (soft delete by setting inactive).
      */
     public function deleteMission(CompanyMission $mission): void
     {
         // Check if mission has active assignments
         $activeAssignments = $mission->getActiveAssignmentsCount();
-        
+
         if ($activeAssignments > 0) {
-            throw new \RuntimeException('Cannot delete mission with active assignments. Complete or suspend assignments first.');
+            throw new RuntimeException('Cannot delete mission with active assignments. Complete or suspend assignments first.');
         }
 
         $mission->setIsActive(false);
@@ -185,27 +179,22 @@ class CompanyMissionService
     }
 
     /**
-     * Find recommended missions for a student based on their progress
+     * Find recommended missions for a student based on their progress.
      *
-     * @param Student $student
-     * @param int $limit
      * @return CompanyMission[]
      */
     public function findRecommendedMissions(Student $student, int $limit = 10): array
     {
         // This would typically analyze the student's completed missions,
         // current skill level, and learning progression to recommend next missions
-        
+
         // For now, we'll use the repository method
         return $this->missionRepository->findNextRecommendedMissions($student, $limit);
     }
 
     /**
-     * Find suitable missions for a student based on complexity level
+     * Find suitable missions for a student based on complexity level.
      *
-     * @param Student $student
-     * @param string $complexity
-     * @param int $limit
      * @return CompanyMission[]
      */
     public function findSuitableMissions(Student $student, string $complexity = 'debutant', int $limit = 10): array
@@ -214,17 +203,14 @@ class CompanyMissionService
     }
 
     /**
-     * Get mission progression path for a student
-     *
-     * @param Student $student
-     * @return array
+     * Get mission progression path for a student.
      */
     public function getMissionProgressionPath(Student $student): array
     {
         // This would analyze completed missions and suggest a progression path
         // For now, return a structured progression
-        
-        $progressionPath = [
+
+        return [
             'court_terme' => [
                 'debutant' => $this->missionRepository->findByTermAndComplexity('court', 'debutant'),
                 'intermediaire' => $this->missionRepository->findByTermAndComplexity('court', 'intermediaire'),
@@ -241,14 +227,11 @@ class CompanyMissionService
                 'avance' => $this->missionRepository->findByTermAndComplexity('long', 'avance'),
             ],
         ];
-
-        return $progressionPath;
     }
 
     /**
-     * Validate mission data before creation/update
+     * Validate mission data before creation/update.
      *
-     * @param array $data
      * @return array Array of validation errors (empty if valid)
      */
     public function validateMissionData(array $data): array
@@ -259,17 +242,17 @@ class CompanyMissionService
         $requiredFields = ['title', 'description', 'context', 'complexity', 'term', 'department', 'duration'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
-                $errors[] = "Le champ '$field' est obligatoire.";
+                $errors[] = "Le champ '{$field}' est obligatoire.";
             }
         }
 
         // Validate complexity
-        if (isset($data['complexity']) && !in_array($data['complexity'], ['debutant', 'intermediaire', 'avance'])) {
+        if (isset($data['complexity']) && !in_array($data['complexity'], ['debutant', 'intermediaire', 'avance'], true)) {
             $errors[] = 'Niveau de complexité invalide.';
         }
 
         // Validate term
-        if (isset($data['term']) && !in_array($data['term'], ['court', 'moyen', 'long'])) {
+        if (isset($data['term']) && !in_array($data['term'], ['court', 'moyen', 'long'], true)) {
             $errors[] = 'Terme de mission invalide.';
         }
 
@@ -278,9 +261,9 @@ class CompanyMissionService
         foreach ($arrayFields as $field) {
             if (isset($data[$field])) {
                 if (!is_array($data[$field])) {
-                    $errors[] = "Le champ '$field' doit être un tableau.";
+                    $errors[] = "Le champ '{$field}' doit être un tableau.";
                 } elseif (empty($data[$field])) {
-                    $errors[] = "Le champ '$field' ne peut pas être vide.";
+                    $errors[] = "Le champ '{$field}' ne peut pas être vide.";
                 }
             }
         }
@@ -289,16 +272,12 @@ class CompanyMissionService
     }
 
     /**
-     * Clone a mission for reuse
-     *
-     * @param CompanyMission $originalMission
-     * @param array $overrides
-     * @return CompanyMission
+     * Clone a mission for reuse.
      */
     public function cloneMission(CompanyMission $originalMission, array $overrides = []): CompanyMission
     {
         $clonedMission = new CompanyMission();
-        
+
         // Copy basic properties
         $clonedMission->setTitle($overrides['title'] ?? $originalMission->getTitle() . ' (Copie)');
         $clonedMission->setDescription($originalMission->getDescription());
@@ -333,10 +312,7 @@ class CompanyMissionService
     }
 
     /**
-     * Get mission statistics for a mentor
-     *
-     * @param Mentor $mentor
-     * @return array
+     * Get mission statistics for a mentor.
      */
     public function getMentorMissionStats(Mentor $mentor): array
     {
@@ -344,17 +320,14 @@ class CompanyMissionService
     }
 
     /**
-     * Reorder missions within the same complexity and term
+     * Reorder missions within the same complexity and term.
      *
-     * @param string $term
-     * @param string $complexity
      * @param array $missionIds Ordered array of mission IDs
-     * @return void
      */
     public function reorderMissions(string $term, string $complexity, array $missionIds): void
     {
         $orderIndex = 1;
-        
+
         foreach ($missionIds as $missionId) {
             $mission = $this->missionRepository->find($missionId);
             if ($mission && $mission->getTerm() === $term && $mission->getComplexity() === $complexity) {
@@ -373,10 +346,8 @@ class CompanyMissionService
     }
 
     /**
-     * Search missions with filters
+     * Search missions with filters.
      *
-     * @param string $keywords
-     * @param array $filters
      * @return CompanyMission[]
      */
     public function searchMissions(string $keywords, array $filters = []): array
@@ -385,19 +356,14 @@ class CompanyMissionService
     }
 
     /**
-     * Get missions requiring attention (no assignments, old missions, etc.)
-     *
-     * @param Mentor|null $mentor
-     * @return array
+     * Get missions requiring attention (no assignments, old missions, etc.).
      */
     public function getMissionsRequiringAttention(?Mentor $mentor = null): array
     {
         $unassignedMissions = $this->missionRepository->findUnassignedMissions();
-        
+
         if ($mentor) {
-            $unassignedMissions = array_filter($unassignedMissions, function($mission) use ($mentor) {
-                return $mission->getSupervisor() === $mentor;
-            });
+            $unassignedMissions = array_filter($unassignedMissions, static fn ($mission) => $mission->getSupervisor() === $mentor);
         }
 
         return [
@@ -406,16 +372,14 @@ class CompanyMissionService
     }
 
     /**
-     * Bulk update mission status
+     * Bulk update mission status.
      *
-     * @param array $missionIds
-     * @param bool $isActive
      * @return int Number of updated missions
      */
     public function bulkUpdateMissionStatus(array $missionIds, bool $isActive): int
     {
         $updatedCount = 0;
-        
+
         foreach ($missionIds as $missionId) {
             $mission = $this->missionRepository->find($missionId);
             if ($mission) {
@@ -436,16 +400,13 @@ class CompanyMissionService
     }
 
     /**
-     * Export mission data for reporting
-     *
-     * @param array $filters
-     * @return array
+     * Export mission data for reporting.
      */
     public function exportMissionData(array $filters = []): array
     {
         // This would generate data suitable for export to CSV, Excel, etc.
         $missions = $this->missionRepository->findBy(['isActive' => true]);
-        
+
         $exportData = [];
         foreach ($missions as $mission) {
             $exportData[] = [
@@ -466,12 +427,12 @@ class CompanyMissionService
     }
 
     /**
-     * Get mission progress data
+     * Get mission progress data.
      */
     public function getMissionProgressData(CompanyMission $mission): array
     {
         $assignments = $mission->getAssignments();
-        
+
         $statusCounts = [
             'assigned' => 0,
             'in_progress' => 0,
@@ -480,7 +441,7 @@ class CompanyMissionService
         ];
 
         $totalAssignments = $assignments->count();
-        
+
         foreach ($assignments as $assignment) {
             $status = $assignment->getStatus();
             if (isset($statusCounts[$status])) {
@@ -488,7 +449,7 @@ class CompanyMissionService
             }
         }
 
-        $completionRate = $totalAssignments > 0 ? 
+        $completionRate = $totalAssignments > 0 ?
             round(($statusCounts['completed'] / $totalAssignments) * 100, 1) : 0;
 
         return [
@@ -500,12 +461,14 @@ class CompanyMissionService
     }
 
     /**
-     * Calculate average assignment duration
+     * Calculate average assignment duration.
+     *
+     * @param mixed $assignments
      */
     private function calculateAverageAssignmentDuration($assignments): float
     {
-        $completedAssignments = $assignments->filter(fn($a) => $a->getStatus() === 'completed');
-        
+        $completedAssignments = $assignments->filter(static fn ($a) => $a->getStatus() === 'completed');
+
         if ($completedAssignments->isEmpty()) {
             return 0;
         }
@@ -518,7 +481,7 @@ class CompanyMissionService
             }
         }
 
-        return $completedAssignments->count() > 0 ? 
+        return $completedAssignments->count() > 0 ?
             round($totalDuration / $completedAssignments->count(), 1) : 0;
     }
 }

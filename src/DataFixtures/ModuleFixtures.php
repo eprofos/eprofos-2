@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Training\Module;
 use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
 class ModuleFixtures extends Fixture implements DependentFixtureInterface
@@ -24,34 +26,34 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
 
         foreach ($formations as $formation) {
             $moduleCount = $faker->numberBetween(2, 5);
-            
+
             for ($i = 1; $i <= $moduleCount; $i++) {
                 $module = new Module();
-                
+
                 // Generate realistic module titles based on formation context
                 $moduleTitles = $this->getModuleTitles($formation->getTitle(), $i);
                 $title = $faker->randomElement($moduleTitles);
-                
+
                 $module->setTitle($title);
                 $module->setSlug($this->generateSlug($title, $formation->getId(), $i));
                 $module->setDescription($this->generateRealisticDescription($title, $formation->getTitle()));
-                
+
                 // Learning objectives (required by Qualiopi)
                 $learningObjectives = [];
                 for ($j = 0; $j < $faker->numberBetween(3, 6); $j++) {
                     $learningObjectives[] = $this->generateLearningObjective($faker, $formation->getTitle());
                 }
                 $module->setLearningObjectives($learningObjectives);
-                
+
                 // Prerequisites
                 $module->setPrerequisites($faker->optional(0.7)->realText(200));
-                
+
                 // Duration in hours
                 $module->setDurationHours($faker->numberBetween(4, 16));
-                
+
                 // Order index
                 $module->setOrderIndex($i);
-                
+
                 // Evaluation methods (required by Qualiopi)
                 $evaluationMethods = $faker->optional(0.8)->randomElement([
                     'Évaluation formative par exercices pratiques et mises en situation',
@@ -60,10 +62,10 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                     'Évaluation par les pairs et auto-évaluation',
                     'Étude de cas et analyse critique',
                     'Présentation orale et soutenance',
-                    'Portfolio de compétences développées'
+                    'Portfolio de compétences développées',
                 ]);
                 $module->setEvaluationMethods($evaluationMethods);
-                
+
                 // Teaching methods (required by Qualiopi)
                 $teachingMethods = $faker->optional(0.8)->randomElement([
                     'Cours magistral interactif avec support multimédia',
@@ -72,10 +74,10 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                     'Apprentissage par problèmes (APP)',
                     'Étude de cas réels et simulation',
                     'Pédagogie inversée (classe inversée)',
-                    'Formation-action et mise en situation professionnelle'
+                    'Formation-action et mise en situation professionnelle',
                 ]);
                 $module->setTeachingMethods($teachingMethods);
-                
+
                 // Resources
                 $resources = [];
                 $resourceTypes = [
@@ -85,31 +87,38 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                     'Fiches mémo',
                     'Outils logiciels',
                     'Documentation technique',
-                    'Bibliographie spécialisée'
+                    'Bibliographie spécialisée',
                 ];
                 for ($k = 0; $k < $faker->numberBetween(2, 4); $k++) {
                     $resources[] = $faker->randomElement($resourceTypes);
                 }
                 $module->setResources($resources);
-                
+
                 // Success criteria
                 $successCriteria = [];
                 for ($l = 0; $l < $faker->numberBetween(2, 4); $l++) {
                     $successCriteria[] = $this->generateSuccessCriteria($faker, $formation->getTitle());
                 }
                 $module->setSuccessCriteria($successCriteria);
-                
+
                 $module->setFormation($formation);
                 $module->setIsActive($faker->boolean(90)); // 90% chance of being active
-                
+
                 $manager->persist($module);
-                
+
                 // Add reference for other fixtures
                 $this->addReference('module_' . $formation->getId() . '_' . $i, $module);
             }
         }
 
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            FormationFixtures::class,
+        ];
     }
 
     private function getModuleTitles(string $formationTitle, int $moduleNumber): array
@@ -121,7 +130,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Programmation orientée objet avec PHP',
                 'Introduction au framework Symfony',
                 'Développement d\'applications web avec Symfony',
-                'Déploiement et bonnes pratiques'
+                'Déploiement et bonnes pratiques',
             ];
         }
 
@@ -131,7 +140,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Tableaux croisés dynamiques et analyse de données',
                 'Macros et automatisation VBA',
                 'Introduction à Power BI',
-                'Création de tableaux de bord interactifs'
+                'Création de tableaux de bord interactifs',
             ];
         }
 
@@ -141,7 +150,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Gestion et motivation d\'équipe',
                 'Communication managériale efficace',
                 'Prise de décision et résolution de conflits',
-                'Évaluation des performances et développement des talents'
+                'Évaluation des performances et développement des talents',
             ];
         }
 
@@ -151,7 +160,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Réseaux sociaux et community management',
                 'Publicité en ligne et référencement',
                 'Analytics et mesure de performance',
-                'Marketing automation et CRM'
+                'Marketing automation et CRM',
             ];
         }
 
@@ -161,7 +170,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Écritures comptables et grand livre',
                 'Bilan et compte de résultat',
                 'Analyse financière et ratios',
-                'Fiscalité et déclarations'
+                'Fiscalité et déclarations',
             ];
         }
 
@@ -171,7 +180,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Communication business et présentations',
                 'Négociation et réunions en anglais',
                 'Correspondance professionnelle',
-                'Anglais technique et spécialisé'
+                'Anglais technique et spécialisé',
             ];
         }
 
@@ -181,7 +190,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Scrum framework et rôles',
                 'Planification et estimation Agile',
                 'Ceremonies et outils Scrum',
-                'Coaching et amélioration continue'
+                'Coaching et amélioration continue',
             ];
         }
 
@@ -191,7 +200,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Identification et élimination des gaspillages',
                 'Outils Lean et amélioration continue',
                 'Mise en place du système Lean',
-                'Leadership et culture Lean'
+                'Leadership et culture Lean',
             ];
         }
 
@@ -201,7 +210,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Techniques d\'entretien et évaluation',
                 'Processus de sélection et décision',
                 'Intégration et suivi des nouveaux collaborateurs',
-                'Marque employeur et fidélisation'
+                'Marque employeur et fidélisation',
             ];
         }
 
@@ -211,7 +220,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
                 'Menaces et vulnérabilités informatiques',
                 'Mise en place de politiques de sécurité',
                 'Gestion des incidents et réponse aux menaces',
-                'Conformité et réglementation RGPD'
+                'Conformité et réglementation RGPD',
             ];
         }
 
@@ -221,7 +230,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
             'Concepts avancés et méthodologies',
             'Mise en pratique et cas d\'usage',
             'Perfectionnement et bonnes pratiques',
-            'Synthèse et évaluation finale'
+            'Synthèse et évaluation finale',
         ];
     }
 
@@ -232,11 +241,9 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
         $slug = preg_replace('/\s+/', '-', $slug);
         $slug = preg_replace('/-+/', '-', $slug);
         $slug = trim($slug, '-');
-        
+
         // Add formation ID and module index to ensure uniqueness
-        $slug = "formation-{$formationId}-module-{$moduleIndex}-{$slug}";
-        
-        return $slug;
+        return "formation-{$formationId}-module-{$moduleIndex}-{$slug}";
     }
 
     private function generateLearningObjective($faker, string $formationTitle): string
@@ -251,7 +258,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
             'Utiliser',
             'Créer',
             'Évaluer',
-            'Gérer'
+            'Gérer',
         ];
 
         $objectiveContexts = [
@@ -262,7 +269,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
             'les méthodes d\'analyse',
             'les stratégies efficaces',
             'les processus d\'amélioration',
-            'les indicateurs de performance'
+            'les indicateurs de performance',
         ];
 
         $starter = $faker->randomElement($objectiveStarters);
@@ -279,7 +286,7 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
             'Démontrer la maîtrise de {skill} concepts clés',
             'Produire un livrable conforme aux spécifications',
             'Présenter un projet validé par l\'évaluateur',
-            'Réaliser une mise en situation professionnelle réussie'
+            'Réaliser une mise en situation professionnelle réussie',
         ];
 
         $template = $faker->randomElement($criteriaTemplates);
@@ -297,13 +304,13 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
             'Introduction au framework Symfony' => 'Introduction au framework Symfony : architecture MVC, composants, bundles, et première application. Compréhension des concepts fondamentaux pour développer avec Symfony.',
             'Développement d\'applications web avec Symfony' => 'Développement complet d\'applications web avec Symfony : routing, contrôleurs, vues Twig, formulaires, sécurité, et intégration de bases de données avec Doctrine.',
             'Déploiement et bonnes pratiques' => 'Techniques de déploiement, gestion des environnements, tests automatisés, et bonnes pratiques de développement. Optimisation des performances et sécurité.',
-            
+
             'Maîtrise des fonctions avancées Excel' => 'Approfondissement des fonctions Excel : RECHERCHEV, INDEX/EQUIV, fonctions logiques complexes, et manipulation avancée des données.',
             'Tableaux croisés dynamiques et analyse de données' => 'Création et personnalisation de tableaux croisés dynamiques, analyse de grandes bases de données, et techniques de reporting avancées.',
             'Macros et automatisation VBA' => 'Initiation à VBA pour automatiser les tâches répétitives, création de macros personnalisées, et développement d\'applications Excel.',
             'Introduction à Power BI' => 'Découverte de Power BI : interface, connexions de données, modélisation, et création de premiers rapports interactifs.',
             'Création de tableaux de bord interactifs' => 'Conception de tableaux de bord professionnels avec Power BI : visualisations avancées, filtres interactifs, et publication.',
-            
+
             'Fondamentaux du leadership' => 'Comprendre les différents styles de leadership, développer sa présence de leader, et identifier ses forces et axes d\'amélioration.',
             'Gestion et motivation d\'équipe' => 'Techniques de management d\'équipe, motivation des collaborateurs, délégation efficace, et gestion des performances.',
             'Communication managériale efficace' => 'Développer ses compétences en communication : écoute active, feedback constructif, réunions efficaces, et gestion des conflits.',
@@ -312,12 +319,5 @@ class ModuleFixtures extends Fixture implements DependentFixtureInterface
         ];
 
         return $descriptions[$moduleTitle] ?? 'Ce module aborde les aspects essentiels de ' . strtolower($moduleTitle) . ' dans le contexte de la formation ' . $formationTitle . '.';
-    }
-
-    public function getDependencies(): array
-    {
-        return [
-            FormationFixtures::class,
-        ];
     }
 }

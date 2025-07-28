@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Assessment;
 
 use App\Entity\Assessment\Question;
@@ -18,7 +20,7 @@ class QuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active questions for a questionnaire
+     * Find active questions for a questionnaire.
      */
     public function findActiveByQuestionnaire(Questionnaire $questionnaire): array
     {
@@ -29,11 +31,12 @@ class QuestionRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find questions with options for a questionnaire
+     * Find questions with options for a questionnaire.
      */
     public function findByQuestionnaireWithOptions(Questionnaire $questionnaire): array
     {
@@ -47,11 +50,12 @@ class QuestionRepository extends ServiceEntityRepository
             ->orderBy('q.orderIndex', 'ASC')
             ->addOrderBy('o.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find questions by type
+     * Find questions by type.
      */
     public function findByType(string $type): array
     {
@@ -62,11 +66,12 @@ class QuestionRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get next order index for a questionnaire
+     * Get next order index for a questionnaire.
      */
     public function getNextOrderIndex(Questionnaire $questionnaire): int
     {
@@ -75,13 +80,14 @@ class QuestionRepository extends ServiceEntityRepository
             ->where('q.questionnaire = :questionnaire')
             ->setParameter('questionnaire', $questionnaire)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return ($result ?? 0) + 1;
     }
 
     /**
-     * Find questions with statistics
+     * Find questions with statistics.
      */
     public function findWithStatistics(Questionnaire $questionnaire): array
     {
@@ -93,16 +99,17 @@ class QuestionRepository extends ServiceEntityRepository
             ->groupBy('q.id')
             ->orderBy('q.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Reorder questions in a questionnaire
+     * Reorder questions in a questionnaire.
      */
     public function reorderQuestions(Questionnaire $questionnaire, array $questionIds): void
     {
         $em = $this->getEntityManager();
-        
+
         foreach ($questionIds as $index => $questionId) {
             $question = $this->find($questionId);
             if ($question && $question->getQuestionnaire() === $questionnaire) {
@@ -110,7 +117,7 @@ class QuestionRepository extends ServiceEntityRepository
                 $em->persist($question);
             }
         }
-        
+
         $em->flush();
     }
 }

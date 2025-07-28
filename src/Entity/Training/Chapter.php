@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\ChapterRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Chapter entity representing a chapter within a module
- * 
+ * Chapter entity representing a chapter within a module.
+ *
  * Contains detailed pedagogical content with specific learning objectives,
  * resources, and evaluation methods to meet Qualiopi requirements.
  */
@@ -38,7 +41,7 @@ class Chapter
     private ?string $description = null;
 
     /**
-     * Specific learning objectives for this chapter (required by Qualiopi)
+     * Specific learning objectives for this chapter (required by Qualiopi).
      *
      * Concrete, measurable objectives that participants will achieve
      * by completing this specific chapter.
@@ -48,7 +51,7 @@ class Chapter
     private ?array $learningObjectives = null;
 
     /**
-     * Detailed content outline for this chapter (required by Qualiopi)
+     * Detailed content outline for this chapter (required by Qualiopi).
      *
      * Structured content plan with key topics and subtopics covered.
      */
@@ -57,7 +60,7 @@ class Chapter
     private ?string $contentOutline = null;
 
     /**
-     * Prerequisites specific to this chapter (required by Qualiopi)
+     * Prerequisites specific to this chapter (required by Qualiopi).
      *
      * Knowledge or skills required before starting this chapter.
      */
@@ -66,7 +69,7 @@ class Chapter
     private ?string $prerequisites = null;
 
     /**
-     * Expected learning outcomes for this chapter (required by Qualiopi)
+     * Expected learning outcomes for this chapter (required by Qualiopi).
      *
      * What participants should know or be able to do after completing this chapter.
      */
@@ -75,7 +78,7 @@ class Chapter
     private ?array $learningOutcomes = null;
 
     /**
-     * Teaching methods used in this chapter (required by Qualiopi)
+     * Teaching methods used in this chapter (required by Qualiopi).
      *
      * Pedagogical approaches and methodologies employed.
      */
@@ -84,7 +87,7 @@ class Chapter
     private ?string $teachingMethods = null;
 
     /**
-     * Resources and materials for this chapter (required by Qualiopi)
+     * Resources and materials for this chapter (required by Qualiopi).
      *
      * Educational resources, documents, tools, and materials used.
      */
@@ -93,7 +96,7 @@ class Chapter
     private ?array $resources = null;
 
     /**
-     * Assessment methods for this chapter (required by Qualiopi)
+     * Assessment methods for this chapter (required by Qualiopi).
      *
      * How learning is evaluated within this chapter.
      */
@@ -102,7 +105,7 @@ class Chapter
     private ?string $assessmentMethods = null;
 
     /**
-     * Success criteria for chapter completion (required by Qualiopi)
+     * Success criteria for chapter completion (required by Qualiopi).
      *
      * Measurable indicators that demonstrate successful chapter completion.
      */
@@ -123,10 +126,10 @@ class Chapter
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'chapters')]
     #[ORM\JoinColumn(nullable: false)]
@@ -142,8 +145,13 @@ class Chapter
     public function __construct()
     {
         $this->courses = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -159,6 +167,7 @@ class Chapter
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -170,6 +179,7 @@ class Chapter
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -181,6 +191,7 @@ class Chapter
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -192,6 +203,7 @@ class Chapter
     public function setLearningObjectives(?array $learningObjectives): static
     {
         $this->learningObjectives = $learningObjectives;
+
         return $this;
     }
 
@@ -203,6 +215,7 @@ class Chapter
     public function setContentOutline(?string $contentOutline): static
     {
         $this->contentOutline = $contentOutline;
+
         return $this;
     }
 
@@ -214,6 +227,7 @@ class Chapter
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -225,6 +239,7 @@ class Chapter
     public function setLearningOutcomes(?array $learningOutcomes): static
     {
         $this->learningOutcomes = $learningOutcomes;
+
         return $this;
     }
 
@@ -236,6 +251,7 @@ class Chapter
     public function setTeachingMethods(?string $teachingMethods): static
     {
         $this->teachingMethods = $teachingMethods;
+
         return $this;
     }
 
@@ -247,6 +263,7 @@ class Chapter
     public function setResources(?array $resources): static
     {
         $this->resources = $resources;
+
         return $this;
     }
 
@@ -258,6 +275,7 @@ class Chapter
     public function setAssessmentMethods(?string $assessmentMethods): static
     {
         $this->assessmentMethods = $assessmentMethods;
+
         return $this;
     }
 
@@ -269,6 +287,7 @@ class Chapter
     public function setSuccessCriteria(?array $successCriteria): static
     {
         $this->successCriteria = $successCriteria;
+
         return $this;
     }
 
@@ -280,6 +299,7 @@ class Chapter
     public function setDurationMinutes(int $durationMinutes): static
     {
         $this->durationMinutes = $durationMinutes;
+
         return $this;
     }
 
@@ -291,6 +311,7 @@ class Chapter
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -302,28 +323,31 @@ class Chapter
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -335,6 +359,7 @@ class Chapter
     public function setModule(?Module $module): static
     {
         $this->module = $module;
+
         return $this;
     }
 
@@ -369,19 +394,17 @@ class Chapter
     }
 
     /**
-     * Get active courses for this chapter
-     * 
+     * Get active courses for this chapter.
+     *
      * @return Collection<int, Course>
      */
     public function getActiveCourses(): Collection
     {
-        return $this->courses->filter(function (Course $course) {
-            return $course->isActive();
-        });
+        return $this->courses->filter(static fn (Course $course) => $course->isActive());
     }
 
     /**
-     * Get total duration of all courses in this chapter
+     * Get total duration of all courses in this chapter.
      */
     public function getTotalCoursesDuration(): int
     {
@@ -389,11 +412,12 @@ class Chapter
         foreach ($this->courses as $course) {
             $totalDuration += $course->getDurationMinutes();
         }
+
         return $totalDuration;
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -405,7 +429,7 @@ class Chapter
             return $this->durationMinutes . 'min';
         }
 
-        $hours = intval($this->durationMinutes / 60);
+        $hours = (int) ($this->durationMinutes / 60);
         $minutes = $this->durationMinutes % 60;
 
         if ($minutes === 0) {
@@ -418,11 +442,6 @@ class Chapter
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

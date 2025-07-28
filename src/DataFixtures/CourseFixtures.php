@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Training\Course;
 use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -14,9 +16,9 @@ class CourseFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create('fr_FR');
-        
+
         $chapters = $manager->getRepository(Chapter::class)->findAll();
-        
+
         if (empty($chapters)) {
             return;
         }
@@ -68,14 +70,14 @@ class CourseFixtures extends Fixture implements DependentFixtureInterface
         ];
 
         $courseIndex = 0;
-        
+
         foreach ($chapters as $chapter) {
             $coursesPerChapter = $faker->numberBetween(2, 5);
-            
+
             for ($i = 0; $i < $coursesPerChapter; $i++) {
                 $type = $faker->randomElement($courseTypes);
                 $contents = $courseContents[$type];
-                
+
                 $course = new Course();
                 $course->setTitle($faker->randomElement($contents));
                 $course->setSlug($faker->slug . '-' . $courseIndex);
@@ -85,23 +87,23 @@ class CourseFixtures extends Fixture implements DependentFixtureInterface
                 $course->setDurationMinutes($faker->numberBetween(15, 120));
                 $course->setOrderIndex($i + 1);
                 $course->setChapter($chapter);
-                
+
                 // Set Qualiopi-compliant fields
                 $course->setLearningObjectives([
                     'Maîtriser les concepts fondamentaux de ' . strtolower($course->getTitle()),
                     'Appliquer les techniques présentées dans des cas concrets',
                     'Analyser et résoudre des problèmes pratiques',
                 ]);
-                
+
                 $course->setContentOutline($faker->paragraphs(2, true));
                 $course->setPrerequisites($faker->sentence);
-                
+
                 $course->setLearningOutcomes([
                     'Connaissance approfondie des concepts',
                     'Capacité d\'application pratique',
                     'Autonomie dans la résolution de problèmes',
                 ]);
-                
+
                 $course->setTeachingMethods($faker->randomElement([
                     'Cours magistral avec support visuel',
                     'Démonstration pratique et exercices',
@@ -109,14 +111,14 @@ class CourseFixtures extends Fixture implements DependentFixtureInterface
                     'Méthode participative et interactive',
                     'Étude de cas et analyse critique',
                 ]));
-                
+
                 $course->setResources([
                     'Support de cours PDF',
                     'Ressources documentaires',
                     'Outils logiciels',
                     'Accès à la plateforme en ligne',
                 ]);
-                
+
                 $course->setAssessmentMethods($faker->randomElement([
                     'Évaluation formative par quiz',
                     'Contrôle continu des exercices',
@@ -124,22 +126,22 @@ class CourseFixtures extends Fixture implements DependentFixtureInterface
                     'Présentation orale',
                     'Rapport d\'analyse',
                 ]));
-                
+
                 $course->setSuccessCriteria([
                     'Réussite des exercices pratiques',
                     'Validation des acquis par évaluation',
                     'Participation active aux activités',
                     'Qualité des livrables produits',
                 ]);
-                
+
                 $manager->persist($course);
                 $courseIndex++;
             }
         }
-        
+
         $manager->flush();
     }
-    
+
     public function getDependencies(): array
     {
         return [

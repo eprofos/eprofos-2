@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Student;
 
 use App\Entity\User\Student;
@@ -9,8 +11,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Student Dashboard Controller
- * 
+ * Student Dashboard Controller.
+ *
  * Main dashboard for authenticated students to access their learning resources,
  * training progress, and account information.
  */
@@ -19,8 +21,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class DashboardController extends AbstractController
 {
     /**
-     * Student dashboard homepage
-     * 
+     * Student dashboard homepage.
+     *
      * Displays an overview of the student's training progress, upcoming sessions,
      * recent activities, and quick access to learning resources.
      */
@@ -49,8 +51,8 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * Student profile page
-     * 
+     * Student profile page.
+     *
      * Displays and allows editing of student personal information and preferences.
      */
     #[Route('/profile', name: 'profile', methods: ['GET'])]
@@ -61,13 +63,13 @@ class DashboardController extends AbstractController
 
         return $this->render('student/dashboard/profile.html.twig', [
             'student' => $student,
-            'page_title' => 'Mon Profil'
+            'page_title' => 'Mon Profil',
         ]);
     }
 
     /**
-     * Student courses page
-     * 
+     * Student courses page.
+     *
      * Displays enrolled courses, available courses, and course history.
      */
     #[Route('/courses', name: 'courses', methods: ['GET'])]
@@ -82,15 +84,15 @@ class DashboardController extends AbstractController
             'enrolled_courses' => [], // TODO: Get enrolled courses
             'available_courses' => [], // TODO: Get available courses
             'completed_courses' => [], // TODO: Get completed courses
-            'page_title' => 'Mes Formations'
+            'page_title' => 'Mes Formations',
         ];
 
         return $this->render('student/dashboard/courses.html.twig', $coursesData);
     }
 
     /**
-     * Student progress page
-     * 
+     * Student progress page.
+     *
      * Displays detailed training progress, learning analytics, and achievements.
      */
     #[Route('/progress', name: 'progress', methods: ['GET'])]
@@ -106,15 +108,15 @@ class DashboardController extends AbstractController
             'course_progress' => [], // TODO: Get progress for each enrolled course
             'recent_achievements' => [], // TODO: Get recent achievements/badges
             'study_time_stats' => [], // TODO: Get study time statistics
-            'page_title' => 'Ma Progression'
+            'page_title' => 'Ma Progression',
         ];
 
         return $this->render('student/dashboard/progress.html.twig', $progressData);
     }
 
     /**
-     * Student certificates page
-     * 
+     * Student certificates page.
+     *
      * Displays earned certificates and available certifications.
      */
     #[Route('/certificates', name: 'certificates', methods: ['GET'])]
@@ -128,15 +130,15 @@ class DashboardController extends AbstractController
             'student' => $student,
             'earned_certificates' => [], // TODO: Get earned certificates
             'available_certifications' => [], // TODO: Get available certifications
-            'page_title' => 'Mes Certificats'
+            'page_title' => 'Mes Certificats',
         ];
 
         return $this->render('student/dashboard/certificates.html.twig', $certificatesData);
     }
 
     /**
-     * Student notifications page
-     * 
+     * Student notifications page.
+     *
      * Displays system notifications, course updates, and messages.
      */
     #[Route('/notifications', name: 'notifications', methods: ['GET'])]
@@ -150,15 +152,15 @@ class DashboardController extends AbstractController
             'student' => $student,
             'unread_notifications' => [], // TODO: Get unread notifications
             'all_notifications' => [], // TODO: Get all notifications
-            'page_title' => 'Notifications'
+            'page_title' => 'Notifications',
         ];
 
         return $this->render('student/dashboard/notifications.html.twig', $notificationsData);
     }
 
     /**
-     * Student settings page
-     * 
+     * Student settings page.
+     *
      * Allows students to modify account settings, preferences, and privacy options.
      */
     #[Route('/settings', name: 'settings', methods: ['GET'])]
@@ -169,7 +171,7 @@ class DashboardController extends AbstractController
 
         return $this->render('student/dashboard/settings.html.twig', [
             'student' => $student,
-            'page_title' => 'Paramètres'
+            'page_title' => 'Paramètres',
         ]);
     }
 }

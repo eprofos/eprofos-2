@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Training\Chapter;
 use App\Service\Training\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Event\PostPersistEventArgs;
-use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Events;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Chapter duration synchronization
- * DISABLED: Using DurationUpdateListener instead
+ * DISABLED: Using DurationUpdateListener instead.
  */
 // #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Chapter::class)]
 // #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Chapter::class)]
@@ -22,9 +25,8 @@ class ChapterListener
 {
     public function __construct(
         private DurationCalculationService $durationService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     public function postPersist(PostPersistEventArgs $args): void
     {
@@ -62,27 +64,26 @@ class ChapterListener
         if ($this->durationService->isSyncMode()) {
             return;
         }
-        
+
         try {
             $module = $chapter->getModule();
-            
+
             if ($module) {
                 // Update the parent module duration (which will cascade up)
                 $this->durationService->updateEntityDuration($module);
-                
+
                 $this->logger->info('Chapter duration change propagated', [
                     'chapter_id' => $chapter->getId(),
                     'chapter_title' => $chapter->getTitle(),
                     'module_id' => $module->getId(),
                     'module_title' => $module->getTitle(),
-                    'operation' => $operation
+                    'operation' => $operation,
                 ]);
             }
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update module duration from chapter', [
                 'chapter_id' => $chapter->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

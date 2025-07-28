@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Core;
 
 use App\Entity\Core\AttendanceRecord;
-use App\Entity\User\Student;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Session;
+use App\Entity\User\Student;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * AttendanceRecordRepository for managing attendance data and analytics
- * 
+ * AttendanceRecordRepository for managing attendance data and analytics.
+ *
  * Critical for Qualiopi Criterion 12 compliance - provides methods for tracking
  * attendance patterns, calculating attendance rates, and generating compliance reports.
  */
@@ -24,20 +27,20 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find or create attendance record for student and session
+     * Find or create attendance record for student and session.
      */
     public function findOrCreateForStudentAndSession(Student $student, Session $session): AttendanceRecord
     {
         $record = $this->findOneBy([
             'student' => $student,
-            'session' => $session
+            'session' => $session,
         ]);
 
         if (!$record) {
             $record = new AttendanceRecord();
             $record->setStudent($student);
             $record->setSession($session);
-            
+
             $this->getEntityManager()->persist($record);
             $this->getEntityManager()->flush();
         }
@@ -46,7 +49,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find attendance records for a specific student
+     * Find attendance records for a specific student.
      */
     public function findByStudent(Student $student): array
     {
@@ -57,11 +60,12 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('s.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find attendance records for a specific session
+     * Find attendance records for a specific session.
      */
     public function findBySession(Session $session): array
     {
@@ -72,11 +76,12 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->orderBy('s.lastName', 'ASC')
             ->addOrderBy('s.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find attendance records for a formation
+     * Find attendance records for a formation.
      */
     public function findByFormation(Formation $formation): array
     {
@@ -88,11 +93,12 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->orderBy('s.startDate', 'DESC')
             ->addOrderBy('st.lastName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find students with poor attendance (Qualiopi metric)
+     * Find students with poor attendance (Qualiopi metric).
      */
     public function findStudentsWithPoorAttendance(float $threshold = 70.0): array
     {
@@ -104,43 +110,45 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'st.email',
                 'COUNT(ar.id) as total_sessions',
                 'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as attended_sessions',
-                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate'
+                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate',
             ])
             ->leftJoin('ar.student', 'st')
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->groupBy('st.id', 'st.firstName', 'st.lastName', 'st.email')
             ->having('(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) < :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END)', 'ASC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Calculate attendance rate for a student
+     * Calculate attendance rate for a student.
      */
     public function calculateStudentAttendanceRate(Student $student): float
     {
         $result = $this->createQueryBuilder('ar')
             ->select([
                 'COUNT(ar.id) as total_sessions',
-                'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as attended_sessions'
+                'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as attended_sessions',
             ])
             ->where('ar.student = :student')
             ->setParameter('student', $student)
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
-        if ($result['total_sessions'] == 0) {
+        if ($result['total_sessions'] === 0) {
             return 100.0; // No sessions yet, consider as 100%
         }
 
@@ -148,27 +156,28 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Calculate attendance rate for a formation
+     * Calculate attendance rate for a formation.
      */
     public function calculateFormationAttendanceRate(Formation $formation): float
     {
         $result = $this->createQueryBuilder('ar')
             ->select([
                 'COUNT(ar.id) as total_records',
-                'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as attended_records'
+                'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as attended_records',
             ])
             ->leftJoin('ar.session', 's')
             ->where('s.formation = :formation')
             ->setParameter('formation', $formation)
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
-        if ($result['total_records'] == 0) {
+        if ($result['total_records'] === 0) {
             return 100.0;
         }
 
@@ -176,7 +185,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get attendance statistics for dashboard
+     * Get attendance statistics for dashboard.
      */
     public function getAttendanceStats(): array
     {
@@ -188,14 +197,15 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'SUM(CASE WHEN ar.status = :late THEN 1 ELSE 0 END) as late_count',
                 'SUM(CASE WHEN ar.status = :partial THEN 1 ELSE 0 END) as partial_count',
                 'SUM(CASE WHEN ar.excused = true THEN 1 ELSE 0 END) as excused_count',
-                'AVG(ar.participationScore) as average_participation'
+                'AVG(ar.participationScore) as average_participation',
             ])
             ->setParameter('present', AttendanceRecord::STATUS_PRESENT)
             ->setParameter('absent', AttendanceRecord::STATUS_ABSENT)
             ->setParameter('late', AttendanceRecord::STATUS_LATE)
             ->setParameter('partial', AttendanceRecord::STATUS_PARTIAL)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         // Calculate percentages
         $total = $result['total_records'] ?: 1; // Avoid division by zero
@@ -209,7 +219,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find students with frequent absences (risk indicator)
+     * Find students with frequent absences (risk indicator).
      */
     public function findFrequentAbsentees(int $absenceThreshold = 3): array
     {
@@ -219,7 +229,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'st.firstName',
                 'st.lastName',
                 'st.email',
-                'COUNT(ar.id) as absence_count'
+                'COUNT(ar.id) as absence_count',
             ])
             ->leftJoin('ar.student', 'st')
             ->where('ar.status = :absent')
@@ -229,16 +239,17 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->setParameter('threshold', $absenceThreshold)
             ->orderBy('COUNT(ar.id)', 'DESC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Find recent absentees (for follow-up)
+     * Find recent absentees (for follow-up).
      */
     public function findRecentAbsentees(int $days = 7): array
     {
-        $threshold = new \DateTime('-' . $days . ' days');
-        
+        $threshold = new DateTime('-' . $days . ' days');
+
         return $this->createQueryBuilder('ar')
             ->leftJoin('ar.student', 's')
             ->leftJoin('ar.session', 'sess')
@@ -248,39 +259,41 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->setParameter('threshold', $threshold)
             ->orderBy('sess.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get attendance trends over time
+     * Get attendance trends over time.
      */
     public function getAttendanceTrends(int $days = 30): array
     {
-        $startDate = new \DateTime('-' . $days . ' days');
-        
+        $startDate = new DateTime('-' . $days . ' days');
+
         return $this->createQueryBuilder('ar')
             ->select([
                 'DATE(s.startDate) as session_date',
                 'COUNT(ar.id) as total_records',
                 'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as present_count',
-                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate'
+                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate',
             ])
             ->leftJoin('ar.session', 's')
             ->where('s.startDate >= :startDate')
             ->setParameter('startDate', $startDate)
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->groupBy('session_date')
             ->orderBy('session_date', 'ASC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Export attendance data for Qualiopi compliance
+     * Export attendance data for Qualiopi compliance.
      */
     public function getQualiopi12AttendanceData(): array
     {
@@ -301,7 +314,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'ar.minutesLate',
                 'ar.minutesEarlyDeparture',
                 'ar.recordedAt',
-                'ar.recordedBy'
+                'ar.recordedBy',
             ])
             ->leftJoin('ar.student', 's')
             ->leftJoin('ar.session', 'sess')
@@ -309,11 +322,12 @@ class AttendanceRecordRepository extends ServiceEntityRepository
             ->orderBy('sess.startDate', 'DESC')
             ->addOrderBy('s.lastName', 'ASC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Find students needing attendance intervention
+     * Find students needing attendance intervention.
      */
     public function findStudentsNeedingAttendanceIntervention(): array
     {
@@ -327,27 +341,28 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'COUNT(ar.id) as total_sessions',
                 'SUM(CASE WHEN ar.status = :absent THEN 1 ELSE 0 END) as total_absences',
                 'SUM(CASE WHEN ar.status = :absent AND sess.startDate >= :recent_threshold THEN 1 ELSE 0 END) as recent_absences',
-                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate'
+                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate',
             ])
             ->leftJoin('ar.student', 'st')
             ->leftJoin('ar.session', 'sess')
             ->setParameter('absent', AttendanceRecord::STATUS_ABSENT)
-            ->setParameter('recent_threshold', new \DateTime('-14 days'))
+            ->setParameter('recent_threshold', new DateTime('-14 days'))
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->groupBy('st.id', 'st.firstName', 'st.lastName', 'st.email')
             ->having('(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) < 70 OR SUM(CASE WHEN ar.status = :absent AND sess.startDate >= :recent_threshold THEN 1 ELSE 0 END) >= 2')
             ->orderBy('(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id))', 'ASC')
             ->addOrderBy('SUM(CASE WHEN ar.status = :absent AND sess.startDate >= :recent_threshold THEN 1 ELSE 0 END)', 'DESC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
     }
 
     /**
-     * Get participation score statistics
+     * Get participation score statistics.
      */
     public function getParticipationStats(): array
     {
@@ -360,31 +375,33 @@ class AttendanceRecordRepository extends ServiceEntityRepository
                 'SUM(CASE WHEN ar.participationScore >= 8 THEN 1 ELSE 0 END) as excellent_count',
                 'SUM(CASE WHEN ar.participationScore >= 6 AND ar.participationScore < 8 THEN 1 ELSE 0 END) as good_count',
                 'SUM(CASE WHEN ar.participationScore >= 4 AND ar.participationScore < 6 THEN 1 ELSE 0 END) as average_count',
-                'SUM(CASE WHEN ar.participationScore < 4 THEN 1 ELSE 0 END) as poor_count'
+                'SUM(CASE WHEN ar.participationScore < 4 THEN 1 ELSE 0 END) as poor_count',
             ])
             ->where('ar.status IN (:present_statuses)')
             ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT, 
-                AttendanceRecord::STATUS_LATE, 
-                AttendanceRecord::STATUS_PARTIAL
+                AttendanceRecord::STATUS_PRESENT,
+                AttendanceRecord::STATUS_LATE,
+                AttendanceRecord::STATUS_PARTIAL,
             ])
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
     }
 
     /**
-     * Create advanced query builder for filtering
+     * Create advanced query builder for filtering.
      */
     public function createAdvancedFilterQuery(): QueryBuilder
     {
         return $this->createQueryBuilder('ar')
             ->leftJoin('ar.student', 's')
             ->leftJoin('ar.session', 'sess')
-            ->leftJoin('sess.formation', 'f');
+            ->leftJoin('sess.formation', 'f')
+        ;
     }
 
     /**
-     * Save entity
+     * Save entity.
      */
     public function save(AttendanceRecord $entity, bool $flush = false): void
     {
@@ -396,7 +413,7 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove entity
+     * Remove entity.
      */
     public function remove(AttendanceRecord $entity, bool $flush = false): void
     {

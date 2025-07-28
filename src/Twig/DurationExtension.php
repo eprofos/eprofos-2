@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Twig;
 
 use App\Service\Training\DurationCalculationService;
@@ -8,14 +10,13 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
- * Twig extension for duration formatting and calculation
+ * Twig extension for duration formatting and calculation.
  */
 class DurationExtension extends AbstractExtension
 {
     public function __construct(
-        private DurationCalculationService $durationService
-    ) {
-    }
+        private DurationCalculationService $durationService,
+    ) {}
 
     public function getFilters(): array
     {
@@ -38,7 +39,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Format duration for display
+     * Format duration for display.
      */
     public function formatDuration(int $value, string $unit = 'minutes'): string
     {
@@ -46,7 +47,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Convert minutes to hours
+     * Convert minutes to hours.
      */
     public function minutesToHours(int $minutes, bool $roundUp = true): int
     {
@@ -54,7 +55,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Convert hours to minutes
+     * Convert hours to minutes.
      */
     public function hoursToMinutes(int $hours): int
     {
@@ -62,7 +63,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Calculate total duration for a course
+     * Calculate total duration for a course.
      */
     public function calculateCourseDuration(object $course): int
     {
@@ -70,7 +71,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Calculate total duration for a chapter
+     * Calculate total duration for a chapter.
      */
     public function calculateChapterDuration(object $chapter): int
     {
@@ -78,7 +79,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Calculate total duration for a module
+     * Calculate total duration for a module.
      */
     public function calculateModuleDuration(object $module): int
     {
@@ -86,7 +87,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Calculate total duration for a formation
+     * Calculate total duration for a formation.
      */
     public function calculateFormationDuration(object $formation): int
     {
@@ -94,7 +95,7 @@ class DurationExtension extends AbstractExtension
     }
 
     /**
-     * Get duration statistics for an entity
+     * Get duration statistics for an entity.
      */
     public function getDurationStatistics(object $entity): array
     {

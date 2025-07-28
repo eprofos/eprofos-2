@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentTemplateRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentTemplate entity - Reusable Document Templates
- * 
+ * DocumentTemplate entity - Reusable Document Templates.
+ *
  * Provides a template system for creating consistent documents of specific types.
  * Templates can include predefined content, metadata structure, and configuration
  * to ensure consistency and speed up document creation.
@@ -31,7 +34,7 @@ class DocumentTemplate
         min: 3,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $name = null;
 
@@ -41,11 +44,11 @@ class DocumentTemplate
         min: 3,
         max: 500,
         minMessage: 'Le slug doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-z0-9\-\/]+$/',
-        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.'
+        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.',
     )]
     private ?string $slug = null;
 
@@ -88,10 +91,10 @@ class DocumentTemplate
     private int $usageCount = 0;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -103,14 +106,19 @@ class DocumentTemplate
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?: 'Template #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -126,6 +134,7 @@ class DocumentTemplate
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -137,6 +146,7 @@ class DocumentTemplate
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -148,6 +158,7 @@ class DocumentTemplate
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -159,6 +170,7 @@ class DocumentTemplate
     public function setDocumentType(?DocumentType $documentType): static
     {
         $this->documentType = $documentType;
+
         return $this;
     }
 
@@ -170,6 +182,7 @@ class DocumentTemplate
     public function setTemplateContent(?string $templateContent): static
     {
         $this->templateContent = $templateContent;
+
         return $this;
     }
 
@@ -181,6 +194,7 @@ class DocumentTemplate
     public function setDefaultMetadata(?array $defaultMetadata): static
     {
         $this->defaultMetadata = $defaultMetadata;
+
         return $this;
     }
 
@@ -192,6 +206,7 @@ class DocumentTemplate
     public function setPlaceholders(?array $placeholders): static
     {
         $this->placeholders = $placeholders;
+
         return $this;
     }
 
@@ -203,6 +218,7 @@ class DocumentTemplate
     public function setConfiguration(?array $configuration): static
     {
         $this->configuration = $configuration;
+
         return $this;
     }
 
@@ -214,6 +230,7 @@ class DocumentTemplate
     public function setIcon(?string $icon): static
     {
         $this->icon = $icon;
+
         return $this;
     }
 
@@ -225,6 +242,7 @@ class DocumentTemplate
     public function setColor(?string $color): static
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -236,6 +254,7 @@ class DocumentTemplate
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -247,6 +266,7 @@ class DocumentTemplate
     public function setIsDefault(bool $isDefault): static
     {
         $this->isDefault = $isDefault;
+
         return $this;
     }
 
@@ -258,6 +278,7 @@ class DocumentTemplate
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -269,28 +290,31 @@ class DocumentTemplate
     public function setUsageCount(int $usageCount): static
     {
         $this->usageCount = $usageCount;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -302,6 +326,7 @@ class DocumentTemplate
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -313,24 +338,26 @@ class DocumentTemplate
     public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
+
         return $this;
     }
 
     /**
-     * Business logic methods
+     * Business logic methods.
      */
 
     /**
-     * Increment usage count
+     * Increment usage count.
      */
     public function incrementUsage(): self
     {
         $this->usageCount++;
+
         return $this;
     }
 
     /**
-     * Render template content with placeholders
+     * Render template content with placeholders.
      */
     public function renderContent(array $variables = []): string
     {
@@ -365,7 +392,7 @@ class DocumentTemplate
     }
 
     /**
-     * Get placeholder definitions
+     * Get placeholder definitions.
      */
     public function getPlaceholderDefinitions(): array
     {
@@ -373,14 +400,15 @@ class DocumentTemplate
     }
 
     /**
-     * Create document from this template
+     * Create document from this template.
      */
     public function createDocument(array $variables = [], ?Admin $createdBy = null): Document
     {
         $document = new Document();
         $document->setDocumentType($this->documentType)
-                 ->setContent($this->renderContent($variables))
-                 ->setCreatedBy($createdBy);
+            ->setContent($this->renderContent($variables))
+            ->setCreatedBy($createdBy)
+        ;
 
         // Apply default metadata
         if ($this->defaultMetadata) {
@@ -408,7 +436,7 @@ class DocumentTemplate
     }
 
     /**
-     * Get type label for display
+     * Get type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -416,7 +444,7 @@ class DocumentTemplate
     }
 
     /**
-     * Get created by name for display
+     * Get created by name for display.
      */
     public function getCreatedByName(): string
     {
@@ -424,7 +452,7 @@ class DocumentTemplate
     }
 
     /**
-     * Get updated by name for display
+     * Get updated by name for display.
      */
     public function getUpdatedByName(): string
     {
@@ -432,7 +460,7 @@ class DocumentTemplate
     }
 
     /**
-     * Check if template has specific placeholder
+     * Check if template has specific placeholder.
      */
     public function hasPlaceholder(string $placeholder): bool
     {
@@ -440,29 +468,31 @@ class DocumentTemplate
     }
 
     /**
-     * Add or update placeholder
+     * Add or update placeholder.
      */
     public function setPlaceholder(string $name, array $config): self
     {
         $placeholders = $this->placeholders ?? [];
         $placeholders[$name] = $config;
         $this->placeholders = $placeholders;
+
         return $this;
     }
 
     /**
-     * Remove placeholder
+     * Remove placeholder.
      */
     public function removePlaceholder(string $name): self
     {
         if ($this->placeholders && isset($this->placeholders[$name])) {
             unset($this->placeholders[$name]);
         }
+
         return $this;
     }
 
     /**
-     * Get all placeholder names
+     * Get all placeholder names.
      */
     public function getPlaceholderNames(): array
     {
@@ -470,7 +500,7 @@ class DocumentTemplate
     }
 
     /**
-     * Validate template content
+     * Validate template content.
      */
     public function validateContent(): array
     {
@@ -495,10 +525,5 @@ class DocumentTemplate
         }
 
         return $errors;
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?: 'Template #' . $this->id;
     }
 }

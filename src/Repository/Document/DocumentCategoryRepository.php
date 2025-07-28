@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\DocumentCategory;
@@ -17,7 +19,7 @@ class DocumentCategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all root categories (no parent) ordered by sort order
+     * Find all root categories (no parent) ordered by sort order.
      */
     public function findRootCategories(): array
     {
@@ -28,11 +30,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->orderBy('dc.sortOrder', 'ASC')
             ->addOrderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find all categories with children (hierarchical tree)
+     * Find all categories with children (hierarchical tree).
      */
     public function findCategoryTree(): array
     {
@@ -43,13 +46,14 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->addOrderBy('dc.sortOrder', 'ASC')
             ->addOrderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return $this->buildTree($categories);
     }
 
     /**
-     * Find category by slug
+     * Find category by slug.
      */
     public function findBySlug(string $slug): ?DocumentCategory
     {
@@ -59,11 +63,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find categories at specific level
+     * Find categories at specific level.
      */
     public function findByLevel(int $level): array
     {
@@ -75,11 +80,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->orderBy('dc.sortOrder', 'ASC')
             ->addOrderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find children of a specific category
+     * Find children of a specific category.
      */
     public function findChildren(DocumentCategory $parent): array
     {
@@ -91,11 +97,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->orderBy('dc.sortOrder', 'ASC')
             ->addOrderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find all categories with document counts
+     * Find all categories with document counts.
      */
     public function findWithDocumentCounts(): array
     {
@@ -108,11 +115,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->orderBy('dc.level', 'ASC')
             ->addOrderBy('dc.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find categories that have documents
+     * Find categories that have documents.
      */
     public function findWithDocuments(): array
     {
@@ -122,11 +130,12 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search categories by name
+     * Search categories by name.
      */
     public function searchByName(string $search): array
     {
@@ -137,16 +146,17 @@ class DocumentCategoryRepository extends ServiceEntityRepository
             ->setParameter('search', '%' . $search . '%')
             ->orderBy('dc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get category path by slug (breadcrumb)
+     * Get category path by slug (breadcrumb).
      */
     public function getCategoryPath(string $slug): array
     {
         $category = $this->findBySlug($slug);
-        
+
         if (!$category) {
             return [];
         }
@@ -155,35 +165,20 @@ class DocumentCategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Build hierarchical tree from flat array
-     */
-    private function buildTree(array $categories, ?DocumentCategory $parent = null): array
-    {
-        $tree = [];
-
-        foreach ($categories as $category) {
-            if ($category->getParent() === $parent) {
-                $category->setChildren($this->buildTree($categories, $category));
-                $tree[] = $category;
-            }
-        }
-
-        return $tree;
-    }
-
-    /**
-     * Get next sort order for a parent category
+     * Get next sort order for a parent category.
      */
     public function getNextSortOrder(?DocumentCategory $parent = null): int
     {
         $qb = $this->createQueryBuilder('dc')
             ->select('MAX(dc.sortOrder)')
             ->where('dc.isActive = :active')
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         if ($parent) {
             $qb->andWhere('dc.parent = :parent')
-               ->setParameter('parent', $parent);
+                ->setParameter('parent', $parent)
+            ;
         } else {
             $qb->andWhere('dc.parent IS NULL');
         }
@@ -209,5 +204,22 @@ class DocumentCategoryRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Build hierarchical tree from flat array.
+     */
+    private function buildTree(array $categories, ?DocumentCategory $parent = null): array
+    {
+        $tree = [];
+
+        foreach ($categories as $category) {
+            if ($category->getParent() === $parent) {
+                $category->setChildren($this->buildTree($categories, $category));
+                $tree[] = $category;
+            }
+        }
+
+        return $tree;
     }
 }

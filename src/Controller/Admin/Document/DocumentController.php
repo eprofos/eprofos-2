@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\Document;
 use App\Form\Document\DocumentType as DocumentFormType;
 use App\Repository\Document\DocumentRepository;
 use App\Service\Document\DocumentService;
-use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,8 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Document Controller
- * 
+ * Admin Document Controller.
+ *
  * Handles CRUD operations for documents in the admin interface.
  * Provides complete document management with type-specific features.
  */
@@ -26,12 +28,11 @@ class DocumentController extends AbstractController
 {
     public function __construct(
         private DocumentService $documentService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * List all documents with filtering and pagination
+     * List all documents with filtering and pagination.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, DocumentRepository $documentRepository): Response
@@ -50,13 +51,14 @@ class DocumentController extends AbstractController
         // Build query with filters
         $queryBuilder = $documentRepository->createAdminQueryBuilder($filters);
         $totalItems = count($queryBuilder->getQuery()->getResult());
-        
+
         // Apply pagination
         $documents = $queryBuilder
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $totalPages = ceil($totalItems / $limit);
 
@@ -79,7 +81,7 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Show a specific document
+     * Show a specific document.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Document $document): Response
@@ -90,13 +92,13 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Create a new document
+     * Create a new document.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $document = new Document();
-        
+
         // Pre-select document type if provided
         $typeId = $request->query->get('type');
         if ($typeId) {
@@ -112,19 +114,19 @@ class DocumentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $result = $this->documentService->createDocument($document);
-                
+
                 if ($result['success']) {
                     $this->addFlash('success', 'Document créé avec succès.');
+
                     return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
-                } else {
-                    foreach ($result['errors'] as $error) {
-                        $this->addFlash('error', $error);
-                    }
                 }
-            } catch (\Exception $e) {
+                foreach ($result['errors'] as $error) {
+                    $this->addFlash('error', $error);
+                }
+            } catch (Exception $e) {
                 $this->logger->error('Error creating document', [
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de la création du document.');
             }
@@ -137,7 +139,7 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Edit an existing document
+     * Edit an existing document.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Document $document): Response
@@ -154,6 +156,7 @@ class DocumentController extends AbstractController
                 // Validate version message for new versions
                 if ($versionType !== 'none' && !$versionMessage) {
                     $this->addFlash('error', 'Un message de version est obligatoire pour créer une nouvelle version.');
+
                     return $this->render('admin/document/edit.html.twig', [
                         'document' => $document,
                         'form' => $form,
@@ -163,28 +166,28 @@ class DocumentController extends AbstractController
                 // Pass version data to service
                 $versionData = [
                     'type' => $versionType,
-                    'message' => $versionMessage
+                    'message' => $versionMessage,
                 ];
 
                 $result = $this->documentService->updateDocument($document, $versionData);
-                
+
                 if ($result['success']) {
                     $message = 'Document modifié avec succès.';
                     if (isset($result['new_version'])) {
                         $message .= sprintf(' Nouvelle version %s créée.', $result['new_version']->getVersion());
                     }
                     $this->addFlash('success', $message);
+
                     return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
-                } else {
-                    foreach ($result['errors'] as $error) {
-                        $this->addFlash('error', $error);
-                    }
                 }
-            } catch (\Exception $e) {
+                foreach ($result['errors'] as $error) {
+                    $this->addFlash('error', $error);
+                }
+            } catch (Exception $e) {
                 $this->logger->error('Error updating document', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de la modification du document.');
             }
@@ -197,35 +200,38 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Delete a document
+     * Delete a document.
      */
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Document $document): Response
     {
         // CSRF protection
-        if ($this->isCsrfTokenValid('delete'.$document->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->request->get('_token'))) {
             try {
                 $result = $this->documentService->deleteDocument($document);
-                
+
                 if ($result['success']) {
                     $this->addFlash('success', 'Document supprimé avec succès.');
                 } else {
                     foreach ($result['errors'] as $error) {
                         $this->addFlash('error', $error);
                     }
+
                     return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error deleting document', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de la suppression du document.');
+
                 return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
             }
         } else {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
         }
 
@@ -233,15 +239,15 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Publish a document
+     * Publish a document.
      */
     #[Route('/{id}/publish', name: 'publish', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function publish(Request $request, Document $document): Response
     {
-        if ($this->isCsrfTokenValid('publish'.$document->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('publish' . $document->getId(), $request->request->get('_token'))) {
             try {
                 $result = $this->documentService->publishDocument($document);
-                
+
                 if ($result['success']) {
                     $this->addFlash('success', 'Document publié avec succès.');
                 } else {
@@ -249,11 +255,11 @@ class DocumentController extends AbstractController
                         $this->addFlash('error', $error);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error publishing document', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de la publication.');
             }
@@ -265,15 +271,15 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Archive a document
+     * Archive a document.
      */
     #[Route('/{id}/archive', name: 'archive', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function archive(Request $request, Document $document): Response
     {
-        if ($this->isCsrfTokenValid('archive'.$document->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('archive' . $document->getId(), $request->request->get('_token'))) {
             try {
                 $result = $this->documentService->archiveDocument($document);
-                
+
                 if ($result['success']) {
                     $this->addFlash('success', 'Document archivé avec succès.');
                 } else {
@@ -281,11 +287,11 @@ class DocumentController extends AbstractController
                         $this->addFlash('error', $error);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error archiving document', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de l\'archivage.');
             }
@@ -297,28 +303,28 @@ class DocumentController extends AbstractController
     }
 
     /**
-     * Duplicate a document
+     * Duplicate a document.
      */
     #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, Document $document): Response
     {
-        if ($this->isCsrfTokenValid('duplicate'.$document->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('duplicate' . $document->getId(), $request->request->get('_token'))) {
             try {
                 $result = $this->documentService->duplicateDocument($document);
-                
+
                 if ($result['success']) {
                     $this->addFlash('success', 'Document dupliqué avec succès.');
+
                     return $this->redirectToRoute('admin_document_edit', ['id' => $result['document']->getId()]);
-                } else {
-                    foreach ($result['errors'] as $error) {
-                        $this->addFlash('error', $error);
-                    }
                 }
-            } catch (\Exception $e) {
+                foreach ($result['errors'] as $error) {
+                    $this->addFlash('error', $error);
+                }
+            } catch (Exception $e) {
                 $this->logger->error('Error duplicating document', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur est survenue lors de la duplication.');
             }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Assessment\Question;
@@ -9,35 +11,35 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * QuestionOption fixtures for EPROFOS platform
- * 
+ * QuestionOption fixtures for EPROFOS platform.
+ *
  * Creates realistic options for multiple choice and single choice questions
  */
 class QuestionOptionFixtures extends Fixture implements DependentFixtureInterface
 {
     /**
-     * Load question option fixtures
+     * Load question option fixtures.
      */
     public function load(ObjectManager $manager): void
     {
         // PHP/Symfony questionnaire options
         $this->createPhpSymfonyOptions($manager);
-        
+
         // Leadership questionnaire options
         $this->createLeadershipOptions($manager);
-        
+
         // Cybersecurity questionnaire options
         $this->createCybersecurityOptions($manager);
-        
+
         // Excel questionnaire options
         $this->createExcelOptions($manager);
-        
+
         // English questionnaire options
         $this->createEnglishOptions($manager);
-        
+
         // Marketing satisfaction options
         $this->createMarketingSatisfactionQuestions($manager);
-        
+
         // General satisfaction options
         $this->createGeneralSatisfactionOptions($manager);
 
@@ -45,7 +47,17 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for PHP/Symfony questionnaire
+     * Define fixture dependencies.
+     */
+    public function getDependencies(): array
+    {
+        return [
+            QuestionFixtures::class,
+        ];
+    }
+
+    /**
+     * Create options for PHP/Symfony questionnaire.
      */
     private function createPhpSymfonyOptions(ObjectManager $manager): void
     {
@@ -122,7 +134,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for Leadership questionnaire
+     * Create options for Leadership questionnaire.
      */
     private function createLeadershipOptions(ObjectManager $manager): void
     {
@@ -185,7 +197,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for Cybersecurity questionnaire
+     * Create options for Cybersecurity questionnaire.
      */
     private function createCybersecurityOptions(ObjectManager $manager): void
     {
@@ -259,7 +271,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for Excel questionnaire
+     * Create options for Excel questionnaire.
      */
     private function createExcelOptions(ObjectManager $manager): void
     {
@@ -363,7 +375,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for English questionnaire
+     * Create options for English questionnaire.
      */
     private function createEnglishOptions(ObjectManager $manager): void
     {
@@ -455,7 +467,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for Marketing satisfaction questionnaire
+     * Create options for Marketing satisfaction questionnaire.
      */
     private function createMarketingSatisfactionQuestions(ObjectManager $manager): void
     {
@@ -525,7 +537,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Create options for General satisfaction questionnaire
+     * Create options for General satisfaction questionnaire.
      */
     private function createGeneralSatisfactionOptions(ObjectManager $manager): void
     {
@@ -606,7 +618,7 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
     }
 
     /**
-     * Helper method to create options for a question
+     * Helper method to create options for a question.
      */
     private function createOptionsForQuestion(ObjectManager $manager, Question $question, array $optionsData): void
     {
@@ -620,15 +632,5 @@ class QuestionOptionFixtures extends Fixture implements DependentFixtureInterfac
 
             $manager->persist($option);
         }
-    }
-
-    /**
-     * Define fixture dependencies
-     */
-    public function getDependencies(): array
-    {
-        return [
-            QuestionFixtures::class,
-        ];
     }
 }

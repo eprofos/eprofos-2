@@ -6,7 +6,9 @@ namespace App\Command;
 
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\Analysis\AnalysisEmailNotificationService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -17,13 +19,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Command to send reminder emails for pending needs analysis requests.
- * 
+ *
  * This command identifies requests that have been sent but not completed
  * and sends reminder emails to encourage completion before expiration.
  */
 #[AsCommand(
     name: 'app:needs-analysis:remind',
-    description: 'Send reminder emails for pending needs analysis requests'
+    description: 'Send reminder emails for pending needs analysis requests',
 )]
 class NeedsAnalysisReminderCommand extends Command
 {
@@ -31,7 +33,7 @@ class NeedsAnalysisReminderCommand extends Command
         private readonly NeedsAnalysisRequestRepository $requestRepository,
         private readonly AnalysisEmailNotificationService $emailService,
         private readonly EntityManagerInterface $entityManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -47,25 +49,26 @@ class NeedsAnalysisReminderCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Send reminders for requests expiring within this many days',
-                7
+                7,
             )
             ->addOption(
                 'dry-run',
                 'd',
                 InputOption::VALUE_NONE,
-                'Show what reminders would be sent without actually sending emails'
+                'Show what reminders would be sent without actually sending emails',
             )
             ->addOption(
                 'force',
                 'f',
                 InputOption::VALUE_NONE,
-                'Send reminders even if they were recently sent'
+                'Send reminders even if they were recently sent',
             )
             ->setHelp(
                 'This command sends reminder emails to users who have pending needs analysis requests ' .
                 'that are approaching their expiration date. By default, reminders are sent for requests ' .
-                'expiring within 7 days.'
-            );
+                'expiring within 7 days.',
+            )
+        ;
     }
 
     /**
@@ -82,13 +85,13 @@ class NeedsAnalysisReminderCommand extends Command
 
         try {
             // Calculate the date threshold for reminders
-            $reminderDate = new \DateTime();
+            $reminderDate = new DateTime();
             $reminderDate->modify(sprintf('+%d days', $daysBeforeExpiry));
 
             $io->info(sprintf(
                 'Looking for pending requests expiring before %s (%d days from now)',
                 $reminderDate->format('Y-m-d'),
-                $daysBeforeExpiry
+                $daysBeforeExpiry,
             ));
 
             // Get requests that need reminders
@@ -96,6 +99,7 @@ class NeedsAnalysisReminderCommand extends Command
 
             if (empty($pendingRequests)) {
                 $io->success('No pending requests found that need reminders.');
+
                 return Command::SUCCESS;
             }
 
@@ -109,6 +113,7 @@ class NeedsAnalysisReminderCommand extends Command
 
             if (empty($requestsToRemind)) {
                 $io->success('No requests need reminders at this time (recent reminders already sent).');
+
                 return Command::SUCCESS;
             }
 
@@ -117,7 +122,7 @@ class NeedsAnalysisReminderCommand extends Command
             // Display requests that will receive reminders
             $tableData = [];
             foreach ($requestsToRemind as $request) {
-                $daysUntilExpiry = $request->getExpiresAt()->diff(new \DateTime())->days;
+                $daysUntilExpiry = $request->getExpiresAt()->diff(new DateTime())->days;
                 $tableData[] = [
                     $request->getId(),
                     $request->getContactEmail(),
@@ -125,23 +130,25 @@ class NeedsAnalysisReminderCommand extends Command
                     $request->getCreatedAt()->format('Y-m-d'),
                     $request->getExpiresAt()->format('Y-m-d'),
                     $daysUntilExpiry,
-                    $request->getLastReminderSentAt() ? $request->getLastReminderSentAt()->format('Y-m-d') : 'Never'
+                    $request->getLastReminderSentAt() ? $request->getLastReminderSentAt()->format('Y-m-d') : 'Never',
                 ];
             }
 
             $io->table(
                 ['ID', 'Email', 'Type', 'Created', 'Expires', 'Days Left', 'Last Reminder'],
-                $tableData
+                $tableData,
             );
 
             if ($isDryRun) {
                 $io->note('DRY RUN: No emails will be sent.');
+
                 return Command::SUCCESS;
             }
 
             // Confirm before proceeding (unless force is used)
             if (!$isForce && !$io->confirm('Do you want to send reminder emails?', false)) {
                 $io->info('Operation cancelled.');
+
                 return Command::SUCCESS;
             }
 
@@ -155,20 +162,19 @@ class NeedsAnalysisReminderCommand extends Command
             foreach ($requestsToRemind as $request) {
                 try {
                     $this->emailService->sendExpirationReminder($request);
-                    
+
                     // Update the last reminder sent timestamp
-                    $request->setLastReminderSentAt(new \DateTime());
+                    $request->setLastReminderSentAt(new DateTime());
                     $successCount++;
-                    
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $errorCount++;
                     $this->logger->error('Failed to send reminder email', [
                         'request_id' => $request->getId(),
                         'email' => $request->getContactEmail(),
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
-                
+
                 $progressBar->advance();
             }
 
@@ -194,39 +200,41 @@ class NeedsAnalysisReminderCommand extends Command
                 'success_count' => $successCount,
                 'error_count' => $errorCount,
                 'days_before_expiry' => $daysBeforeExpiry,
-                'command' => 'app:needs-analysis:remind'
+                'command' => 'app:needs-analysis:remind',
             ]);
 
             return $errorCount > 0 ? Command::FAILURE : Command::SUCCESS;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $io->error(sprintf('An error occurred: %s', $e->getMessage()));
-            
+
             $this->logger->error('Error in needs analysis reminder command', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return Command::FAILURE;
         }
     }
 
     /**
      * Determine if a reminder should be sent for the given request.
-     * 
+     *
      * Reminders are not sent if one was already sent within the last 3 days
      * to avoid spamming users.
+     *
+     * @param mixed $request
      */
     private function shouldSendReminder($request): bool
     {
         $lastReminderSent = $request->getLastReminderSentAt();
-        
+
         if (!$lastReminderSent) {
             return true; // No reminder sent yet
         }
 
         // Don't send reminder if one was sent within the last 3 days
-        $threeDaysAgo = new \DateTime('-3 days');
+        $threeDaysAgo = new DateTime('-3 days');
+
         return $lastReminderSent < $threeDaysAgo;
     }
 }

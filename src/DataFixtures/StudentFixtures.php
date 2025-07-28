@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Student Fixtures
- * 
+ * Student Fixtures.
+ *
  * Creates sample student data for testing and development.
  */
 class StudentFixtures extends Fixture
@@ -32,7 +36,7 @@ class StudentFixtures extends Fixture
         $student->setFirstName('Jean');
         $student->setLastName('Dupont');
         $student->setPhone('01 23 45 67 89');
-        $student->setBirthDate(new \DateTime('1990-05-15'));
+        $student->setBirthDate(new DateTime('1990-05-15'));
         $student->setAddress('123 rue de la Formation');
         $student->setPostalCode('75001');
         $student->setCity('Paris');
@@ -41,11 +45,11 @@ class StudentFixtures extends Fixture
         $student->setProfession('Développeur Web');
         $student->setCompany('Tech Corp');
         $student->setEmailVerified(true);
-        $student->setEmailVerifiedAt(new \DateTimeImmutable('-1 week'));
-        
+        $student->setEmailVerifiedAt(new DateTimeImmutable('-1 week'));
+
         $hashedPassword = $this->passwordHasher->hashPassword($student, 'password');
         $student->setPassword($hashedPassword);
-        
+
         $manager->persist($student);
         $this->addReference('student-main', $student);
 
@@ -62,24 +66,24 @@ class StudentFixtures extends Fixture
             $student->setCity($faker->optional(0.7)->city);
             $student->setCountry($faker->optional(0.5)->country);
             $student->setEducationLevel($faker->optional(0.6)->randomElement([
-                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat'
+                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat',
             ]));
             $student->setProfession($faker->optional(0.8)->jobTitle);
             $student->setCompany($faker->optional(0.6)->company);
-            
+
             // Random verification status
             $isVerified = $faker->boolean(85); // 85% chance of being verified
             $student->setEmailVerified($isVerified);
             if ($isVerified) {
-                $student->setEmailVerifiedAt(new \DateTimeImmutable($faker->dateTimeBetween('-6 months', '-1 day')->format('Y-m-d H:i:s')));
+                $student->setEmailVerifiedAt(new DateTimeImmutable($faker->dateTimeBetween('-6 months', '-1 day')->format('Y-m-d H:i:s')));
             }
-            
+
             // Random activity status
             $student->setIsActive($faker->boolean(95)); // 95% chance of being active
-            
+
             $hashedPassword = $this->passwordHasher->hashPassword($student, 'password');
             $student->setPassword($hashedPassword);
-            
+
             $manager->persist($student);
             $this->addReference('student-' . $i, $student);
         }
@@ -97,18 +101,18 @@ class StudentFixtures extends Fixture
             $student->setCity($faker->optional(0.7)->city);
             $student->setCountry($faker->optional(0.5)->country);
             $student->setEducationLevel($faker->optional(0.6)->randomElement([
-                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat'
+                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat',
             ]));
             $student->setProfession($faker->optional(0.8)->jobTitle);
             $student->setCompany($faker->optional(0.6)->company);
-            
+
             // Unverified email
             $student->setEmailVerified(false);
             $student->generateEmailVerificationToken();
-            
+
             $hashedPassword = $this->passwordHasher->hashPassword($student, 'password');
             $student->setPassword($hashedPassword);
-            
+
             $manager->persist($student);
             $this->addReference('student-unverified-' . $i, $student);
         }
@@ -126,19 +130,19 @@ class StudentFixtures extends Fixture
             $student->setCity($faker->optional(0.7)->city);
             $student->setCountry($faker->optional(0.5)->country);
             $student->setEducationLevel($faker->optional(0.6)->randomElement([
-                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat'
+                'Bac', 'Bac+2', 'Bac+3', 'Bac+4', 'Bac+5', 'Master', 'Doctorat',
             ]));
             $student->setProfession($faker->optional(0.8)->jobTitle);
             $student->setCompany($faker->optional(0.6)->company);
-            
+
             // Inactive student
             $student->setIsActive(false);
             $student->setEmailVerified(true);
-            $student->setEmailVerifiedAt(new \DateTimeImmutable($faker->dateTimeBetween('-6 months', '-1 day')->format('Y-m-d H:i:s')));
-            
+            $student->setEmailVerifiedAt(new DateTimeImmutable($faker->dateTimeBetween('-6 months', '-1 day')->format('Y-m-d H:i:s')));
+
             $hashedPassword = $this->passwordHasher->hashPassword($student, 'password');
             $student->setPassword($hashedPassword);
-            
+
             $manager->persist($student);
             $this->addReference('student-inactive-' . $i, $student);
         }

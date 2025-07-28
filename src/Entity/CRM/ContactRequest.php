@@ -1,17 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\CRM;
 
 use App\Entity\Service\Service;
 use App\Entity\Training\Formation;
 use App\Repository\CRM\ContactRequestRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Contact Request Entity
- * 
+ * Contact Request Entity.
+ *
  * Represents a contact request submitted through various forms on the website.
  * Supports different types of requests: quote, advice, information, and quick registration.
  */
@@ -29,7 +33,7 @@ class ContactRequest
     #[Assert\NotBlank(message: 'Le type de demande est obligatoire.')]
     #[Assert\Choice(
         choices: ['quote', 'advice', 'information', 'quick_registration', 'accessibility_request', 'document_acknowledgment'],
-        message: 'Type de demande invalide.'
+        message: 'Type de demande invalide.',
     )]
     private ?string $type = null;
 
@@ -39,11 +43,11 @@ class ContactRequest
         min: 2,
         max: 100,
         minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     private ?string $firstName = null;
 
@@ -53,11 +57,11 @@ class ContactRequest
         min: 2,
         max: 100,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     private ?string $lastName = null;
 
@@ -66,28 +70,28 @@ class ContactRequest
     #[Assert\Email(message: 'Veuillez saisir une adresse email valide.')]
     #[Assert\Length(
         max: 180,
-        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Assert\Regex(
         pattern: '/^(?:\+33|0)[1-9](?:[0-9]{8})$/',
-        message: 'Veuillez saisir un numéro de téléphone français valide.'
+        message: 'Veuillez saisir un numéro de téléphone français valide.',
     )]
     private ?string $phone = null;
 
     #[ORM\Column(length: 150, nullable: true)]
     #[Assert\Length(
         max: 150,
-        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $company = null;
 
     #[ORM\Column(length: 200, nullable: true)]
     #[Assert\Length(
         max: 200,
-        maxMessage: 'Le sujet ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le sujet ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $subject = null;
 
@@ -97,7 +101,7 @@ class ContactRequest
         min: 10,
         max: 2000,
         minMessage: 'Le message doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $message = null;
 
@@ -105,18 +109,18 @@ class ContactRequest
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['pending', 'in_progress', 'completed', 'cancelled'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     private string $status = 'pending';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $processedAt = null;
+    private ?DateTimeInterface $processedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'contactRequests')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -137,34 +141,34 @@ class ContactRequest
     private ?string $adminNotes = null;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
     }
 
     /**
-     * Lifecycle callback executed before persisting the entity
+     * Lifecycle callback executed before persisting the entity.
      */
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     /**
-     * Lifecycle callback executed before updating the entity
+     * Lifecycle callback executed before updating the entity.
      */
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        $this->updatedAt = new \DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     /**
-     * Get the full name of the contact
+     * Get the full name of the contact.
      */
     public function getFullName(): string
     {
@@ -172,7 +176,7 @@ class ContactRequest
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -188,7 +192,7 @@ class ContactRequest
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -202,7 +206,7 @@ class ContactRequest
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -216,7 +220,7 @@ class ContactRequest
     }
 
     /**
-     * Check if the request is pending
+     * Check if the request is pending.
      */
     public function isPending(): bool
     {
@@ -224,7 +228,7 @@ class ContactRequest
     }
 
     /**
-     * Check if the request is in progress
+     * Check if the request is in progress.
      */
     public function isInProgress(): bool
     {
@@ -232,7 +236,7 @@ class ContactRequest
     }
 
     /**
-     * Check if the request is completed
+     * Check if the request is completed.
      */
     public function isCompleted(): bool
     {
@@ -240,7 +244,7 @@ class ContactRequest
     }
 
     /**
-     * Check if the request is cancelled
+     * Check if the request is cancelled.
      */
     public function isCancelled(): bool
     {
@@ -248,18 +252,18 @@ class ContactRequest
     }
 
     /**
-     * Mark the request as processed
+     * Mark the request as processed.
      */
     public function markAsProcessed(): void
     {
-        $this->processedAt = new \DateTime();
+        $this->processedAt = new DateTime();
         if ($this->status === 'pending') {
             $this->status = 'in_progress';
         }
     }
 
     /**
-     * Check if this is an accessibility request
+     * Check if this is an accessibility request.
      */
     public function isAccessibilityRequest(): bool
     {
@@ -267,7 +271,7 @@ class ContactRequest
     }
 
     /**
-     * Check if this is a document acknowledgment
+     * Check if this is a document acknowledgment.
      */
     public function isDocumentAcknowledgment(): bool
     {
@@ -275,7 +279,7 @@ class ContactRequest
     }
 
     /**
-     * Get accessibility needs from additional data
+     * Get accessibility needs from additional data.
      */
     public function getAccessibilityNeeds(): ?array
     {
@@ -283,7 +287,7 @@ class ContactRequest
     }
 
     /**
-     * Set accessibility needs in additional data
+     * Set accessibility needs in additional data.
      */
     public function setAccessibilityNeeds(?array $accessibilityNeeds): static
     {
@@ -291,6 +295,7 @@ class ContactRequest
             $this->additionalData = [];
         }
         $this->additionalData['accessibilityNeeds'] = $accessibilityNeeds;
+
         return $this;
     }
 
@@ -309,6 +314,7 @@ class ContactRequest
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -320,6 +326,7 @@ class ContactRequest
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -331,6 +338,7 @@ class ContactRequest
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -342,6 +350,7 @@ class ContactRequest
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -353,6 +362,7 @@ class ContactRequest
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
     }
 
@@ -364,6 +374,7 @@ class ContactRequest
     public function setCompany(?string $company): static
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -375,6 +386,7 @@ class ContactRequest
     public function setSubject(?string $subject): static
     {
         $this->subject = $subject;
+
         return $this;
     }
 
@@ -386,6 +398,7 @@ class ContactRequest
     public function setMessage(string $message): static
     {
         $this->message = $message;
+
         return $this;
     }
 
@@ -397,39 +410,43 @@ class ContactRequest
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getProcessedAt(): ?\DateTimeInterface
+    public function getProcessedAt(): ?DateTimeInterface
     {
         return $this->processedAt;
     }
 
-    public function setProcessedAt(?\DateTimeInterface $processedAt): static
+    public function setProcessedAt(?DateTimeInterface $processedAt): static
     {
         $this->processedAt = $processedAt;
+
         return $this;
     }
 
@@ -441,6 +458,7 @@ class ContactRequest
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -452,6 +470,7 @@ class ContactRequest
     public function setService(?Service $service): static
     {
         $this->service = $service;
+
         return $this;
     }
 
@@ -463,6 +482,7 @@ class ContactRequest
     public function setProspect(?Prospect $prospect): static
     {
         $this->prospect = $prospect;
+
         return $this;
     }
 
@@ -474,6 +494,7 @@ class ContactRequest
     public function setAdditionalData(?array $additionalData): static
     {
         $this->additionalData = $additionalData;
+
         return $this;
     }
 
@@ -485,6 +506,7 @@ class ContactRequest
     public function setAdminNotes(?string $adminNotes): static
     {
         $this->adminNotes = $adminNotes;
+
         return $this;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Document;
 
 use App\Entity\Document\Document;
@@ -9,13 +11,14 @@ use App\Entity\User\Admin;
 use App\Repository\Document\DocumentRepository;
 use App\Repository\Document\DocumentTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Document Service
- * 
+ * Document Service.
+ *
  * Provides business logic for managing documents.
  * Handles document operations, versioning, and workflow management.
  */
@@ -27,12 +30,11 @@ class DocumentService
         private DocumentTypeRepository $documentTypeRepository,
         private SluggerInterface $slugger,
         private Security $security,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Create a new document with automatic versioning
+     * Create a new document with automatic versioning.
      */
     public function createDocument(Document $document): array
     {
@@ -60,7 +62,7 @@ class DocumentService
             if (!$validationResult['valid']) {
                 return [
                     'success' => false,
-                    'errors' => $validationResult['errors']
+                    'errors' => $validationResult['errors'],
                 ];
             }
 
@@ -69,7 +71,7 @@ class DocumentService
             if (!$publishingResult['valid']) {
                 return [
                     'success' => false,
-                    'errors' => $publishingResult['errors']
+                    'errors' => $publishingResult['errors'],
                 ];
             }
 
@@ -84,29 +86,28 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
                 'type' => $document->getDocumentType()?->getCode(),
-                'created_by' => $document->getCreatedBy()?->getEmail()
+                'created_by' => $document->getCreatedBy()?->getEmail(),
             ]);
 
             return [
                 'success' => true,
-                'document' => $document
+                'document' => $document,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating document', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de la création du document.']
+                'errors' => ['Une erreur est survenue lors de la création du document.'],
             ];
         }
     }
 
     /**
-     * Update an existing document with versioning
+     * Update an existing document with versioning.
      */
     public function updateDocument(Document $document, array $versionData = []): array
     {
@@ -121,7 +122,7 @@ class DocumentService
             if (!$validationResult['valid']) {
                 return [
                     'success' => false,
-                    'errors' => $validationResult['errors']
+                    'errors' => $validationResult['errors'],
                 ];
             }
 
@@ -130,7 +131,7 @@ class DocumentService
             if (!$publishingResult['valid']) {
                 return [
                     'success' => false,
-                    'errors' => $publishingResult['errors']
+                    'errors' => $publishingResult['errors'],
                 ];
             }
 
@@ -143,12 +144,12 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
                 'version_created' => $newVersion ? $newVersion->getVersion() : null,
-                'updated_by' => $document->getUpdatedBy()?->getEmail()
+                'updated_by' => $document->getUpdatedBy()?->getEmail(),
             ]);
 
             $result = [
                 'success' => true,
-                'document' => $document
+                'document' => $document,
             ];
 
             if ($newVersion) {
@@ -156,23 +157,22 @@ class DocumentService
             }
 
             return $result;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating document', [
                 'document_id' => $document->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de la modification du document.']
+                'errors' => ['Une erreur est survenue lors de la modification du document.'],
             ];
         }
     }
 
     /**
-     * Delete a document (with safety checks)
+     * Delete a document (with safety checks).
      */
     public function deleteDocument(Document $document): array
     {
@@ -181,7 +181,7 @@ class DocumentService
             if ($document->getStatus() === Document::STATUS_PUBLISHED) {
                 return [
                     'success' => false,
-                    'errors' => ['Impossible de supprimer un document publié. Archivez-le d\'abord.']
+                    'errors' => ['Impossible de supprimer un document publié. Archivez-le d\'abord.'],
                 ];
             }
 
@@ -194,29 +194,28 @@ class DocumentService
             $this->logger->info('Document deleted successfully', [
                 'document_id' => $documentId,
                 'title' => $documentTitle,
-                'deleted_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
+                'deleted_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null,
             ]);
 
             return [
-                'success' => true
+                'success' => true,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error deleting document', [
                 'document_id' => $document->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de la suppression du document.']
+                'errors' => ['Une erreur est survenue lors de la suppression du document.'],
             ];
         }
     }
 
     /**
-     * Publish a document
+     * Publish a document.
      */
     public function publishDocument(Document $document): array
     {
@@ -225,7 +224,7 @@ class DocumentService
             if (!$this->canPublishDocument($document)) {
                 return [
                     'success' => false,
-                    'errors' => ['Ce document ne peut pas être publié dans son état actuel.']
+                    'errors' => ['Ce document ne peut pas être publié dans son état actuel.'],
                 ];
             }
 
@@ -234,12 +233,12 @@ class DocumentService
             if (!$publishingResult['valid']) {
                 return [
                     'success' => false,
-                    'errors' => $publishingResult['errors']
+                    'errors' => $publishingResult['errors'],
                 ];
             }
 
             $document->publish();
-            
+
             if ($admin = $this->security->getUser()) {
                 $document->setUpdatedBy($admin);
             }
@@ -249,37 +248,36 @@ class DocumentService
             $this->logger->info('Document published successfully', [
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
-                'published_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
+                'published_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null,
             ]);
 
             return [
                 'success' => true,
-                'document' => $document
+                'document' => $document,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error publishing document', [
                 'document_id' => $document->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de la publication.']
+                'errors' => ['Une erreur est survenue lors de la publication.'],
             ];
         }
     }
 
     /**
-     * Archive a document
+     * Archive a document.
      */
     public function archiveDocument(Document $document): array
     {
         try {
             $document->setStatus(Document::STATUS_ARCHIVED);
             $document->setIsActive(false);
-            
+
             if ($admin = $this->security->getUser()) {
                 $document->setUpdatedBy($admin);
             }
@@ -289,30 +287,29 @@ class DocumentService
             $this->logger->info('Document archived successfully', [
                 'document_id' => $document->getId(),
                 'title' => $document->getTitle(),
-                'archived_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
+                'archived_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null,
             ]);
 
             return [
                 'success' => true,
-                'document' => $document
+                'document' => $document,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error archiving document', [
                 'document_id' => $document->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de l\'archivage.']
+                'errors' => ['Une erreur est survenue lors de l\'archivage.'],
             ];
         }
     }
 
     /**
-     * Duplicate a document
+     * Duplicate a document.
      */
     public function duplicateDocument(Document $document): array
     {
@@ -348,30 +345,29 @@ class DocumentService
                 'original_id' => $document->getId(),
                 'duplicate_id' => $duplicate->getId(),
                 'title' => $duplicate->getTitle(),
-                'duplicated_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null
+                'duplicated_by' => ($admin = $this->security->getUser()) instanceof Admin ? $admin->getEmail() : null,
             ]);
 
             return [
                 'success' => true,
-                'document' => $duplicate
+                'document' => $duplicate,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error duplicating document', [
                 'document_id' => $document->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'errors' => ['Une erreur est survenue lors de la duplication.']
+                'errors' => ['Une erreur est survenue lors de la duplication.'],
             ];
         }
     }
 
     /**
-     * Get document type by ID
+     * Get document type by ID.
      */
     public function getDocumentTypeById(int $id): ?DocumentType
     {
@@ -379,7 +375,7 @@ class DocumentService
     }
 
     /**
-     * Generate a unique slug for a document
+     * Generate a unique slug for a document.
      */
     private function generateUniqueSlug(string $title): string
     {
@@ -396,7 +392,7 @@ class DocumentService
     }
 
     /**
-     * Get default status for a document type
+     * Get default status for a document type.
      */
     private function getDefaultStatusForType(?DocumentType $documentType): string
     {
@@ -405,8 +401,8 @@ class DocumentService
         }
 
         $allowedStatuses = $documentType->getAllowedStatuses() ?? [];
-        
-        if (in_array(Document::STATUS_DRAFT, $allowedStatuses)) {
+
+        if (in_array(Document::STATUS_DRAFT, $allowedStatuses, true)) {
             return Document::STATUS_DRAFT;
         }
 
@@ -414,7 +410,7 @@ class DocumentService
     }
 
     /**
-     * Validate document business rules
+     * Validate document business rules.
      */
     private function validateDocument(Document $document): array
     {
@@ -432,19 +428,19 @@ class DocumentService
         // Validate status against document type
         if ($document->getDocumentType()) {
             $allowedStatuses = $document->getDocumentType()->getAllowedStatuses() ?? [];
-            if (!empty($allowedStatuses) && !in_array($document->getStatus(), $allowedStatuses)) {
+            if (!empty($allowedStatuses) && !in_array($document->getStatus(), $allowedStatuses, true)) {
                 $errors[] = 'Le statut "' . $document->getStatus() . '" n\'est pas autorisé pour ce type de document.';
             }
         }
 
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
     /**
-     * Check publishing rules for document type
+     * Check publishing rules for document type.
      */
     private function checkPublishingRules(Document $document, bool $isPublishing = false): array
     {
@@ -456,19 +452,16 @@ class DocumentService
         }
 
         // Check if multiple published documents are allowed
-        if (!$documentType->isAllowMultiplePublished() && 
-            ($document->getStatus() === Document::STATUS_PUBLISHED || $isPublishing)) {
-            
+        if (!$documentType->isAllowMultiplePublished()
+            && ($document->getStatus() === Document::STATUS_PUBLISHED || $isPublishing)) {
             $existingPublished = $this->documentRepository->findBy([
                 'documentType' => $documentType,
-                'status' => Document::STATUS_PUBLISHED
+                'status' => Document::STATUS_PUBLISHED,
             ]);
 
             // Filter out the current document if it's being updated
             if ($document->getId()) {
-                $existingPublished = array_filter($existingPublished, function($doc) use ($document) {
-                    return $doc->getId() !== $document->getId();
-                });
+                $existingPublished = array_filter($existingPublished, static fn ($doc) => $doc->getId() !== $document->getId());
             }
 
             if (!empty($existingPublished)) {
@@ -478,12 +471,12 @@ class DocumentService
 
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
     /**
-     * Check if document can be published
+     * Check if document can be published.
      */
     private function canPublishDocument(Document $document): bool
     {
@@ -492,7 +485,7 @@ class DocumentService
         }
 
         $documentType = $document->getDocumentType();
-        
+
         // Check if document type requires approval
         if ($documentType->isRequiresApproval() && $document->getStatus() !== Document::STATUS_APPROVED) {
             return false;
@@ -502,7 +495,7 @@ class DocumentService
     }
 
     /**
-     * Create initial version for a new document
+     * Create initial version for a new document.
      */
     private function createInitialVersion(Document $document): void
     {
@@ -522,7 +515,7 @@ class DocumentService
     }
 
     /**
-     * Handle versioning based on user input
+     * Handle versioning based on user input.
      */
     private function handleVersioning(Document $document, array $versionData): ?DocumentVersion
     {
@@ -538,16 +531,17 @@ class DocumentService
         // Get the last version
         $lastVersion = $this->entityManager
             ->getRepository(DocumentVersion::class)
-            ->findLatestByDocument($document);
+            ->findLatestByDocument($document)
+        ;
 
         if (!$lastVersion) {
             return $this->createInitialVersionForUpdate($document, $versionMessage);
         }
 
         // Check if significant changes occurred
-        $hasSignificantChanges = 
-            $lastVersion->getTitle() !== $document->getTitle() ||
-            $lastVersion->getContent() !== $document->getContent();
+        $hasSignificantChanges =
+            $lastVersion->getTitle() !== $document->getTitle()
+            || $lastVersion->getContent() !== $document->getContent();
 
         // Create version based on user choice and content changes
         if ($hasSignificantChanges || $versionMessage) {
@@ -556,7 +550,7 @@ class DocumentService
 
             // Create new version with proper numbering
             $newVersionNumber = $this->calculateNewVersionNumber($lastVersion->getVersion(), $versionType);
-            
+
             $newVersion = new DocumentVersion();
             $newVersion->setDocument($document);
             $newVersion->setVersion($newVersionNumber);
@@ -573,7 +567,7 @@ class DocumentService
             $newVersion->generateChecksum();
 
             $this->entityManager->persist($newVersion);
-            
+
             // Update document version
             $document->setVersion($newVersionNumber);
 
@@ -584,26 +578,26 @@ class DocumentService
     }
 
     /**
-     * Calculate new version number based on type
+     * Calculate new version number based on type.
      */
     private function calculateNewVersionNumber(string $currentVersion, string $versionType): string
     {
         if (preg_match('/^(\d+)\.(\d+)$/', $currentVersion, $matches)) {
             $major = (int) $matches[1];
             $minor = (int) $matches[2];
-            
+
             if ($versionType === 'major') {
                 return ($major + 1) . '.0';
-            } else {
-                return $major . '.' . ($minor + 1);
             }
+
+            return $major . '.' . ($minor + 1);
         }
 
         return '1.0';
     }
 
     /**
-     * Get default change log message based on version type
+     * Get default change log message based on version type.
      */
     private function getDefaultChangeLog(string $versionType): string
     {
@@ -615,7 +609,7 @@ class DocumentService
     }
 
     /**
-     * Create initial version for an existing document being updated
+     * Create initial version for an existing document being updated.
      */
     private function createInitialVersionForUpdate(Document $document, ?string $changeLog = null): DocumentVersion
     {
@@ -633,15 +627,15 @@ class DocumentService
 
         $version->generateChecksum();
         $this->entityManager->persist($version);
-        
+
         $document->setVersion('1.0');
 
         return $version;
     }
 
     /**
-     * Create new version if content has changed significantly
-     * 
+     * Create new version if content has changed significantly.
+     *
      * @deprecated Use handleVersioning() instead for better control
      */
     private function createVersionIfNeeded(Document $document): void
@@ -649,17 +643,19 @@ class DocumentService
         // Get the last version
         $lastVersion = $this->entityManager
             ->getRepository(DocumentVersion::class)
-            ->findLatestByDocument($document);
+            ->findLatestByDocument($document)
+        ;
 
         if (!$lastVersion) {
             $this->createInitialVersion($document);
+
             return;
         }
 
         // Check if significant changes occurred
-        $hasSignificantChanges = 
-            $lastVersion->getTitle() !== $document->getTitle() ||
-            $lastVersion->getContent() !== $document->getContent();
+        $hasSignificantChanges =
+            $lastVersion->getTitle() !== $document->getTitle()
+            || $lastVersion->getContent() !== $document->getContent();
 
         if ($hasSignificantChanges) {
             // Mark previous version as not current
@@ -683,14 +679,14 @@ class DocumentService
     }
 
     /**
-     * Get next version number
+     * Get next version number.
      */
     private function getNextVersionNumber(string $currentVersion): string
     {
         if (preg_match('/^(\d+)\.(\d+)$/', $currentVersion, $matches)) {
             $major = (int) $matches[1];
             $minor = (int) $matches[2];
-            
+
             return $major . '.' . ($minor + 1);
         }
 

@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\DataTransformer;
 
 use App\DTO\Alternance\IntermediateObjectiveDTO;
 use Symfony\Component\Form\DataTransformerInterface;
-use Symfony\Component\Form\Exception\TransformationFailedException;
 
 /**
- * Data transformer for intermediate objectives
- * 
+ * Data transformer for intermediate objectives.
+ *
  * Converts between array (stored in database) and DTO collection (used in forms)
  */
 class IntermediateObjectiveTransformer implements DataTransformerInterface
 {
     /**
-     * Transform array data to DTO collection
-     * 
+     * Transform array data to DTO collection.
+     *
      * @param mixed $value The array from database
+     *
      * @return array Array of IntermediateObjectiveDTO
      */
     public function transform($value): array
@@ -34,7 +36,7 @@ class IntermediateObjectiveTransformer implements DataTransformerInterface
                 $dtos[] = new IntermediateObjectiveDTO(
                     title: $objectiveData,
                     description: '',
-                    completed: false
+                    completed: false,
                 );
             }
         }
@@ -43,9 +45,10 @@ class IntermediateObjectiveTransformer implements DataTransformerInterface
     }
 
     /**
-     * Transform DTO collection back to array for database storage
-     * 
+     * Transform DTO collection back to array for database storage.
+     *
      * @param mixed $value Array of IntermediateObjectiveDTO
+     *
      * @return array Array suitable for JSON storage
      */
     public function reverseTransform($value): array

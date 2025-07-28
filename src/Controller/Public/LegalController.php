@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Public;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -7,15 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Legal controller for legal pages
- * 
+ * Legal controller for legal pages.
+ *
  * Handles the display of legal information including
  * terms of service, privacy policy, and legal notices.
  */
 class LegalController extends AbstractController
 {
     /**
-     * Display legal notices
+     * Display legal notices.
      */
     #[Route('/mentions-legales', name: 'app_legal_notices', methods: ['GET'])]
     public function notices(): Response
@@ -48,7 +50,7 @@ class LegalController extends AbstractController
     }
 
     /**
-     * Display privacy policy
+     * Display privacy policy.
      */
     #[Route('/politique-de-confidentialite', name: 'app_legal_privacy', methods: ['GET'])]
     public function privacy(): Response
@@ -57,7 +59,7 @@ class LegalController extends AbstractController
     }
 
     /**
-     * Display terms of service
+     * Display terms of service.
      */
     #[Route('/conditions-generales', name: 'app_legal_terms', methods: ['GET'])]
     public function terms(): Response
@@ -66,7 +68,7 @@ class LegalController extends AbstractController
     }
 
     /**
-     * Display cookies policy
+     * Display cookies policy.
      */
     #[Route('/politique-cookies', name: 'app_legal_cookies', methods: ['GET'])]
     public function cookies(): Response

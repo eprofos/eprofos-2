@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Assessment\Questionnaire;
-use App\Entity\Training\Formation;
-use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Question;
+use App\Entity\QuestionOption;
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Training\FormationRepository;
 use App\Service\Assessment\QuestionnaireEmailService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Admin controller for managing questionnaires (Qualiopi criteria 2.8)
+ * Admin controller for managing questionnaires (Qualiopi criteria 2.8).
  */
 #[Route('/admin/questionnaires', name: 'admin_questionnaire_')]
 class QuestionnaireController extends AbstractController
@@ -26,9 +29,8 @@ class QuestionnaireController extends AbstractController
         private QuestionnaireRepository $questionnaireRepository,
         private FormationRepository $formationRepository,
         private SluggerInterface $slugger,
-        private QuestionnaireEmailService $emailService
-    ) {
-    }
+        private QuestionnaireEmailService $emailService,
+    ) {}
 
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -42,26 +44,31 @@ class QuestionnaireController extends AbstractController
             ->leftJoin('q.responses', 'r')
             ->addSelect('f')
             ->addSelect('COUNT(DISTINCT r.id) as responseCount')
-            ->groupBy('q.id', 'f.id');
+            ->groupBy('q.id', 'f.id')
+        ;
 
         if ($search) {
             $queryBuilder->andWhere('q.title LIKE :search OR q.description LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%')
+            ;
         }
 
         if ($type) {
             $queryBuilder->andWhere('q.type = :type')
-                ->setParameter('type', $type);
+                ->setParameter('type', $type)
+            ;
         }
 
         if ($status) {
             $queryBuilder->andWhere('q.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         $questionnaires = $queryBuilder->orderBy('q.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return $this->render('admin/questionnaire/index.html.twig', [
             'questionnaires' => $questionnaires,
@@ -72,8 +79,8 @@ class QuestionnaireController extends AbstractController
             'statuses' => [
                 Questionnaire::STATUS_DRAFT => 'Brouillon',
                 Questionnaire::STATUS_ACTIVE => 'Actif',
-                Questionnaire::STATUS_ARCHIVED => 'Archivé'
-            ]
+                Questionnaire::STATUS_ARCHIVED => 'Archivé',
+            ],
         ]);
     }
 
@@ -81,14 +88,15 @@ class QuestionnaireController extends AbstractController
     public function new(Request $request): Response
     {
         $questionnaire = new Questionnaire();
-        
+
         if ($request->isMethod('POST')) {
             $this->handleQuestionnaireForm($request, $questionnaire);
-            
+
             $this->entityManager->persist($questionnaire);
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Le questionnaire a été créé avec succès.');
+
             return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
         }
 
@@ -97,7 +105,7 @@ class QuestionnaireController extends AbstractController
         return $this->render('admin/questionnaire/new.html.twig', [
             'questionnaire' => $questionnaire,
             'formations' => $formations,
-            'types' => Questionnaire::TYPES
+            'types' => Questionnaire::TYPES,
         ]);
     }
 
@@ -109,12 +117,12 @@ class QuestionnaireController extends AbstractController
             'total_responses' => $questionnaire->getResponseCount(),
             'completed_responses' => $questionnaire->getCompletedResponseCount(),
             'completion_rate' => $questionnaire->getCompletionRate(),
-            'step_count' => $questionnaire->getStepCount()
+            'step_count' => $questionnaire->getStepCount(),
         ];
 
         return $this->render('admin/questionnaire/show.html.twig', [
             'questionnaire' => $questionnaire,
-            'statistics' => $statistics
+            'statistics' => $statistics,
         ]);
     }
 
@@ -123,10 +131,11 @@ class QuestionnaireController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $this->handleQuestionnaireForm($request, $questionnaire);
-            
+
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Le questionnaire a été modifié avec succès.');
+
             return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
         }
 
@@ -135,7 +144,7 @@ class QuestionnaireController extends AbstractController
         return $this->render('admin/questionnaire/edit.html.twig', [
             'questionnaire' => $questionnaire,
             'formations' => $formations,
-            'types' => Questionnaire::TYPES
+            'types' => Questionnaire::TYPES,
         ]);
     }
 
@@ -159,6 +168,7 @@ class QuestionnaireController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('duplicate' . $questionnaire->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_questionnaire_index');
         }
 
@@ -177,7 +187,8 @@ class QuestionnaireController extends AbstractController
             ->setCompletionMessage($questionnaire->getCompletionMessage())
             ->setEmailSubject($questionnaire->getEmailSubject())
             ->setEmailTemplate($questionnaire->getEmailTemplate())
-            ->setFormation($questionnaire->getFormation());
+            ->setFormation($questionnaire->getFormation())
+        ;
 
         $newQuestionnaire->generateSlug($this->slugger);
 
@@ -185,7 +196,7 @@ class QuestionnaireController extends AbstractController
 
         // Duplicate questions and their options
         foreach ($questionnaire->getQuestions() as $question) {
-            $newQuestion = new \App\Entity\Question();
+            $newQuestion = new Question();
             $newQuestion->setQuestionnaire($newQuestionnaire)
                 ->setQuestionText($question->getQuestionText())
                 ->setType($question->getType())
@@ -199,20 +210,22 @@ class QuestionnaireController extends AbstractController
                 ->setValidationRules($question->getValidationRules())
                 ->setAllowedFileTypes($question->getAllowedFileTypes())
                 ->setMaxFileSize($question->getMaxFileSize())
-                ->setPoints($question->getPoints());
+                ->setPoints($question->getPoints())
+            ;
 
             $this->entityManager->persist($newQuestion);
 
             // Duplicate options
             foreach ($question->getOptions() as $option) {
-                $newOption = new \App\Entity\QuestionOption();
+                $newOption = new QuestionOption();
                 $newOption->setQuestion($newQuestion)
                     ->setOptionText($option->getOptionText())
                     ->setOrderIndex($option->getOrderIndex())
                     ->setIsCorrect($option->isCorrect())
                     ->setIsActive($option->isActive())
                     ->setPoints($option->getPoints())
-                    ->setExplanation($option->getExplanation());
+                    ->setExplanation($option->getExplanation())
+                ;
 
                 $this->entityManager->persist($newOption);
             }
@@ -221,6 +234,7 @@ class QuestionnaireController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'Le questionnaire a été dupliqué avec succès.');
+
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $newQuestionnaire->getId()]);
     }
 
@@ -229,11 +243,13 @@ class QuestionnaireController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('activate' . $questionnaire->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_questionnaire_index');
         }
 
         if ($questionnaire->getQuestionCount() === 0) {
             $this->addFlash('error', 'Impossible d\'activer un questionnaire sans questions.');
+
             return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
         }
 
@@ -241,6 +257,7 @@ class QuestionnaireController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'Le questionnaire a été activé avec succès.');
+
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
     }
 
@@ -249,6 +266,7 @@ class QuestionnaireController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('archive' . $questionnaire->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_questionnaire_index');
         }
 
@@ -256,6 +274,7 @@ class QuestionnaireController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'Le questionnaire a été archivé avec succès.');
+
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
     }
 
@@ -264,7 +283,7 @@ class QuestionnaireController extends AbstractController
     {
         $questionnaires = $this->questionnaireRepository->findActive();
         $formations = $this->formationRepository->findBy(['isActive' => true], ['title' => 'ASC']);
-        
+
         // Pre-select questionnaire if provided in URL
         $preselectedQuestionnaireId = $request->query->get('questionnaire');
         $preselectedQuestionnaire = null;
@@ -277,10 +296,11 @@ class QuestionnaireController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            
+
             $questionnaire = $this->questionnaireRepository->find($data['questionnaire_id'] ?? 0);
             if (!$questionnaire || !$questionnaire->isActive()) {
                 $this->addFlash('error', 'Questionnaire non trouvé ou inactif.');
+
                 return $this->redirectToRoute('admin_questionnaire_send');
             }
 
@@ -297,7 +317,8 @@ class QuestionnaireController extends AbstractController
                 ->setLastName($data['last_name'] ?? '')
                 ->setEmail($data['email'] ?? '')
                 ->setPhone($data['phone'] ?? null)
-                ->setCompany($data['company'] ?? null);
+                ->setCompany($data['company'] ?? null)
+            ;
 
             $this->entityManager->persist($response);
             $this->entityManager->flush();
@@ -306,7 +327,7 @@ class QuestionnaireController extends AbstractController
             try {
                 $this->emailService->sendQuestionnaireLink($response);
                 $this->addFlash('success', 'Le questionnaire a été envoyé avec succès à ' . $response->getEmail());
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
             }
 
@@ -316,7 +337,7 @@ class QuestionnaireController extends AbstractController
         return $this->render('admin/questionnaire/send.html.twig', [
             'questionnaires' => $questionnaires,
             'formations' => $formations,
-            'preselected_questionnaire' => $preselectedQuestionnaire
+            'preselected_questionnaire' => $preselectedQuestionnaire,
         ]);
     }
 
@@ -336,7 +357,8 @@ class QuestionnaireController extends AbstractController
             ->setWelcomeMessage($data['welcome_message'] ?? null)
             ->setCompletionMessage($data['completion_message'] ?? null)
             ->setEmailSubject($data['email_subject'] ?? null)
-            ->setEmailTemplate($data['email_template'] ?? null);
+            ->setEmailTemplate($data['email_template'] ?? null)
+        ;
 
         if (!empty($data['formation_id'])) {
             $formation = $this->formationRepository->find($data['formation_id']);

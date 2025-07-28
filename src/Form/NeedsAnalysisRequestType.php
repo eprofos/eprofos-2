@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form;
 
-use App\Entity\Training\Formation;
 use App\Entity\Analysis\NeedsAnalysisRequest;
+use App\Entity\Training\Formation;
 use App\Repository\Training\FormationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -17,8 +17,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Form type for creating and editing needs analysis requests
- * 
+ * Form type for creating and editing needs analysis requests.
+ *
  * Provides form fields for all necessary information to create
  * a needs analysis request including recipient details, type selection,
  * and optional formation association.
@@ -75,12 +75,10 @@ class NeedsAnalysisRequestType extends AbstractType
                     'class' => 'form-select',
                 ],
                 'help' => 'Formation pour laquelle l\'analyse des besoins est demandée.',
-                'query_builder' => function (FormationRepository $repository) {
-                    return $repository->createQueryBuilder('f')
-                        ->where('f.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('f.title', 'ASC');
-                },
+                'query_builder' => static fn (FormationRepository $repository) => $repository->createQueryBuilder('f')
+                    ->where('f.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('f.title', 'ASC'),
             ])
             ->add('adminNotes', TextareaType::class, [
                 'label' => 'Notes administratives',
@@ -91,7 +89,8 @@ class NeedsAnalysisRequestType extends AbstractType
                     'placeholder' => 'Notes internes pour cette demande...',
                 ],
                 'help' => 'Notes internes visibles uniquement par les administrateurs.',
-            ]);
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

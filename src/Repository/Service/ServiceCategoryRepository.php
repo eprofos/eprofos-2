@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Service;
 
 use App\Entity\Service\ServiceCategory;
@@ -7,11 +9,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for ServiceCategory entity
- * 
+ * Repository for ServiceCategory entity.
+ *
  * Provides query methods for retrieving service categories
  * with their associated services.
- * 
+ *
  * @extends ServiceEntityRepository<ServiceCategory>
  */
 class ServiceCategoryRepository extends ServiceEntityRepository
@@ -22,8 +24,8 @@ class ServiceCategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all categories ordered by name
-     * 
+     * Find all categories ordered by name.
+     *
      * @return ServiceCategory[]
      */
     public function findAllOrdered(): array
@@ -31,12 +33,13 @@ class ServiceCategoryRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('sc')
             ->orderBy('sc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find categories with their active services
-     * 
+     * Find categories with their active services.
+     *
      * @return ServiceCategory[]
      */
     public function findWithActiveServices(): array
@@ -47,11 +50,12 @@ class ServiceCategoryRepository extends ServiceEntityRepository
             ->orderBy('sc.name', 'ASC')
             ->addOrderBy('s.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find category by slug with active services
+     * Find category by slug with active services.
      */
     public function findBySlugWithActiveServices(string $slug): ?ServiceCategory
     {
@@ -62,12 +66,13 @@ class ServiceCategoryRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->orderBy('s.title', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find categories that have at least one active service
-     * 
+     * Find categories that have at least one active service.
+     *
      * @return ServiceCategory[]
      */
     public function findCategoriesWithActiveServices(): array
@@ -79,12 +84,13 @@ class ServiceCategoryRepository extends ServiceEntityRepository
             ->groupBy('sc.id')
             ->orderBy('sc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find categories with service count
-     * 
+     * Find categories with service count.
+     *
      * @return array<array{category: ServiceCategory, serviceCount: int}>
      */
     public function findWithServiceCount(): array
@@ -95,11 +101,12 @@ class ServiceCategoryRepository extends ServiceEntityRepository
             ->groupBy('sc.id')
             ->orderBy('sc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Save a service category entity
+     * Save a service category entity.
      */
     public function save(ServiceCategory $entity, bool $flush = false): void
     {
@@ -111,7 +118,7 @@ class ServiceCategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a service category entity
+     * Remove a service category entity.
      */
     public function remove(ServiceCategory $entity, bool $flush = false): void
     {

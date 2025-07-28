@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Service\ServiceCategory;
@@ -15,8 +17,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Admin Service Category Controller
- * 
+ * Admin Service Category Controller.
+ *
  * Handles CRUD operations for service categories in the admin interface.
  * Provides full management capabilities for service categories.
  */
@@ -26,18 +28,17 @@ class ServiceCategoryController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private SluggerInterface $slugger
-    ) {
-    }
+        private SluggerInterface $slugger,
+    ) {}
 
     /**
-     * List all service categories with pagination and filtering
+     * List all service categories with pagination and filtering.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(ServiceCategoryRepository $serviceCategoryRepository): Response
     {
         $this->logger->info('Admin service categories list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $serviceCategories = $serviceCategoryRepository->findAllOrdered();
@@ -47,20 +48,20 @@ class ServiceCategoryController extends AbstractController
             'page_title' => 'Gestion des catégories de services',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Catégories de services', 'url' => null]
-            ]
+                ['label' => 'Catégories de services', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show service category details
+     * Show service category details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ServiceCategory $serviceCategory): Response
     {
         $this->logger->info('Admin service category details viewed', [
             'service_category_id' => $serviceCategory->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/service_category/show.html.twig', [
@@ -69,13 +70,13 @@ class ServiceCategoryController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories de services', 'url' => $this->generateUrl('admin_service_category_index')],
-                ['label' => $serviceCategory->getName(), 'url' => null]
-            ]
+                ['label' => $serviceCategory->getName(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new service category
+     * Create a new service category.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -95,7 +96,7 @@ class ServiceCategoryController extends AbstractController
             $this->logger->info('New service category created', [
                 'service_category_id' => $serviceCategory->getId(),
                 'service_category_name' => $serviceCategory->getName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie de service a été créée avec succès.');
@@ -110,13 +111,13 @@ class ServiceCategoryController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories de services', 'url' => $this->generateUrl('admin_service_category_index')],
-                ['label' => 'Nouvelle catégorie', 'url' => null]
-            ]
+                ['label' => 'Nouvelle catégorie', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing service category
+     * Edit an existing service category.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ServiceCategory $serviceCategory, EntityManagerInterface $entityManager): Response
@@ -134,7 +135,7 @@ class ServiceCategoryController extends AbstractController
             $this->logger->info('Service category updated', [
                 'service_category_id' => $serviceCategory->getId(),
                 'service_category_name' => $serviceCategory->getName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie de service a été modifiée avec succès.');
@@ -150,21 +151,22 @@ class ServiceCategoryController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories de services', 'url' => $this->generateUrl('admin_service_category_index')],
                 ['label' => $serviceCategory->getName(), 'url' => $this->generateUrl('admin_service_category_show', ['id' => $serviceCategory->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a service category
+     * Delete a service category.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ServiceCategory $serviceCategory, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$serviceCategory->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $serviceCategory->getId(), $request->getPayload()->get('_token'))) {
             // Check if category has services
             if ($serviceCategory->getServices()->count() > 0) {
                 $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle contient des services.');
+
                 return $this->redirectToRoute('admin_service_category_index');
             }
 
@@ -175,7 +177,7 @@ class ServiceCategoryController extends AbstractController
             $this->logger->info('Service category deleted', [
                 'service_category_id' => $serviceCategory->getId(),
                 'service_category_name' => $categoryName,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie de service a été supprimée avec succès.');

@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Core;
 
 use App\Entity\User\Student;
 use App\Repository\User\StudentRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -12,8 +16,8 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Student Service
- * 
+ * Student Service.
+ *
  * Handles business logic for student management including email notifications,
  * password reset functionality, and data export capabilities.
  */
@@ -27,26 +31,25 @@ class StudentService
         private LoggerInterface $logger,
         private string $fromEmail = 'noreply@eprofos.fr',
         private string $fromName = 'EPROFOS - École Professionnelle de Formation Spécialisée',
-        private string $adminEmail = 'admin@eprofos.fr'
-    ) {
-    }
+        private string $adminEmail = 'admin@eprofos.fr',
+    ) {}
 
     /**
-     * Send welcome email to new student
+     * Send welcome email to new student.
      */
     public function sendWelcomeEmail(Student $student, ?string $plainPassword = null): bool
     {
         try {
             $this->logger->info('Sending welcome email to student', [
                 'student_id' => $student->getId(),
-                'email' => $student->getEmail()
+                'email' => $student->getEmail(),
             ]);
 
             // Generate login URL
             $loginUrl = $this->urlGenerator->generate(
                 'student_login',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -58,21 +61,21 @@ class StudentService
                     'student' => $student,
                     'login_url' => $loginUrl,
                     'plain_password' => $plainPassword,
-                    'has_password' => $plainPassword !== null
-                ]);
+                    'has_password' => $plainPassword !== null,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Welcome email sent successfully', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send welcome email', [
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -80,14 +83,14 @@ class StudentService
     }
 
     /**
-     * Send password reset email to student
+     * Send password reset email to student.
      */
     public function sendPasswordResetEmail(Student $student): bool
     {
         try {
             $this->logger->info('Sending password reset email to student', [
                 'student_id' => $student->getId(),
-                'email' => $student->getEmail()
+                'email' => $student->getEmail(),
             ]);
 
             // Generate reset token
@@ -98,7 +101,7 @@ class StudentService
             $resetUrl = $this->urlGenerator->generate(
                 'student_reset_password',
                 ['token' => $resetToken],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -109,21 +112,21 @@ class StudentService
                 ->context([
                     'student' => $student,
                     'reset_url' => $resetUrl,
-                    'expires_at' => $student->getPasswordResetTokenExpiresAt()
-                ]);
+                    'expires_at' => $student->getPasswordResetTokenExpiresAt(),
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Password reset email sent successfully', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send password reset email', [
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -131,14 +134,14 @@ class StudentService
     }
 
     /**
-     * Send email verification link to student
+     * Send email verification link to student.
      */
     public function sendEmailVerification(Student $student): bool
     {
         try {
             $this->logger->info('Sending email verification to student', [
                 'student_id' => $student->getId(),
-                'email' => $student->getEmail()
+                'email' => $student->getEmail(),
             ]);
 
             // Generate verification token if not exists
@@ -151,7 +154,7 @@ class StudentService
             $verificationUrl = $this->urlGenerator->generate(
                 'student_verify_email',
                 ['token' => $student->getEmailVerificationToken()],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -161,21 +164,21 @@ class StudentService
                 ->htmlTemplate('emails/student_email_verification.html.twig')
                 ->context([
                     'student' => $student,
-                    'verification_url' => $verificationUrl
-                ]);
+                    'verification_url' => $verificationUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Email verification sent successfully', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send email verification', [
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -183,21 +186,21 @@ class StudentService
     }
 
     /**
-     * Send new password email to student
+     * Send new password email to student.
      */
     public function sendNewPasswordEmail(Student $student, string $newPassword): bool
     {
         try {
             $this->logger->info('Sending new password email to student', [
                 'student_id' => $student->getId(),
-                'email' => $student->getEmail()
+                'email' => $student->getEmail(),
             ]);
 
             // Generate login URL
             $loginUrl = $this->urlGenerator->generate(
                 'student_login',
                 [],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -208,21 +211,21 @@ class StudentService
                 ->context([
                     'student' => $student,
                     'new_password' => $newPassword,
-                    'login_url' => $loginUrl
-                ]);
+                    'login_url' => $loginUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('New password email sent successfully', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send new password email', [
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -230,27 +233,27 @@ class StudentService
     }
 
     /**
-     * Generate random password
+     * Generate random password.
      */
     public function generateRandomPassword(int $length = 12): string
     {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
         $password = '';
-        
+
         for ($i = 0; $i < $length; $i++) {
             $password .= $characters[random_int(0, strlen($characters) - 1)];
         }
-        
+
         return $password;
     }
 
     /**
-     * Export students data to CSV format
+     * Export students data to CSV format.
      */
     public function exportToCsv(array $students): string
     {
         $csvData = [];
-        
+
         // Headers
         $csvData[] = [
             'ID',
@@ -269,7 +272,7 @@ class StudentService
             'Actif',
             'Email vérifié',
             'Date de création',
-            'Dernière connexion'
+            'Dernière connexion',
         ];
 
         // Data rows
@@ -291,7 +294,7 @@ class StudentService
                 $student->isActive() ? 'Oui' : 'Non',
                 $student->isEmailVerified() ? 'Oui' : 'Non',
                 $student->getCreatedAt()->format('Y-m-d H:i:s'),
-                $student->getLastLoginAt() ? $student->getLastLoginAt()->format('Y-m-d H:i:s') : ''
+                $student->getLastLoginAt() ? $student->getLastLoginAt()->format('Y-m-d H:i:s') : '',
             ];
         }
 
@@ -308,57 +311,58 @@ class StudentService
     }
 
     /**
-     * Get dashboard statistics
+     * Get dashboard statistics.
      */
     public function getDashboardStatistics(): array
     {
         $statistics = $this->studentRepository->getStatistics();
-        
+
         // Add additional calculated statistics
         $statistics['recent_registrations'] = $this->studentRepository->findRecentlyRegistered(30);
         $statistics['unverified_emails'] = $this->studentRepository->countUnverifiedEmails();
         $statistics['inactive_students'] = $this->studentRepository->countInactive();
-        
+
         return $statistics;
     }
 
     /**
-     * Clean up expired password reset tokens
+     * Clean up expired password reset tokens.
      */
     public function cleanupExpiredTokens(): int
     {
         $this->logger->info('Cleaning up expired password reset tokens');
-        
+
         $qb = $this->entityManager->createQueryBuilder();
         $qb->update(Student::class, 's')
-           ->set('s.passwordResetToken', 'NULL')
-           ->set('s.passwordResetTokenExpiresAt', 'NULL')
-           ->where('s.passwordResetTokenExpiresAt < :now')
-           ->setParameter('now', new \DateTimeImmutable());
-        
+            ->set('s.passwordResetToken', 'NULL')
+            ->set('s.passwordResetTokenExpiresAt', 'NULL')
+            ->where('s.passwordResetTokenExpiresAt < :now')
+            ->setParameter('now', new DateTimeImmutable())
+        ;
+
         $affected = $qb->getQuery()->execute();
-        
+
         $this->logger->info('Expired password reset tokens cleaned up', [
-            'affected_count' => $affected
+            'affected_count' => $affected,
         ]);
-        
+
         return $affected;
     }
 
     /**
-     * Send admin notification for new student registration
+     * Send admin notification for new student registration.
      */
     public function sendAdminNotificationForNewStudent(Student $student): bool
     {
         try {
             $this->logger->info('Sending admin notification for new student', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             $adminUrl = $this->urlGenerator->generate(
                 'admin_student_show',
                 ['id' => $student->getId()],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
 
             $email = (new TemplatedEmail())
@@ -368,21 +372,21 @@ class StudentService
                 ->htmlTemplate('emails/admin_new_student_notification.html.twig')
                 ->context([
                     'student' => $student,
-                    'admin_url' => $adminUrl
-                ]);
+                    'admin_url' => $adminUrl,
+                ])
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Admin notification sent successfully', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send admin notification', [
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -390,7 +394,7 @@ class StudentService
     }
 
     /**
-     * Validate student data
+     * Validate student data.
      */
     public function validateStudentData(Student $student): array
     {
@@ -420,7 +424,7 @@ class StudentService
     }
 
     /**
-     * Set configuration parameters
+     * Set configuration parameters.
      */
     public function setEmailConfig(string $fromEmail, string $fromName, string $adminEmail): void
     {

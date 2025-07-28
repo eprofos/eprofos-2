@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Document;
 
 use App\Entity\Document\Document;
@@ -7,12 +9,14 @@ use App\Entity\Document\DocumentTemplate;
 use App\Entity\Document\DocumentType;
 use App\Repository\Document\DocumentTemplateRepository;
 use App\Repository\Document\DocumentTypeRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
- * Document Template Service
- * 
+ * Document Template Service.
+ *
  * Handles business logic for document template management:
  * - Template CRUD operations
  * - Template duplication
@@ -25,12 +29,11 @@ class DocumentTemplateService
         private EntityManagerInterface $entityManager,
         private DocumentTemplateRepository $documentTemplateRepository,
         private DocumentTypeRepository $documentTypeRepository,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Get all templates with usage statistics
+     * Get all templates with usage statistics.
      */
     public function getTemplatesWithStats(): array
     {
@@ -43,7 +46,7 @@ class DocumentTemplateService
                 'usage_count' => $template->getUsageCount(),
                 'document_type' => $template->getDocumentType()?->getName(),
                 'placeholders_count' => count($template->getPlaceholders() ?? []),
-                'is_default' => $template->isDefault()
+                'is_default' => $template->isDefault(),
             ];
         }
 
@@ -51,14 +54,14 @@ class DocumentTemplateService
     }
 
     /**
-     * Create a new document template
+     * Create a new document template.
      */
     public function createDocumentTemplate(DocumentTemplate $documentTemplate): array
     {
         try {
             // Set created timestamp
-            $documentTemplate->setCreatedAt(new \DateTimeImmutable());
-            
+            $documentTemplate->setCreatedAt(new DateTimeImmutable());
+
             // Validate template
             $validation = $this->validateDocumentTemplate($documentTemplate);
             if (!$validation['valid']) {
@@ -76,15 +79,14 @@ class DocumentTemplateService
             $this->logger->info('Document template created', [
                 'template_id' => $documentTemplate->getId(),
                 'name' => $documentTemplate->getName(),
-                'type' => $documentTemplate->getDocumentType()?->getName()
+                'type' => $documentTemplate->getDocumentType()?->getName(),
             ]);
 
             return ['success' => true, 'template' => $documentTemplate];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create document template', [
                 'error' => $e->getMessage(),
-                'name' => $documentTemplate->getName()
+                'name' => $documentTemplate->getName(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la création du modèle: ' . $e->getMessage()];
@@ -92,14 +94,14 @@ class DocumentTemplateService
     }
 
     /**
-     * Update an existing document template
+     * Update an existing document template.
      */
     public function updateDocumentTemplate(DocumentTemplate $documentTemplate): array
     {
         try {
             // Set updated timestamp
-            $documentTemplate->setUpdatedAt(new \DateTimeImmutable());
-            
+            $documentTemplate->setUpdatedAt(new DateTimeImmutable());
+
             // Validate template
             $validation = $this->validateDocumentTemplate($documentTemplate);
             if (!$validation['valid']) {
@@ -115,15 +117,14 @@ class DocumentTemplateService
 
             $this->logger->info('Document template updated', [
                 'template_id' => $documentTemplate->getId(),
-                'name' => $documentTemplate->getName()
+                'name' => $documentTemplate->getName(),
             ]);
 
             return ['success' => true, 'template' => $documentTemplate];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update document template', [
                 'error' => $e->getMessage(),
-                'template_id' => $documentTemplate->getId()
+                'template_id' => $documentTemplate->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la modification du modèle: ' . $e->getMessage()];
@@ -131,7 +132,7 @@ class DocumentTemplateService
     }
 
     /**
-     * Delete a document template
+     * Delete a document template.
      */
     public function deleteDocumentTemplate(DocumentTemplate $documentTemplate): array
     {
@@ -149,15 +150,14 @@ class DocumentTemplateService
 
             $this->logger->info('Document template deleted', [
                 'template_id' => $templateId,
-                'name' => $templateName
+                'name' => $templateName,
             ]);
 
             return ['success' => true];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to delete document template', [
                 'error' => $e->getMessage(),
-                'template_id' => $documentTemplate->getId()
+                'template_id' => $documentTemplate->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la suppression du modèle: ' . $e->getMessage()];
@@ -165,14 +165,14 @@ class DocumentTemplateService
     }
 
     /**
-     * Toggle document template active status
+     * Toggle document template active status.
      */
     public function toggleActiveStatus(DocumentTemplate $documentTemplate): array
     {
         try {
             $wasActive = $documentTemplate->isActive();
             $documentTemplate->setIsActive(!$wasActive);
-            $documentTemplate->setUpdatedAt(new \DateTimeImmutable());
+            $documentTemplate->setUpdatedAt(new DateTimeImmutable());
 
             $this->entityManager->flush();
 
@@ -182,15 +182,14 @@ class DocumentTemplateService
             $this->logger->info('Document template status toggled', [
                 'template_id' => $documentTemplate->getId(),
                 'name' => $documentTemplate->getName(),
-                'new_status' => $documentTemplate->isActive()
+                'new_status' => $documentTemplate->isActive(),
             ]);
 
             return ['success' => true, 'message' => $message];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to toggle document template status', [
                 'error' => $e->getMessage(),
-                'template_id' => $documentTemplate->getId()
+                'template_id' => $documentTemplate->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors du changement de statut: ' . $e->getMessage()];
@@ -198,13 +197,13 @@ class DocumentTemplateService
     }
 
     /**
-     * Duplicate a document template
+     * Duplicate a document template.
      */
     public function duplicateDocumentTemplate(DocumentTemplate $original): array
     {
         try {
             $duplicate = new DocumentTemplate();
-            
+
             // Copy all properties except ID and timestamps
             $duplicate->setName($original->getName() . ' (Copie)');
             $duplicate->setDescription($original->getDescription());
@@ -219,7 +218,7 @@ class DocumentTemplateService
             $duplicate->setIsDefault(false); // Never duplicate as default
             $duplicate->setUsageCount(0);
             $duplicate->setSortOrder($this->getNextSortOrder());
-            $duplicate->setCreatedAt(new \DateTimeImmutable());
+            $duplicate->setCreatedAt(new DateTimeImmutable());
 
             $this->entityManager->persist($duplicate);
             $this->entityManager->flush();
@@ -227,15 +226,14 @@ class DocumentTemplateService
             $this->logger->info('Document template duplicated', [
                 'original_id' => $original->getId(),
                 'duplicate_id' => $duplicate->getId(),
-                'name' => $duplicate->getName()
+                'name' => $duplicate->getName(),
             ]);
 
             return ['success' => true, 'template' => $duplicate];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to duplicate document template', [
                 'error' => $e->getMessage(),
-                'original_id' => $original->getId()
+                'original_id' => $original->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la duplication du modèle: ' . $e->getMessage()];
@@ -243,22 +241,22 @@ class DocumentTemplateService
     }
 
     /**
-     * Create a document from a template
+     * Create a document from a template.
      */
     public function createDocumentFromTemplate(DocumentTemplate $template, array $placeholderValues = []): array
     {
         try {
             $document = new Document();
-            
+
             // Set basic properties
             $document->setTitle($template->getName());
             $document->setDescription($template->getDescription());
             $document->setDocumentType($template->getDocumentType());
-            
+
             // Process template content with placeholders
             $content = $this->processTemplatePlaceholders($template->getTemplateContent(), $placeholderValues);
             $document->setContent($content);
-            
+
             // Apply metadata defaults
             if ($template->getDefaultMetadata()) {
                 foreach ($template->getDefaultMetadata() as $key => $value) {
@@ -266,14 +264,14 @@ class DocumentTemplateService
                     // This would require DocumentMetadata entity creation
                 }
             }
-            
+
             // Set status and timestamps
             $document->setStatus('draft');
-            $document->setCreatedAt(new \DateTimeImmutable());
-            
+            $document->setCreatedAt(new DateTimeImmutable());
+
             // Increment template usage count
             $template->setUsageCount($template->getUsageCount() + 1);
-            $template->setUpdatedAt(new \DateTimeImmutable());
+            $template->setUpdatedAt(new DateTimeImmutable());
 
             $this->entityManager->persist($document);
             $this->entityManager->flush();
@@ -281,15 +279,14 @@ class DocumentTemplateService
             $this->logger->info('Document created from template', [
                 'template_id' => $template->getId(),
                 'document_id' => $document->getId(),
-                'template_name' => $template->getName()
+                'template_name' => $template->getName(),
             ]);
 
             return ['success' => true, 'document' => $document];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create document from template', [
                 'error' => $e->getMessage(),
-                'template_id' => $template->getId()
+                'template_id' => $template->getId(),
             ]);
 
             return ['success' => false, 'error' => 'Erreur lors de la création du document: ' . $e->getMessage()];
@@ -297,20 +294,21 @@ class DocumentTemplateService
     }
 
     /**
-     * Get next sort order for templates
+     * Get next sort order for templates.
      */
     public function getNextSortOrder(): int
     {
         $maxSortOrder = $this->documentTemplateRepository->createQueryBuilder('dt')
             ->select('MAX(dt.sortOrder)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return ($maxSortOrder ?? 0) + 1;
     }
 
     /**
-     * Get document type by ID
+     * Get document type by ID.
      */
     public function getDocumentTypeById(int $typeId): ?DocumentType
     {
@@ -318,7 +316,7 @@ class DocumentTemplateService
     }
 
     /**
-     * Validate document template
+     * Validate document template.
      */
     private function validateDocumentTemplate(DocumentTemplate $documentTemplate): array
     {
@@ -333,7 +331,7 @@ class DocumentTemplateService
         // Check for duplicate names within the same document type
         $existingTemplate = $this->documentTemplateRepository->findOneBy([
             'name' => $documentTemplate->getName(),
-            'documentType' => $documentTemplate->getDocumentType()
+            'documentType' => $documentTemplate->getDocumentType(),
         ]);
 
         if ($existingTemplate && $existingTemplate->getId() !== $documentTemplate->getId()) {
@@ -344,18 +342,20 @@ class DocumentTemplateService
     }
 
     /**
-     * Unset other default templates for the same document type
+     * Unset other default templates for the same document type.
      */
     private function unsetOtherDefaultTemplates(DocumentType $documentType, ?DocumentTemplate $excludeTemplate = null): void
     {
         $qb = $this->documentTemplateRepository->createQueryBuilder('dt')
             ->where('dt.documentType = :documentType')
             ->andWhere('dt.isDefault = true')
-            ->setParameter('documentType', $documentType);
+            ->setParameter('documentType', $documentType)
+        ;
 
         if ($excludeTemplate) {
             $qb->andWhere('dt.id != :excludeId')
-               ->setParameter('excludeId', $excludeTemplate->getId());
+                ->setParameter('excludeId', $excludeTemplate->getId())
+            ;
         }
 
         $defaultTemplates = $qb->getQuery()->getResult();
@@ -366,7 +366,7 @@ class DocumentTemplateService
     }
 
     /**
-     * Process template placeholders with provided values
+     * Process template placeholders with provided values.
      */
     private function processTemplatePlaceholders(string $content, array $placeholderValues): string
     {

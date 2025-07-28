@@ -1,17 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Entity\CRM\Prospect;
 use App\Repository\Training\SessionRegistrationRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * SessionRegistration entity representing a user registration for a training session
- * 
+ * SessionRegistration entity representing a user registration for a training session.
+ *
  * Contains participant information and registration status.
  */
 #[ORM\Entity(repositoryClass: SessionRegistrationRepository::class)]
@@ -31,11 +36,11 @@ class SessionRegistration
         min: 2,
         max: 100,
         minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     #[Gedmo\Versioned]
     private ?string $firstName = null;
@@ -46,11 +51,11 @@ class SessionRegistration
         min: 2,
         max: 100,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     #[Gedmo\Versioned]
     private ?string $lastName = null;
@@ -60,7 +65,7 @@ class SessionRegistration
     #[Assert\Email(message: 'Veuillez saisir une adresse email valide.')]
     #[Assert\Length(
         max: 180,
-        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $email = null;
@@ -68,7 +73,7 @@ class SessionRegistration
     #[ORM\Column(length: 20, nullable: true)]
     #[Assert\Regex(
         pattern: '/^(?:\+33|0)[1-9](?:[0-9]{8})$/',
-        message: 'Veuillez saisir un numéro de téléphone français valide.'
+        message: 'Veuillez saisir un numéro de téléphone français valide.',
     )]
     #[Gedmo\Versioned]
     private ?string $phone = null;
@@ -76,7 +81,7 @@ class SessionRegistration
     #[ORM\Column(length: 150, nullable: true)]
     #[Assert\Length(
         max: 150,
-        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $company = null;
@@ -84,7 +89,7 @@ class SessionRegistration
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\Length(
         max: 100,
-        maxMessage: 'Le poste ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le poste ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $position = null;
@@ -93,7 +98,7 @@ class SessionRegistration
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['pending', 'confirmed', 'cancelled', 'attended', 'no_show'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     #[Gedmo\Versioned]
     private string $status = 'pending';
@@ -111,28 +116,28 @@ class SessionRegistration
     private ?array $additionalData = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $confirmedAt = null;
+    private ?DateTimeInterface $confirmedAt = null;
 
     /**
-     * Date when legal documents were delivered to the participant
+     * Date when legal documents were delivered to the participant.
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $documentsDeliveredAt = null;
+    private ?DateTimeInterface $documentsDeliveredAt = null;
 
     /**
-     * Date when participant acknowledged receiving the documents
+     * Date when participant acknowledged receiving the documents.
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $documentsAcknowledgedAt = null;
+    private ?DateTimeInterface $documentsAcknowledgedAt = null;
 
     /**
-     * Token for document acknowledgment (security)
+     * Token for document acknowledgment (security).
      */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $documentAcknowledgmentToken = null;
@@ -147,8 +152,13 @@ class SessionRegistration
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFullName();
     }
 
     public function getId(): ?int
@@ -164,6 +174,7 @@ class SessionRegistration
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -175,6 +186,7 @@ class SessionRegistration
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -186,6 +198,7 @@ class SessionRegistration
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -197,6 +210,7 @@ class SessionRegistration
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
     }
 
@@ -208,6 +222,7 @@ class SessionRegistration
     public function setCompany(?string $company): static
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -219,6 +234,7 @@ class SessionRegistration
     public function setPosition(?string $position): static
     {
         $this->position = $position;
+
         return $this;
     }
 
@@ -230,6 +246,7 @@ class SessionRegistration
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -241,6 +258,7 @@ class SessionRegistration
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -252,6 +270,7 @@ class SessionRegistration
     public function setSpecialRequirements(?string $specialRequirements): static
     {
         $this->specialRequirements = $specialRequirements;
+
         return $this;
     }
 
@@ -263,39 +282,43 @@ class SessionRegistration
     public function setAdditionalData(?array $additionalData): static
     {
         $this->additionalData = $additionalData;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getConfirmedAt(): ?\DateTimeInterface
+    public function getConfirmedAt(): ?DateTimeInterface
     {
         return $this->confirmedAt;
     }
 
-    public function setConfirmedAt(?\DateTimeInterface $confirmedAt): static
+    public function setConfirmedAt(?DateTimeInterface $confirmedAt): static
     {
         $this->confirmedAt = $confirmedAt;
+
         return $this;
     }
 
@@ -307,6 +330,7 @@ class SessionRegistration
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+
         return $this;
     }
 
@@ -318,11 +342,12 @@ class SessionRegistration
     public function setProspect(?Prospect $prospect): static
     {
         $this->prospect = $prospect;
+
         return $this;
     }
 
     /**
-     * Get the full name of the participant
+     * Get the full name of the participant.
      */
     public function getFullName(): string
     {
@@ -330,7 +355,7 @@ class SessionRegistration
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -345,7 +370,7 @@ class SessionRegistration
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -360,7 +385,7 @@ class SessionRegistration
     }
 
     /**
-     * Check if the registration is confirmed
+     * Check if the registration is confirmed.
      */
     public function isConfirmed(): bool
     {
@@ -368,7 +393,7 @@ class SessionRegistration
     }
 
     /**
-     * Check if the registration is pending
+     * Check if the registration is pending.
      */
     public function isPending(): bool
     {
@@ -376,7 +401,7 @@ class SessionRegistration
     }
 
     /**
-     * Check if the registration is cancelled
+     * Check if the registration is cancelled.
      */
     public function isCancelled(): bool
     {
@@ -384,43 +409,47 @@ class SessionRegistration
     }
 
     /**
-     * Confirm the registration
+     * Confirm the registration.
      */
     public function confirm(): static
     {
         $this->status = 'confirmed';
-        $this->confirmedAt = new \DateTime();
+        $this->confirmedAt = new DateTime();
+
         return $this;
     }
 
     /**
-     * Cancel the registration
+     * Cancel the registration.
      */
     public function cancel(): static
     {
         $this->status = 'cancelled';
+
         return $this;
     }
 
-    public function getDocumentsDeliveredAt(): ?\DateTimeInterface
+    public function getDocumentsDeliveredAt(): ?DateTimeInterface
     {
         return $this->documentsDeliveredAt;
     }
 
-    public function setDocumentsDeliveredAt(?\DateTimeInterface $documentsDeliveredAt): static
+    public function setDocumentsDeliveredAt(?DateTimeInterface $documentsDeliveredAt): static
     {
         $this->documentsDeliveredAt = $documentsDeliveredAt;
+
         return $this;
     }
 
-    public function getDocumentsAcknowledgedAt(): ?\DateTimeInterface
+    public function getDocumentsAcknowledgedAt(): ?DateTimeInterface
     {
         return $this->documentsAcknowledgedAt;
     }
 
-    public function setDocumentsAcknowledgedAt(?\DateTimeInterface $documentsAcknowledgedAt): static
+    public function setDocumentsAcknowledgedAt(?DateTimeInterface $documentsAcknowledgedAt): static
     {
         $this->documentsAcknowledgedAt = $documentsAcknowledgedAt;
+
         return $this;
     }
 
@@ -432,29 +461,32 @@ class SessionRegistration
     public function setDocumentAcknowledgmentToken(?string $documentAcknowledgmentToken): static
     {
         $this->documentAcknowledgmentToken = $documentAcknowledgmentToken;
+
         return $this;
     }
 
     /**
-     * Mark documents as delivered
+     * Mark documents as delivered.
      */
     public function markDocumentsAsDelivered(): static
     {
-        $this->documentsDeliveredAt = new \DateTime();
+        $this->documentsDeliveredAt = new DateTime();
+
         return $this;
     }
 
     /**
-     * Mark documents as acknowledged by participant
+     * Mark documents as acknowledged by participant.
      */
     public function markDocumentsAsAcknowledged(): static
     {
-        $this->documentsAcknowledgedAt = new \DateTime();
+        $this->documentsAcknowledgedAt = new DateTime();
+
         return $this;
     }
 
     /**
-     * Check if documents have been delivered
+     * Check if documents have been delivered.
      */
     public function areDocumentsDelivered(): bool
     {
@@ -462,7 +494,7 @@ class SessionRegistration
     }
 
     /**
-     * Check if documents have been acknowledged
+     * Check if documents have been acknowledged.
      */
     public function areDocumentsAcknowledged(): bool
     {
@@ -470,25 +502,21 @@ class SessionRegistration
     }
 
     /**
-     * Generate acknowledgment token for security
+     * Generate acknowledgment token for security.
      */
     public function generateDocumentAcknowledgmentToken(): static
     {
         $this->documentAcknowledgmentToken = bin2hex(random_bytes(32));
+
         return $this;
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->getFullName();
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

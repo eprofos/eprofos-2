@@ -1,22 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\User;
 
 use App\Entity\User\Mentor;
 use App\Repository\User\MentorRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Mentor Authentication Service
- * 
+ * Mentor Authentication Service.
+ *
  * Handles mentor-specific authentication logic including login,
  * password validation, account verification, and security checks.
  */
@@ -29,27 +34,27 @@ class MentorAuthenticationService
         private TokenStorageInterface $tokenStorage,
         private EventDispatcherInterface $eventDispatcher,
         private LoggerInterface $logger,
-        private MentorService $mentorService
-    ) {
-    }
+        private MentorService $mentorService,
+    ) {}
 
     /**
-     * Authenticate mentor with email and password
+     * Authenticate mentor with email and password.
      */
     public function authenticateMentor(string $email, string $password): ?Mentor
     {
         try {
             $this->logger->info('Attempting mentor authentication', [
-                'email' => $email
+                'email' => $email,
             ]);
 
             // Find mentor by email
             $mentor = $this->mentorRepository->findByEmail($email);
-            
+
             if (!$mentor) {
                 $this->logger->warning('Mentor not found during authentication', [
-                    'email' => $email
+                    'email' => $email,
                 ]);
+
                 return null;
             }
 
@@ -57,8 +62,9 @@ class MentorAuthenticationService
             if (!$this->passwordHasher->isPasswordValid($mentor, $password)) {
                 $this->logger->warning('Invalid password during mentor authentication', [
                     'mentor_id' => $mentor->getId(),
-                    'email' => $email
+                    'email' => $email,
                 ]);
+
                 return null;
             }
 
@@ -66,8 +72,9 @@ class MentorAuthenticationService
             if (!$mentor->isActive()) {
                 $this->logger->warning('Inactive mentor attempted login', [
                     'mentor_id' => $mentor->getId(),
-                    'email' => $email
+                    'email' => $email,
                 ]);
+
                 throw new AuthenticationException('Votre compte mentor est désactivé. Contactez l\'administration.');
             }
 
@@ -77,32 +84,31 @@ class MentorAuthenticationService
 
             $this->logger->info('Mentor authentication successful', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $email
+                'email' => $email,
             ]);
 
             return $mentor;
-
         } catch (AuthenticationException $e) {
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during mentor authentication', [
                 'email' => $email,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw new AuthenticationException('Erreur lors de l\'authentification. Veuillez réessayer.');
         }
     }
 
     /**
-     * Create new mentor account
+     * Create new mentor account.
      */
     public function createMentorAccount(array $mentorData, string $password): Mentor
     {
         try {
             $this->logger->info('Creating new mentor account', [
                 'email' => $mentorData['email'],
-                'company' => $mentorData['companyName'] ?? 'Unknown'
+                'company' => $mentorData['companyName'] ?? 'Unknown',
             ]);
 
             // Validate mentor data
@@ -121,7 +127,7 @@ class MentorAuthenticationService
             // Validate data
             $errors = $this->mentorService->validateMentorData($mentor);
             if (!empty($errors)) {
-                throw new \InvalidArgumentException('Données invalides: ' . implode(', ', $errors));
+                throw new InvalidArgumentException('Données invalides: ' . implode(', ', $errors));
             }
 
             // Hash password
@@ -137,7 +143,7 @@ class MentorAuthenticationService
 
             $this->logger->info('Mentor account created successfully', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             // Send welcome and verification emails
@@ -146,33 +152,33 @@ class MentorAuthenticationService
             $this->mentorService->sendAdminNotificationForNewMentor($mentor);
 
             return $mentor;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating mentor account', [
                 'email' => $mentorData['email'] ?? 'unknown',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
 
     /**
-     * Verify mentor email with token
+     * Verify mentor email with token.
      */
     public function verifyEmail(string $token): ?Mentor
     {
         try {
             $this->logger->info('Attempting email verification for mentor', [
-                'token' => substr($token, 0, 8) . '...'
+                'token' => substr($token, 0, 8) . '...',
             ]);
 
             $mentor = $this->mentorRepository->findByEmailVerificationToken($token);
-            
+
             if (!$mentor) {
                 $this->logger->warning('Invalid email verification token', [
-                    'token' => substr($token, 0, 8) . '...'
+                    'token' => substr($token, 0, 8) . '...',
                 ]);
+
                 return null;
             }
 
@@ -182,37 +188,37 @@ class MentorAuthenticationService
 
             $this->logger->info('Email verification successful', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             return $mentor;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during email verification', [
                 'token' => substr($token, 0, 8) . '...',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return null;
         }
     }
 
     /**
-     * Initiate password reset for mentor
+     * Initiate password reset for mentor.
      */
     public function initiatePasswordReset(string $email): bool
     {
         try {
             $this->logger->info('Initiating password reset for mentor', [
-                'email' => $email
+                'email' => $email,
             ]);
 
             $mentor = $this->mentorRepository->findByEmail($email);
-            
+
             if (!$mentor) {
                 $this->logger->warning('Password reset requested for non-existent mentor', [
-                    'email' => $email
+                    'email' => $email,
                 ]);
+
                 // Don't reveal if email exists or not
                 return true;
             }
@@ -220,8 +226,9 @@ class MentorAuthenticationService
             if (!$mentor->isActive()) {
                 $this->logger->warning('Password reset requested for inactive mentor', [
                     'mentor_id' => $mentor->getId(),
-                    'email' => $email
+                    'email' => $email,
                 ]);
+
                 return false;
             }
 
@@ -231,43 +238,43 @@ class MentorAuthenticationService
             $this->logger->info('Password reset initiated', [
                 'mentor_id' => $mentor->getId(),
                 'email' => $email,
-                'success' => $success
+                'success' => $success,
             ]);
 
             return $success;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error initiating password reset', [
                 'email' => $email,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return false;
         }
     }
 
     /**
-     * Reset password with token
+     * Reset password with token.
      */
     public function resetPassword(string $token, string $newPassword): ?Mentor
     {
         try {
             $this->logger->info('Attempting password reset with token', [
-                'token' => substr($token, 0, 8) . '...'
+                'token' => substr($token, 0, 8) . '...',
             ]);
 
             $mentor = $this->mentorRepository->findByPasswordResetToken($token);
-            
+
             if (!$mentor) {
                 $this->logger->warning('Invalid or expired password reset token', [
-                    'token' => substr($token, 0, 8) . '...'
+                    'token' => substr($token, 0, 8) . '...',
                 ]);
+
                 return null;
             }
 
             // Validate new password
             if (strlen($newPassword) < 8) {
-                throw new \InvalidArgumentException('Le mot de passe doit contenir au moins 8 caractères.');
+                throw new InvalidArgumentException('Le mot de passe doit contenir au moins 8 caractères.');
             }
 
             // Hash new password
@@ -276,91 +283,90 @@ class MentorAuthenticationService
 
             // Clear reset token
             $mentor->clearPasswordResetToken();
-            
+
             $this->entityManager->flush();
 
             $this->logger->info('Password reset successful', [
                 'mentor_id' => $mentor->getId(),
-                'email' => $mentor->getEmail()
+                'email' => $mentor->getEmail(),
             ]);
 
             return $mentor;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during password reset', [
                 'token' => substr($token, 0, 8) . '...',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
 
     /**
-     * Change mentor password
+     * Change mentor password.
      */
     public function changePassword(Mentor $mentor, string $currentPassword, string $newPassword): bool
     {
         try {
             $this->logger->info('Changing password for mentor', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             // Verify current password
             if (!$this->passwordHasher->isPasswordValid($mentor, $currentPassword)) {
                 $this->logger->warning('Invalid current password during password change', [
-                    'mentor_id' => $mentor->getId()
+                    'mentor_id' => $mentor->getId(),
                 ]);
-                throw new \InvalidArgumentException('Mot de passe actuel incorrect.');
+
+                throw new InvalidArgumentException('Mot de passe actuel incorrect.');
             }
 
             // Validate new password
             if (strlen($newPassword) < 8) {
-                throw new \InvalidArgumentException('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+                throw new InvalidArgumentException('Le nouveau mot de passe doit contenir au moins 8 caractères.');
             }
 
             // Check if new password is different from current
             if ($this->passwordHasher->isPasswordValid($mentor, $newPassword)) {
-                throw new \InvalidArgumentException('Le nouveau mot de passe doit être différent de l\'actuel.');
+                throw new InvalidArgumentException('Le nouveau mot de passe doit être différent de l\'actuel.');
             }
 
             // Hash new password
             $hashedPassword = $this->passwordHasher->hashPassword($mentor, $newPassword);
             $mentor->setPassword($hashedPassword);
-            
+
             $this->entityManager->flush();
 
             $this->logger->info('Password changed successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error changing password', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
 
     /**
-     * Log in mentor programmatically
+     * Log in mentor programmatically.
      */
     public function loginMentor(Mentor $mentor, Request $request): void
     {
         try {
             $this->logger->info('Logging in mentor programmatically', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             // Create authentication token
             $token = new UsernamePasswordToken(
                 $mentor,
                 'mentor', // Firewall name
-                $mentor->getRoles()
+                $mentor->getRoles(),
             );
 
             // Set token in storage
@@ -375,25 +381,24 @@ class MentorAuthenticationService
             $this->entityManager->flush();
 
             $this->logger->info('Mentor logged in successfully', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during programmatic login', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
 
     /**
-     * Check if mentor account is properly set up
+     * Check if mentor account is properly set up.
      */
     public function isAccountSetupComplete(Mentor $mentor): bool
     {
-        return $mentor->isEmailVerified() 
+        return $mentor->isEmailVerified()
             && $mentor->isActive()
             && !empty($mentor->getExpertiseDomains())
             && $mentor->getExperienceYears() !== null
@@ -404,7 +409,7 @@ class MentorAuthenticationService
     }
 
     /**
-     * Get account setup completion percentage
+     * Get account setup completion percentage.
      */
     public function getAccountSetupCompletion(Mentor $mentor): array
     {
@@ -428,71 +433,69 @@ class MentorAuthenticationService
             'completed' => $completed,
             'total' => $total,
             'percentage' => $percentage,
-            'is_complete' => $percentage === 100
+            'is_complete' => $percentage === 100,
         ];
     }
 
     /**
-     * Deactivate mentor account
+     * Deactivate mentor account.
      */
     public function deactivateMentor(Mentor $mentor, string $reason = ''): bool
     {
         try {
             $this->logger->info('Deactivating mentor account', [
                 'mentor_id' => $mentor->getId(),
-                'reason' => $reason
+                'reason' => $reason,
             ]);
 
             $mentor->setIsActive(false);
             $this->entityManager->flush();
 
             $this->logger->info('Mentor account deactivated', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error deactivating mentor account', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return false;
         }
     }
 
     /**
-     * Reactivate mentor account
+     * Reactivate mentor account.
      */
     public function reactivateMentor(Mentor $mentor): bool
     {
         try {
             $this->logger->info('Reactivating mentor account', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             $mentor->setIsActive(true);
             $this->entityManager->flush();
 
             $this->logger->info('Mentor account reactivated', [
-                'mentor_id' => $mentor->getId()
+                'mentor_id' => $mentor->getId(),
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error reactivating mentor account', [
                 'mentor_id' => $mentor->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return false;
         }
     }
 
     /**
-     * Generate secure random password for mentor
+     * Generate secure random password for mentor.
      */
     public function generateSecurePassword(): string
     {
@@ -500,7 +503,7 @@ class MentorAuthenticationService
     }
 
     /**
-     * Check for security vulnerabilities in mentor account
+     * Check for security vulnerabilities in mentor account.
      */
     public function performSecurityCheck(Mentor $mentor): array
     {
@@ -513,13 +516,13 @@ class MentorAuthenticationService
 
         // Check last login activity
         $lastLogin = $mentor->getLastLoginAt();
-        if (!$lastLogin || $lastLogin < new \DateTimeImmutable('-90 days')) {
+        if (!$lastLogin || $lastLogin < new DateTimeImmutable('-90 days')) {
             $issues[] = 'inactive_account';
         }
 
         // Check if password reset token is expired but not cleared
-        if ($mentor->getPasswordResetToken() && 
-            $mentor->getPasswordResetTokenExpiresAt() < new \DateTimeImmutable()) {
+        if ($mentor->getPasswordResetToken()
+            && $mentor->getPasswordResetTokenExpiresAt() < new DateTimeImmutable()) {
             $issues[] = 'expired_reset_token';
         }
 
@@ -532,16 +535,16 @@ class MentorAuthenticationService
     }
 
     /**
-     * Generate credentials for a new mentor
+     * Generate credentials for a new mentor.
      */
     public function generateCredentials(Mentor $mentor): array
     {
         $password = $this->generateSecurePassword();
         $hashedPassword = $this->passwordHasher->hashPassword($mentor, $password);
-        
+
         $mentor->setPassword($hashedPassword);
         $mentor->generateEmailVerificationToken();
-        
+
         return [
             'email' => $mentor->getEmail(),
             'password' => $password,
@@ -550,19 +553,19 @@ class MentorAuthenticationService
     }
 
     /**
-     * Reset credentials for an existing mentor
+     * Reset credentials for an existing mentor.
      */
     public function resetCredentials(Mentor $mentor): array
     {
         $password = $this->generateSecurePassword();
         $hashedPassword = $this->passwordHasher->hashPassword($mentor, $password);
-        
+
         $mentor->setPassword($hashedPassword);
         $mentor->setEmailVerified(false);
         $mentor->generateEmailVerificationToken();
-        
+
         $this->entityManager->flush();
-        
+
         return [
             'email' => $mentor->getEmail(),
             'password' => $password,

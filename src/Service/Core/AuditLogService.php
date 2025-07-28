@@ -1,44 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Core;
 
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Loggable\Entity\LogEntry;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
+use Gedmo\Mapping\Annotation\Loggable;
+use ReflectionClass;
 
 /**
- * Service for managing audit logs of loggable entities
- * 
+ * Service for managing audit logs of loggable entities.
+ *
  * Provides functionality to retrieve and format change history
  * for entities that use Gedmo\Loggable extension.
  */
 class AuditLogService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+    ) {}
 
     /**
-     * Get the change history for a specific entity
-     * 
+     * Get the change history for a specific entity.
+     *
      * @param object $entity The entity to get history for
      * @param int $limit Maximum number of log entries to return
+     *
      * @return LogEntry[]
      */
     public function getEntityHistory(object $entity, int $limit = 50): array
     {
         /** @var LogEntryRepository $logRepo */
         $logRepo = $this->entityManager->getRepository(LogEntry::class);
-        
+
         return $logRepo->getLogEntries($entity, $limit);
     }
 
     /**
-     * Get formatted change data for an entity
-     * 
+     * Get formatted change data for an entity.
+     *
      * @param object $entity The entity to get changes for
      * @param int $limit Maximum number of log entries to return
+     *
      * @return array Formatted change data with metadata
      */
     public function getFormattedEntityChanges(object $entity, int $limit = 50): array
@@ -62,10 +68,11 @@ class AuditLogService
     }
 
     /**
-     * Compare two versions of an entity to show differences
-     * 
+     * Compare two versions of an entity to show differences.
+     *
      * @param array $oldData Previous version data
      * @param array $newData Current version data
+     *
      * @return array Array of changes with field names and old/new values
      */
     public function compareVersions(array $oldData, array $newData): array
@@ -75,12 +82,12 @@ class AuditLogService
         // Find added or modified fields
         foreach ($newData as $field => $newValue) {
             $oldValue = $oldData[$field] ?? null;
-            
+
             if ($oldValue !== $newValue) {
                 $changes[$field] = [
                     'old' => $oldValue,
                     'new' => $newValue,
-                    'type' => $oldValue === null ? 'added' : 'modified'
+                    'type' => $oldValue === null ? 'added' : 'modified',
                 ];
             }
         }
@@ -91,7 +98,7 @@ class AuditLogService
                 $changes[$field] = [
                     'old' => $oldValue,
                     'new' => null,
-                    'type' => 'removed'
+                    'type' => 'removed',
                 ];
             }
         }
@@ -100,10 +107,11 @@ class AuditLogService
     }
 
     /**
-     * Get human-readable field names for display
-     * 
+     * Get human-readable field names for display.
+     *
      * @param string $fieldName The technical field name
      * @param string $entityClass The entity class name
+     *
      * @return string Human-readable field name
      */
     public function getHumanReadableFieldName(string $fieldName, string $entityClass): string
@@ -245,16 +253,17 @@ class AuditLogService
             ],
         ];
 
-        $shortClassName = (new \ReflectionClass($entityClass))->getShortName();
-        
+        $shortClassName = (new ReflectionClass($entityClass))->getShortName();
+
         return $fieldMappings[$shortClassName][$fieldName] ?? ucfirst($fieldName);
     }
 
     /**
-     * Format a field value for display
-     * 
+     * Format a field value for display.
+     *
      * @param mixed $value The field value
      * @param string $fieldName The field name for context
+     *
      * @return string Formatted value
      */
     public function formatFieldValue($value, string $fieldName): string
@@ -271,10 +280,11 @@ class AuditLogService
             if (empty($value)) {
                 return '<em class="text-muted">vide</em>';
             }
-            return '<ul class="mb-0">' . implode('', array_map(fn($item) => '<li>' . htmlspecialchars((string)$item) . '</li>', $value)) . '</ul>';
+
+            return '<ul class="mb-0">' . implode('', array_map(static fn ($item) => '<li>' . htmlspecialchars((string) $item) . '</li>', $value)) . '</ul>';
         }
 
-        if ($value instanceof \DateTimeInterface) {
+        if ($value instanceof DateTimeInterface) {
             return $value->format('d/m/Y H:i:s');
         }
 
@@ -282,26 +292,27 @@ class AuditLogService
             return '<details><summary>Afficher le contenu (' . strlen($value) . ' caractères)</summary><div class="mt-2">' . nl2br(htmlspecialchars($value)) . '</div></details>';
         }
 
-        return htmlspecialchars((string)$value);
+        return htmlspecialchars((string) $value);
     }
 
     /**
-     * Check if an entity class is loggable
-     * 
+     * Check if an entity class is loggable.
+     *
      * @param string $entityClass The entity class name
+     *
      * @return bool True if the entity is loggable
      */
     public function isEntityLoggable(string $entityClass): bool
     {
-        $reflectionClass = new \ReflectionClass($entityClass);
-        $attributes = $reflectionClass->getAttributes(\Gedmo\Mapping\Annotation\Loggable::class);
-        
+        $reflectionClass = new ReflectionClass($entityClass);
+        $attributes = $reflectionClass->getAttributes(Loggable::class);
+
         return !empty($attributes);
     }
 
     /**
-     * Get all loggable entity classes
-     * 
+     * Get all loggable entity classes.
+     *
      * @return array Array of loggable entity class names
      */
     public function getLoggableEntities(): array

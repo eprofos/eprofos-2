@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Assessment\Question;
@@ -9,36 +11,36 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Question fixtures for EPROFOS platform
- * 
+ * Question fixtures for EPROFOS platform.
+ *
  * Creates realistic questions for questionnaires with various types:
  * text, textarea, single_choice, multiple_choice, file_upload, etc.
  */
 class QuestionFixtures extends Fixture implements DependentFixtureInterface
 {
     /**
-     * Load question fixtures
+     * Load question fixtures.
      */
     public function load(ObjectManager $manager): void
     {
         // PHP/Symfony positioning questionnaire questions
         $this->createPhpSymfonyQuestions($manager);
-        
+
         // Leadership evaluation questionnaire questions
         $this->createLeadershipQuestions($manager);
-        
+
         // Cybersecurity skills assessment questions
         $this->createCybersecurityQuestions($manager);
-        
+
         // Excel assessment questions
         $this->createExcelQuestions($manager);
-        
+
         // English positioning questions
         $this->createEnglishQuestions($manager);
-        
+
         // Marketing satisfaction questions
         $this->createMarketingSatisfactionQuestions($manager);
-        
+
         // General satisfaction questions
         $this->createGeneralSatisfactionQuestions($manager);
 
@@ -46,7 +48,17 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for PHP/Symfony positioning questionnaire
+     * Define fixture dependencies.
+     */
+    public function getDependencies(): array
+    {
+        return [
+            QuestionnaireFixtures::class,
+        ];
+    }
+
+    /**
+     * Create questions for PHP/Symfony positioning questionnaire.
      */
     private function createPhpSymfonyQuestions(ObjectManager $manager): void
     {
@@ -165,14 +177,14 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
             }
 
             $manager->persist($question);
-            
+
             // Add reference for option creation
             $this->addReference('php_question_' . ($index + 1), $question);
         }
     }
 
     /**
-     * Create questions for Leadership evaluation questionnaire
+     * Create questions for Leadership evaluation questionnaire.
      */
     private function createLeadershipQuestions(ObjectManager $manager): void
     {
@@ -265,7 +277,7 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for Cybersecurity skills assessment
+     * Create questions for Cybersecurity skills assessment.
      */
     private function createCybersecurityQuestions(ObjectManager $manager): void
     {
@@ -382,7 +394,7 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for Excel assessment
+     * Create questions for Excel assessment.
      */
     private function createExcelQuestions(ObjectManager $manager): void
     {
@@ -487,7 +499,7 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for English positioning
+     * Create questions for English positioning.
      */
     private function createEnglishQuestions(ObjectManager $manager): void
     {
@@ -596,7 +608,7 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for Marketing satisfaction
+     * Create questions for Marketing satisfaction.
      */
     private function createMarketingSatisfactionQuestions(ObjectManager $manager): void
     {
@@ -700,7 +712,7 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Create questions for General satisfaction
+     * Create questions for General satisfaction.
      */
     private function createGeneralSatisfactionQuestions(ObjectManager $manager): void
     {
@@ -820,15 +832,5 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
             $manager->persist($question);
             $this->addReference('general_satisfaction_question_' . ($index + 1), $question);
         }
-    }
-
-    /**
-     * Define fixture dependencies
-     */
-    public function getDependencies(): array
-    {
-        return [
-            QuestionnaireFixtures::class,
-        ];
     }
 }

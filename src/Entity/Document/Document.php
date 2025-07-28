@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,11 +14,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Document entity - Main entity that replaces LegalDocument
- * 
+ * Document entity - Main entity that replaces LegalDocument.
+ *
  * This flexible, configurable, and extensible entity can handle any document type,
  * unlike the rigid LegalDocument that was limited to hard-coded legal document types.
- * 
+ *
  * Key improvements over LegalDocument:
  * - References DocumentType instead of hard-coded constants
  * - Hierarchical organization via DocumentCategory
@@ -29,6 +32,28 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class Document
 {
+    // Status constants - configurable per document type
+    public const STATUS_DRAFT = 'draft';
+
+    public const STATUS_REVIEW = 'review';
+
+    public const STATUS_APPROVED = 'approved';
+
+    public const STATUS_PUBLISHED = 'published';
+
+    public const STATUS_ARCHIVED = 'archived';
+
+    public const STATUS_EXPIRED = 'expired';
+
+    public const STATUSES = [
+        self::STATUS_DRAFT => 'Brouillon',
+        self::STATUS_REVIEW => 'En révision',
+        self::STATUS_APPROVED => 'Approuvé',
+        self::STATUS_PUBLISHED => 'Publié',
+        self::STATUS_ARCHIVED => 'Archivé',
+        self::STATUS_EXPIRED => 'Expiré',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,7 +65,7 @@ class Document
         min: 3,
         max: 255,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $title = null;
 
@@ -50,11 +75,11 @@ class Document
         min: 3,
         max: 500,
         minMessage: 'Le slug doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-z0-9\-\/]+$/',
-        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.'
+        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.',
     )]
     private ?string $slug = null;
 
@@ -77,7 +102,7 @@ class Document
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         callback: 'getValidStatuses',
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     private string $status = self::STATUS_DRAFT;
 
@@ -94,16 +119,16 @@ class Document
     private ?array $tags = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $publishedAt = null;
+    private ?DateTimeImmutable $publishedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $expiresAt = null;
+    private ?DateTimeImmutable $expiresAt = null;
 
     #[ORM\Column(options: ['default' => 0])]
     private int $downloadCount = 0;
@@ -123,36 +148,24 @@ class Document
     #[ORM\OneToMany(mappedBy: 'document', targetEntity: DocumentMetadata::class, cascade: ['persist', 'remove'])]
     private Collection $metadata;
 
-    // Status constants - configurable per document type
-    public const STATUS_DRAFT = 'draft';
-    public const STATUS_REVIEW = 'review';
-    public const STATUS_APPROVED = 'approved';
-    public const STATUS_PUBLISHED = 'published';
-    public const STATUS_ARCHIVED = 'archived';
-    public const STATUS_EXPIRED = 'expired';
-
-    public const STATUSES = [
-        self::STATUS_DRAFT => 'Brouillon',
-        self::STATUS_REVIEW => 'En révision',
-        self::STATUS_APPROVED => 'Approuvé',
-        self::STATUS_PUBLISHED => 'Publié',
-        self::STATUS_ARCHIVED => 'Archivé',
-        self::STATUS_EXPIRED => 'Expiré',
-    ];
-
     public function __construct()
     {
         $this->versions = new ArrayCollection();
         $this->metadata = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->version = '1.0';
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?: 'Document #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -168,6 +181,7 @@ class Document
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -179,6 +193,7 @@ class Document
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -190,6 +205,7 @@ class Document
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -201,6 +217,7 @@ class Document
     public function setContent(?string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -212,6 +229,7 @@ class Document
     public function setDocumentType(?DocumentType $documentType): static
     {
         $this->documentType = $documentType;
+
         return $this;
     }
 
@@ -223,6 +241,7 @@ class Document
     public function setCategory(?DocumentCategory $category): static
     {
         $this->category = $category;
+
         return $this;
     }
 
@@ -234,6 +253,7 @@ class Document
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -245,6 +265,7 @@ class Document
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -256,6 +277,7 @@ class Document
     public function setIsPublic(bool $isPublic): static
     {
         $this->isPublic = $isPublic;
+
         return $this;
     }
 
@@ -267,6 +289,7 @@ class Document
     public function setVersion(?string $version): static
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -278,50 +301,55 @@ class Document
     public function setTags(?array $tags): static
     {
         $this->tags = $tags;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getPublishedAt(): ?\DateTimeImmutable
+    public function getPublishedAt(): ?DateTimeImmutable
     {
         return $this->publishedAt;
     }
 
-    public function setPublishedAt(?\DateTimeImmutable $publishedAt): static
+    public function setPublishedAt(?DateTimeImmutable $publishedAt): static
     {
         $this->publishedAt = $publishedAt;
+
         return $this;
     }
 
-    public function getExpiresAt(): ?\DateTimeImmutable
+    public function getExpiresAt(): ?DateTimeImmutable
     {
         return $this->expiresAt;
     }
 
-    public function setExpiresAt(?\DateTimeImmutable $expiresAt): static
+    public function setExpiresAt(?DateTimeImmutable $expiresAt): static
     {
         $this->expiresAt = $expiresAt;
+
         return $this;
     }
 
@@ -333,6 +361,7 @@ class Document
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -344,6 +373,7 @@ class Document
     public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
+
         return $this;
     }
 
@@ -408,50 +438,53 @@ class Document
     }
 
     /**
-     * Business logic methods - Clean API for common operations
+     * Business logic methods - Clean API for common operations.
      */
 
     /**
-     * Publish the document
+     * Publish the document.
      */
     public function publish(): self
     {
         $this->status = self::STATUS_PUBLISHED;
-        $this->publishedAt = new \DateTimeImmutable();
+        $this->publishedAt = new DateTimeImmutable();
+
         return $this;
     }
 
     /**
-     * Archive the document
+     * Archive the document.
      */
     public function archive(): self
     {
         $this->status = self::STATUS_ARCHIVED;
+
         return $this;
     }
 
     /**
-     * Unpublish the document (set to draft)
+     * Unpublish the document (set to draft).
      */
     public function unpublish(): self
     {
         $this->status = self::STATUS_DRAFT;
         $this->publishedAt = null;
+
         return $this;
     }
 
     /**
-     * Check if document is published
+     * Check if document is published.
      */
     public function isPublished(): bool
     {
-        return $this->status === self::STATUS_PUBLISHED && 
-               $this->publishedAt !== null &&
-               $this->publishedAt <= new \DateTimeImmutable();
+        return $this->status === self::STATUS_PUBLISHED
+               && $this->publishedAt !== null
+               && $this->publishedAt <= new DateTimeImmutable();
     }
 
     /**
-     * Check if document is draft
+     * Check if document is draft.
      */
     public function isDraft(): bool
     {
@@ -459,7 +492,7 @@ class Document
     }
 
     /**
-     * Check if document is archived
+     * Check if document is archived.
      */
     public function isArchived(): bool
     {
@@ -467,16 +500,16 @@ class Document
     }
 
     /**
-     * Check if document is expired
+     * Check if document is expired.
      */
     public function isExpired(): bool
     {
-        return $this->expiresAt !== null && 
-               $this->expiresAt <= new \DateTimeImmutable();
+        return $this->expiresAt !== null
+               && $this->expiresAt <= new DateTimeImmutable();
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -484,7 +517,7 @@ class Document
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -492,7 +525,7 @@ class Document
     }
 
     /**
-     * Get the category label for display
+     * Get the category label for display.
      */
     public function getCategoryLabel(): string
     {
@@ -500,7 +533,7 @@ class Document
     }
 
     /**
-     * Get metadata value by key
+     * Get metadata value by key.
      */
     public function getMetadataValue(string $key): ?string
     {
@@ -509,11 +542,12 @@ class Document
                 return $meta->getMetaValue();
             }
         }
+
         return null;
     }
 
     /**
-     * Set metadata value by key
+     * Set metadata value by key.
      */
     public function setMetadataValue(string $key, ?string $value, string $dataType = 'string'): self
     {
@@ -522,6 +556,7 @@ class Document
             if ($meta->getMetaKey() === $key) {
                 $meta->setMetaValue($value);
                 $meta->setDataType($dataType);
+
                 return $this;
             }
         }
@@ -529,16 +564,18 @@ class Document
         // Create new metadata if not found
         $meta = new DocumentMetadata();
         $meta->setMetaKey($key)
-             ->setMetaValue($value)
-             ->setDataType($dataType)
-             ->setDocument($this);
-        
+            ->setMetaValue($value)
+            ->setDataType($dataType)
+            ->setDocument($this)
+        ;
+
         $this->addMetadata($meta);
+
         return $this;
     }
 
     /**
-     * Get current version
+     * Get current version.
      */
     public function getCurrentVersion(): ?DocumentVersion
     {
@@ -547,11 +584,12 @@ class Document
                 return $version;
             }
         }
+
         return null;
     }
 
     /**
-     * Create a new version
+     * Create a new version.
      */
     public function createVersion(string $version, ?string $changeLog = null, ?Admin $createdBy = null): DocumentVersion
     {
@@ -562,12 +600,13 @@ class Document
 
         $newVersion = new DocumentVersion();
         $newVersion->setDocument($this)
-                  ->setVersion($version)
-                  ->setTitle($this->title)
-                  ->setContent($this->content)
-                  ->setChangeLog($changeLog)
-                  ->setIsCurrent(true)
-                  ->setCreatedBy($createdBy);
+            ->setVersion($version)
+            ->setTitle($this->title)
+            ->setContent($this->content)
+            ->setChangeLog($changeLog)
+            ->setIsCurrent(true)
+            ->setCreatedBy($createdBy)
+        ;
 
         $this->addVersion($newVersion);
         $this->setVersion($version);
@@ -576,7 +615,7 @@ class Document
     }
 
     /**
-     * Check if document has specific tag
+     * Check if document has specific tag.
      */
     public function hasTag(string $tag): bool
     {
@@ -584,7 +623,7 @@ class Document
     }
 
     /**
-     * Add tag
+     * Add tag.
      */
     public function addTag(string $tag): self
     {
@@ -593,17 +632,19 @@ class Document
             $tags[] = $tag;
             $this->tags = $tags;
         }
+
         return $this;
     }
 
     /**
-     * Remove tag
+     * Remove tag.
      */
     public function removeTag(string $tag): self
     {
         if ($this->tags) {
-            $this->tags = array_values(array_filter($this->tags, fn($t) => $t !== $tag));
+            $this->tags = array_values(array_filter($this->tags, static fn ($t) => $t !== $tag));
         }
+
         return $this;
     }
 
@@ -615,25 +656,22 @@ class Document
     public function setDownloadCount(int $downloadCount): static
     {
         $this->downloadCount = $downloadCount;
+
         return $this;
     }
 
     public function incrementDownloadCount(): static
     {
         $this->downloadCount++;
+
         return $this;
     }
 
     /**
-     * Get all valid statuses (for validation)
+     * Get all valid statuses (for validation).
      */
     public static function getValidStatuses(): array
     {
         return array_keys(self::STATUSES);
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?: 'Document #' . $this->id;
     }
 }

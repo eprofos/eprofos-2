@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentVersionRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentVersion entity - Version History Tracking
- * 
+ * DocumentVersion entity - Version History Tracking.
+ *
  * This is critical for Qualiopi compliance as the current system has no change history.
  * Provides full audit trail of document changes with changelogs, which is required
  * for quality standards and regulatory compliance.
@@ -36,7 +39,7 @@ class DocumentVersion
         min: 1,
         max: 50,
         minMessage: 'La version doit contenir au moins {{ limit }} caractère.',
-        maxMessage: 'La version ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'La version ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $version = null;
 
@@ -46,7 +49,7 @@ class DocumentVersion
         min: 3,
         max: 255,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $title = null;
 
@@ -69,7 +72,7 @@ class DocumentVersion
     private ?array $additionalData = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -77,7 +80,12 @@ class DocumentVersion
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('%s v%s', $this->title ?: 'Document', $this->version ?: '?');
     }
 
     public function getId(): ?int
@@ -93,6 +101,7 @@ class DocumentVersion
     public function setDocument(?Document $document): static
     {
         $this->document = $document;
+
         return $this;
     }
 
@@ -104,6 +113,7 @@ class DocumentVersion
     public function setVersion(string $version): static
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -115,6 +125,7 @@ class DocumentVersion
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -126,6 +137,7 @@ class DocumentVersion
     public function setContent(?string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -137,6 +149,7 @@ class DocumentVersion
     public function setChangeLog(?string $changeLog): static
     {
         $this->changeLog = $changeLog;
+
         return $this;
     }
 
@@ -148,6 +161,7 @@ class DocumentVersion
     public function setIsCurrent(bool $isCurrent): static
     {
         $this->isCurrent = $isCurrent;
+
         return $this;
     }
 
@@ -159,6 +173,7 @@ class DocumentVersion
     public function setFileSize(?int $fileSize): static
     {
         $this->fileSize = $fileSize;
+
         return $this;
     }
 
@@ -170,6 +185,7 @@ class DocumentVersion
     public function setChecksum(?string $checksum): static
     {
         $this->checksum = $checksum;
+
         return $this;
     }
 
@@ -181,17 +197,19 @@ class DocumentVersion
     public function setAdditionalData(?array $additionalData): static
     {
         $this->additionalData = $additionalData;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -203,15 +221,16 @@ class DocumentVersion
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
     /**
-     * Business logic methods
+     * Business logic methods.
      */
 
     /**
-     * Get human-readable file size
+     * Get human-readable file size.
      */
     public function getFormattedFileSize(): string
     {
@@ -221,16 +240,16 @@ class DocumentVersion
 
         $bytes = $this->fileSize;
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, 2) . ' ' . $units[$i];
     }
 
     /**
-     * Get created by name for display
+     * Get created by name for display.
      */
     public function getCreatedByName(): string
     {
@@ -238,7 +257,7 @@ class DocumentVersion
     }
 
     /**
-     * Calculate content length
+     * Calculate content length.
      */
     public function getContentLength(): int
     {
@@ -246,7 +265,7 @@ class DocumentVersion
     }
 
     /**
-     * Check if version has changes logged
+     * Check if version has changes logged.
      */
     public function hasChangeLog(): bool
     {
@@ -254,7 +273,7 @@ class DocumentVersion
     }
 
     /**
-     * Get short change log (first 100 characters)
+     * Get short change log (first 100 characters).
      */
     public function getShortChangeLog(): string
     {
@@ -262,24 +281,25 @@ class DocumentVersion
             return '';
         }
 
-        return strlen($this->changeLog) > 100 
+        return strlen($this->changeLog) > 100
             ? substr($this->changeLog, 0, 97) . '...'
             : $this->changeLog;
     }
 
     /**
-     * Generate content checksum
+     * Generate content checksum.
      */
     public function generateChecksum(): self
     {
         if ($this->content) {
             $this->checksum = md5($this->content);
         }
+
         return $this;
     }
 
     /**
-     * Verify content integrity
+     * Verify content integrity.
      */
     public function verifyIntegrity(): bool
     {
@@ -288,10 +308,5 @@ class DocumentVersion
         }
 
         return $this->checksum === md5($this->content);
-    }
-
-    public function __toString(): string
-    {
-        return sprintf('%s v%s', $this->title ?: 'Document', $this->version ?: '?');
     }
 }

@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Mentor;
 
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use App\Form\Alternance\CompanyMissionType;
-use App\Service\Alternance\CompanyMissionService;
 use App\Repository\Alternance\CompanyMissionRepository;
+use App\Service\Alternance\CompanyMissionService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,8 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Mentor Mission Controller
- * 
+ * Mentor Mission Controller.
+ *
  * Handles CRUD operations for company missions created by mentors
  */
 #[Route('/mentor/missions', name: 'mentor_missions_')]
@@ -26,12 +29,11 @@ class MissionController extends AbstractController
     public function __construct(
         private CompanyMissionService $missionService,
         private CompanyMissionRepository $missionRepository,
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+    ) {}
 
     /**
-     * List all missions created by the mentor
+     * List all missions created by the mentor.
      */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -50,22 +52,26 @@ class MissionController extends AbstractController
         $queryBuilder = $this->missionRepository->createQueryBuilder('m')
             ->where('m.supervisor = :mentor')
             ->setParameter('mentor', $mentor)
-            ->orderBy('m.createdAt', 'DESC');
+            ->orderBy('m.createdAt', 'DESC')
+        ;
 
         if ($status !== 'all') {
             $isActive = $status === 'active';
             $queryBuilder->andWhere('m.isActive = :isActive')
-                        ->setParameter('isActive', $isActive);
+                ->setParameter('isActive', $isActive)
+            ;
         }
 
         if ($complexity !== 'all') {
             $queryBuilder->andWhere('m.complexity = :complexity')
-                        ->setParameter('complexity', $complexity);
+                ->setParameter('complexity', $complexity)
+            ;
         }
 
         if ($term !== 'all') {
             $queryBuilder->andWhere('m.term = :term')
-                        ->setParameter('term', $term);
+                ->setParameter('term', $term)
+            ;
         }
 
         // Get total count
@@ -77,7 +83,8 @@ class MissionController extends AbstractController
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Get statistics for the mentor
         $stats = $this->missionService->getMentorMissionStats($mentor);
@@ -92,16 +99,16 @@ class MissionController extends AbstractController
             'filters' => [
                 'status' => $status,
                 'complexity' => $complexity,
-                'term' => $term
+                'term' => $term,
             ],
             'complexity_options' => CompanyMission::COMPLEXITY_LEVELS,
             'term_options' => CompanyMission::TERMS,
-            'page_title' => 'Mes Missions'
+            'page_title' => 'Mes Missions',
         ]);
     }
 
     /**
-     * Show mission details
+     * Show mission details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(CompanyMission $mission): Response
@@ -120,19 +127,19 @@ class MissionController extends AbstractController
             'active_assignments' => $mission->getActiveAssignmentsCount(),
             'completed_assignments' => $mission->getCompletedAssignmentsCount(),
             'complexity_level' => $mission->getComplexityLabel(),
-            'term_type' => $mission->getTermLabel()
+            'term_type' => $mission->getTermLabel(),
         ];
 
         return $this->render('mentor/missions/show.html.twig', [
             'mission' => $mission,
             'mentor' => $mentor,
             'stats' => $stats,
-            'page_title' => $mission->getTitle()
+            'page_title' => $mission->getTitle(),
         ]);
     }
 
     /**
-     * Create a new mission
+     * Create a new mission.
      */
     #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
@@ -163,13 +170,13 @@ class MissionController extends AbstractController
                     'department' => $mission->getDepartment(),
                     'orderIndex' => $mission->getOrderIndex(),
                     'prerequisites' => $mission->getPrerequisites(),
-                    'evaluationCriteria' => $mission->getEvaluationCriteria()
+                    'evaluationCriteria' => $mission->getEvaluationCriteria(),
                 ], $mentor);
 
                 $this->addFlash('success', 'Mission créée avec succès !');
-                return $this->redirectToRoute('mentor_missions_show', ['id' => $createdMission->getId()]);
 
-            } catch (\Exception $e) {
+                return $this->redirectToRoute('mentor_missions_show', ['id' => $createdMission->getId()]);
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création de la mission : ' . $e->getMessage());
             }
         }
@@ -177,12 +184,12 @@ class MissionController extends AbstractController
         return $this->render('mentor/missions/create.html.twig', [
             'form' => $form,
             'mentor' => $mentor,
-            'page_title' => 'Créer une Mission'
+            'page_title' => 'Créer une Mission',
         ]);
     }
 
     /**
-     * Edit an existing mission
+     * Edit an existing mission.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, CompanyMission $mission): Response
@@ -198,6 +205,7 @@ class MissionController extends AbstractController
         // Check if mission can be edited (no active assignments)
         if ($mission->getActiveAssignmentsCount() > 0) {
             $this->addFlash('warning', 'Cette mission ne peut pas être modifiée car elle a des assignations actives.');
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
 
@@ -220,13 +228,13 @@ class MissionController extends AbstractController
                     'department' => $mission->getDepartment(),
                     'orderIndex' => $mission->getOrderIndex(),
                     'prerequisites' => $mission->getPrerequisites(),
-                    'evaluationCriteria' => $mission->getEvaluationCriteria()
+                    'evaluationCriteria' => $mission->getEvaluationCriteria(),
                 ]);
 
                 $this->addFlash('success', 'Mission mise à jour avec succès !');
-                return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
 
-            } catch (\Exception $e) {
+                return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
             }
         }
@@ -235,12 +243,12 @@ class MissionController extends AbstractController
             'form' => $form,
             'mission' => $mission,
             'mentor' => $mentor,
-            'page_title' => 'Modifier ' . $mission->getTitle()
+            'page_title' => 'Modifier ' . $mission->getTitle(),
         ]);
     }
 
     /**
-     * Toggle mission active status
+     * Toggle mission active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(CompanyMission $mission): Response
@@ -260,8 +268,7 @@ class MissionController extends AbstractController
 
             $statusText = $newStatus ? 'activée' : 'désactivée';
             $this->addFlash('success', "Mission {$statusText} avec succès !");
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
         }
 
@@ -269,7 +276,7 @@ class MissionController extends AbstractController
     }
 
     /**
-     * Delete a mission (soft delete by deactivating)
+     * Delete a mission (soft delete by deactivating).
      */
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(CompanyMission $mission): Response
@@ -285,6 +292,7 @@ class MissionController extends AbstractController
         // Check if mission can be deleted (no assignments)
         if ($mission->getAssignments()->count() > 0) {
             $this->addFlash('error', 'Cette mission ne peut pas être supprimée car elle a des assignations.');
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
 
@@ -294,9 +302,9 @@ class MissionController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', "Mission \"{$missionTitle}\" supprimée avec succès !");
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
 
@@ -304,7 +312,7 @@ class MissionController extends AbstractController
     }
 
     /**
-     * Get recommended next missions for progression
+     * Get recommended next missions for progression.
      */
     #[Route('/recommendations', name: 'recommendations', methods: ['GET'])]
     public function recommendations(): Response
@@ -318,7 +326,7 @@ class MissionController extends AbstractController
         return $this->render('mentor/missions/recommendations.html.twig', [
             'recommendations' => $recommendations,
             'mentor' => $mentor,
-            'page_title' => 'Recommandations de Missions'
+            'page_title' => 'Recommandations de Missions',
         ]);
     }
 }

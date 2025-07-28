@@ -1,15 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Repository\Alternance\AlternanceContractRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Service for managing alternance contracts
- * 
+ * Service for managing alternance contracts.
+ *
  * Provides business logic for CRUD operations, validation,
  * and workflow management for alternance contracts.
  */
@@ -18,16 +23,13 @@ class AlternanceContractService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AlternanceContractRepository $contractRepository,
-        private ValidatorInterface $validator
-    ) {
-    }
+        private ValidatorInterface $validator,
+    ) {}
 
     /**
-     * Create a new alternance contract
+     * Create a new alternance contract.
      *
-     * @param array $data
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function createContract(array $data): AlternanceContract
     {
@@ -36,7 +38,7 @@ class AlternanceContractService
 
         $errors = $this->validator->validate($contract);
         if (count($errors) > 0) {
-            throw new \InvalidArgumentException('Validation failed: ' . (string) $errors);
+            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
         }
 
         $this->entityManager->persist($contract);
@@ -46,12 +48,9 @@ class AlternanceContractService
     }
 
     /**
-     * Update an existing alternance contract
+     * Update an existing alternance contract.
      *
-     * @param AlternanceContract $contract
-     * @param array $data
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function updateContract(AlternanceContract $contract, array $data): AlternanceContract
     {
@@ -59,7 +58,7 @@ class AlternanceContractService
 
         $errors = $this->validator->validate($contract);
         if (count($errors) > 0) {
-            throw new \InvalidArgumentException('Validation failed: ' . (string) $errors);
+            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
         }
 
         $this->entityManager->flush();
@@ -68,10 +67,7 @@ class AlternanceContractService
     }
 
     /**
-     * Delete an alternance contract
-     *
-     * @param AlternanceContract $contract
-     * @return void
+     * Delete an alternance contract.
      */
     public function deleteContract(AlternanceContract $contract): void
     {
@@ -80,20 +76,18 @@ class AlternanceContractService
     }
 
     /**
-     * Validate a contract
+     * Validate a contract.
      *
-     * @param AlternanceContract $contract
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function validateContract(AlternanceContract $contract): AlternanceContract
     {
         if ($contract->getStatus() !== 'pending_validation') {
-            throw new \InvalidArgumentException('Contract must be in pending_validation status to be validated.');
+            throw new InvalidArgumentException('Contract must be in pending_validation status to be validated.');
         }
 
         $contract->setStatus('validated');
-        $contract->setValidatedAt(new \DateTimeImmutable());
+        $contract->setValidatedAt(new DateTimeImmutable());
 
         $this->entityManager->flush();
 
@@ -101,20 +95,18 @@ class AlternanceContractService
     }
 
     /**
-     * Start a contract
+     * Start a contract.
      *
-     * @param AlternanceContract $contract
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function startContract(AlternanceContract $contract): AlternanceContract
     {
         if ($contract->getStatus() !== 'validated') {
-            throw new \InvalidArgumentException('Contract must be validated before starting.');
+            throw new InvalidArgumentException('Contract must be validated before starting.');
         }
 
         $contract->setStatus('active');
-        $contract->setStartedAt(new \DateTimeImmutable());
+        $contract->setStartedAt(new DateTimeImmutable());
 
         $this->entityManager->flush();
 
@@ -122,20 +114,18 @@ class AlternanceContractService
     }
 
     /**
-     * Complete a contract
+     * Complete a contract.
      *
-     * @param AlternanceContract $contract
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function completeContract(AlternanceContract $contract): AlternanceContract
     {
-        if (!in_array($contract->getStatus(), ['active', 'suspended'])) {
-            throw new \InvalidArgumentException('Contract must be active or suspended to be completed.');
+        if (!in_array($contract->getStatus(), ['active', 'suspended'], true)) {
+            throw new InvalidArgumentException('Contract must be active or suspended to be completed.');
         }
 
         $contract->setStatus('completed');
-        $contract->setCompletedAt(new \DateTimeImmutable());
+        $contract->setCompletedAt(new DateTimeImmutable());
 
         $this->entityManager->flush();
 
@@ -143,25 +133,22 @@ class AlternanceContractService
     }
 
     /**
-     * Suspend a contract
+     * Suspend a contract.
      *
-     * @param AlternanceContract $contract
-     * @param string $reason
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function suspendContract(AlternanceContract $contract, string $reason = ''): AlternanceContract
     {
         if ($contract->getStatus() !== 'active') {
-            throw new \InvalidArgumentException('Only active contracts can be suspended.');
+            throw new InvalidArgumentException('Only active contracts can be suspended.');
         }
 
         $contract->setStatus('suspended');
-        
+
         if ($reason) {
             $additionalData = $contract->getAdditionalData() ?? [];
             $additionalData['suspension_reason'] = $reason;
-            $additionalData['suspended_at'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+            $additionalData['suspended_at'] = (new DateTimeImmutable())->format('Y-m-d H:i:s');
             $contract->setAdditionalData($additionalData);
         }
 
@@ -171,22 +158,20 @@ class AlternanceContractService
     }
 
     /**
-     * Resume a suspended contract
+     * Resume a suspended contract.
      *
-     * @param AlternanceContract $contract
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function resumeContract(AlternanceContract $contract): AlternanceContract
     {
         if ($contract->getStatus() !== 'suspended') {
-            throw new \InvalidArgumentException('Only suspended contracts can be resumed.');
+            throw new InvalidArgumentException('Only suspended contracts can be resumed.');
         }
 
         $contract->setStatus('active');
-        
+
         $additionalData = $contract->getAdditionalData() ?? [];
-        $additionalData['resumed_at'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $additionalData['resumed_at'] = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $contract->setAdditionalData($additionalData);
 
         $this->entityManager->flush();
@@ -195,24 +180,21 @@ class AlternanceContractService
     }
 
     /**
-     * Terminate a contract
+     * Terminate a contract.
      *
-     * @param AlternanceContract $contract
-     * @param string $reason
-     * @return AlternanceContract
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function terminateContract(AlternanceContract $contract, string $reason = ''): AlternanceContract
     {
-        if (!in_array($contract->getStatus(), ['active', 'suspended'])) {
-            throw new \InvalidArgumentException('Only active or suspended contracts can be terminated.');
+        if (!in_array($contract->getStatus(), ['active', 'suspended'], true)) {
+            throw new InvalidArgumentException('Only active or suspended contracts can be terminated.');
         }
 
         $contract->setStatus('terminated');
-        
+
         $additionalData = $contract->getAdditionalData() ?? [];
         $additionalData['termination_reason'] = $reason;
-        $additionalData['terminated_at'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $additionalData['terminated_at'] = (new DateTimeImmutable())->format('Y-m-d H:i:s');
         $contract->setAdditionalData($additionalData);
 
         $this->entityManager->flush();
@@ -221,10 +203,8 @@ class AlternanceContractService
     }
 
     /**
-     * Get contracts by status
+     * Get contracts by status.
      *
-     * @param string $status
-     * @param int|null $limit
      * @return AlternanceContract[]
      */
     public function getContractsByStatus(string $status, ?int $limit = null): array
@@ -233,9 +213,8 @@ class AlternanceContractService
     }
 
     /**
-     * Get active contracts
+     * Get active contracts.
      *
-     * @param int|null $limit
      * @return AlternanceContract[]
      */
     public function getActiveContracts(?int $limit = null): array
@@ -244,9 +223,8 @@ class AlternanceContractService
     }
 
     /**
-     * Get contracts ending soon
+     * Get contracts ending soon.
      *
-     * @param int $days
      * @return AlternanceContract[]
      */
     public function getContractsEndingSoon(int $days = 30): array
@@ -255,9 +233,7 @@ class AlternanceContractService
     }
 
     /**
-     * Get contract statistics
-     *
-     * @return array
+     * Get contract statistics.
      */
     public function getContractStatistics(): array
     {
@@ -269,9 +245,8 @@ class AlternanceContractService
     }
 
     /**
-     * Search contracts with filters
+     * Search contracts with filters.
      *
-     * @param array $filters
      * @return AlternanceContract[]
      */
     public function searchContracts(array $filters): array
@@ -280,10 +255,7 @@ class AlternanceContractService
     }
 
     /**
-     * Check if contract dates are valid
-     *
-     * @param AlternanceContract $contract
-     * @return bool
+     * Check if contract dates are valid.
      */
     public function validateContractDates(AlternanceContract $contract): bool
     {
@@ -300,7 +272,7 @@ class AlternanceContractService
         }
 
         // Start date should be in the future (for new contracts)
-        if ($contract->getId() === null && $contract->getStartDate() <= new \DateTime()) {
+        if ($contract->getId() === null && $contract->getStartDate() <= new DateTime()) {
             return false;
         }
 
@@ -308,25 +280,18 @@ class AlternanceContractService
     }
 
     /**
-     * Validate total weekly hours
-     *
-     * @param AlternanceContract $contract
-     * @return bool
+     * Validate total weekly hours.
      */
     public function validateWeeklyHours(AlternanceContract $contract): bool
     {
         $totalHours = $contract->getTotalWeeklyHours();
-        
+
         // Total hours should not exceed 35 hours per week for alternance
         return $totalHours <= 35 && $totalHours >= 20; // Minimum 20 hours per week
     }
 
     /**
-     * Populate contract from data array
-     *
-     * @param AlternanceContract $contract
-     * @param array $data
-     * @return void
+     * Populate contract from data array.
      */
     private function populateContract(AlternanceContract $contract, array $data): void
     {

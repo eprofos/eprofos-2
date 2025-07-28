@@ -1,15 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Analysis;
 
 use App\Repository\Analysis\IndividualNeedsAnalysisRepository;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * Individual Needs Analysis Entity
- * 
+ * Individual Needs Analysis Entity.
+ *
  * Represents a completed needs analysis for an individual, containing all
  * information required for Qualiopi 2.4 compliance including personal
  * details, professional status, funding information, and training requirements.
@@ -20,16 +25,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 class IndividualNeedsAnalysis
 {
     public const STATUS_EMPLOYEE = 'employee';
+
     public const STATUS_JOB_SEEKER = 'job_seeker';
+
     public const STATUS_OTHER = 'other';
 
     public const FUNDING_CPF = 'cpf';
+
     public const FUNDING_POLE_EMPLOI = 'pole_emploi';
+
     public const FUNDING_PERSONAL = 'personal';
+
     public const FUNDING_OTHER = 'other';
 
     public const LEVEL_BEGINNER = 'beginner';
+
     public const LEVEL_INTERMEDIATE = 'intermediate';
+
     public const LEVEL_ADVANCED = 'advanced';
 
     #[ORM\Id]
@@ -47,11 +59,11 @@ class IndividualNeedsAnalysis
         min: 2,
         max: 100,
         minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     private ?string $firstName = null;
 
@@ -61,11 +73,11 @@ class IndividualNeedsAnalysis
         min: 2,
         max: 100,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
     )]
     private ?string $lastName = null;
 
@@ -75,7 +87,7 @@ class IndividualNeedsAnalysis
         min: 10,
         max: 1000,
         minMessage: 'L\'adresse doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'L\'adresse ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'adresse ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $address = null;
 
@@ -83,7 +95,7 @@ class IndividualNeedsAnalysis
     #[Assert\NotBlank(message: 'Le téléphone est obligatoire.')]
     #[Assert\Regex(
         pattern: '/^(?:\+33|0)[1-9](?:[0-9]{8})$/',
-        message: 'Veuillez saisir un numéro de téléphone français valide.'
+        message: 'Veuillez saisir un numéro de téléphone français valide.',
     )]
     private ?string $phone = null;
 
@@ -92,7 +104,7 @@ class IndividualNeedsAnalysis
     #[Assert\Email(message: 'Veuillez saisir une adresse email valide.')]
     #[Assert\Length(
         max: 180,
-        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $email = null;
 
@@ -100,14 +112,14 @@ class IndividualNeedsAnalysis
     #[Assert\NotBlank(message: 'Le statut professionnel est obligatoire.')]
     #[Assert\Choice(
         choices: [self::STATUS_EMPLOYEE, self::STATUS_JOB_SEEKER, self::STATUS_OTHER],
-        message: 'Veuillez choisir un statut professionnel valide.'
+        message: 'Veuillez choisir un statut professionnel valide.',
     )]
     private ?string $status = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 500,
-        maxMessage: 'Les détails du statut ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les détails du statut ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $statusOtherDetails = null;
 
@@ -115,14 +127,14 @@ class IndividualNeedsAnalysis
     #[Assert\NotBlank(message: 'Le type de financement est obligatoire.')]
     #[Assert\Choice(
         choices: [self::FUNDING_CPF, self::FUNDING_POLE_EMPLOI, self::FUNDING_PERSONAL, self::FUNDING_OTHER],
-        message: 'Veuillez choisir un type de financement valide.'
+        message: 'Veuillez choisir un type de financement valide.',
     )]
     private ?string $fundingType = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 500,
-        maxMessage: 'Les détails du financement ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les détails du financement ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $fundingOtherDetails = null;
 
@@ -132,7 +144,7 @@ class IndividualNeedsAnalysis
         min: 5,
         max: 255,
         minMessage: 'L\'intitulé de la formation doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'L\'intitulé de la formation ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'intitulé de la formation ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $desiredTrainingTitle = null;
 
@@ -142,7 +154,7 @@ class IndividualNeedsAnalysis
         min: 20,
         max: 1000,
         minMessage: 'L\'objectif professionnel doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'L\'objectif professionnel ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'objectif professionnel ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $professionalObjective = null;
 
@@ -150,7 +162,7 @@ class IndividualNeedsAnalysis
     #[Assert\NotBlank(message: 'Le niveau actuel est obligatoire.')]
     #[Assert\Choice(
         choices: [self::LEVEL_BEGINNER, self::LEVEL_INTERMEDIATE, self::LEVEL_ADVANCED],
-        message: 'Veuillez choisir un niveau valide.'
+        message: 'Veuillez choisir un niveau valide.',
     )]
     private ?string $currentLevel = null;
 
@@ -160,28 +172,28 @@ class IndividualNeedsAnalysis
     #[Assert\Range(
         min: 1,
         max: 2000,
-        notInRangeMessage: 'La durée souhaitée doit être entre {{ min }} et {{ max }} heures.'
+        notInRangeMessage: 'La durée souhaitée doit être entre {{ min }} et {{ max }} heures.',
     )]
     private ?int $desiredDurationHours = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $preferredStartDate = null;
+    private ?DateTimeInterface $preferredStartDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $preferredEndDate = null;
+    private ?DateTimeInterface $preferredEndDate = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La préférence de lieu de formation est obligatoire.')]
     #[Assert\Choice(
         choices: ['on_site', 'remote', 'hybrid', 'training_center'],
-        message: 'Veuillez choisir une option valide pour le lieu de formation.'
+        message: 'Veuillez choisir une option valide pour le lieu de formation.',
     )]
     private ?string $trainingLocationPreference = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 2000,
-        maxMessage: 'Les accommodations handicap ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les accommodations handicap ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $disabilityAccommodations = null;
 
@@ -191,7 +203,7 @@ class IndividualNeedsAnalysis
         min: 20,
         max: 2000,
         minMessage: 'Les attentes de formation doivent contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Les attentes de formation ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les attentes de formation ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $trainingExpectations = null;
 
@@ -201,31 +213,41 @@ class IndividualNeedsAnalysis
         min: 10,
         max: 2000,
         minMessage: 'Les besoins spécifiques doivent contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Les besoins spécifiques ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les besoins spécifiques ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $specificNeeds = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $submittedAt = null;
+    private ?DateTimeImmutable $submittedAt = null;
 
     public function __construct()
     {
-        $this->submittedAt = new \DateTimeImmutable();
+        $this->submittedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s - %s (%s)',
+            $this->getFullName(),
+            $this->desiredTrainingTitle ?? 'Formation non spécifiée',
+            $this->getStatusLabel(),
+        );
     }
 
     /**
-     * Lifecycle callback executed before persisting the entity
+     * Lifecycle callback executed before persisting the entity.
      */
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
         if ($this->submittedAt === null) {
-            $this->submittedAt = new \DateTimeImmutable();
+            $this->submittedAt = new DateTimeImmutable();
         }
     }
 
     /**
-     * Get the full name of the individual
+     * Get the full name of the individual.
      */
     public function getFullName(): string
     {
@@ -233,7 +255,7 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Get status label for display
+     * Get status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -246,7 +268,7 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Get funding type label for display
+     * Get funding type label for display.
      */
     public function getFundingTypeLabel(): string
     {
@@ -260,7 +282,7 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Get current level label for display
+     * Get current level label for display.
      */
     public function getCurrentLevelLabel(): string
     {
@@ -273,7 +295,7 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Get training location preference label
+     * Get training location preference label.
      */
     public function getTrainingLocationPreferenceLabel(): string
     {
@@ -287,7 +309,7 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -299,7 +321,7 @@ class IndividualNeedsAnalysis
             return $this->desiredDurationHours . 'h';
         }
 
-        $days = intval($this->desiredDurationHours / 8);
+        $days = (int) ($this->desiredDurationHours / 8);
         $remainingHours = $this->desiredDurationHours % 8;
 
         if ($remainingHours === 0) {
@@ -310,43 +332,46 @@ class IndividualNeedsAnalysis
     }
 
     /**
-     * Validate dates consistency
+     * Validate dates consistency.
      */
     #[Assert\Callback]
-    public function validateDates(\Symfony\Component\Validator\Context\ExecutionContextInterface $context): void
+    public function validateDates(ExecutionContextInterface $context): void
     {
         if ($this->preferredStartDate && $this->preferredEndDate) {
             if ($this->preferredStartDate > $this->preferredEndDate) {
                 $context->buildViolation('La date de fin doit être postérieure à la date de début.')
                     ->atPath('preferredEndDate')
-                    ->addViolation();
+                    ->addViolation()
+                ;
             }
         }
     }
 
     /**
-     * Validate status other details requirement
+     * Validate status other details requirement.
      */
     #[Assert\Callback]
-    public function validateStatusOtherDetails(\Symfony\Component\Validator\Context\ExecutionContextInterface $context): void
+    public function validateStatusOtherDetails(ExecutionContextInterface $context): void
     {
         if ($this->status === self::STATUS_OTHER && empty($this->statusOtherDetails)) {
             $context->buildViolation('Veuillez préciser votre statut professionnel.')
                 ->atPath('statusOtherDetails')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
     /**
-     * Validate funding other details requirement
+     * Validate funding other details requirement.
      */
     #[Assert\Callback]
-    public function validateFundingOtherDetails(\Symfony\Component\Validator\Context\ExecutionContextInterface $context): void
+    public function validateFundingOtherDetails(ExecutionContextInterface $context): void
     {
         if ($this->fundingType === self::FUNDING_OTHER && empty($this->fundingOtherDetails)) {
             $context->buildViolation('Veuillez préciser votre type de financement.')
                 ->atPath('fundingOtherDetails')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
@@ -365,6 +390,7 @@ class IndividualNeedsAnalysis
     public function setNeedsAnalysisRequest(?NeedsAnalysisRequest $needsAnalysisRequest): static
     {
         $this->needsAnalysisRequest = $needsAnalysisRequest;
+
         return $this;
     }
 
@@ -376,6 +402,7 @@ class IndividualNeedsAnalysis
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -387,6 +414,7 @@ class IndividualNeedsAnalysis
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -398,6 +426,7 @@ class IndividualNeedsAnalysis
     public function setAddress(string $address): static
     {
         $this->address = $address;
+
         return $this;
     }
 
@@ -409,6 +438,7 @@ class IndividualNeedsAnalysis
     public function setPhone(string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
     }
 
@@ -420,6 +450,7 @@ class IndividualNeedsAnalysis
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -431,6 +462,7 @@ class IndividualNeedsAnalysis
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -442,6 +474,7 @@ class IndividualNeedsAnalysis
     public function setStatusOtherDetails(?string $statusOtherDetails): static
     {
         $this->statusOtherDetails = $statusOtherDetails;
+
         return $this;
     }
 
@@ -453,6 +486,7 @@ class IndividualNeedsAnalysis
     public function setFundingType(string $fundingType): static
     {
         $this->fundingType = $fundingType;
+
         return $this;
     }
 
@@ -464,6 +498,7 @@ class IndividualNeedsAnalysis
     public function setFundingOtherDetails(?string $fundingOtherDetails): static
     {
         $this->fundingOtherDetails = $fundingOtherDetails;
+
         return $this;
     }
 
@@ -475,6 +510,7 @@ class IndividualNeedsAnalysis
     public function setDesiredTrainingTitle(string $desiredTrainingTitle): static
     {
         $this->desiredTrainingTitle = $desiredTrainingTitle;
+
         return $this;
     }
 
@@ -486,6 +522,7 @@ class IndividualNeedsAnalysis
     public function setProfessionalObjective(string $professionalObjective): static
     {
         $this->professionalObjective = $professionalObjective;
+
         return $this;
     }
 
@@ -497,6 +534,7 @@ class IndividualNeedsAnalysis
     public function setCurrentLevel(string $currentLevel): static
     {
         $this->currentLevel = $currentLevel;
+
         return $this;
     }
 
@@ -508,28 +546,31 @@ class IndividualNeedsAnalysis
     public function setDesiredDurationHours(int $desiredDurationHours): static
     {
         $this->desiredDurationHours = $desiredDurationHours;
+
         return $this;
     }
 
-    public function getPreferredStartDate(): ?\DateTimeInterface
+    public function getPreferredStartDate(): ?DateTimeInterface
     {
         return $this->preferredStartDate;
     }
 
-    public function setPreferredStartDate(?\DateTimeInterface $preferredStartDate): static
+    public function setPreferredStartDate(?DateTimeInterface $preferredStartDate): static
     {
         $this->preferredStartDate = $preferredStartDate;
+
         return $this;
     }
 
-    public function getPreferredEndDate(): ?\DateTimeInterface
+    public function getPreferredEndDate(): ?DateTimeInterface
     {
         return $this->preferredEndDate;
     }
 
-    public function setPreferredEndDate(?\DateTimeInterface $preferredEndDate): static
+    public function setPreferredEndDate(?DateTimeInterface $preferredEndDate): static
     {
         $this->preferredEndDate = $preferredEndDate;
+
         return $this;
     }
 
@@ -541,6 +582,7 @@ class IndividualNeedsAnalysis
     public function setTrainingLocationPreference(string $trainingLocationPreference): static
     {
         $this->trainingLocationPreference = $trainingLocationPreference;
+
         return $this;
     }
 
@@ -552,6 +594,7 @@ class IndividualNeedsAnalysis
     public function setDisabilityAccommodations(?string $disabilityAccommodations): static
     {
         $this->disabilityAccommodations = $disabilityAccommodations;
+
         return $this;
     }
 
@@ -563,6 +606,7 @@ class IndividualNeedsAnalysis
     public function setTrainingExpectations(string $trainingExpectations): static
     {
         $this->trainingExpectations = $trainingExpectations;
+
         return $this;
     }
 
@@ -574,27 +618,19 @@ class IndividualNeedsAnalysis
     public function setSpecificNeeds(string $specificNeeds): static
     {
         $this->specificNeeds = $specificNeeds;
+
         return $this;
     }
 
-    public function getSubmittedAt(): ?\DateTimeImmutable
+    public function getSubmittedAt(): ?DateTimeImmutable
     {
         return $this->submittedAt;
     }
 
-    public function setSubmittedAt(\DateTimeImmutable $submittedAt): static
+    public function setSubmittedAt(DateTimeImmutable $submittedAt): static
     {
         $this->submittedAt = $submittedAt;
-        return $this;
-    }
 
-    public function __toString(): string
-    {
-        return sprintf(
-            '%s - %s (%s)',
-            $this->getFullName(),
-            $this->desiredTrainingTitle ?? 'Formation non spécifiée',
-            $this->getStatusLabel()
-        );
+        return $this;
     }
 }

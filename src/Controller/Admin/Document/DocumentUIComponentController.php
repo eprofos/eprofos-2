@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\DocumentUIComponent;
@@ -7,18 +9,20 @@ use App\Entity\Document\DocumentUITemplate;
 use App\Form\DocumentUIComponentType;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Service\Document\DocumentUITemplateService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Document UI Component Controller
- * 
+ * Admin Document UI Component Controller.
+ *
  * Handles CRUD operations for document UI components within templates.
  */
 #[Route('/admin/document-ui-templates/{templateId}/components', name: 'admin_document_ui_component_')]
@@ -28,24 +32,23 @@ class DocumentUIComponentController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private DocumentUITemplateService $uiTemplateService,
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+    ) {}
 
     /**
-     * List components for a template
+     * List components for a template.
      */
     #[Route('/', name: 'index', methods: ['GET'], requirements: ['templateId' => '\d+'])]
     public function index(int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
-        
+
         if (!$template) {
             throw $this->createNotFoundException('Template not found');
         }
 
         $components = $componentRepository->findByTemplate($template);
-        
+
         // Group components by zone
         $componentsByZone = [];
         foreach ($components as $component) {
@@ -63,19 +66,19 @@ class DocumentUIComponentController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $template->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $template->getId()])],
-                ['label' => 'Composants', 'url' => null]
-            ]
+                ['label' => 'Composants', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show component details
+     * Show component details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function show(int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
@@ -89,19 +92,19 @@ class DocumentUIComponentController extends AbstractController
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $template->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $template->getId()])],
                 ['label' => 'Composants', 'url' => $this->generateUrl('admin_document_ui_component_index', ['templateId' => $template->getId()])],
-                ['label' => $component->getName(), 'url' => null]
-            ]
+                ['label' => $component->getName(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create new component
+     * Create new component.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+'])]
     public function new(Request $request, int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
-        
+
         if (!$template) {
             throw $this->createNotFoundException('Template not found');
         }
@@ -109,10 +112,10 @@ class DocumentUIComponentController extends AbstractController
         $component = new DocumentUIComponent();
         $component->setUiTemplate($template);
         $component->setSortOrder($componentRepository->getNextSortOrder($template));
-        
+
         // Pre-fill zone if provided
         $zone = $request->query->get('zone');
-        if ($zone && in_array($zone, array_keys(DocumentUITemplate::ZONES))) {
+        if ($zone && in_array($zone, array_keys(DocumentUITemplate::ZONES), true)) {
             $component->setZone($zone);
         }
 
@@ -121,16 +124,16 @@ class DocumentUIComponentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $result = $this->uiTemplateService->addComponent($template, $component);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', 'Le composant a été créé avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_component_show', [
                     'templateId' => $template->getId(),
-                    'id' => $component->getId()
+                    'id' => $component->getId(),
                 ]);
-            } else {
-                $this->addFlash('error', $result['error']);
             }
+            $this->addFlash('error', $result['error']);
         }
 
         return $this->render('admin/document_ui_component/new.html.twig', [
@@ -145,19 +148,19 @@ class DocumentUIComponentController extends AbstractController
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $template->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $template->getId()])],
                 ['label' => 'Composants', 'url' => $this->generateUrl('admin_document_ui_component_index', ['templateId' => $template->getId()])],
-                ['label' => 'Nouveau', 'url' => null]
-            ]
+                ['label' => 'Nouveau', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit component
+     * Edit component.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function edit(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
@@ -167,19 +170,20 @@ class DocumentUIComponentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $component->setUpdatedAt(new \DateTimeImmutable());
+                $component->setUpdatedAt(new DateTimeImmutable());
                 $this->entityManager->flush();
-                
+
                 $this->addFlash('success', 'Le composant a été modifié avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_component_show', [
                     'templateId' => $template->getId(),
-                    'id' => $component->getId()
+                    'id' => $component->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du composant.');
                 $this->logger->error('Error updating UI component', [
                     'component_id' => $component->getId(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -197,35 +201,35 @@ class DocumentUIComponentController extends AbstractController
                 ['label' => $template->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $template->getId()])],
                 ['label' => 'Composants', 'url' => $this->generateUrl('admin_document_ui_component_index', ['templateId' => $template->getId()])],
                 ['label' => $component->getName(), 'url' => $this->generateUrl('admin_document_ui_component_show', ['templateId' => $template->getId(), 'id' => $component->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete component
+     * Delete component.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function delete(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$component->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $component->getId(), $request->getPayload()->get('_token'))) {
             try {
                 $componentName = $component->getName();
                 $this->entityManager->remove($component);
                 $this->entityManager->flush();
-                
+
                 $this->addFlash('success', "Le composant \"{$componentName}\" a été supprimé avec succès.");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression du composant.');
                 $this->logger->error('Error deleting UI component', [
                     'component_id' => $component->getId(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -234,31 +238,31 @@ class DocumentUIComponentController extends AbstractController
     }
 
     /**
-     * Toggle component active status
+     * Toggle component active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function toggleStatus(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
 
-        if ($this->isCsrfTokenValid('toggle'.$component->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle' . $component->getId(), $request->getPayload()->get('_token'))) {
             try {
                 $newStatus = !$component->isActive();
                 $component->setIsActive($newStatus);
-                $component->setUpdatedAt(new \DateTimeImmutable());
+                $component->setUpdatedAt(new DateTimeImmutable());
                 $this->entityManager->flush();
-                
+
                 $statusText = $newStatus ? 'activé' : 'désactivé';
                 $this->addFlash('success', "Le composant a été {$statusText} avec succès.");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors du changement de statut du composant.');
                 $this->logger->error('Error toggling UI component status', [
                     'component_id' => $component->getId(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -267,35 +271,36 @@ class DocumentUIComponentController extends AbstractController
     }
 
     /**
-     * Duplicate component
+     * Duplicate component.
      */
     #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function duplicate(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
 
-        if ($this->isCsrfTokenValid('duplicate'.$component->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('duplicate' . $component->getId(), $request->getPayload()->get('_token'))) {
             try {
                 $clonedComponent = $component->cloneComponent();
                 $clonedComponent->setUiTemplate($template);
-                
+
                 $this->entityManager->persist($clonedComponent);
                 $this->entityManager->flush();
-                
+
                 $this->addFlash('success', 'Le composant a été dupliqué avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_component_edit', [
                     'templateId' => $templateId,
-                    'id' => $clonedComponent->getId()
+                    'id' => $clonedComponent->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la duplication du composant.');
                 $this->logger->error('Error duplicating UI component', [
                     'component_id' => $component->getId(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -304,13 +309,13 @@ class DocumentUIComponentController extends AbstractController
     }
 
     /**
-     * Preview component
+     * Preview component.
      */
     #[Route('/{id}/preview', name: 'preview', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function preview(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             throw $this->createNotFoundException('Component not found in this template');
         }
@@ -324,7 +329,7 @@ class DocumentUIComponentController extends AbstractController
             'organization' => 'EPROFOS',
             'image_src' => '/images/logo.png',
             'signature_name' => 'Jean Dupont',
-            'signature_title' => 'Directeur'
+            'signature_title' => 'Directeur',
         ];
 
         $renderedHtml = $component->renderHtml($previewData);
@@ -341,42 +346,42 @@ class DocumentUIComponentController extends AbstractController
                 ['label' => $template->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $template->getId()])],
                 ['label' => 'Composants', 'url' => $this->generateUrl('admin_document_ui_component_index', ['templateId' => $template->getId()])],
                 ['label' => $component->getName(), 'url' => $this->generateUrl('admin_document_ui_component_show', ['templateId' => $template->getId(), 'id' => $component->getId()])],
-                ['label' => 'Aperçu', 'url' => null]
-            ]
+                ['label' => 'Aperçu', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Update component sort order via AJAX
+     * Update component sort order via AJAX.
      */
     #[Route('/sort', name: 'sort', methods: ['POST'], requirements: ['templateId' => '\d+'])]
     public function sort(Request $request, int $templateId): JsonResponse
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
-        
+
         if (!$template) {
             return new JsonResponse(['success' => false, 'error' => 'Template not found'], 404);
         }
 
         $componentIds = $request->request->get('component_ids');
-        
+
         if (!is_array($componentIds)) {
             return new JsonResponse(['success' => false, 'error' => 'Invalid data'], 400);
         }
 
         $result = $this->uiTemplateService->updateComponentSortOrders($template, $componentIds);
-        
+
         return new JsonResponse($result);
     }
 
     /**
-     * Get component configuration via AJAX
+     * Get component configuration via AJAX.
      */
     #[Route('/{id}/config', name: 'config', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function getConfig(int $templateId, DocumentUIComponent $component): JsonResponse
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             return new JsonResponse(['error' => 'Component not found'], 404);
         }
@@ -385,55 +390,54 @@ class DocumentUIComponentController extends AbstractController
             'style_config' => $component->getStyleConfig(),
             'position_config' => $component->getPositionConfig(),
             'data_binding' => $component->getDataBinding(),
-            'conditional_display' => $component->getConditionalDisplay()
+            'conditional_display' => $component->getConditionalDisplay(),
         ]);
     }
 
     /**
-     * Update component configuration via AJAX
+     * Update component configuration via AJAX.
      */
     #[Route('/{id}/config', name: 'update_config', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function updateConfig(Request $request, int $templateId, DocumentUIComponent $component): JsonResponse
     {
         $template = $component->getUiTemplate();
-        
+
         if (!$template || $template->getId() !== $templateId) {
             return new JsonResponse(['error' => 'Component not found'], 404);
         }
 
         try {
             $data = json_decode($request->getContent(), true);
-            
+
             if (isset($data['style_config'])) {
                 $component->setStyleConfig($data['style_config']);
             }
-            
+
             if (isset($data['position_config'])) {
                 $component->setPositionConfig($data['position_config']);
             }
-            
+
             if (isset($data['data_binding'])) {
                 $component->setDataBinding($data['data_binding']);
             }
-            
+
             if (isset($data['conditional_display'])) {
                 $component->setConditionalDisplay($data['conditional_display']);
             }
-            
-            $component->setUpdatedAt(new \DateTimeImmutable());
+
+            $component->setUpdatedAt(new DateTimeImmutable());
             $this->entityManager->flush();
-            
+
             return new JsonResponse(['success' => true]);
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating component config', [
                 'component_id' => $component->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return new JsonResponse([
                 'success' => false,
-                'error' => 'Erreur lors de la mise à jour de la configuration'
+                'error' => 'Erreur lors de la mise à jour de la configuration',
             ], 500);
         }
     }

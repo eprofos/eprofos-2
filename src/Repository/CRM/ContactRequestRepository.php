@@ -1,17 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\CRM;
 
 use App\Entity\CRM\ContactRequest;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for ContactRequest entity
- * 
+ * Repository for ContactRequest entity.
+ *
  * Provides query methods for managing contact requests
  * with filtering and status management capabilities.
- * 
+ *
  * @extends ServiceEntityRepository<ContactRequest>
  */
 class ContactRequestRepository extends ServiceEntityRepository
@@ -22,8 +26,8 @@ class ContactRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find contact requests by status
-     * 
+     * Find contact requests by status.
+     *
      * @return ContactRequest[]
      */
     public function findByStatus(string $status): array
@@ -35,12 +39,13 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->setParameter('status', $status)
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find pending contact requests
-     * 
+     * Find pending contact requests.
+     *
      * @return ContactRequest[]
      */
     public function findPendingRequests(): array
@@ -49,8 +54,8 @@ class ContactRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find contact requests by type
-     * 
+     * Find contact requests by type.
+     *
      * @return ContactRequest[]
      */
     public function findByType(string $type): array
@@ -62,12 +67,13 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent contact requests
-     * 
+     * Find recent contact requests.
+     *
      * @return ContactRequest[]
      */
     public function findRecentRequests(int $limit = 10): array
@@ -78,12 +84,13 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->orderBy('cr.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count requests by status
-     * 
+     * Count requests by status.
+     *
      * @return array<string, int>
      */
     public function countByStatus(): array
@@ -92,7 +99,8 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->select('cr.status', 'COUNT(cr.id) as count')
             ->groupBy('cr.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -103,8 +111,8 @@ class ContactRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count requests by type
-     * 
+     * Count requests by type.
+     *
      * @return array<string, int>
      */
     public function countByType(): array
@@ -113,7 +121,8 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->select('cr.type', 'COUNT(cr.id) as count')
             ->groupBy('cr.type')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -124,8 +133,8 @@ class ContactRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find requests for a specific formation
-     * 
+     * Find requests for a specific formation.
+     *
      * @return ContactRequest[]
      */
     public function findByFormation(int $formationId): array
@@ -135,15 +144,16 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find requests created within date range
-     * 
+     * Find requests created within date range.
+     *
      * @return ContactRequest[]
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('cr')
             ->leftJoin('cr.formation', 'f')
@@ -154,12 +164,13 @@ class ContactRequestRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for dashboard
-     * 
+     * Get statistics for dashboard.
+     *
      * @return array<string, mixed>
      */
     public function getStatistics(): array
@@ -169,25 +180,26 @@ class ContactRequestRepository extends ServiceEntityRepository
         $completedRequests = $this->count(['status' => 'completed']);
 
         // Requests from last 30 days
-        $thirtyDaysAgo = new \DateTimeImmutable('-30 days');
+        $thirtyDaysAgo = new DateTimeImmutable('-30 days');
         $recentRequests = $this->createQueryBuilder('cr')
             ->select('COUNT(cr.id)')
             ->where('cr.createdAt >= :thirtyDaysAgo')
             ->setParameter('thirtyDaysAgo', $thirtyDaysAgo)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total' => $totalRequests,
             'pending' => $pendingRequests,
             'completed' => $completedRequests,
             'recent' => (int) $recentRequests,
-            'completion_rate' => $totalRequests > 0 ? round(($completedRequests / $totalRequests) * 100, 2) : 0
+            'completion_rate' => $totalRequests > 0 ? round(($completedRequests / $totalRequests) * 100, 2) : 0,
         ];
     }
 
     /**
-     * Save a contact request entity
+     * Save a contact request entity.
      */
     public function save(ContactRequest $entity, bool $flush = false): void
     {
@@ -199,7 +211,7 @@ class ContactRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a contact request entity
+     * Remove a contact request entity.
      */
     public function remove(ContactRequest $entity, bool $flush = false): void
     {

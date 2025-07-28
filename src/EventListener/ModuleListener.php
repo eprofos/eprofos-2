@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Training\Module;
 use App\Service\Training\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Event\PostPersistEventArgs;
-use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Events;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Module duration synchronization
- * DISABLED: Using DurationUpdateListener instead
+ * DISABLED: Using DurationUpdateListener instead.
  */
 // #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Module::class)]
 // #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Module::class)]
@@ -22,9 +25,8 @@ class ModuleListener
 {
     public function __construct(
         private DurationCalculationService $durationService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     public function postPersist(PostPersistEventArgs $args): void
     {
@@ -62,27 +64,26 @@ class ModuleListener
         if ($this->durationService->isSyncMode()) {
             return;
         }
-        
+
         try {
             $formation = $module->getFormation();
-            
+
             if ($formation) {
                 // Update the parent formation duration
                 $this->durationService->updateEntityDuration($formation);
-                
+
                 $this->logger->info('Module duration change propagated', [
                     'module_id' => $module->getId(),
                     'module_title' => $module->getTitle(),
                     'formation_id' => $formation->getId(),
                     'formation_title' => $formation->getTitle(),
-                    'operation' => $operation
+                    'operation' => $operation,
                 ]);
             }
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update formation duration from module', [
                 'module_id' => $module->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\CRM\Prospect;
@@ -17,15 +19,15 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Form type for ProspectNote entity
- * 
+ * Form type for ProspectNote entity.
+ *
  * Provides form fields for creating and editing prospect notes
  * in the EPROFOS prospect management system.
  */
 class ProspectNoteType extends AbstractType
 {
     /**
-     * Build the prospect note form
+     * Build the prospect note form.
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -34,8 +36,8 @@ class ProspectNoteType extends AbstractType
                 'label' => 'Titre',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Titre de la note ou de la tâche'
-                ]
+                    'placeholder' => 'Titre de la note ou de la tâche',
+                ],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',
@@ -48,71 +50,70 @@ class ProspectNoteType extends AbstractType
                     'Suivi' => 'follow_up',
                     'Note générale' => 'general',
                     'Tâche' => 'task',
-                    'Rappel' => 'reminder'
+                    'Rappel' => 'reminder',
                 ],
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Type d\'interaction ou de note'
+                'help' => 'Type d\'interaction ou de note',
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu',
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 6,
-                    'placeholder' => 'Détails de l\'interaction ou de la note...'
-                ]
+                    'placeholder' => 'Détails de l\'interaction ou de la note...',
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
                     'En attente' => 'pending',
                     'Terminé' => 'completed',
-                    'Annulé' => 'cancelled'
+                    'Annulé' => 'cancelled',
                 ],
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Pour les tâches et rappels, indiquez si c\'est terminé ou en attente'
+                'help' => 'Pour les tâches et rappels, indiquez si c\'est terminé ou en attente',
             ])
             ->add('scheduledAt', DateTimeType::class, [
                 'label' => 'Planifié le',
                 'required' => false,
                 'widget' => 'single_text',
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
-                'help' => 'Date et heure prévues pour cette tâche ou ce rappel'
+                'help' => 'Date et heure prévues pour cette tâche ou ce rappel',
             ])
             ->add('isImportant', CheckboxType::class, [
                 'label' => 'Important',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-check-input'
+                    'class' => 'form-check-input',
                 ],
-                'help' => 'Marquer cette note comme importante'
+                'help' => 'Marquer cette note comme importante',
             ])
             ->add('isPrivate', CheckboxType::class, [
                 'label' => 'Privé',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-check-input'
+                    'class' => 'form-check-input',
                 ],
-                'help' => 'Note visible uniquement par son créateur'
-            ]);
+                'help' => 'Note visible uniquement par son créateur',
+            ])
+        ;
 
         // Add prospect field only if we're not in a prospect context
         if (!$options['prospect_context']) {
             $builder->add('prospect', EntityType::class, [
                 'label' => 'Prospect',
                 'class' => Prospect::class,
-                'choice_label' => function (Prospect $prospect) {
-                    return $prospect->getFullName() . ($prospect->getCompany() ? ' (' . $prospect->getCompany() . ')' : '');
-                },
+                'choice_label' => static fn (Prospect $prospect) => $prospect->getFullName() . ($prospect->getCompany() ? ' (' . $prospect->getCompany() . ')' : ''),
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Prospect concerné par cette note'
+                'help' => 'Prospect concerné par cette note',
             ]);
         }
 
@@ -121,27 +122,23 @@ class ProspectNoteType extends AbstractType
             $builder->add('createdBy', EntityType::class, [
                 'label' => 'Créé par',
                 'class' => Admin::class,
-                'choice_label' => function (Admin $admin) {
-                    return $admin->getFullName();
-                },
+                'choice_label' => static fn (Admin $admin) => $admin->getFullName(),
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'query_builder' => function (AdminRepository $repo) {
-                    return $repo->createQueryBuilder('a')
-                        ->where('a.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('a.firstName', 'ASC')
-                        ->addOrderBy('a.lastName', 'ASC');
-                },
-                'help' => 'Administrateur qui a créé cette note'
+                'query_builder' => static fn (AdminRepository $repo) => $repo->createQueryBuilder('a')
+                    ->where('a.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('a.firstName', 'ASC')
+                    ->addOrderBy('a.lastName', 'ASC'),
+                'help' => 'Administrateur qui a créé cette note',
             ]);
         }
     }
 
     /**
-     * Configure form options
+     * Configure form options.
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -150,8 +147,8 @@ class ProspectNoteType extends AbstractType
             'prospect_context' => false,
             'show_created_by' => false,
             'attr' => [
-                'novalidate' => 'novalidate'
-            ]
+                'novalidate' => 'novalidate',
+            ],
         ]);
 
         $resolver->setAllowedTypes('prospect_context', 'bool');

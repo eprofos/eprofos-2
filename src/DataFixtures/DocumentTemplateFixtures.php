@@ -1,23 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentTemplate;
+use App\Entity\Document\DocumentType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document Template Fixtures - Creates reusable document templates
- * 
+ * Document Template Fixtures - Creates reusable document templates.
+ *
  * Provides comprehensive template examples for efficient document
  * creation and consistency across the organization.
  */
 class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterface
 {
     public const LEGAL_TEMPLATE_REFERENCE = 'document-template-legal';
+
     public const POLICY_TEMPLATE_REFERENCE = 'document-template-policy';
+
     public const PROCEDURE_TEMPLATE_REFERENCE = 'document-template-procedure';
+
     public const HANDBOOK_TEMPLATE_REFERENCE = 'document-template-handbook';
 
     public function load(ObjectManager $manager): void
@@ -34,50 +40,50 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                         'type' => 'string',
                         'label' => 'Titre du document',
                         'required' => true,
-                        'description' => 'Titre principal du document légal'
+                        'description' => 'Titre principal du document légal',
                     ],
                     'legal_reference' => [
                         'type' => 'string',
                         'label' => 'Référence légale',
                         'required' => true,
-                        'description' => 'Code ou article de loi de référence'
+                        'description' => 'Code ou article de loi de référence',
                     ],
                     'effective_date' => [
                         'type' => 'date',
                         'label' => 'Date d\'entrée en vigueur',
                         'required' => true,
-                        'description' => 'Date à partir de laquelle le document s\'applique'
+                        'description' => 'Date à partir de laquelle le document s\'applique',
                     ],
                     'review_date' => [
                         'type' => 'date',
                         'label' => 'Date de révision prévue',
                         'required' => false,
-                        'description' => 'Prochaine date de révision du document'
+                        'description' => 'Prochaine date de révision du document',
                     ],
                     'approval_authority' => [
                         'type' => 'string',
                         'label' => 'Autorité d\'approbation',
                         'required' => true,
-                        'description' => 'Personne ou instance ayant approuvé le document'
-                    ]
+                        'description' => 'Personne ou instance ayant approuvé le document',
+                    ],
                 ],
                 'defaultMetadata' => [
                     'document_category' => 'legal',
                     'requires_approval' => true,
                     'public_access' => true,
-                    'version_control' => true
+                    'version_control' => true,
                 ],
                 'configuration' => [
                     'auto_numbering' => true,
                     'approval_workflow' => true,
                     'version_tracking' => true,
-                    'expiration_alerts' => true
+                    'expiration_alerts' => true,
                 ],
                 'icon' => 'fas fa-gavel',
                 'color' => '#dc3545',
                 'isDefault' => true,
                 'sortOrder' => 1,
-                'reference' => self::LEGAL_TEMPLATE_REFERENCE
+                'reference' => self::LEGAL_TEMPLATE_REFERENCE,
             ],
             [
                 'name' => 'Modèle Politique Interne',
@@ -90,51 +96,51 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                         'type' => 'string',
                         'label' => 'Titre de la politique',
                         'required' => true,
-                        'description' => 'Nom de la politique interne'
+                        'description' => 'Nom de la politique interne',
                     ],
                     'department' => [
                         'type' => 'select',
                         'label' => 'Département responsable',
                         'required' => true,
                         'options' => ['RH', 'Formation', 'Qualité', 'Direction', 'IT'],
-                        'description' => 'Département pilote de cette politique'
+                        'description' => 'Département pilote de cette politique',
                     ],
                     'policy_owner' => [
                         'type' => 'string',
                         'label' => 'Responsable de la politique',
                         'required' => true,
-                        'description' => 'Personne responsable de la mise en œuvre'
+                        'description' => 'Personne responsable de la mise en œuvre',
                     ],
                     'scope' => [
                         'type' => 'text',
                         'label' => 'Périmètre d\'application',
                         'required' => true,
-                        'description' => 'À qui s\'applique cette politique'
+                        'description' => 'À qui s\'applique cette politique',
                     ],
                     'review_frequency' => [
                         'type' => 'select',
                         'label' => 'Fréquence de révision',
                         'required' => true,
                         'options' => ['Annuelle', 'Biannuelle', 'Triennale'],
-                        'description' => 'Fréquence de révision de la politique'
-                    ]
+                        'description' => 'Fréquence de révision de la politique',
+                    ],
                 ],
                 'defaultMetadata' => [
                     'document_category' => 'internal_policy',
                     'requires_approval' => true,
                     'public_access' => false,
-                    'department_access' => true
+                    'department_access' => true,
                 ],
                 'configuration' => [
                     'approval_workflow' => true,
                     'department_notification' => true,
-                    'training_required' => false
+                    'training_required' => false,
                 ],
                 'icon' => 'fas fa-clipboard-list',
                 'color' => '#6f42c1',
                 'isDefault' => true,
                 'sortOrder' => 2,
-                'reference' => self::POLICY_TEMPLATE_REFERENCE
+                'reference' => self::POLICY_TEMPLATE_REFERENCE,
             ],
             [
                 'name' => 'Modèle Procédure Opérationnelle',
@@ -147,57 +153,57 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                         'type' => 'string',
                         'label' => 'Titre de la procédure',
                         'required' => true,
-                        'description' => 'Nom de la procédure'
+                        'description' => 'Nom de la procédure',
                     ],
                     'process_owner' => [
                         'type' => 'string',
                         'label' => 'Responsable du processus',
                         'required' => true,
-                        'description' => 'Personne en charge du processus'
+                        'description' => 'Personne en charge du processus',
                     ],
                     'complexity_level' => [
                         'type' => 'select',
                         'label' => 'Niveau de complexité',
                         'required' => true,
                         'options' => ['Simple', 'Moyen', 'Complexe'],
-                        'description' => 'Niveau de difficulté de la procédure'
+                        'description' => 'Niveau de difficulté de la procédure',
                     ],
                     'target_audience' => [
                         'type' => 'text',
                         'label' => 'Public cible',
                         'required' => true,
-                        'description' => 'Personnes concernées par cette procédure'
+                        'description' => 'Personnes concernées par cette procédure',
                     ],
                     'prerequisites' => [
                         'type' => 'text',
                         'label' => 'Prérequis',
                         'required' => false,
-                        'description' => 'Connaissances ou autorisations nécessaires'
+                        'description' => 'Connaissances ou autorisations nécessaires',
                     ],
                     'tools_required' => [
                         'type' => 'text',
                         'label' => 'Outils nécessaires',
                         'required' => false,
-                        'description' => 'Matériel ou logiciels requis'
-                    ]
+                        'description' => 'Matériel ou logiciels requis',
+                    ],
                 ],
                 'defaultMetadata' => [
                     'document_category' => 'procedure',
                     'requires_approval' => false,
                     'public_access' => false,
-                    'step_by_step' => true
+                    'step_by_step' => true,
                 ],
                 'configuration' => [
                     'multimedia_support' => true,
                     'user_feedback' => true,
                     'version_tracking' => true,
-                    'usage_analytics' => true
+                    'usage_analytics' => true,
                 ],
                 'icon' => 'fas fa-list-ol',
                 'color' => '#28a745',
                 'isDefault' => true,
                 'sortOrder' => 3,
-                'reference' => self::PROCEDURE_TEMPLATE_REFERENCE
+                'reference' => self::PROCEDURE_TEMPLATE_REFERENCE,
             ],
             [
                 'name' => 'Modèle Livret d\'Accueil',
@@ -210,64 +216,64 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                         'type' => 'string',
                         'label' => 'Titre du livret',
                         'required' => true,
-                        'description' => 'Titre du livret d\'accueil'
+                        'description' => 'Titre du livret d\'accueil',
                     ],
                     'academic_year' => [
                         'type' => 'string',
                         'label' => 'Année académique',
                         'required' => true,
-                        'description' => 'Année de validité du livret'
+                        'description' => 'Année de validité du livret',
                     ],
                     'target_audience' => [
                         'type' => 'select',
                         'label' => 'Public cible',
                         'required' => true,
                         'options' => ['Nouveaux apprenants', 'Stagiaires', 'Alternants', 'Formateurs'],
-                        'description' => 'Destinataires du livret'
+                        'description' => 'Destinataires du livret',
                     ],
                     'language' => [
                         'type' => 'select',
                         'label' => 'Langue',
                         'required' => true,
                         'options' => ['Français', 'English', 'Español'],
-                        'description' => 'Langue du document'
+                        'description' => 'Langue du document',
                     ],
                     'contact_person' => [
                         'type' => 'string',
                         'label' => 'Personne de contact',
                         'required' => true,
-                        'description' => 'Référent pour questions'
+                        'description' => 'Référent pour questions',
                     ],
                     'contact_email' => [
                         'type' => 'email',
                         'label' => 'Email de contact',
                         'required' => true,
-                        'description' => 'Adresse email de contact'
+                        'description' => 'Adresse email de contact',
                     ],
                     'contact_phone' => [
                         'type' => 'string',
                         'label' => 'Téléphone',
                         'required' => false,
-                        'description' => 'Numéro de téléphone'
-                    ]
+                        'description' => 'Numéro de téléphone',
+                    ],
                 ],
                 'defaultMetadata' => [
                     'document_category' => 'student_handbook',
                     'requires_approval' => true,
                     'public_access' => true,
-                    'multilingual' => false
+                    'multilingual' => false,
                 ],
                 'configuration' => [
                     'downloadable' => true,
                     'print_friendly' => true,
                     'mobile_optimized' => true,
-                    'accessibility_compliant' => true
+                    'accessibility_compliant' => true,
                 ],
                 'icon' => 'fas fa-graduation-cap',
                 'color' => '#007bff',
                 'isDefault' => true,
                 'sortOrder' => 4,
-                'reference' => self::HANDBOOK_TEMPLATE_REFERENCE
+                'reference' => self::HANDBOOK_TEMPLATE_REFERENCE,
             ],
             [
                 'name' => 'Modèle Document Qualité',
@@ -280,7 +286,7 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                         'type' => 'string',
                         'label' => 'Titre du document qualité',
                         'required' => true,
-                        'description' => 'Nom du document qualité'
+                        'description' => 'Nom du document qualité',
                     ],
                     'qualiopi_criterion' => [
                         'type' => 'select',
@@ -293,60 +299,61 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
                             'Critère 4 - Moyens',
                             'Critère 5 - Qualification',
                             'Critère 6 - Environnement',
-                            'Critère 7 - Évaluation'
+                            'Critère 7 - Évaluation',
                         ],
-                        'description' => 'Critère Qualiopi principal couvert'
+                        'description' => 'Critère Qualiopi principal couvert',
                     ],
                     'responsible_person' => [
                         'type' => 'string',
                         'label' => 'Responsable qualité',
                         'required' => true,
-                        'description' => 'Responsable du document qualité'
+                        'description' => 'Responsable du document qualité',
                     ],
                     'audit_frequency' => [
                         'type' => 'select',
                         'label' => 'Fréquence d\'audit',
                         'required' => true,
                         'options' => ['Annuelle', 'Semestrielle', 'Trimestrielle'],
-                        'description' => 'Fréquence de révision/audit'
-                    ]
+                        'description' => 'Fréquence de révision/audit',
+                    ],
                 ],
                 'defaultMetadata' => [
                     'document_category' => 'quality',
                     'requires_approval' => true,
                     'public_access' => false,
-                    'qualiopi_compliant' => true
+                    'qualiopi_compliant' => true,
                 ],
                 'configuration' => [
                     'audit_trail' => true,
                     'kpi_tracking' => true,
                     'continuous_improvement' => true,
-                    'compliance_monitoring' => true
+                    'compliance_monitoring' => true,
                 ],
                 'icon' => 'fas fa-certificate',
                 'color' => '#ffc107',
                 'isDefault' => false,
                 'sortOrder' => 5,
-                'reference' => 'document-template-quality'
-            ]
+                'reference' => 'document-template-quality',
+            ],
         ];
 
         foreach ($templates as $templateData) {
             $template = new DocumentTemplate();
             $template->setName($templateData['name'])
-                    ->setSlug($templateData['slug'])
-                    ->setDescription($templateData['description'])
-                    ->setDocumentType($this->getReference($templateData['documentType'], \App\Entity\Document\DocumentType::class))
-                    ->setTemplateContent($templateData['templateContent'])
-                    ->setPlaceholders($templateData['placeholders'])
-                    ->setDefaultMetadata($templateData['defaultMetadata'])
-                    ->setConfiguration($templateData['configuration'])
-                    ->setIcon($templateData['icon'])
-                    ->setColor($templateData['color'])
-                    ->setIsDefault($templateData['isDefault'])
-                    ->setSortOrder($templateData['sortOrder'])
-                    ->setIsActive(true)
-                    ->setUsageCount(0);
+                ->setSlug($templateData['slug'])
+                ->setDescription($templateData['description'])
+                ->setDocumentType($this->getReference($templateData['documentType'], DocumentType::class))
+                ->setTemplateContent($templateData['templateContent'])
+                ->setPlaceholders($templateData['placeholders'])
+                ->setDefaultMetadata($templateData['defaultMetadata'])
+                ->setConfiguration($templateData['configuration'])
+                ->setIcon($templateData['icon'])
+                ->setColor($templateData['color'])
+                ->setIsDefault($templateData['isDefault'])
+                ->setSortOrder($templateData['sortOrder'])
+                ->setIsActive(true)
+                ->setUsageCount(0)
+            ;
 
             $manager->persist($template);
             $this->addReference($templateData['reference'], $template);
@@ -364,7 +371,7 @@ class DocumentTemplateFixtures extends Fixture implements DependentFixtureInterf
 
     private function getLegalTemplateContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 # {{document_title}}
 
 ## Article 1 - Objet et champ d'application
@@ -425,7 +432,7 @@ EOF;
 
     private function getPolicyTemplateContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 # {{policy_title}}
 
 ## 1. Objet de la politique
@@ -506,7 +513,7 @@ EOF;
 
     private function getProcedureTemplateContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 # {{procedure_title}}
 
 ## 1. Information générale
@@ -609,7 +616,7 @@ EOF;
 
     private function getHandbookTemplateContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 # {{handbook_title}}
 
 Bienvenue ! Ce livret vous accompagne dans vos premiers pas.
@@ -712,7 +719,7 @@ EOF;
 
     private function getQualityTemplateContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 # {{quality_doc_title}}
 
 ## 1. Objet du document

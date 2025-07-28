@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\CourseRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Course entity representing a course within a chapter
- * 
+ * Course entity representing a course within a chapter.
+ *
  * Contains detailed pedagogical content with specific learning objectives,
  * resources, and evaluation methods to meet Qualiopi requirements.
  */
@@ -20,6 +23,25 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[Gedmo\Loggable]
 class Course
 {
+    // Constants for course types
+    public const TYPE_LESSON = 'lesson';
+
+    public const TYPE_VIDEO = 'video';
+
+    public const TYPE_DOCUMENT = 'document';
+
+    public const TYPE_INTERACTIVE = 'interactive';
+
+    public const TYPE_PRACTICAL = 'practical';
+
+    public const TYPES = [
+        self::TYPE_LESSON => 'Cours magistral',
+        self::TYPE_VIDEO => 'Vidéo',
+        self::TYPE_DOCUMENT => 'Document',
+        self::TYPE_INTERACTIVE => 'Interactif',
+        self::TYPE_PRACTICAL => 'Pratique',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -38,7 +60,7 @@ class Course
     private ?string $description = null;
 
     /**
-     * Specific learning objectives for this course (required by Qualiopi)
+     * Specific learning objectives for this course (required by Qualiopi).
      *
      * Concrete, measurable objectives that participants will achieve
      * by completing this specific course.
@@ -48,7 +70,7 @@ class Course
     private ?array $learningObjectives = null;
 
     /**
-     * Detailed content outline for this course (required by Qualiopi)
+     * Detailed content outline for this course (required by Qualiopi).
      *
      * Structured content plan with key topics and subtopics covered.
      */
@@ -57,7 +79,7 @@ class Course
     private ?string $contentOutline = null;
 
     /**
-     * Prerequisites specific to this course (required by Qualiopi)
+     * Prerequisites specific to this course (required by Qualiopi).
      *
      * Knowledge or skills required before starting this course.
      */
@@ -66,7 +88,7 @@ class Course
     private ?string $prerequisites = null;
 
     /**
-     * Expected learning outcomes for this course (required by Qualiopi)
+     * Expected learning outcomes for this course (required by Qualiopi).
      *
      * What participants should know or be able to do after completing this course.
      */
@@ -75,7 +97,7 @@ class Course
     private ?array $learningOutcomes = null;
 
     /**
-     * Teaching methods used in this course (required by Qualiopi)
+     * Teaching methods used in this course (required by Qualiopi).
      *
      * Pedagogical approaches and methodologies employed.
      */
@@ -84,7 +106,7 @@ class Course
     private ?string $teachingMethods = null;
 
     /**
-     * Resources and materials for this course (required by Qualiopi)
+     * Resources and materials for this course (required by Qualiopi).
      *
      * Educational resources, documents, tools, and materials used.
      */
@@ -93,7 +115,7 @@ class Course
     private ?array $resources = null;
 
     /**
-     * Assessment methods for this course (required by Qualiopi)
+     * Assessment methods for this course (required by Qualiopi).
      *
      * How learning is evaluated within this course.
      */
@@ -102,7 +124,7 @@ class Course
     private ?string $assessmentMethods = null;
 
     /**
-     * Success criteria for course completion (required by Qualiopi)
+     * Success criteria for course completion (required by Qualiopi).
      *
      * Measurable indicators that demonstrate successful course completion.
      */
@@ -111,14 +133,14 @@ class Course
     private ?array $successCriteria = null;
 
     /**
-     * Course content (text, video, documents, etc.)
+     * Course content (text, video, documents, etc.).
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Gedmo\Versioned]
     private ?string $content = null;
 
     /**
-     * Course type (lesson, video, document, interactive, etc.)
+     * Course type (lesson, video, document, interactive, etc.).
      */
     #[ORM\Column(length: 50)]
     #[Gedmo\Versioned]
@@ -137,10 +159,10 @@ class Course
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]
@@ -160,27 +182,17 @@ class Course
     #[ORM\OrderBy(['orderIndex' => 'ASC'])]
     private Collection $qcms;
 
-    // Constants for course types
-    public const TYPE_LESSON = 'lesson';
-    public const TYPE_VIDEO = 'video';
-    public const TYPE_DOCUMENT = 'document';
-    public const TYPE_INTERACTIVE = 'interactive';
-    public const TYPE_PRACTICAL = 'practical';
-
-    public const TYPES = [
-        self::TYPE_LESSON => 'Cours magistral',
-        self::TYPE_VIDEO => 'Vidéo',
-        self::TYPE_DOCUMENT => 'Document',
-        self::TYPE_INTERACTIVE => 'Interactif',
-        self::TYPE_PRACTICAL => 'Pratique',
-    ];
-
     public function __construct()
     {
         $this->exercises = new ArrayCollection();
         $this->qcms = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -196,6 +208,7 @@ class Course
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -207,6 +220,7 @@ class Course
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -218,6 +232,7 @@ class Course
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -229,6 +244,7 @@ class Course
     public function setLearningObjectives(?array $learningObjectives): static
     {
         $this->learningObjectives = $learningObjectives;
+
         return $this;
     }
 
@@ -240,6 +256,7 @@ class Course
     public function setContentOutline(?string $contentOutline): static
     {
         $this->contentOutline = $contentOutline;
+
         return $this;
     }
 
@@ -251,6 +268,7 @@ class Course
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -262,6 +280,7 @@ class Course
     public function setLearningOutcomes(?array $learningOutcomes): static
     {
         $this->learningOutcomes = $learningOutcomes;
+
         return $this;
     }
 
@@ -273,6 +292,7 @@ class Course
     public function setTeachingMethods(?string $teachingMethods): static
     {
         $this->teachingMethods = $teachingMethods;
+
         return $this;
     }
 
@@ -284,6 +304,7 @@ class Course
     public function setResources(?array $resources): static
     {
         $this->resources = $resources;
+
         return $this;
     }
 
@@ -295,6 +316,7 @@ class Course
     public function setAssessmentMethods(?string $assessmentMethods): static
     {
         $this->assessmentMethods = $assessmentMethods;
+
         return $this;
     }
 
@@ -306,6 +328,7 @@ class Course
     public function setSuccessCriteria(?array $successCriteria): static
     {
         $this->successCriteria = $successCriteria;
+
         return $this;
     }
 
@@ -317,6 +340,7 @@ class Course
     public function setContent(?string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -328,6 +352,7 @@ class Course
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -339,6 +364,7 @@ class Course
     public function setDurationMinutes(int $durationMinutes): static
     {
         $this->durationMinutes = $durationMinutes;
+
         return $this;
     }
 
@@ -350,6 +376,7 @@ class Course
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -361,28 +388,31 @@ class Course
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -394,6 +424,7 @@ class Course
     public function setChapter(?Chapter $chapter): static
     {
         $this->chapter = $chapter;
+
         return $this;
     }
 
@@ -458,31 +489,27 @@ class Course
     }
 
     /**
-     * Get active exercises for this course
-     * 
+     * Get active exercises for this course.
+     *
      * @return Collection<int, Exercise>
      */
     public function getActiveExercises(): Collection
     {
-        return $this->exercises->filter(function (Exercise $exercise) {
-            return $exercise->isActive();
-        });
+        return $this->exercises->filter(static fn (Exercise $exercise) => $exercise->isActive());
     }
 
     /**
-     * Get active QCMs for this course
-     * 
+     * Get active QCMs for this course.
+     *
      * @return Collection<int, QCM>
      */
     public function getActiveQcms(): Collection
     {
-        return $this->qcms->filter(function (QCM $qcm) {
-            return $qcm->isActive();
-        });
+        return $this->qcms->filter(static fn (QCM $qcm) => $qcm->isActive());
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -494,7 +521,7 @@ class Course
             return $this->durationMinutes . 'min';
         }
 
-        $hours = intval($this->durationMinutes / 60);
+        $hours = (int) ($this->durationMinutes / 60);
         $minutes = $this->durationMinutes % 60;
 
         if ($minutes === 0) {
@@ -505,7 +532,7 @@ class Course
     }
 
     /**
-     * Get the type label
+     * Get the type label.
      */
     public function getTypeLabel(): string
     {
@@ -515,11 +542,6 @@ class Course
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

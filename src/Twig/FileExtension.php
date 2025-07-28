@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Twig;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigTest;
 
 /**
- * Twig extension for file and PDF related functions
+ * Twig extension for file and PDF related functions.
  */
 class FileExtension extends AbstractExtension
 {

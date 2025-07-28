@@ -1,22 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Training\Course;
 use App\Service\Training\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\ORM\Events;
-use Doctrine\ORM\Event\PrePersistEventArgs;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
-use Doctrine\ORM\Event\PostUpdateEventArgs;
-use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Events;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Course duration synchronization
- * DISABLED: Using DurationUpdateListener instead
+ * DISABLED: Using DurationUpdateListener instead.
  */
 // #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Course::class)]
 // #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Course::class)]
@@ -27,9 +27,8 @@ class CourseListener
 
     public function __construct(
         private DurationCalculationService $durationService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     public function postPersist(PostPersistEventArgs $args): void
     {
@@ -67,12 +66,12 @@ class CourseListener
     private function scheduleUpdate(Course $course, string $operation): void
     {
         $key = 'course_' . $course->getId();
-        
+
         if (!isset($this->scheduledUpdates[$key])) {
             $this->scheduledUpdates[$key] = [
                 'entity' => $course,
                 'operation' => $operation,
-                'timestamp' => time()
+                'timestamp' => time(),
             ];
         }
     }
@@ -82,30 +81,30 @@ class CourseListener
         // Skip if we're in sync mode to prevent circular updates
         if ($this->durationService->isSyncMode()) {
             $this->scheduledUpdates = [];
+
             return;
         }
-        
+
         foreach ($this->scheduledUpdates as $key => $update) {
             try {
                 $course = $update['entity'];
-                
+
                 // Update the course duration and propagate to parent chapter
                 $this->durationService->updateEntityDuration($course);
-                
+
                 $this->logger->info('Course duration updated', [
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle(),
-                    'operation' => $update['operation']
+                    'operation' => $update['operation'],
                 ]);
-                
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Failed to update course duration', [
                     'course_id' => $update['entity']->getId(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
-        
+
         // Clear processed updates
         $this->scheduledUpdates = [];
     }

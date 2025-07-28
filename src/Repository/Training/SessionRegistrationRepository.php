@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
-use App\Entity\Training\SessionRegistration;
 use App\Entity\Training\Session;
+use App\Entity\Training\SessionRegistration;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for SessionRegistration entity
- * 
+ * Repository for SessionRegistration entity.
+ *
  * Provides query methods for registration management with
  * filtering and statistical capabilities.
- * 
+ *
  * @extends ServiceEntityRepository<SessionRegistration>
  */
 class SessionRegistrationRepository extends ServiceEntityRepository
@@ -24,8 +27,8 @@ class SessionRegistrationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find registrations for a specific session
-     * 
+     * Find registrations for a specific session.
+     *
      * @return SessionRegistration[]
      */
     public function findBySession(Session $session): array
@@ -35,12 +38,13 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('session', $session)
             ->orderBy('sr.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find confirmed registrations for a session
-     * 
+     * Find confirmed registrations for a session.
+     *
      * @return SessionRegistration[]
      */
     public function findConfirmedBySession(Session $session): array
@@ -52,12 +56,13 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('status', 'confirmed')
             ->orderBy('sr.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find pending registrations for a session
-     * 
+     * Find pending registrations for a session.
+     *
      * @return SessionRegistration[]
      */
     public function findPendingBySession(Session $session): array
@@ -69,11 +74,12 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('status', 'pending')
             ->orderBy('sr.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Check if email is already registered for a session
+     * Check if email is already registered for a session.
      */
     public function isEmailRegisteredForSession(string $email, Session $session): bool
     {
@@ -86,13 +92,14 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('email', $email)
             ->setParameter('cancelled', 'cancelled')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $count > 0;
     }
 
     /**
-     * Get registration statistics for a session
+     * Get registration statistics for a session.
      */
     public function getSessionRegistrationStats(Session $session): array
     {
@@ -113,7 +120,8 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->setParameter('attended', 'attended')
             ->setParameter('no_show', 'no_show')
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'total' => (int) $result['total'],
@@ -126,55 +134,62 @@ class SessionRegistrationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Create query builder for admin registrations list with filters
+     * Create query builder for admin registrations list with filters.
      */
     public function createAdminQueryBuilder(array $filters = []): QueryBuilder
     {
         $qb = $this->createQueryBuilder('sr')
             ->leftJoin('sr.session', 's')
             ->leftJoin('s.formation', 'f')
-            ->addSelect('s', 'f');
+            ->addSelect('s', 'f')
+        ;
 
         // Search filter
         if (!empty($filters['search'])) {
             $qb->andWhere('sr.firstName LIKE :search OR sr.lastName LIKE :search OR sr.email LIKE :search OR sr.company LIKE :search')
-                ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         // Session filter
         if (!empty($filters['session'])) {
             $qb->andWhere('sr.session = :session')
-                ->setParameter('session', $filters['session']);
+                ->setParameter('session', $filters['session'])
+            ;
         }
 
         // Formation filter
         if (!empty($filters['formation'])) {
             $qb->andWhere('s.formation = :formation')
-                ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         // Status filter
         if (!empty($filters['status'])) {
             $qb->andWhere('sr.status = :status')
-                ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         // Date range filter
         if (!empty($filters['date_from'])) {
             $qb->andWhere('sr.createdAt >= :date_from')
-                ->setParameter('date_from', new \DateTime($filters['date_from']));
+                ->setParameter('date_from', new DateTime($filters['date_from']))
+            ;
         }
 
         if (!empty($filters['date_to'])) {
             $qb->andWhere('sr.createdAt <= :date_to')
-                ->setParameter('date_to', new \DateTime($filters['date_to']));
+                ->setParameter('date_to', new DateTime($filters['date_to']))
+            ;
         }
 
         // Sort
         $sortField = $filters['sort'] ?? 'createdAt';
         $sortDirection = $filters['direction'] ?? 'DESC';
-        
-        if (in_array($sortField, ['firstName', 'lastName', 'email', 'status', 'createdAt'])) {
+
+        if (in_array($sortField, ['firstName', 'lastName', 'email', 'status', 'createdAt'], true)) {
             $qb->orderBy('sr.' . $sortField, $sortDirection);
         } elseif ($sortField === 'session') {
             $qb->orderBy('s.name', $sortDirection);
@@ -188,58 +203,65 @@ class SessionRegistrationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count registrations with admin filters (without ORDER BY for COUNT queries)
+     * Count registrations with admin filters (without ORDER BY for COUNT queries).
      */
     public function countWithAdminFilters(array $filters = []): int
     {
         $qb = $this->createQueryBuilder('sr')
             ->select('COUNT(sr.id)')
             ->leftJoin('sr.session', 's')
-            ->leftJoin('s.formation', 'f');
+            ->leftJoin('s.formation', 'f')
+        ;
 
         // Apply the same filters as createAdminQueryBuilder but without ORDER BY
-        
+
         // Search filter
         if (!empty($filters['search'])) {
             $qb->andWhere('sr.firstName LIKE :search OR sr.lastName LIKE :search OR sr.email LIKE :search OR sr.company LIKE :search')
-                ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         // Session filter
         if (!empty($filters['session'])) {
             $qb->andWhere('sr.session = :session')
-                ->setParameter('session', $filters['session']);
+                ->setParameter('session', $filters['session'])
+            ;
         }
 
         // Formation filter
         if (!empty($filters['formation'])) {
             $qb->andWhere('s.formation = :formation')
-                ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         // Status filter
         if (!empty($filters['status'])) {
             $qb->andWhere('sr.status = :status')
-                ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         // Date range filter
         if (!empty($filters['date_from'])) {
             $qb->andWhere('sr.createdAt >= :date_from')
-                ->setParameter('date_from', new \DateTime($filters['date_from']));
+                ->setParameter('date_from', new DateTime($filters['date_from']))
+            ;
         }
 
         if (!empty($filters['date_to'])) {
             $qb->andWhere('sr.createdAt <= :date_to')
-                ->setParameter('date_to', new \DateTime($filters['date_to']));
+                ->setParameter('date_to', new DateTime($filters['date_to']))
+            ;
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Get recent registrations
-     * 
+     * Get recent registrations.
+     *
      * @return SessionRegistration[]
      */
     public function findRecentRegistrations(int $limit = 10): array
@@ -251,12 +273,13 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->orderBy('sr.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get registrations that need confirmation
-     * 
+     * Get registrations that need confirmation.
+     *
      * @return SessionRegistration[]
      */
     public function findPendingRegistrations(): array

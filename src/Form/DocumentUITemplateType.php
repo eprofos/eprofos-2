@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Document\DocumentType;
@@ -24,8 +26,8 @@ class DocumentUITemplateType extends AbstractType
                 'label' => 'Nom du modèle',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: Modèle facture standard'
-                ]
+                    'placeholder' => 'Ex: Modèle facture standard',
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
@@ -33,16 +35,16 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Description du modèle UI...'
-                ]
+                    'placeholder' => 'Description du modèle UI...',
+                ],
             ])
             ->add('icon', TextType::class, [
                 'label' => 'Icône (classe CSS)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: fas fa-file-invoice'
-                ]
+                    'placeholder' => 'Ex: fas fa-file-invoice',
+                ],
             ])
             ->add('documentType', EntityType::class, [
                 'class' => DocumentType::class,
@@ -50,15 +52,15 @@ class DocumentUITemplateType extends AbstractType
                 'label' => 'Type de document',
                 'required' => false,
                 'placeholder' => 'Sélectionnez un type de document',
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('isGlobal', CheckboxType::class, [
                 'label' => 'Modèle global (tous types)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
+                    'role' => 'switch',
+                ],
             ])
             ->add('paperSize', ChoiceType::class, [
                 'label' => 'Format papier',
@@ -66,25 +68,25 @@ class DocumentUITemplateType extends AbstractType
                     'A4' => 'A4',
                     'A3' => 'A3',
                     'Letter' => 'Letter',
-                    'Legal' => 'Legal'
+                    'Legal' => 'Legal',
                 ],
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('orientation', ChoiceType::class, [
                 'label' => 'Orientation',
                 'choices' => [
                     'Portrait' => 'portrait',
-                    'Paysage' => 'landscape'
+                    'Paysage' => 'landscape',
                 ],
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('color', ColorType::class, [
                 'label' => 'Couleur principale',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'type' => 'color'
-                ]
+                    'type' => 'color',
+                ],
             ])
             ->add('marginTop', NumberType::class, [
                 'label' => 'Marge haut (mm)',
@@ -92,8 +94,8 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 0,
-                    'step' => 0.1
-                ]
+                    'step' => 0.1,
+                ],
             ])
             ->add('marginRight', NumberType::class, [
                 'label' => 'Marge droite (mm)',
@@ -101,8 +103,8 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 0,
-                    'step' => 0.1
-                ]
+                    'step' => 0.1,
+                ],
             ])
             ->add('marginBottom', NumberType::class, [
                 'label' => 'Marge bas (mm)',
@@ -110,8 +112,8 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 0,
-                    'step' => 0.1
-                ]
+                    'step' => 0.1,
+                ],
             ])
             ->add('marginLeft', NumberType::class, [
                 'label' => 'Marge gauche (mm)',
@@ -119,8 +121,8 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 0,
-                    'step' => 0.1
-                ]
+                    'step' => 0.1,
+                ],
             ])
             ->add('customCss', TextareaType::class, [
                 'label' => 'CSS personnalisé',
@@ -128,33 +130,34 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control font-monospace',
                     'rows' => 8,
-                    'placeholder' => '/* CSS personnalisé pour ce modèle */\n.document-header {\n    background-color: #f8f9fa;\n    padding: 20px;\n}\n\n.document-title {\n    font-size: 24px;\n    font-weight: bold;\n}'
-                ]
+                    'placeholder' => '/* CSS personnalisé pour ce modèle */\n.document-header {\n    background-color: #f8f9fa;\n    padding: 20px;\n}\n\n.document-title {\n    font-size: 24px;\n    font-weight: bold;\n}',
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Modèle actif',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
+                    'role' => 'switch',
+                ],
             ])
             ->add('isDefault', CheckboxType::class, [
                 'label' => 'Modèle par défaut',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
+                    'role' => 'switch',
+                ],
             ])
             ->add('showPageNumbers', CheckboxType::class, [
                 'label' => 'Afficher les numéros de page',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
-            ]);
+                    'role' => 'switch',
+                ],
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

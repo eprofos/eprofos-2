@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\User\Teacher;
@@ -7,18 +9,19 @@ use App\Form\TeacherType;
 use App\Repository\User\TeacherRepository;
 use App\Service\User\TeacherService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Admin Teacher Controller
- * 
+ * Admin Teacher Controller.
+ *
  * Handles CRUD operations and management for teachers in the admin interface.
  * Provides comprehensive teacher management capabilities including password reset,
  * email verification management, and detailed filtering options.
@@ -30,19 +33,18 @@ class TeacherController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private TeacherService $teacherService,
-        private UserPasswordHasherInterface $passwordHasher
-    ) {
-    }
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {}
 
     /**
-     * List all teachers with advanced filtering and pagination
+     * List all teachers with advanced filtering and pagination.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, TeacherRepository $teacherRepository): Response
     {
         $this->logger->info('Admin teachers list accessed', [
             'user' => $this->getUser()?->getUserIdentifier(),
-            'ip' => $request->getClientIp()
+            'ip' => $request->getClientIp(),
         ]);
 
         $page = max(1, $request->query->getInt('page', 1));
@@ -83,7 +85,7 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Show detailed teacher information
+     * Show detailed teacher information.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Teacher $teacher): Response
@@ -99,7 +101,7 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Create a new teacher
+     * Create a new teacher.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -143,7 +145,7 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Edit a teacher
+     * Edit a teacher.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): Response
@@ -178,12 +180,12 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Delete a teacher
+     * Delete a teacher.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$teacher->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $teacher->getId(), $request->request->get('_token'))) {
             $teacherId = $teacher->getId();
             $teacherEmail = $teacher->getEmail();
 
@@ -203,7 +205,7 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Send password reset email to teacher
+     * Send password reset email to teacher.
      */
     #[Route('/{id}/reset-password', name: 'reset_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function resetPassword(Teacher $teacher): JsonResponse
@@ -219,15 +221,15 @@ class TeacherController extends AbstractController
 
                 return new JsonResponse([
                     'success' => true,
-                    'message' => 'Email de réinitialisation envoyé avec succès.'
+                    'message' => 'Email de réinitialisation envoyé avec succès.',
                 ]);
-            } else {
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Erreur lors de l\'envoi de l\'email.'
-                ], 400);
             }
-        } catch (\Exception $e) {
+
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'email.',
+            ], 400);
+        } catch (Exception $e) {
             $this->logger->error('Failed to send password reset email to teacher', [
                 'teacher_id' => $teacher->getId(),
                 'error' => $e->getMessage(),
@@ -236,13 +238,13 @@ class TeacherController extends AbstractController
 
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Send email verification to teacher
+     * Send email verification to teacher.
      */
     #[Route('/{id}/verify-email', name: 'verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function verifyEmail(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
@@ -251,7 +253,7 @@ class TeacherController extends AbstractController
             if ($teacher->isEmailVerified()) {
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'L\'email est déjà vérifié.'
+                    'message' => 'L\'email est déjà vérifié.',
                 ], 400);
             }
 
@@ -265,9 +267,9 @@ class TeacherController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Email vérifié avec succès.'
+                'message' => 'Email vérifié avec succès.',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to verify teacher email', [
                 'teacher_id' => $teacher->getId(),
                 'error' => $e->getMessage(),
@@ -276,13 +278,13 @@ class TeacherController extends AbstractController
 
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de la vérification : ' . $e->getMessage()
+                'message' => 'Erreur lors de la vérification : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Generate temporary password for teacher
+     * Generate temporary password for teacher.
      */
     #[Route('/{id}/generate-password', name: 'generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function generatePassword(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
@@ -301,9 +303,9 @@ class TeacherController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Mot de passe temporaire généré avec succès.',
-                'password' => $newPassword
+                'password' => $newPassword,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate password for teacher', [
                 'teacher_id' => $teacher->getId(),
                 'error' => $e->getMessage(),
@@ -312,13 +314,13 @@ class TeacherController extends AbstractController
 
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de la génération : ' . $e->getMessage()
+                'message' => 'Erreur lors de la génération : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Toggle teacher active status
+     * Toggle teacher active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
@@ -338,9 +340,9 @@ class TeacherController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => "Formateur {$status} avec succès.",
-                'is_active' => $teacher->isActive()
+                'is_active' => $teacher->isActive(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to toggle teacher status', [
                 'teacher_id' => $teacher->getId(),
                 'error' => $e->getMessage(),
@@ -349,13 +351,13 @@ class TeacherController extends AbstractController
 
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors du changement de statut : ' . $e->getMessage()
+                'message' => 'Erreur lors du changement de statut : ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Export teachers to CSV
+     * Export teachers to CSV.
      */
     #[Route('/export', name: 'export', methods: ['GET'])]
     public function export(TeacherRepository $teacherRepository): Response
@@ -375,7 +377,7 @@ class TeacherController extends AbstractController
             'Statut',
             'Email vérifié',
             'Date d\'inscription',
-            'Dernière connexion'
+            'Dernière connexion',
         ];
 
         foreach ($teachers as $teacher) {
@@ -391,7 +393,7 @@ class TeacherController extends AbstractController
                 $teacher->isActive() ? 'Actif' : 'Inactif',
                 $teacher->isEmailVerified() ? 'Oui' : 'Non',
                 $teacher->getCreatedAt()?->format('d/m/Y H:i'),
-                $teacher->getLastLoginAt()?->format('d/m/Y H:i') ?? 'Jamais'
+                $teacher->getLastLoginAt()?->format('d/m/Y H:i') ?? 'Jamais',
             ];
         }
 
@@ -400,28 +402,28 @@ class TeacherController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="formateurs_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://temp', 'r+');
-        
+
         // Add BOM for proper UTF-8 display in Excel
         fwrite($output, "\xEF\xBB\xBF");
-        
+
         foreach ($csvData as $row) {
             fputcsv($output, $row, ';');
         }
-        
+
         rewind($output);
         $response->setContent(stream_get_contents($output));
         fclose($output);
 
         $this->logger->info('Teachers CSV export performed', [
             'exported_by' => $this->getUser()?->getUserIdentifier(),
-            'teacher_count' => count($teachers)
+            'teacher_count' => count($teachers),
         ]);
 
         return $response;
     }
 
     /**
-     * Bulk actions on teachers
+     * Bulk actions on teachers.
      */
     #[Route('/bulk-action', name: 'bulk_action', methods: ['POST'])]
     public function bulkAction(Request $request, TeacherRepository $teacherRepository, EntityManagerInterface $entityManager): Response
@@ -431,6 +433,7 @@ class TeacherController extends AbstractController
 
         if (empty($teacherIds) || empty($action)) {
             $this->addFlash('error', 'Aucun formateur sélectionné ou action non spécifiée.');
+
             return $this->redirectToRoute('admin_teacher_index');
         }
 
@@ -444,16 +447,19 @@ class TeacherController extends AbstractController
                         $teacher->setIsActive(true);
                         $count++;
                         break;
+
                     case 'deactivate':
                         $teacher->setIsActive(false);
                         $count++;
                         break;
+
                     case 'verify_email':
                         if (!$teacher->isEmailVerified()) {
                             $teacher->verifyEmail();
                             $count++;
                         }
                         break;
+
                     case 'send_password_reset':
                         if ($this->teacherService->sendPasswordResetEmail($teacher)) {
                             $count++;
@@ -480,10 +486,9 @@ class TeacherController extends AbstractController
                 'teacher_count' => $count,
                 'performed_by' => $this->getUser()?->getUserIdentifier(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'action groupée : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to perform bulk action', [
                 'action' => $action,
                 'error' => $e->getMessage(),
@@ -495,7 +500,7 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Get client IP address
+     * Get client IP address.
      */
     private function getClientIp(): ?string
     {

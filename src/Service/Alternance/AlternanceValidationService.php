@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Entity\Alternance\AlternanceProgram;
 
 /**
- * Service for validating Qualiopi compliance for alternance
- * 
+ * Service for validating Qualiopi compliance for alternance.
+ *
  * Ensures that alternance contracts and programs meet
  * French quality standards for professional training.
  */
 class AlternanceValidationService
 {
     /**
-     * Validate contract for Qualiopi compliance
+     * Validate contract for Qualiopi compliance.
      *
-     * @param AlternanceContract $contract
      * @return array Array of validation results with errors and warnings
      */
     public function validateContract(AlternanceContract $contract): array
@@ -79,14 +80,13 @@ class AlternanceValidationService
         return [
             'errors' => $errors,
             'warnings' => $warnings,
-            'is_compliant' => empty($errors)
+            'is_compliant' => empty($errors),
         ];
     }
 
     /**
-     * Validate program for Qualiopi compliance
+     * Validate program for Qualiopi compliance.
      *
-     * @param AlternanceProgram $program
      * @return array Array of validation results with errors and warnings
      */
     public function validateProgram(AlternanceProgram $program): array
@@ -135,15 +135,15 @@ class AlternanceValidationService
         if ($program->hasCoordinationPoints()) {
             $coordinationPoints = $program->getCoordinationPoints();
             $hasRegularCoordination = false;
-            
+
             foreach ($coordinationPoints as $point) {
-                if (isset($point['frequency']) && 
-                    in_array(strtolower($point['frequency']), ['mensuelle', 'bimensuelle', 'hebdomadaire'])) {
+                if (isset($point['frequency'])
+                    && in_array(strtolower($point['frequency']), ['mensuelle', 'bimensuelle', 'hebdomadaire'], true)) {
                     $hasRegularCoordination = true;
                     break;
                 }
             }
-            
+
             if (!$hasRegularCoordination) {
                 $warnings[] = 'Une coordination régulière (au moins mensuelle) est recommandée (Qualiopi 2.4).';
             }
@@ -157,14 +157,15 @@ class AlternanceValidationService
         return [
             'errors' => $errors,
             'warnings' => $warnings,
-            'is_compliant' => empty($errors)
+            'is_compliant' => empty($errors),
         ];
     }
 
     /**
-     * Validate session for alternance
+     * Validate session for alternance.
      *
      * @param object $session Session entity
+     *
      * @return array Array of validation results
      */
     public function validateSessionForAlternance($session): array
@@ -174,6 +175,7 @@ class AlternanceValidationService
 
         if (!$session->isAlternanceSession()) {
             $errors[] = 'La session doit être configurée en mode alternance.';
+
             return ['errors' => $errors, 'warnings' => $warnings, 'is_compliant' => false];
         }
 
@@ -206,22 +208,19 @@ class AlternanceValidationService
         return [
             'errors' => $errors,
             'warnings' => $warnings,
-            'is_compliant' => empty($errors)
+            'is_compliant' => empty($errors),
         ];
     }
 
     /**
-     * Generate comprehensive validation report
+     * Generate comprehensive validation report.
      *
-     * @param AlternanceContract|null $contract
-     * @param AlternanceProgram|null $program
-     * @param object|null $session
      * @return array Complete validation report
      */
     public function generateValidationReport(
         ?AlternanceContract $contract = null,
         ?AlternanceProgram $program = null,
-        ?object $session = null
+        ?object $session = null,
     ): array {
         $report = [
             'overall_compliance' => true,
@@ -230,8 +229,8 @@ class AlternanceValidationService
                 'total_errors' => 0,
                 'total_warnings' => 0,
                 'compliant_sections' => 0,
-                'total_sections' => 0
-            ]
+                'total_sections' => 0,
+            ],
         ];
 
         if ($contract) {
@@ -240,7 +239,7 @@ class AlternanceValidationService
             $report['summary']['total_errors'] += count($contractValidation['errors']);
             $report['summary']['total_warnings'] += count($contractValidation['warnings']);
             $report['summary']['total_sections']++;
-            
+
             if ($contractValidation['is_compliant']) {
                 $report['summary']['compliant_sections']++;
             } else {
@@ -254,7 +253,7 @@ class AlternanceValidationService
             $report['summary']['total_errors'] += count($programValidation['errors']);
             $report['summary']['total_warnings'] += count($programValidation['warnings']);
             $report['summary']['total_sections']++;
-            
+
             if ($programValidation['is_compliant']) {
                 $report['summary']['compliant_sections']++;
             } else {
@@ -268,7 +267,7 @@ class AlternanceValidationService
             $report['summary']['total_errors'] += count($sessionValidation['errors']);
             $report['summary']['total_warnings'] += count($sessionValidation['warnings']);
             $report['summary']['total_sections']++;
-            
+
             if ($sessionValidation['is_compliant']) {
                 $report['summary']['compliant_sections']++;
             } else {
@@ -277,7 +276,7 @@ class AlternanceValidationService
         }
 
         // Calculate compliance percentage
-        $report['summary']['compliance_percentage'] = $report['summary']['total_sections'] > 0 
+        $report['summary']['compliance_percentage'] = $report['summary']['total_sections'] > 0
             ? round(($report['summary']['compliant_sections'] / $report['summary']['total_sections']) * 100, 1)
             : 0;
 
@@ -285,7 +284,7 @@ class AlternanceValidationService
     }
 
     /**
-     * Get Qualiopi requirements checklist for alternance
+     * Get Qualiopi requirements checklist for alternance.
      *
      * @return array List of requirements with descriptions
      */
@@ -298,8 +297,8 @@ class AlternanceValidationService
                 'items' => [
                     'Objectifs d\'apprentissage formalisés',
                     'Objectifs en entreprise définis',
-                    'Progression pédagogique structurée'
-                ]
+                    'Progression pédagogique structurée',
+                ],
             ],
             '2.2' => [
                 'title' => 'Modalités pédagogiques',
@@ -307,8 +306,8 @@ class AlternanceValidationService
                 'items' => [
                     'Répartition temps centre/entreprise',
                     'Rythme d\'alternance défini',
-                    'Cohérence des durées'
-                ]
+                    'Cohérence des durées',
+                ],
             ],
             '2.3' => [
                 'title' => 'Durée et organisation',
@@ -316,8 +315,8 @@ class AlternanceValidationService
                 'items' => [
                     'Durée minimale respectée',
                     'Volume horaire adapté',
-                    'Planning défini'
-                ]
+                    'Planning défini',
+                ],
             ],
             '2.4' => [
                 'title' => 'Encadrement et suivi',
@@ -325,8 +324,8 @@ class AlternanceValidationService
                 'items' => [
                     'Tuteur entreprise désigné',
                     'Référent pédagogique assigné',
-                    'Points de coordination réguliers'
-                ]
+                    'Points de coordination réguliers',
+                ],
             ],
             '2.5' => [
                 'title' => 'Évaluation',
@@ -334,17 +333,14 @@ class AlternanceValidationService
                 'items' => [
                     'Périodes d\'évaluation planifiées',
                     'Critères d\'évaluation explicites',
-                    'Outils d\'évaluation adaptés'
-                ]
-            ]
+                    'Outils d\'évaluation adaptés',
+                ],
+            ],
         ];
     }
 
     /**
-     * Check if contract meets legal minimum requirements
-     *
-     * @param AlternanceContract $contract
-     * @return bool
+     * Check if contract meets legal minimum requirements.
      */
     public function meetsLegalMinimums(AlternanceContract $contract): bool
     {

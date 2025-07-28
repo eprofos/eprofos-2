@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Training\Category;
@@ -8,20 +10,27 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Category fixtures for EPROFOS platform
- * 
+ * Category fixtures for EPROFOS platform.
+ *
  * Creates realistic categories for professional training courses
  * including IT, Management, Languages, Accounting, Marketing, etc.
  */
 class CategoryFixtures extends Fixture
 {
     public const CATEGORY_INFORMATIQUE = 'category_informatique';
+
     public const CATEGORY_MANAGEMENT = 'category_management';
+
     public const CATEGORY_LANGUES = 'category_langues';
+
     public const CATEGORY_COMPTABILITE = 'category_comptabilite';
+
     public const CATEGORY_MARKETING = 'category_marketing';
+
     public const CATEGORY_RESSOURCES_HUMAINES = 'category_ressources_humaines';
+
     public const CATEGORY_QUALITE = 'category_qualite';
+
     public const CATEGORY_SECURITE = 'category_securite';
 
     private SluggerInterface $slugger;
@@ -32,7 +41,7 @@ class CategoryFixtures extends Fixture
     }
 
     /**
-     * Load category fixtures
+     * Load category fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -104,7 +113,7 @@ class CategoryFixtures extends Fixture
             $category->setIsActive($categoryData['isActive']);
 
             $manager->persist($category);
-            
+
             // Add reference for use in other fixtures
             $this->addReference($categoryData['reference'], $category);
         }

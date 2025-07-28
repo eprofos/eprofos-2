@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -7,19 +9,19 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Main application fixtures for EPROFOS platform
- * 
+ * Main application fixtures for EPROFOS platform.
+ *
  * This fixture serves as the main entry point for loading all application fixtures.
  * It ensures proper loading order through dependencies and provides a single
  * command to populate the entire database with realistic test data.
- * 
+ *
  * Usage: docker compose exec -it php php bin/console doctrine:fixtures:load
  */
 class AppFixtures extends Fixture implements DependentFixtureInterface
 {
     /**
-     * Load main application fixtures
-     * 
+     * Load main application fixtures.
+     *
      * This method is intentionally empty as all data loading is handled
      * by the dependent fixtures. This class serves as an orchestrator
      * to ensure all fixtures are loaded in the correct order.
@@ -28,12 +30,12 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
     {
         // All data loading is handled by dependent fixtures
         // This fixture serves as the main entry point and dependency orchestrator
-        
+
         $manager->flush();
     }
 
     /**
-     * Define fixture dependencies
+     * Define fixture dependencies.
      *
      * Ensures all fixtures are loaded in the correct order:
      * 1. Categories and ServiceCategories (no dependencies)

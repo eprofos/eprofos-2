@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Assessment;
 
 use App\Entity\Training\Formation;
 use App\Repository\Assessment\QuestionnaireRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -12,8 +15,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Questionnaire entity for Qualiopi criteria 2.8
- * 
+ * Questionnaire entity for Qualiopi criteria 2.8.
+ *
  * Represents a positioning and evaluation questionnaire that can be sent to users
  * to assess their knowledge and skills before training.
  */
@@ -22,14 +25,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Questionnaire
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_ARCHIVED = 'archived';
 
     public const TYPES = [
         'positioning' => 'Positionnement',
         'evaluation' => 'Évaluation des acquis',
         'satisfaction' => 'Satisfaction',
-        'skills_assessment' => 'Évaluation des compétences'
+        'skills_assessment' => 'Évaluation des compétences',
     ];
 
     #[ORM\Id]
@@ -43,7 +48,7 @@ class Questionnaire
         min: 3,
         max: 255,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $title = null;
 
@@ -53,7 +58,7 @@ class Questionnaire
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 2000,
-        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $description = null;
 
@@ -61,14 +66,14 @@ class Questionnaire
     #[Assert\NotBlank(message: 'Le type est obligatoire.')]
     #[Assert\Choice(
         choices: ['positioning', 'evaluation', 'satisfaction', 'skills_assessment'],
-        message: 'Type de questionnaire invalide.'
+        message: 'Type de questionnaire invalide.',
     )]
     private ?string $type = 'positioning';
 
     #[ORM\Column(length: 20)]
     #[Assert\Choice(
         choices: ['draft', 'active', 'archived'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     private string $status = self::STATUS_DRAFT;
 
@@ -104,10 +109,10 @@ class Questionnaire
     private ?string $emailTemplate = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -130,8 +135,13 @@ class Questionnaire
     {
         $this->questions = new ArrayCollection();
         $this->responses = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -147,6 +157,7 @@ class Questionnaire
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -158,6 +169,7 @@ class Questionnaire
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -169,6 +181,7 @@ class Questionnaire
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -180,6 +193,7 @@ class Questionnaire
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -191,6 +205,7 @@ class Questionnaire
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -202,6 +217,7 @@ class Questionnaire
     public function setIsMultiStep(bool $isMultiStep): static
     {
         $this->isMultiStep = $isMultiStep;
+
         return $this;
     }
 
@@ -213,6 +229,7 @@ class Questionnaire
     public function setQuestionsPerStep(int $questionsPerStep): static
     {
         $this->questionsPerStep = $questionsPerStep;
+
         return $this;
     }
 
@@ -224,6 +241,7 @@ class Questionnaire
     public function setAllowBackNavigation(bool $allowBackNavigation): static
     {
         $this->allowBackNavigation = $allowBackNavigation;
+
         return $this;
     }
 
@@ -235,6 +253,7 @@ class Questionnaire
     public function setShowProgressBar(bool $showProgressBar): static
     {
         $this->showProgressBar = $showProgressBar;
+
         return $this;
     }
 
@@ -246,6 +265,7 @@ class Questionnaire
     public function setRequireAllQuestions(bool $requireAllQuestions): static
     {
         $this->requireAllQuestions = $requireAllQuestions;
+
         return $this;
     }
 
@@ -257,6 +277,7 @@ class Questionnaire
     public function setTimeLimitMinutes(?int $timeLimitMinutes): static
     {
         $this->timeLimitMinutes = $timeLimitMinutes;
+
         return $this;
     }
 
@@ -268,6 +289,7 @@ class Questionnaire
     public function setWelcomeMessage(?string $welcomeMessage): static
     {
         $this->welcomeMessage = $welcomeMessage;
+
         return $this;
     }
 
@@ -279,6 +301,7 @@ class Questionnaire
     public function setCompletionMessage(?string $completionMessage): static
     {
         $this->completionMessage = $completionMessage;
+
         return $this;
     }
 
@@ -290,6 +313,7 @@ class Questionnaire
     public function setEmailSubject(?string $emailSubject): static
     {
         $this->emailSubject = $emailSubject;
+
         return $this;
     }
 
@@ -301,28 +325,31 @@ class Questionnaire
     public function setEmailTemplate(?string $emailTemplate): static
     {
         $this->emailTemplate = $emailTemplate;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -334,6 +361,7 @@ class Questionnaire
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -396,7 +424,7 @@ class Questionnaire
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -404,7 +432,7 @@ class Questionnaire
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -417,7 +445,7 @@ class Questionnaire
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -430,7 +458,7 @@ class Questionnaire
     }
 
     /**
-     * Check if questionnaire is active
+     * Check if questionnaire is active.
      */
     public function isActive(): bool
     {
@@ -438,7 +466,7 @@ class Questionnaire
     }
 
     /**
-     * Check if questionnaire is draft
+     * Check if questionnaire is draft.
      */
     public function isDraft(): bool
     {
@@ -446,19 +474,17 @@ class Questionnaire
     }
 
     /**
-     * Get active questions only
-     * 
+     * Get active questions only.
+     *
      * @return Collection<int, Question>
      */
     public function getActiveQuestions(): Collection
     {
-        return $this->questions->filter(function (Question $question) {
-            return $question->isActive();
-        });
+        return $this->questions->filter(static fn (Question $question) => $question->isActive());
     }
 
     /**
-     * Get number of questions
+     * Get number of questions.
      */
     public function getQuestionCount(): int
     {
@@ -466,21 +492,22 @@ class Questionnaire
     }
 
     /**
-     * Get number of steps for multi-step questionnaire
+     * Get number of steps for multi-step questionnaire.
      */
     public function getStepCount(): int
     {
         if (!$this->isMultiStep) {
             return 1;
         }
-        
+
         $questionCount = $this->getQuestionCount();
+
         return $questionCount > 0 ? ceil($questionCount / $this->questionsPerStep) : 1;
     }
 
     /**
-     * Get questions for a specific step
-     * 
+     * Get questions for a specific step.
+     *
      * @return Collection<int, Question>
      */
     public function getQuestionsForStep(int $step): Collection
@@ -492,14 +519,14 @@ class Questionnaire
         $activeQuestions = $this->getActiveQuestions()->toArray();
         $startIndex = ($step - 1) * $this->questionsPerStep;
         $endIndex = $startIndex + $this->questionsPerStep;
-        
+
         $stepQuestions = array_slice($activeQuestions, $startIndex, $this->questionsPerStep, true);
-        
+
         return new ArrayCollection($stepQuestions);
     }
 
     /**
-     * Get response count
+     * Get response count.
      */
     public function getResponseCount(): int
     {
@@ -507,17 +534,15 @@ class Questionnaire
     }
 
     /**
-     * Get completed responses count
+     * Get completed responses count.
      */
     public function getCompletedResponseCount(): int
     {
-        return $this->responses->filter(function (QuestionnaireResponse $response) {
-            return $response->isCompleted();
-        })->count();
+        return $this->responses->filter(static fn (QuestionnaireResponse $response) => $response->isCompleted())->count();
     }
 
     /**
-     * Get completion rate as percentage
+     * Get completion rate as percentage.
      */
     public function getCompletionRate(): float
     {
@@ -525,33 +550,28 @@ class Questionnaire
         if ($totalResponses === 0) {
             return 0;
         }
-        
+
         return ($this->getCompletedResponseCount() / $totalResponses) * 100;
     }
 
     /**
-     * Generate automatic slug from title
+     * Generate automatic slug from title.
      */
     public function generateSlug(SluggerInterface $slugger): static
     {
         if ($this->title && !$this->slug) {
             $this->slug = $slugger->slug($this->title)->lower();
         }
-        
+
         return $this;
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

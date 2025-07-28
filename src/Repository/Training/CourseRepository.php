@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\Course;
@@ -17,7 +19,9 @@ class CourseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active courses for a specific chapter
+     * Find active courses for a specific chapter.
+     *
+     * @param mixed $chapterId
      */
     public function findActiveByChapter($chapterId): array
     {
@@ -28,11 +32,14 @@ class CourseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('c.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find courses with their exercises and QCMs
+     * Find courses with their exercises and QCMs.
+     *
+     * @param mixed $chapterId
      */
     public function findWithActivitiesByChapter($chapterId): array
     {
@@ -46,11 +53,12 @@ class CourseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('c.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find courses by type
+     * Find courses by type.
      */
     public function findByType(string $type): array
     {
@@ -61,11 +69,14 @@ class CourseRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('c.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get total duration by chapter
+     * Get total duration by chapter.
+     *
+     * @param mixed $chapterId
      */
     public function getTotalDurationByChapter($chapterId): int
     {
@@ -76,7 +87,8 @@ class CourseRepository extends ServiceEntityRepository
             ->setParameter('chapterId', $chapterId)
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ? (int) $result : 0;
     }

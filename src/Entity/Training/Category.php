@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\CategoryRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Category entity for organizing formations
- * 
+ * Category entity for organizing formations.
+ *
  * Represents categories like "Technical" or "Transversal" formations
  * with support for icons, descriptions, and activation status.
  */
@@ -47,10 +49,10 @@ class Category
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, Formation>
@@ -61,8 +63,13 @@ class Category
     public function __construct()
     {
         $this->formations = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?? '';
     }
 
     public function getId(): ?int
@@ -78,6 +85,7 @@ class Category
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -89,6 +97,7 @@ class Category
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -100,6 +109,7 @@ class Category
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -111,6 +121,7 @@ class Category
     public function setIcon(?string $icon): static
     {
         $this->icon = $icon;
+
         return $this;
     }
 
@@ -122,28 +133,31 @@ class Category
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -178,26 +192,21 @@ class Category
     }
 
     /**
-     * Get active formations for this category
-     * 
+     * Get active formations for this category.
+     *
      * @return Collection<int, Formation>
      */
     public function getActiveFormations(): Collection
     {
-        return $this->formations->filter(fn(Formation $formation) => $formation->isActive());
+        return $this->formations->filter(static fn (Formation $formation) => $formation->isActive());
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

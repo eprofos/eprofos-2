@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Document\DocumentUIComponent;
@@ -23,18 +25,18 @@ class DocumentUIComponentType extends AbstractType
                 'label' => 'Nom du composant',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: En-tête de facture'
-                ]
+                    'placeholder' => 'Ex: En-tête de facture',
+                ],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de composant',
                 'choices' => DocumentUIComponent::TYPES,
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('zone', ChoiceType::class, [
                 'label' => 'Zone du document',
                 'choices' => DocumentUITemplate::ZONES,
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu',
@@ -42,31 +44,31 @@ class DocumentUIComponentType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 4,
-                    'placeholder' => 'Contenu du composant (peut contenir des variables)...'
-                ]
+                    'placeholder' => 'Contenu du composant (peut contenir des variables)...',
+                ],
             ])
             ->add('sortOrder', IntegerType::class, [
                 'label' => 'Ordre d\'affichage',
                 'attr' => [
                     'class' => 'form-control',
-                    'min' => 1
-                ]
+                    'min' => 1,
+                ],
             ])
             ->add('cssClass', TextType::class, [
                 'label' => 'Classes CSS',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: text-center font-bold'
-                ]
+                    'placeholder' => 'Ex: text-center font-bold',
+                ],
             ])
             ->add('isRequired', CheckboxType::class, [
                 'label' => 'Composant requis',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
+                    'role' => 'switch',
+                ],
             ])
             ->add('isConditional', CheckboxType::class, [
                 'label' => 'Affichage conditionnel',
@@ -74,9 +76,10 @@ class DocumentUIComponentType extends AbstractType
                 'mapped' => false,
                 'attr' => [
                     'class' => 'form-check-input',
-                    'role' => 'switch'
-                ]
-            ]);
+                    'role' => 'switch',
+                ],
+            ])
+        ;
 
         // Add template field only if not provided in options
         if (!$options['template']) {
@@ -84,7 +87,7 @@ class DocumentUIComponentType extends AbstractType
                 'class' => DocumentUITemplate::class,
                 'choice_label' => 'name',
                 'label' => 'Modèle UI',
-                'attr' => ['class' => 'form-select']
+                'attr' => ['class' => 'form-select'],
             ]);
         }
     }

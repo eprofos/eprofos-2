@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\ExerciseRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Exercise entity representing a practical exercise within a course
- * 
+ * Exercise entity representing a practical exercise within a course.
+ *
  * Contains detailed exercise information with instructions, expected outcomes,
  * and evaluation criteria to meet Qualiopi requirements for practical assessment.
  */
@@ -18,6 +21,44 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[Gedmo\Loggable]
 class Exercise
 {
+    // Constants for exercise types
+    public const TYPE_INDIVIDUAL = 'individual';
+
+    public const TYPE_GROUP = 'group';
+
+    public const TYPE_PRACTICAL = 'practical';
+
+    public const TYPE_THEORETICAL = 'theoretical';
+
+    public const TYPE_CASE_STUDY = 'case_study';
+
+    public const TYPE_SIMULATION = 'simulation';
+
+    public const TYPES = [
+        self::TYPE_INDIVIDUAL => 'Individuel',
+        self::TYPE_GROUP => 'Groupe',
+        self::TYPE_PRACTICAL => 'Pratique',
+        self::TYPE_THEORETICAL => 'Théorique',
+        self::TYPE_CASE_STUDY => 'Étude de cas',
+        self::TYPE_SIMULATION => 'Simulation',
+    ];
+
+    // Constants for difficulty levels
+    public const DIFFICULTY_BEGINNER = 'beginner';
+
+    public const DIFFICULTY_INTERMEDIATE = 'intermediate';
+
+    public const DIFFICULTY_ADVANCED = 'advanced';
+
+    public const DIFFICULTY_EXPERT = 'expert';
+
+    public const DIFFICULTIES = [
+        self::DIFFICULTY_BEGINNER => 'Débutant',
+        self::DIFFICULTY_INTERMEDIATE => 'Intermédiaire',
+        self::DIFFICULTY_ADVANCED => 'Avancé',
+        self::DIFFICULTY_EXPERT => 'Expert',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -36,7 +77,7 @@ class Exercise
     private ?string $description = null;
 
     /**
-     * Exercise instructions (required by Qualiopi)
+     * Exercise instructions (required by Qualiopi).
      *
      * Clear, detailed instructions for completing the exercise.
      */
@@ -45,7 +86,7 @@ class Exercise
     private ?string $instructions = null;
 
     /**
-     * Expected outcomes for this exercise (required by Qualiopi)
+     * Expected outcomes for this exercise (required by Qualiopi).
      *
      * What participants should achieve or produce by completing this exercise.
      */
@@ -54,7 +95,7 @@ class Exercise
     private ?array $expectedOutcomes = null;
 
     /**
-     * Evaluation criteria for this exercise (required by Qualiopi)
+     * Evaluation criteria for this exercise (required by Qualiopi).
      *
      * How the exercise completion will be evaluated and graded.
      */
@@ -63,7 +104,7 @@ class Exercise
     private ?array $evaluationCriteria = null;
 
     /**
-     * Resources needed for this exercise (required by Qualiopi)
+     * Resources needed for this exercise (required by Qualiopi).
      *
      * Materials, tools, or resources required to complete the exercise.
      */
@@ -72,7 +113,7 @@ class Exercise
     private ?array $resources = null;
 
     /**
-     * Prerequisites for this exercise (required by Qualiopi)
+     * Prerequisites for this exercise (required by Qualiopi).
      *
      * Knowledge or skills required before attempting this exercise.
      */
@@ -81,7 +122,7 @@ class Exercise
     private ?string $prerequisites = null;
 
     /**
-     * Success criteria for exercise completion (required by Qualiopi)
+     * Success criteria for exercise completion (required by Qualiopi).
      *
      * Measurable indicators that demonstrate successful exercise completion.
      */
@@ -90,35 +131,35 @@ class Exercise
     private ?array $successCriteria = null;
 
     /**
-     * Exercise type (individual, group, practical, theoretical, etc.)
+     * Exercise type (individual, group, practical, theoretical, etc.).
      */
     #[ORM\Column(length: 50)]
     #[Gedmo\Versioned]
     private ?string $type = null;
 
     /**
-     * Difficulty level of the exercise
+     * Difficulty level of the exercise.
      */
     #[ORM\Column(length: 50)]
     #[Gedmo\Versioned]
     private ?string $difficulty = null;
 
     /**
-     * Estimated time to complete the exercise in minutes
+     * Estimated time to complete the exercise in minutes.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $estimatedDurationMinutes = null;
 
     /**
-     * Maximum points/score for this exercise
+     * Maximum points/score for this exercise.
      */
     #[ORM\Column(nullable: true)]
     #[Gedmo\Versioned]
     private ?int $maxPoints = null;
 
     /**
-     * Minimum points required to pass this exercise
+     * Minimum points required to pass this exercise.
      */
     #[ORM\Column(nullable: true)]
     #[Gedmo\Versioned]
@@ -133,49 +174,24 @@ class Exercise
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'exercises')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Course $course = null;
 
-    // Constants for exercise types
-    public const TYPE_INDIVIDUAL = 'individual';
-    public const TYPE_GROUP = 'group';
-    public const TYPE_PRACTICAL = 'practical';
-    public const TYPE_THEORETICAL = 'theoretical';
-    public const TYPE_CASE_STUDY = 'case_study';
-    public const TYPE_SIMULATION = 'simulation';
-
-    public const TYPES = [
-        self::TYPE_INDIVIDUAL => 'Individuel',
-        self::TYPE_GROUP => 'Groupe',
-        self::TYPE_PRACTICAL => 'Pratique',
-        self::TYPE_THEORETICAL => 'Théorique',
-        self::TYPE_CASE_STUDY => 'Étude de cas',
-        self::TYPE_SIMULATION => 'Simulation',
-    ];
-
-    // Constants for difficulty levels
-    public const DIFFICULTY_BEGINNER = 'beginner';
-    public const DIFFICULTY_INTERMEDIATE = 'intermediate';
-    public const DIFFICULTY_ADVANCED = 'advanced';
-    public const DIFFICULTY_EXPERT = 'expert';
-
-    public const DIFFICULTIES = [
-        self::DIFFICULTY_BEGINNER => 'Débutant',
-        self::DIFFICULTY_INTERMEDIATE => 'Intermédiaire',
-        self::DIFFICULTY_ADVANCED => 'Avancé',
-        self::DIFFICULTY_EXPERT => 'Expert',
-    ];
-
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -191,6 +207,7 @@ class Exercise
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -202,6 +219,7 @@ class Exercise
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -213,6 +231,7 @@ class Exercise
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -224,6 +243,7 @@ class Exercise
     public function setInstructions(string $instructions): static
     {
         $this->instructions = $instructions;
+
         return $this;
     }
 
@@ -235,6 +255,7 @@ class Exercise
     public function setExpectedOutcomes(?array $expectedOutcomes): static
     {
         $this->expectedOutcomes = $expectedOutcomes;
+
         return $this;
     }
 
@@ -246,6 +267,7 @@ class Exercise
     public function setEvaluationCriteria(?array $evaluationCriteria): static
     {
         $this->evaluationCriteria = $evaluationCriteria;
+
         return $this;
     }
 
@@ -257,6 +279,7 @@ class Exercise
     public function setResources(?array $resources): static
     {
         $this->resources = $resources;
+
         return $this;
     }
 
@@ -268,6 +291,7 @@ class Exercise
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -279,6 +303,7 @@ class Exercise
     public function setSuccessCriteria(?array $successCriteria): static
     {
         $this->successCriteria = $successCriteria;
+
         return $this;
     }
 
@@ -290,6 +315,7 @@ class Exercise
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -301,6 +327,7 @@ class Exercise
     public function setDifficulty(string $difficulty): static
     {
         $this->difficulty = $difficulty;
+
         return $this;
     }
 
@@ -312,6 +339,7 @@ class Exercise
     public function setEstimatedDurationMinutes(int $estimatedDurationMinutes): static
     {
         $this->estimatedDurationMinutes = $estimatedDurationMinutes;
+
         return $this;
     }
 
@@ -323,6 +351,7 @@ class Exercise
     public function setMaxPoints(?int $maxPoints): static
     {
         $this->maxPoints = $maxPoints;
+
         return $this;
     }
 
@@ -334,6 +363,7 @@ class Exercise
     public function setPassingPoints(?int $passingPoints): static
     {
         $this->passingPoints = $passingPoints;
+
         return $this;
     }
 
@@ -345,6 +375,7 @@ class Exercise
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -356,28 +387,31 @@ class Exercise
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -389,11 +423,12 @@ class Exercise
     public function setCourse(?Course $course): static
     {
         $this->course = $course;
+
         return $this;
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -405,7 +440,7 @@ class Exercise
             return $this->estimatedDurationMinutes . 'min';
         }
 
-        $hours = intval($this->estimatedDurationMinutes / 60);
+        $hours = (int) ($this->estimatedDurationMinutes / 60);
         $minutes = $this->estimatedDurationMinutes % 60;
 
         if ($minutes === 0) {
@@ -416,7 +451,7 @@ class Exercise
     }
 
     /**
-     * Get the type label
+     * Get the type label.
      */
     public function getTypeLabel(): string
     {
@@ -424,7 +459,7 @@ class Exercise
     }
 
     /**
-     * Get the difficulty label
+     * Get the difficulty label.
      */
     public function getDifficultyLabel(): string
     {
@@ -432,7 +467,7 @@ class Exercise
     }
 
     /**
-     * Get passing percentage
+     * Get passing percentage.
      */
     public function getPassingPercentage(): ?float
     {
@@ -446,11 +481,6 @@ class Exercise
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

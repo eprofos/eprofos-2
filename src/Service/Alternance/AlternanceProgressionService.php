@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
-use App\Entity\User\Student;
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\Core\StudentProgress;
+use App\Entity\User\Student;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Core\StudentProgressRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 
 /**
- * AlternanceProgressionService
- * 
+ * AlternanceProgressionService.
+ *
  * Manages the overall progression logic for alternance students,
  * coordinating between center and company environments.
  */
@@ -24,28 +29,27 @@ class AlternanceProgressionService
         private StudentProgressRepository $studentProgressRepository,
         private ProgressAssessmentService $progressAssessmentService,
         private RiskAssessmentService $riskAssessmentService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Calculate comprehensive alternance progression
+     * Calculate comprehensive alternance progression.
      */
     public function calculateAlternanceProgression(Student $student): array
     {
         $studentProgress = $this->studentProgressRepository->findOneBy(['student' => $student]);
         $latestAssessment = $this->progressAssessmentRepository->findLatestByStudent($student);
-        
+
         if (!$studentProgress || !$studentProgress->getAlternanceContract()) {
             return $this->createEmptyProgression($student, 'No alternance contract found');
         }
 
-        $progression = [
+        return [
             'student' => [
                 'id' => $student->getId(),
                 'name' => $student->getFullName(),
-                'contract' => $studentProgress->getAlternanceContract() ? 
-                    $studentProgress->getAlternanceContract()->getContractNumber() : null
+                'contract' => $studentProgress->getAlternanceContract() ?
+                    $studentProgress->getAlternanceContract()->getContractNumber() : null,
             ],
             'overall_metrics' => $this->calculateOverallMetrics($studentProgress, $latestAssessment),
             'center_progression' => $this->calculateCenterProgression($studentProgress),
@@ -55,73 +59,71 @@ class AlternanceProgressionService
             'engagement_analysis' => $this->calculateEngagementAnalysis($studentProgress),
             'risk_assessment' => $this->riskAssessmentService->assessStudentRisk($student),
             'progression_timeline' => $this->buildProgressionTimeline($student),
-            'recommendations' => $this->generateProgressionRecommendations($studentProgress, $latestAssessment)
+            'recommendations' => $this->generateProgressionRecommendations($studentProgress, $latestAssessment),
         ];
-
-        return $progression;
     }
 
     /**
-     * Synchronize progression between center and company
+     * Synchronize progression between center and company.
      */
     public function synchronizeProgression(Student $student): array
     {
         $studentProgress = $this->studentProgressRepository->findOneBy(['student' => $student]);
-        
+
         if (!$studentProgress) {
-            throw new \InvalidArgumentException('Student progress not found');
+            throw new InvalidArgumentException('Student progress not found');
         }
 
         // Update alternance progress
         $studentProgress->updateAlternanceProgress();
-        
+
         // Create or update progress assessment
         $latestAssessment = $this->progressAssessmentRepository->findLatestByStudent($student);
-        
+
         if (!$latestAssessment || $this->shouldCreateNewAssessment($latestAssessment)) {
             $latestAssessment = $this->progressAssessmentService->createProgressAssessment(
                 $student,
-                new \DateTime()
+                new DateTime(),
             );
         }
 
         // Recalculate progression
         $this->progressAssessmentService->calculateProgression($latestAssessment);
-        
+
         $this->entityManager->flush();
 
         return [
-            'synchronization_date' => new \DateTime(),
+            'synchronization_date' => new DateTime(),
             'center_progression' => (float) $latestAssessment->getCenterProgression(),
             'company_progression' => (float) $latestAssessment->getCompanyProgression(),
             'overall_progression' => (float) $latestAssessment->getOverallProgression(),
             'synchronization_gaps' => $this->identifySynchronizationGaps($latestAssessment),
-            'action_plan' => $this->createSynchronizationActionPlan($latestAssessment)
+            'action_plan' => $this->createSynchronizationActionPlan($latestAssessment),
         ];
     }
 
     /**
-     * Generate progression report for a period
+     * Generate progression report for a period.
      */
     public function generateProgressionReport(
-        Student $student, 
-        \DateTimeInterface $startDate, 
-        \DateTimeInterface $endDate
+        Student $student,
+        DateTimeInterface $startDate,
+        DateTimeInterface $endDate,
     ): array {
         $assessments = $this->progressAssessmentRepository->findByStudentAndDateRange(
-            $student, 
-            $startDate, 
-            $endDate
+            $student,
+            $startDate,
+            $endDate,
         );
 
-        $report = [
+        return [
             'student' => [
                 'id' => $student->getId(),
-                'name' => $student->getFullName()
+                'name' => $student->getFullName(),
             ],
             'period' => [
                 'start' => $startDate->format('Y-m-d'),
-                'end' => $endDate->format('Y-m-d')
+                'end' => $endDate->format('Y-m-d'),
             ],
             'progression_summary' => $this->calculateProgressionSummary($assessments),
             'center_performance' => $this->analyzeCenterPerformance($assessments),
@@ -130,19 +132,17 @@ class AlternanceProgressionService
             'objectives_tracking' => $this->analyzeObjectivesTracking($assessments),
             'risk_evolution' => $this->analyzeRiskEvolution($assessments),
             'intervention_effectiveness' => $this->analyzeInterventionEffectiveness($assessments),
-            'recommendations' => $this->generatePeriodRecommendations($assessments)
+            'recommendations' => $this->generatePeriodRecommendations($assessments),
         ];
-
-        return $report;
     }
 
     /**
-     * Track objectives completion across environments
+     * Track objectives completion across environments.
      */
     public function trackObjectivesCompletion(Student $student): array
     {
         $latestAssessment = $this->progressAssessmentRepository->findLatestByStudent($student);
-        
+
         if (!$latestAssessment) {
             return ['error' => 'No assessment data found'];
         }
@@ -156,43 +156,41 @@ class AlternanceProgressionService
                 'total_completed' => count($completedObjectives),
                 'total_pending' => count($pendingObjectives),
                 'total_upcoming' => count($upcomingObjectives),
-                'completion_rate' => $latestAssessment->calculateObjectivesCompletionRate()
+                'completion_rate' => $latestAssessment->calculateObjectivesCompletionRate(),
             ],
             'by_category' => $this->categorizeObjectives($completedObjectives, $pendingObjectives, $upcomingObjectives),
             'timeline' => $this->buildObjectivesTimeline($completedObjectives, $pendingObjectives, $upcomingObjectives),
             'priority_analysis' => $this->analyzePriorityObjectives($pendingObjectives),
-            'completion_forecast' => $this->forecastObjectivesCompletion($pendingObjectives, $upcomingObjectives)
+            'completion_forecast' => $this->forecastObjectivesCompletion($pendingObjectives, $upcomingObjectives),
         ];
     }
 
     /**
-     * Generate development roadmap
+     * Generate development roadmap.
      */
     public function generateDevelopmentRoadmap(Student $student, int $monthsAhead = 6): array
     {
         $currentProgression = $this->calculateAlternanceProgression($student);
         $riskAssessment = $this->riskAssessmentService->assessStudentRisk($student);
 
-        $roadmap = [
+        return [
             'student' => $currentProgression['student'],
             'current_status' => [
                 'overall_progression' => $currentProgression['overall_metrics']['overall_progression'],
                 'risk_level' => $riskAssessment['risk_level'],
                 'key_strengths' => $this->identifyKeyStrengths($currentProgression),
-                'improvement_areas' => $this->identifyImprovementAreas($currentProgression)
+                'improvement_areas' => $this->identifyImprovementAreas($currentProgression),
             ],
             'development_phases' => $this->createDevelopmentPhases($currentProgression, $monthsAhead),
             'skills_roadmap' => $this->createSkillsRoadmap($currentProgression['skills_development']),
             'milestones' => $this->createMilestones($currentProgression, $monthsAhead),
             'success_metrics' => $this->defineSuccessMetrics($currentProgression),
-            'support_plan' => $this->createSupportPlan($riskAssessment)
+            'support_plan' => $this->createSupportPlan($riskAssessment),
         ];
-
-        return $roadmap;
     }
 
     /**
-     * Calculate overall metrics
+     * Calculate overall metrics.
      */
     private function calculateOverallMetrics(StudentProgress $studentProgress, ?ProgressAssessment $latestAssessment): array
     {
@@ -202,7 +200,7 @@ class AlternanceProgressionService
             'skills_acquisition_rate' => $studentProgress->getSkillsAcquisitionRate(),
             'risk_score' => $studentProgress->getAlternanceRiskScore() ?? 0,
             'days_in_program' => $this->calculateDaysInProgram($studentProgress),
-            'expected_completion_date' => $this->calculateExpectedCompletion($studentProgress)
+            'expected_completion_date' => $this->calculateExpectedCompletion($studentProgress),
         ];
 
         if ($latestAssessment) {
@@ -214,7 +212,7 @@ class AlternanceProgressionService
     }
 
     /**
-     * Calculate center progression details
+     * Calculate center progression details.
      */
     private function calculateCenterProgression(StudentProgress $studentProgress): array
     {
@@ -223,30 +221,28 @@ class AlternanceProgressionService
             'course_completion' => $studentProgress->getCompletionPercentage(),
             'attendance_rate' => (float) ($studentProgress->getAttendanceRate() ?? 0),
             'academic_performance' => $this->calculateAcademicPerformance($studentProgress),
-            'theoretical_mastery' => $this->calculateTheoreticalMastery($studentProgress)
+            'theoretical_mastery' => $this->calculateTheoreticalMastery($studentProgress),
         ];
     }
 
     /**
-     * Calculate company progression details
+     * Calculate company progression details.
      */
     private function calculateCompanyProgression(StudentProgress $studentProgress): array
     {
         $missionProgress = $studentProgress->getMissionProgress() ?? [];
-        
+
         return [
             'completion_rate' => (float) ($studentProgress->getCompanyCompletionRate() ?? 0),
-            'missions_completed' => count(array_filter($missionProgress, function($mission) {
-                return ($mission['completion_rate'] ?? 0) >= 80;
-            })),
+            'missions_completed' => count(array_filter($missionProgress, static fn ($mission) => ($mission['completion_rate'] ?? 0) >= 80)),
             'total_missions' => count($missionProgress),
             'practical_skills' => $this->calculatePracticalSkills($studentProgress),
-            'professional_integration' => $this->calculateProfessionalIntegration($studentProgress)
+            'professional_integration' => $this->calculateProfessionalIntegration($studentProgress),
         ];
     }
 
     /**
-     * Calculate skills development metrics
+     * Calculate skills development metrics.
      */
     private function calculateSkillsDevelopment(Student $student): array
     {
@@ -256,17 +252,17 @@ class AlternanceProgressionService
             'transversal_skills_progress' => 80, // Placeholder
             'skills_mastered' => 12, // Placeholder
             'skills_in_progress' => 8, // Placeholder
-            'certification_ready' => ['PROG_PHP', 'WEB_HTML'] // Placeholder
+            'certification_ready' => ['PROG_PHP', 'WEB_HTML'], // Placeholder
         ];
     }
 
     /**
-     * Calculate mission completion metrics
+     * Calculate mission completion metrics.
      */
     private function calculateMissionCompletion(StudentProgress $studentProgress): array
     {
         $missionProgress = $studentProgress->getMissionProgress() ?? [];
-        
+
         $completed = 0;
         $inProgress = 0;
         $notStarted = 0;
@@ -275,7 +271,7 @@ class AlternanceProgressionService
         foreach ($missionProgress as $mission) {
             $rate = $mission['completion_rate'] ?? 0;
             $totalCompletionRate += $rate;
-            
+
             if ($rate >= 80) {
                 $completed++;
             } elseif ($rate > 0) {
@@ -285,7 +281,7 @@ class AlternanceProgressionService
             }
         }
 
-        $averageCompletion = count($missionProgress) > 0 ? 
+        $averageCompletion = count($missionProgress) > 0 ?
             $totalCompletionRate / count($missionProgress) : 0;
 
         return [
@@ -294,12 +290,12 @@ class AlternanceProgressionService
             'in_progress_missions' => $inProgress,
             'not_started_missions' => $notStarted,
             'average_completion_rate' => round($averageCompletion, 1),
-            'mission_quality_score' => $this->calculateMissionQualityScore($missionProgress)
+            'mission_quality_score' => $this->calculateMissionQualityScore($missionProgress),
         ];
     }
 
     /**
-     * Calculate engagement analysis
+     * Calculate engagement analysis.
      */
     private function calculateEngagementAnalysis(StudentProgress $studentProgress): array
     {
@@ -308,18 +304,18 @@ class AlternanceProgressionService
             'center_engagement' => $this->calculateCenterEngagement($studentProgress),
             'company_engagement' => $this->calculateCompanyEngagement($studentProgress),
             'engagement_trend' => $this->calculateEngagementTrend($studentProgress),
-            'engagement_factors' => $this->identifyEngagementFactors($studentProgress)
+            'engagement_factors' => $this->identifyEngagementFactors($studentProgress),
         ];
     }
 
     /**
-     * Build progression timeline
+     * Build progression timeline.
      */
     private function buildProgressionTimeline(Student $student): array
     {
         $assessments = $this->progressAssessmentRepository->findBy(
             ['student' => $student],
-            ['period' => 'ASC']
+            ['period' => 'ASC'],
         );
 
         $timeline = [];
@@ -330,7 +326,7 @@ class AlternanceProgressionService
                 'company_progression' => (float) $assessment->getCompanyProgression(),
                 'overall_progression' => (float) $assessment->getOverallProgression(),
                 'risk_level' => $assessment->getRiskLevel(),
-                'key_events' => $this->extractKeyEvents($assessment)
+                'key_events' => $this->extractKeyEvents($assessment),
             ];
         }
 
@@ -338,7 +334,7 @@ class AlternanceProgressionService
     }
 
     /**
-     * Generate progression recommendations
+     * Generate progression recommendations.
      */
     private function generateProgressionRecommendations(StudentProgress $studentProgress, ?ProgressAssessment $latestAssessment): array
     {
@@ -354,15 +350,15 @@ class AlternanceProgressionService
                 'actions' => [
                     'Programmer des séances de rattrapage',
                     'Mettre en place un tutorat personnalisé',
-                    'Réviser le planning de formation'
-                ]
+                    'Réviser le planning de formation',
+                ],
             ];
         }
 
         // Professional recommendations
         $missionProgress = $studentProgress->getMissionProgress() ?? [];
         $avgMissionCompletion = $this->calculateAverageMissionCompletion($missionProgress);
-        
+
         if ($avgMissionCompletion < 70) {
             $recommendations[] = [
                 'category' => 'professional',
@@ -372,8 +368,8 @@ class AlternanceProgressionService
                 'actions' => [
                     'Rencontrer le tuteur entreprise',
                     'Clarifier les objectifs des missions',
-                    'Adapter la complexité des tâches'
-                ]
+                    'Adapter la complexité des tâches',
+                ],
             ];
         }
 
@@ -388,7 +384,7 @@ class AlternanceProgressionService
             'student' => [
                 'id' => $student->getId(),
                 'name' => $student->getFullName(),
-                'contract' => null
+                'contract' => null,
             ],
             'error' => $reason,
             'overall_metrics' => [],
@@ -399,16 +395,16 @@ class AlternanceProgressionService
             'engagement_analysis' => [],
             'risk_assessment' => [],
             'progression_timeline' => [],
-            'recommendations' => []
+            'recommendations' => [],
         ];
     }
 
     private function shouldCreateNewAssessment(ProgressAssessment $latestAssessment): bool
     {
         $lastAssessmentDate = $latestAssessment->getPeriod();
-        $now = new \DateTime();
+        $now = new DateTime();
         $daysSinceLastAssessment = $now->diff($lastAssessmentDate)->days;
-        
+
         return $daysSinceLastAssessment >= 30; // Monthly assessments
     }
 
@@ -419,13 +415,13 @@ class AlternanceProgressionService
         $gap = abs($centerProgression - $companyProgression);
 
         $gaps = [];
-        
+
         if ($gap > 15) {
             $gaps[] = [
                 'type' => 'progression_gap',
                 'severity' => $gap > 25 ? 'high' : 'medium',
                 'description' => "Écart de {$gap}% entre centre ({$centerProgression}%) et entreprise ({$companyProgression}%)",
-                'impact' => 'Progression désynchronisée'
+                'impact' => 'Progression désynchronisée',
             ];
         }
 
@@ -443,7 +439,7 @@ class AlternanceProgressionService
                     'action' => 'Réunion tripartite de coordination',
                     'timeline' => '2 semaines',
                     'responsible' => 'Coordinateur alternance',
-                    'objective' => 'Harmoniser les attentes centre-entreprise'
+                    'objective' => 'Harmoniser les attentes centre-entreprise',
                 ];
             }
         }
@@ -459,8 +455,8 @@ class AlternanceProgressionService
         }
 
         $startDate = $contract->getStartDate();
-        $now = new \DateTime();
-        
+        $now = new DateTime();
+
         return $now->diff($startDate)->days;
     }
 
@@ -490,6 +486,7 @@ class AlternanceProgressionService
     {
         // Calculate based on mission success and skills acquired
         $skillsAcquired = $studentProgress->getSkillsAcquired() ?? [];
+
         return count($skillsAcquired) * 10; // Placeholder
     }
 
@@ -536,19 +533,19 @@ class AlternanceProgressionService
         return [
             'attendance_impact' => 'medium',
             'mission_participation' => 'high',
-            'peer_interaction' => 'medium'
+            'peer_interaction' => 'medium',
         ];
     }
 
     private function extractKeyEvents(ProgressAssessment $assessment): array
     {
         $events = [];
-        
+
         $difficulties = $assessment->getDifficulties();
         if (!empty($difficulties)) {
             $events[] = [
                 'type' => 'difficulty',
-                'description' => count($difficulties) . ' difficultés identifiées'
+                'description' => count($difficulties) . ' difficultés identifiées',
             ];
         }
 
@@ -556,7 +553,7 @@ class AlternanceProgressionService
         if (!empty($supportNeeded)) {
             $events[] = [
                 'type' => 'support',
-                'description' => 'Accompagnement requis'
+                'description' => 'Accompagnement requis',
             ];
         }
 
@@ -592,31 +589,31 @@ class AlternanceProgressionService
             'final_progression' => (float) $last->getOverallProgression(),
             'total_improvement' => (float) $last->getOverallProgression() - (float) $first->getOverallProgression(),
             'assessment_count' => count($assessments),
-            'average_risk_level' => array_sum(array_map(function($a) { return $a->getRiskLevel(); }, $assessments)) / count($assessments)
+            'average_risk_level' => array_sum(array_map(static fn ($a) => $a->getRiskLevel(), $assessments)) / count($assessments),
         ];
     }
 
     private function analyzeCenterPerformance(array $assessments): array
     {
-        $centerProgressions = array_map(function($a) { return (float) $a->getCenterProgression(); }, $assessments);
-        
+        $centerProgressions = array_map(static fn ($a) => (float) $a->getCenterProgression(), $assessments);
+
         return [
             'average_progression' => array_sum($centerProgressions) / count($centerProgressions),
             'best_performance' => max($centerProgressions),
             'lowest_performance' => min($centerProgressions),
-            'trend' => $this->calculateTrend($centerProgressions)
+            'trend' => $this->calculateTrend($centerProgressions),
         ];
     }
 
     private function analyzeCompanyPerformance(array $assessments): array
     {
-        $companyProgressions = array_map(function($a) { return (float) $a->getCompanyProgression(); }, $assessments);
-        
+        $companyProgressions = array_map(static fn ($a) => (float) $a->getCompanyProgression(), $assessments);
+
         return [
             'average_progression' => array_sum($companyProgressions) / count($companyProgressions),
             'best_performance' => max($companyProgressions),
             'lowest_performance' => min($companyProgressions),
-            'trend' => $this->calculateTrend($companyProgressions)
+            'trend' => $this->calculateTrend($companyProgressions),
         ];
     }
 
@@ -630,8 +627,13 @@ class AlternanceProgressionService
         $last = end($values);
         $change = $last - $first;
 
-        if ($change > 5) return 'improving';
-        if ($change < -5) return 'declining';
+        if ($change > 5) {
+            return 'improving';
+        }
+        if ($change < -5) {
+            return 'declining';
+        }
+
         return 'stable';
     }
 
@@ -641,7 +643,7 @@ class AlternanceProgressionService
         return [
             'skills_improvement_rate' => 15,
             'new_skills_acquired' => 3,
-            'skills_requiring_attention' => 2
+            'skills_requiring_attention' => 2,
         ];
     }
 
@@ -658,20 +660,20 @@ class AlternanceProgressionService
         return [
             'total_objectives_completed' => $totalCompleted,
             'average_pending_objectives' => $totalPending / count($assessments),
-            'completion_velocity' => $totalCompleted / count($assessments)
+            'completion_velocity' => $totalCompleted / count($assessments),
         ];
     }
 
     private function analyzeRiskEvolution(array $assessments): array
     {
-        $riskLevels = array_map(function($a) { return $a->getRiskLevel(); }, $assessments);
-        
+        $riskLevels = array_map(static fn ($a) => $a->getRiskLevel(), $assessments);
+
         return [
             'initial_risk' => reset($riskLevels),
             'final_risk' => end($riskLevels),
             'peak_risk' => max($riskLevels),
             'average_risk' => array_sum($riskLevels) / count($riskLevels),
-            'risk_trend' => $this->calculateTrend($riskLevels)
+            'risk_trend' => $this->calculateTrend($riskLevels),
         ];
     }
 
@@ -681,7 +683,7 @@ class AlternanceProgressionService
         return [
             'interventions_applied' => 5,
             'successful_interventions' => 4,
-            'effectiveness_rate' => 80
+            'effectiveness_rate' => 80,
         ];
     }
 
@@ -700,7 +702,7 @@ class AlternanceProgressionService
                 'category' => 'risk_management',
                 'title' => 'Gestion du risque',
                 'description' => 'Niveau de risque élevé détecté',
-                'actions' => ['Intervention ciblée', 'Suivi renforcé']
+                'actions' => ['Intervention ciblée', 'Suivi renforcé'],
             ];
         }
 
@@ -710,7 +712,7 @@ class AlternanceProgressionService
     private function categorizeObjectives(array $completed, array $pending, array $upcoming): array
     {
         $categories = ['technique' => 0, 'projet' => 0, 'professionnel' => 0];
-        
+
         foreach (array_merge($completed, $pending, $upcoming) as $objective) {
             $category = $objective['category'] ?? 'general';
             if (isset($categories[$category])) {
@@ -724,13 +726,13 @@ class AlternanceProgressionService
     private function buildObjectivesTimeline(array $completed, array $pending, array $upcoming): array
     {
         $timeline = [];
-        
+
         foreach ($completed as $objective) {
             $timeline[] = [
                 'date' => $objective['completed_at'] ?? null,
                 'type' => 'completed',
                 'objective' => $objective['objective'],
-                'category' => $objective['category'] ?? 'general'
+                'category' => $objective['category'] ?? 'general',
             ];
         }
 
@@ -739,30 +741,27 @@ class AlternanceProgressionService
                 'date' => $objective['target_date'] ?? null,
                 'type' => 'pending',
                 'objective' => $objective['objective'],
-                'category' => $objective['category'] ?? 'general'
+                'category' => $objective['category'] ?? 'general',
             ];
         }
 
         // Sort by date
-        usort($timeline, function($a, $b) {
-            return strcmp($a['date'] ?? '', $b['date'] ?? '');
-        });
+        usort($timeline, static fn ($a, $b) => strcmp($a['date'] ?? '', $b['date'] ?? ''));
 
         return $timeline;
     }
 
     private function analyzePriorityObjectives(array $pendingObjectives): array
     {
-        $highPriority = array_filter($pendingObjectives, function($obj) {
-            return ($obj['priority'] ?? 3) >= 4;
-        });
+        $highPriority = array_filter($pendingObjectives, static fn ($obj) => ($obj['priority'] ?? 3) >= 4);
 
         return [
             'high_priority_count' => count($highPriority),
-            'overdue_count' => count(array_filter($pendingObjectives, function($obj) {
+            'overdue_count' => count(array_filter($pendingObjectives, static function ($obj) {
                 $targetDate = $obj['target_date'] ?? null;
-                return $targetDate && new \DateTime($targetDate) < new \DateTime();
-            }))
+
+                return $targetDate && new DateTime($targetDate) < new DateTime();
+            })),
         ];
     }
 
@@ -771,18 +770,18 @@ class AlternanceProgressionService
         return [
             'estimated_completion_weeks' => count($pending) * 2, // Placeholder
             'completion_probability' => 85, // Placeholder
-            'bottlenecks' => ['Resource availability', 'Technical complexity'] // Placeholder
+            'bottlenecks' => ['Resource availability', 'Technical complexity'], // Placeholder
         ];
     }
 
     private function identifyKeyStrengths(array $progression): array
     {
         $strengths = [];
-        
+
         if ($progression['overall_metrics']['engagement_score'] > 80) {
             $strengths[] = 'Excellent engagement';
         }
-        
+
         if ($progression['center_progression']['completion_rate'] > 75) {
             $strengths[] = 'Forte progression académique';
         }
@@ -793,7 +792,7 @@ class AlternanceProgressionService
     private function identifyImprovementAreas(array $progression): array
     {
         $areas = [];
-        
+
         if ($progression['overall_metrics']['risk_score'] > 50) {
             $areas[] = 'Gestion du risque de décrochage';
         }
@@ -808,18 +807,18 @@ class AlternanceProgressionService
             [
                 'phase' => 'Consolidation',
                 'duration_months' => 2,
-                'objectives' => ['Renforcer les acquis', 'Améliorer la régularité']
+                'objectives' => ['Renforcer les acquis', 'Améliorer la régularité'],
             ],
             [
                 'phase' => 'Approfondissement',
                 'duration_months' => 2,
-                'objectives' => ['Développer l\'expertise', 'Autonomie accrue']
+                'objectives' => ['Développer l\'expertise', 'Autonomie accrue'],
             ],
             [
                 'phase' => 'Finalisation',
                 'duration_months' => 2,
-                'objectives' => ['Préparation certification', 'Projet final']
-            ]
+                'objectives' => ['Préparation certification', 'Projet final'],
+            ],
         ];
     }
 
@@ -830,13 +829,13 @@ class AlternanceProgressionService
             'technical_skills' => [
                 'current_level' => 'intermediate',
                 'target_level' => 'advanced',
-                'timeline' => '4 months'
+                'timeline' => '4 months',
             ],
             'transversal_skills' => [
                 'current_level' => 'good',
-                'target_level' => 'excellent', 
-                'timeline' => '3 months'
-            ]
+                'target_level' => 'excellent',
+                'timeline' => '3 months',
+            ],
         ];
     }
 
@@ -846,18 +845,18 @@ class AlternanceProgressionService
             [
                 'month' => 2,
                 'milestone' => '60% progression globale',
-                'criteria' => ['Evaluation formative réussie', 'Mission entreprise validée']
+                'criteria' => ['Evaluation formative réussie', 'Mission entreprise validée'],
             ],
             [
                 'month' => 4,
                 'milestone' => '80% progression globale',
-                'criteria' => ['Projet technique abouti', 'Autonomie confirmée']
+                'criteria' => ['Projet technique abouti', 'Autonomie confirmée'],
             ],
             [
                 'month' => 6,
                 'milestone' => 'Certification finale',
-                'criteria' => ['Evaluation sommative', 'Soutenance projet']
-            ]
+                'criteria' => ['Evaluation sommative', 'Soutenance projet'],
+            ],
         ];
     }
 
@@ -867,7 +866,7 @@ class AlternanceProgressionService
             'overall_progression' => ['target' => 85, 'weight' => 40],
             'engagement_score' => ['target' => 80, 'weight' => 25],
             'skills_mastery' => ['target' => 75, 'weight' => 20],
-            'mission_completion' => ['target' => 90, 'weight' => 15]
+            'mission_completion' => ['target' => 90, 'weight' => 15],
         ];
     }
 
@@ -876,7 +875,7 @@ class AlternanceProgressionService
         $plan = [
             'monitoring_frequency' => $riskAssessment['monitoring_frequency'],
             'interventions' => $riskAssessment['interventions'],
-            'support_team' => []
+            'support_team' => [],
         ];
 
         if ($riskAssessment['risk_level'] >= 3) {

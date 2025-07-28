@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Entity\User\Mentor;
-use App\Repository\User\MentorRepository;
 use App\Repository\Alternance\AlternanceContractRepository;
+use App\Repository\User\MentorRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +24,7 @@ class CompanyController extends AbstractController
     public function __construct(
         private MentorRepository $mentorRepository,
         private AlternanceContractRepository $contractRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_company_index', methods: ['GET'])]
@@ -53,23 +57,23 @@ class CompanyController extends AbstractController
         // Find company data by SIRET
         $mentors = $this->mentorRepository->findBy(['companySiret' => $siret]);
         $contracts = $this->contractRepository->findBy(['companySiret' => $siret]);
-        
+
         if (empty($mentors)) {
             throw $this->createNotFoundException('Entreprise non trouvée');
         }
 
         // Get company info from first mentor
         $company = $mentors[0];
-        
+
         // Get company address from contracts if available
         $companyAddress = null;
         if (!empty($contracts)) {
             $companyAddress = $contracts[0]->getCompanyAddress();
         }
-        
+
         // Calculate company metrics
         $metrics = $this->calculateCompanyMetrics($siret);
-        
+
         return $this->render('admin/alternance/company/show.html.twig', [
             'company' => $company,
             'companyAddress' => $companyAddress,
@@ -83,13 +87,13 @@ class CompanyController extends AbstractController
     public function mentors(string $siret): Response
     {
         $mentors = $this->mentorRepository->findBy(['companySiret' => $siret]);
-        
+
         if (empty($mentors)) {
             throw $this->createNotFoundException('Entreprise non trouvée');
         }
 
         $company = $mentors[0];
-        
+
         // Get company address from contracts if available
         $contracts = $this->contractRepository->findBy(['companySiret' => $siret]);
         $companyAddress = null;
@@ -126,7 +130,7 @@ class CompanyController extends AbstractController
         $contracts = $this->contractRepository->findPaginatedContracts($filters, $page, $perPage);
         $totalContracts = $this->contractRepository->countFilteredContracts($filters);
         $totalPages = ceil($totalContracts / $perPage);
-        
+
         // Get company address from contracts if available
         $companyAddress = null;
         if (!empty($contracts)) {
@@ -147,14 +151,14 @@ class CompanyController extends AbstractController
     public function statistics(string $siret): Response
     {
         $mentors = $this->mentorRepository->findBy(['companySiret' => $siret]);
-        
+
         if (empty($mentors)) {
             throw $this->createNotFoundException('Entreprise non trouvée');
         }
 
         $company = $mentors[0];
         $detailedMetrics = $this->getDetailedCompanyMetrics($siret);
-        
+
         // Get company address from contracts if available
         $contracts = $this->contractRepository->findBy(['companySiret' => $siret]);
         $companyAddress = null;
@@ -181,11 +185,12 @@ class CompanyController extends AbstractController
 
             $response = new Response($data);
             $response->headers->set('Content-Type', $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="entreprises_export.'.$format.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="entreprises_export.' . $format . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_company_index');
         }
     }
@@ -199,11 +204,13 @@ class CompanyController extends AbstractController
                      ac.companyAddress')
             ->from(Mentor::class, 'm')
             ->leftJoin(AlternanceContract::class, 'ac', 'WITH', 'ac.companySiret = m.companySiret')
-            ->groupBy('m.companyName, m.companySiret, ac.companyAddress');
+            ->groupBy('m.companyName, m.companySiret, ac.companyAddress')
+        ;
 
         if ($search) {
             $qb->where('m.companyName LIKE :search OR m.companySiret LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%')
+            ;
         }
 
         $qb->orderBy('m.companyName', 'ASC');
@@ -220,11 +227,13 @@ class CompanyController extends AbstractController
     {
         $qb = $this->entityManager->createQueryBuilder()
             ->select('COUNT(DISTINCT m.companySiret)')
-            ->from(Mentor::class, 'm');
+            ->from(Mentor::class, 'm')
+        ;
 
         if ($search) {
             $qb->where('m.companyName LIKE :search OR m.companySiret LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%')
+            ;
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -245,7 +254,8 @@ class CompanyController extends AbstractController
             ->orderBy('mentorCount', 'DESC')
             ->setMaxResults(5)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Get companies with most contracts
         $topCompaniesByContracts = $this->entityManager->createQueryBuilder()
@@ -255,7 +265,8 @@ class CompanyController extends AbstractController
             ->orderBy('contractCount', 'DESC')
             ->setMaxResults(5)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return [
             'total_companies' => $totalCompanies,
@@ -274,9 +285,9 @@ class CompanyController extends AbstractController
         $mentors = $this->mentorRepository->findBy(['companySiret' => $siret]);
         $contracts = $this->contractRepository->findBy(['companySiret' => $siret]);
 
-        $activeContracts = array_filter($contracts, fn($c) => $c->getStatus() === 'active');
-        $completedContracts = array_filter($contracts, fn($c) => $c->getStatus() === 'completed');
-        $activeMentors = array_filter($mentors, fn($m) => $m->isActive());
+        $activeContracts = array_filter($contracts, static fn ($c) => $c->getStatus() === 'active');
+        $completedContracts = array_filter($contracts, static fn ($c) => $c->getStatus() === 'completed');
+        $activeMentors = array_filter($mentors, static fn ($m) => $m->isActive());
 
         return [
             'total_mentors' => count($mentors),
@@ -294,23 +305,23 @@ class CompanyController extends AbstractController
     private function getDetailedCompanyMetrics(string $siret): array
     {
         $basicMetrics = $this->calculateCompanyMetrics($siret);
-        
+
         // Add more detailed metrics
         $contracts = $this->contractRepository->findBy(['companySiret' => $siret]);
-        
+
         $contractsByStatus = [];
         $contractsByType = [];
         $monthlyTrends = [];
-        
+
         foreach ($contracts as $contract) {
             // Group by status
             $status = $contract->getStatus();
             $contractsByStatus[$status] = ($contractsByStatus[$status] ?? 0) + 1;
-            
+
             // Group by type
             $type = $contract->getContractType();
             $contractsByType[$type] = ($contractsByType[$type] ?? 0) + 1;
-            
+
             // Monthly trends (last 12 months)
             $month = $contract->getCreatedAt()->format('Y-m');
             $monthlyTrends[$month] = ($monthlyTrends[$month] ?? 0) + 1;
@@ -328,13 +339,13 @@ class CompanyController extends AbstractController
     {
         $mentors = $this->mentorRepository->findBy(['companySiret' => $siret]);
         $distribution = [];
-        
+
         foreach ($mentors as $mentor) {
             foreach ($mentor->getExpertiseDomains() as $domain) {
                 $distribution[$domain] = ($distribution[$domain] ?? 0) + 1;
             }
         }
-        
+
         return $distribution;
     }
 
@@ -363,7 +374,8 @@ class CompanyController extends AbstractController
             return null;
         }
 
-        usort($mentors, fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
+        usort($mentors, static fn ($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
+
         return $mentors[0];
     }
 
@@ -373,7 +385,8 @@ class CompanyController extends AbstractController
             return null;
         }
 
-        usort($contracts, fn($a, $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
+        usort($contracts, static fn ($a, $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
+
         return $contracts[0];
     }
 
@@ -381,16 +394,16 @@ class CompanyController extends AbstractController
     {
         if ($format === 'csv') {
             $output = fopen('php://temp', 'r+');
-            
+
             // Headers
             fputcsv($output, [
                 'Nom de l\'entreprise',
                 'SIRET',
                 'Adresse',
                 'Nombre de mentors',
-                'Nombre de contrats'
+                'Nombre de contrats',
             ]);
-            
+
             // Data
             foreach ($companies as $company) {
                 fputcsv($output, [
@@ -398,17 +411,17 @@ class CompanyController extends AbstractController
                     $company['companySiret'],
                     $company['companyAddress'] ?? '',
                     $company['mentorCount'],
-                    $company['contractCount']
+                    $company['contractCount'],
                 ]);
             }
-            
+
             rewind($output);
             $content = stream_get_contents($output);
             fclose($output);
-            
+
             return $content;
         }
 
-        throw new \InvalidArgumentException("Format d'export non supporté: {$format}");
+        throw new InvalidArgumentException("Format d'export non supporté: {$format}");
     }
 }

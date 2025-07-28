@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\DocumentType;
@@ -17,7 +19,7 @@ class DocumentTypeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active document types ordered by sort order
+     * Find all active document types ordered by sort order.
      */
     public function findAllActive(): array
     {
@@ -27,11 +29,12 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->orderBy('dt.sortOrder', 'ASC')
             ->addOrderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find document type by code
+     * Find document type by code.
      */
     public function findByCode(string $code): ?DocumentType
     {
@@ -41,11 +44,12 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->setParameter('code', $code)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find types that allow multiple published documents
+     * Find types that allow multiple published documents.
      */
     public function findAllowingMultiplePublished(): array
     {
@@ -56,11 +60,12 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->setParameter('allow', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find types that require approval
+     * Find types that require approval.
      */
     public function findRequiringApproval(): array
     {
@@ -71,11 +76,12 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->setParameter('require', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find types that generate PDF
+     * Find types that generate PDF.
      */
     public function findGeneratingPdf(): array
     {
@@ -86,11 +92,12 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->setParameter('generate', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get document counts by type
+     * Get document counts by type.
      */
     public function getDocumentCounts(): array
     {
@@ -102,7 +109,8 @@ class DocumentTypeRepository extends ServiceEntityRepository
             ->groupBy('dt.id')
             ->orderBy('dt.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     public function save(DocumentType $entity, bool $flush = false): void

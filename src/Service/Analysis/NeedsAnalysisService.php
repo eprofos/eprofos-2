@@ -1,23 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Analysis;
 
-use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Analysis\CompanyNeedsAnalysis;
 use App\Entity\Analysis\IndividualNeedsAnalysis;
-use App\Entity\User\Admin;
+use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Entity\Training\Formation;
-use App\Repository\Analysis\NeedsAnalysisRequestRepository;
+use App\Entity\User\Admin;
 use App\Repository\Analysis\CompanyNeedsAnalysisRepository;
 use App\Repository\Analysis\IndividualNeedsAnalysisRepository;
+use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\Core\TokenGeneratorService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Needs Analysis Service
- * 
+ * Needs Analysis Service.
+ *
  * Main service for managing needs analysis requests and their lifecycle.
  * Handles creation, validation, status updates, and business logic.
  */
@@ -30,12 +36,11 @@ class NeedsAnalysisService
         private IndividualNeedsAnalysisRepository $individualNeedsAnalysisRepository,
         private TokenGeneratorService $tokenGeneratorService,
         private AnalysisEmailNotificationService $emailNotificationService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Create a new needs analysis request
+     * Create a new needs analysis request.
      */
     public function createNeedsAnalysisRequest(
         string $type,
@@ -44,17 +49,17 @@ class NeedsAnalysisService
         ?string $companyName = null,
         ?Formation $formation = null,
         ?UserInterface $createdBy = null,
-        ?string $notes = null
+        ?string $notes = null,
     ): NeedsAnalysisRequest {
         $this->logger->info('Creating new needs analysis request', [
             'type' => $type,
             'recipient_email' => $recipientEmail,
-            'company_name' => $companyName
+            'company_name' => $companyName,
         ]);
 
         // Validate type
-        if (!in_array($type, [NeedsAnalysisRequest::TYPE_COMPANY, NeedsAnalysisRequest::TYPE_INDIVIDUAL])) {
-            throw new \InvalidArgumentException('Invalid needs analysis type');
+        if (!in_array($type, [NeedsAnalysisRequest::TYPE_COMPANY, NeedsAnalysisRequest::TYPE_INDIVIDUAL], true)) {
+            throw new InvalidArgumentException('Invalid needs analysis type');
         }
 
         // Generate token and expiration
@@ -63,40 +68,41 @@ class NeedsAnalysisService
         // Create the request
         $request = new NeedsAnalysisRequest();
         $request->setType($type)
-                ->setRecipientName($recipientName)
-                ->setRecipientEmail($recipientEmail)
-                ->setCompanyName($companyName)
-                ->setFormation($formation)
-                ->setCreatedByAdmin($createdBy instanceof Admin ? $createdBy : null)
-                ->setToken($tokenData['token'])
-                ->setExpiresAt($tokenData['expires_at'])
-                ->setStatus(NeedsAnalysisRequest::STATUS_PENDING)
-                ->setAdminNotes($notes);
+            ->setRecipientName($recipientName)
+            ->setRecipientEmail($recipientEmail)
+            ->setCompanyName($companyName)
+            ->setFormation($formation)
+            ->setCreatedByAdmin($createdBy instanceof Admin ? $createdBy : null)
+            ->setToken($tokenData['token'])
+            ->setExpiresAt($tokenData['expires_at'])
+            ->setStatus(NeedsAnalysisRequest::STATUS_PENDING)
+            ->setAdminNotes($notes)
+        ;
 
         $this->entityManager->persist($request);
         $this->entityManager->flush();
 
         $this->logger->info('Needs analysis request created successfully', [
             'id' => $request->getId(),
-            'token' => $request->getToken()
+            'token' => $request->getToken(),
         ]);
 
         return $request;
     }
 
     /**
-     * Send a needs analysis request via email
+     * Send a needs analysis request via email.
      */
     public function sendNeedsAnalysisRequest(NeedsAnalysisRequest $request): bool
     {
         if ($request->getStatus() !== NeedsAnalysisRequest::STATUS_PENDING) {
-            throw new \LogicException('Can only send pending requests');
+            throw new LogicException('Can only send pending requests');
         }
 
         try {
             $this->logger->info('Sending needs analysis request', [
                 'id' => $request->getId(),
-                'recipient_email' => $request->getRecipientEmail()
+                'recipient_email' => $request->getRecipientEmail(),
             ]);
 
             // Send email notification
@@ -105,27 +111,27 @@ class NeedsAnalysisService
             if ($emailSent) {
                 // Update status to sent
                 $request->setStatus(NeedsAnalysisRequest::STATUS_SENT)
-                        ->setSentAt(new \DateTimeImmutable());
+                    ->setSentAt(new DateTimeImmutable())
+                ;
 
                 $this->entityManager->flush();
 
                 $this->logger->info('Needs analysis request sent successfully', [
-                    'id' => $request->getId()
+                    'id' => $request->getId(),
                 ]);
 
                 return true;
             }
 
             $this->logger->error('Failed to send needs analysis request email', [
-                'id' => $request->getId()
+                'id' => $request->getId(),
             ]);
 
             return false;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error sending needs analysis request', [
                 'id' => $request->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -133,7 +139,7 @@ class NeedsAnalysisService
     }
 
     /**
-     * Find a request by token
+     * Find a request by token.
      */
     public function findRequestByToken(string $token): ?NeedsAnalysisRequest
     {
@@ -145,7 +151,7 @@ class NeedsAnalysisService
     }
 
     /**
-     * Check if a request is accessible (not expired, not completed)
+     * Check if a request is accessible (not expired, not completed).
      */
     public function isRequestAccessible(NeedsAnalysisRequest $request): bool
     {
@@ -157,27 +163,27 @@ class NeedsAnalysisService
         // Check status
         return in_array($request->getStatus(), [
             NeedsAnalysisRequest::STATUS_SENT,
-            NeedsAnalysisRequest::STATUS_PENDING
-        ]);
+            NeedsAnalysisRequest::STATUS_PENDING,
+        ], true);
     }
 
     /**
-     * Submit a company needs analysis
+     * Submit a company needs analysis.
      */
     public function submitCompanyAnalysis(
         NeedsAnalysisRequest $request,
-        array $analysisData
+        array $analysisData,
     ): CompanyNeedsAnalysis {
         if ($request->getType() !== NeedsAnalysisRequest::TYPE_COMPANY) {
-            throw new \InvalidArgumentException('Request is not for company analysis');
+            throw new InvalidArgumentException('Request is not for company analysis');
         }
 
         if (!$this->isRequestAccessible($request)) {
-            throw new \LogicException('Request is not accessible');
+            throw new LogicException('Request is not accessible');
         }
 
         $this->logger->info('Submitting company needs analysis', [
-            'request_id' => $request->getId()
+            'request_id' => $request->getId(),
         ]);
 
         // Create company analysis
@@ -189,14 +195,15 @@ class NeedsAnalysisService
 
         // Update request status
         $request->setStatus(NeedsAnalysisRequest::STATUS_COMPLETED)
-                ->setCompletedAt(new \DateTimeImmutable());
+            ->setCompletedAt(new DateTimeImmutable())
+        ;
 
         $this->entityManager->persist($analysis);
         $this->entityManager->flush();
 
         $this->logger->info('Company needs analysis submitted successfully', [
             'request_id' => $request->getId(),
-            'analysis_id' => $analysis->getId()
+            'analysis_id' => $analysis->getId(),
         ]);
 
         // Send notification to admin
@@ -206,22 +213,22 @@ class NeedsAnalysisService
     }
 
     /**
-     * Submit an individual needs analysis
+     * Submit an individual needs analysis.
      */
     public function submitIndividualAnalysis(
         NeedsAnalysisRequest $request,
-        array $analysisData
+        array $analysisData,
     ): IndividualNeedsAnalysis {
         if ($request->getType() !== NeedsAnalysisRequest::TYPE_INDIVIDUAL) {
-            throw new \InvalidArgumentException('Request is not for individual analysis');
+            throw new InvalidArgumentException('Request is not for individual analysis');
         }
 
         if (!$this->isRequestAccessible($request)) {
-            throw new \LogicException('Request is not accessible');
+            throw new LogicException('Request is not accessible');
         }
 
         $this->logger->info('Submitting individual needs analysis', [
-            'request_id' => $request->getId()
+            'request_id' => $request->getId(),
         ]);
 
         // Create individual analysis
@@ -233,14 +240,15 @@ class NeedsAnalysisService
 
         // Update request status
         $request->setStatus(NeedsAnalysisRequest::STATUS_COMPLETED)
-                ->setCompletedAt(new \DateTimeImmutable());
+            ->setCompletedAt(new DateTimeImmutable())
+        ;
 
         $this->entityManager->persist($analysis);
         $this->entityManager->flush();
 
         $this->logger->info('Individual needs analysis submitted successfully', [
             'request_id' => $request->getId(),
-            'analysis_id' => $analysis->getId()
+            'analysis_id' => $analysis->getId(),
         ]);
 
         // Send notification to admin
@@ -250,21 +258,21 @@ class NeedsAnalysisService
     }
 
     /**
-     * Cancel a needs analysis request
+     * Cancel a needs analysis request.
      */
     public function cancelRequest(NeedsAnalysisRequest $request, ?string $reason = null): void
     {
         if ($request->getStatus() === NeedsAnalysisRequest::STATUS_COMPLETED) {
-            throw new \LogicException('Cannot cancel completed request');
+            throw new LogicException('Cannot cancel completed request');
         }
 
         $this->logger->info('Cancelling needs analysis request', [
             'id' => $request->getId(),
-            'reason' => $reason
+            'reason' => $reason,
         ]);
 
         $request->setStatus(NeedsAnalysisRequest::STATUS_CANCELLED);
-        
+
         if ($reason) {
             $currentNotes = $request->getAdminNotes();
             $newNote = 'Annulé: ' . $reason;
@@ -274,12 +282,12 @@ class NeedsAnalysisService
         $this->entityManager->flush();
 
         $this->logger->info('Needs analysis request cancelled', [
-            'id' => $request->getId()
+            'id' => $request->getId(),
         ]);
     }
 
     /**
-     * Mark expired requests as expired
+     * Mark expired requests as expired.
      */
     public function markExpiredRequests(): int
     {
@@ -288,14 +296,14 @@ class NeedsAnalysisService
         $count = $this->needsAnalysisRequestRepository->markExpiredRequests();
 
         $this->logger->info('Marked expired requests', [
-            'count' => $count
+            'count' => $count,
         ]);
 
         return $count;
     }
 
     /**
-     * Get dashboard statistics
+     * Get dashboard statistics.
      */
     public function getDashboardStatistics(): array
     {
@@ -307,7 +315,7 @@ class NeedsAnalysisService
     }
 
     /**
-     * Get requests expiring soon
+     * Get requests expiring soon.
      */
     public function getRequestsExpiringSoon(int $days = 7): array
     {
@@ -315,19 +323,20 @@ class NeedsAnalysisService
     }
 
     /**
-     * Resend a needs analysis request
+     * Resend a needs analysis request.
      */
     public function resendRequest(NeedsAnalysisRequest $request): bool
     {
         if ($request->getStatus() !== NeedsAnalysisRequest::STATUS_SENT) {
-            throw new \LogicException('Can only resend sent requests');
+            throw new LogicException('Can only resend sent requests');
         }
 
         // Generate new token and expiration
         $tokenData = $this->tokenGeneratorService->generateTokenWithExpiration();
-        
+
         $request->setToken($tokenData['token'])
-                ->setExpiresAt($tokenData['expires_at']);
+            ->setExpiresAt($tokenData['expires_at'])
+        ;
 
         $this->entityManager->flush();
 
@@ -335,55 +344,56 @@ class NeedsAnalysisService
     }
 
     /**
-     * Populate company analysis with data
+     * Populate company analysis with data.
      */
     private function populateCompanyAnalysis(CompanyNeedsAnalysis $analysis, array $data): void
     {
         $analysis->setCompanyName($data['company_name'] ?? '')
-                 ->setResponsiblePerson($data['responsible_person'] ?? '')
-                 ->setContactEmail($data['contact_email'] ?? '')
-                 ->setContactPhone($data['contact_phone'] ?? '')
-                 ->setCompanyAddress($data['company_address'] ?? '')
-                 ->setActivitySector($data['activity_sector'] ?? '')
-                 ->setNafCode($data['naf_code'] ?? null)
-                 ->setSiret($data['siret'] ?? null)
-                 ->setEmployeeCount($data['employee_count'] ?? 0)
-                 ->setOpco($data['opco'] ?? null)
-                 ->setTraineesInfo($data['trainees_info'] ?? [])
-                 ->setTrainingTitle($data['training_title'] ?? '')
-                 ->setTrainingDurationHours($data['training_duration_hours'] ?? 0)
-                 ->setPreferredStartDate($data['preferred_start_date'] ?? null)
-                 ->setPreferredEndDate($data['preferred_end_date'] ?? null)
-                 ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
-                 ->setLocationAppropriationNeeds($data['location_appropriation_needs'] ?? null)
-                 ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
-                 ->setTrainingExpectations($data['training_expectations'] ?? '')
-                 ->setSpecificNeeds($data['specific_needs'] ?? '');
+            ->setResponsiblePerson($data['responsible_person'] ?? '')
+            ->setContactEmail($data['contact_email'] ?? '')
+            ->setContactPhone($data['contact_phone'] ?? '')
+            ->setCompanyAddress($data['company_address'] ?? '')
+            ->setActivitySector($data['activity_sector'] ?? '')
+            ->setNafCode($data['naf_code'] ?? null)
+            ->setSiret($data['siret'] ?? null)
+            ->setEmployeeCount($data['employee_count'] ?? 0)
+            ->setOpco($data['opco'] ?? null)
+            ->setTraineesInfo($data['trainees_info'] ?? [])
+            ->setTrainingTitle($data['training_title'] ?? '')
+            ->setTrainingDurationHours($data['training_duration_hours'] ?? 0)
+            ->setPreferredStartDate($data['preferred_start_date'] ?? null)
+            ->setPreferredEndDate($data['preferred_end_date'] ?? null)
+            ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
+            ->setLocationAppropriationNeeds($data['location_appropriation_needs'] ?? null)
+            ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
+            ->setTrainingExpectations($data['training_expectations'] ?? '')
+            ->setSpecificNeeds($data['specific_needs'] ?? '')
+        ;
     }
 
     /**
-     * Populate individual analysis with data
+     * Populate individual analysis with data.
      */
     private function populateIndividualAnalysis(IndividualNeedsAnalysis $analysis, array $data): void
     {
         $analysis->setFirstName($data['first_name'] ?? '')
-                 ->setLastName($data['last_name'] ?? '')
-                 ->setAddress($data['address'] ?? '')
-                 ->setPhone($data['phone'] ?? '')
-                 ->setEmail($data['email'] ?? '')
-                 ->setStatus($data['status'] ?? '')
-                 ->setStatusOtherDetails($data['status_other_details'] ?? null)
-                 ->setFundingType($data['funding_type'] ?? '')
-                 ->setFundingOtherDetails($data['funding_other_details'] ?? null)
-                 ->setDesiredTrainingTitle($data['desired_training_title'] ?? '')
-                 ->setProfessionalObjective($data['professional_objective'] ?? '')
-                 ->setCurrentLevel($data['current_level'] ?? '')
-                 ->setDesiredDurationHours($data['desired_duration_hours'] ?? 0)
-                 ->setPreferredStartDate($data['preferred_start_date'] ?? null)
-                 ->setPreferredEndDate($data['preferred_end_date'] ?? null)
-                 ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
-                 ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
-                 ->setTrainingExpectations($data['training_expectations'] ?? '')
-                 ->setSpecificNeeds($data['specific_needs'] ?? '');
+            ->setLastName($data['last_name'] ?? '')
+            ->setAddress($data['address'] ?? '')
+            ->setPhone($data['phone'] ?? '')
+            ->setEmail($data['email'] ?? '')
+            ->setStatus($data['status'] ?? '')
+            ->setStatusOtherDetails($data['status_other_details'] ?? null)
+            ->setFundingType($data['funding_type'] ?? '')
+            ->setFundingOtherDetails($data['funding_other_details'] ?? null)
+            ->setDesiredTrainingTitle($data['desired_training_title'] ?? '')
+            ->setProfessionalObjective($data['professional_objective'] ?? '')
+            ->setCurrentLevel($data['current_level'] ?? '')
+            ->setDesiredDurationHours($data['desired_duration_hours'] ?? 0)
+            ->setPreferredStartDate($data['preferred_start_date'] ?? null)
+            ->setPreferredEndDate($data['preferred_end_date'] ?? null)
+            ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
+            ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
+            ->setTrainingExpectations($data['training_expectations'] ?? '')
+            ->setSpecificNeeds($data['specific_needs'] ?? '');
     }
 }

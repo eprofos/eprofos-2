@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Mentor;
 
 use App\Entity\User\Mentor;
-use App\Service\User\MentorService;
 use App\Service\User\MentorAuthenticationService;
+use App\Service\User\MentorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Mentor Dashboard Controller
- * 
+ * Mentor Dashboard Controller.
+ *
  * Main dashboard for authenticated mentors to manage their apprentices,
  * create missions, and access company training resources.
  */
@@ -22,13 +24,12 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private MentorService $mentorService,
-        private MentorAuthenticationService $mentorAuthService
-    ) {
-    }
+        private MentorAuthenticationService $mentorAuthService,
+    ) {}
 
     /**
-     * Mentor dashboard homepage
-     * 
+     * Mentor dashboard homepage.
+     *
      * Displays an overview of supervised apprentices, active missions,
      * recent activities, and quick access to mentor tools.
      */
@@ -40,7 +41,7 @@ class DashboardController extends AbstractController
 
         // Check account setup completion
         $setupCompletion = $this->mentorAuthService->getAccountSetupCompletion($mentor);
-        
+
         if (!$setupCompletion['is_complete']) {
             $this->addFlash('warning', 'Veuillez compléter votre profil pour accéder à toutes les fonctionnalités.');
         }
@@ -67,8 +68,8 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * Mentor profile page
-     * 
+     * Mentor profile page.
+     *
      * Displays and allows editing of mentor professional information and expertise.
      */
     #[Route('/profile', name: 'profile', methods: ['GET'])]
@@ -84,13 +85,13 @@ class DashboardController extends AbstractController
             'setup_completion' => $setupCompletion,
             'expertise_domains' => Mentor::EXPERTISE_DOMAINS,
             'education_levels' => Mentor::EDUCATION_LEVELS,
-            'page_title' => 'Mon Profil Mentor'
+            'page_title' => 'Mon Profil Mentor',
         ]);
     }
 
     /**
-     * Apprentices management page
-     * 
+     * Apprentices management page.
+     *
      * Redirects to the assignments page since this is where alternance management happens.
      */
     #[Route('/apprentices', name: 'apprentices', methods: ['GET'])]
@@ -100,11 +101,9 @@ class DashboardController extends AbstractController
         return $this->redirectToRoute('mentor_assignments_index');
     }
 
-
-
     /**
-     * Evaluations and reports page
-     * 
+     * Evaluations and reports page.
+     *
      * Displays apprentice evaluations, progress reports, and assessment tools.
      */
     #[Route('/evaluations', name: 'evaluations', methods: ['GET'])]
@@ -120,23 +119,15 @@ class DashboardController extends AbstractController
             'completed_evaluations' => [], // TODO: Get completed evaluations
             'evaluation_templates' => [], // TODO: Get evaluation templates
             'progress_reports' => [], // TODO: Get progress reports
-            'page_title' => 'Évaluations & Rapports'
+            'page_title' => 'Évaluations & Rapports',
         ];
 
         return $this->render('mentor/dashboard/evaluations.html.twig', $evaluationsData);
     }
 
-
-
-
-
-
-
-
-
     /**
-     * Mentor notifications page
-     * 
+     * Mentor notifications page.
+     *
      * Displays system notifications, apprentice updates, and important announcements.
      */
     #[Route('/notifications', name: 'notifications', methods: ['GET'])]
@@ -152,15 +143,15 @@ class DashboardController extends AbstractController
             'apprentice_updates' => [], // TODO: Get apprentice progress updates
             'system_announcements' => [], // TODO: Get system announcements
             'evaluation_reminders' => [], // TODO: Get evaluation reminders
-            'page_title' => 'Notifications'
+            'page_title' => 'Notifications',
         ];
 
         return $this->render('mentor/dashboard/notifications.html.twig', $notificationsData);
     }
 
     /**
-     * Mentor settings page
-     * 
+     * Mentor settings page.
+     *
      * Allows mentors to modify account settings, notification preferences, and privacy options.
      */
     #[Route('/settings', name: 'settings', methods: ['GET'])]
@@ -174,13 +165,13 @@ class DashboardController extends AbstractController
         return $this->render('mentor/dashboard/settings.html.twig', [
             'mentor' => $mentor,
             'security_issues' => $securityIssues,
-            'page_title' => 'Paramètres Mentor'
+            'page_title' => 'Paramètres Mentor',
         ]);
     }
 
     /**
-     * Mentor help page
-     * 
+     * Mentor help page.
+     *
      * Displays help documentation, FAQs, and support contact information.
      */
     #[Route('/help', name: 'help', methods: ['GET'])]
@@ -191,21 +182,15 @@ class DashboardController extends AbstractController
 
         return $this->render('mentor/dashboard/help.html.twig', [
             'mentor' => $mentor,
-            'page_title' => 'Aide & Support'
+            'page_title' => 'Aide & Support',
         ]);
     }
 
     // PLACEHOLDER ROUTES - These will be implemented when the corresponding features are added
 
-
-
-
-
-
-
     /**
-     * Meetings management page
-     * 
+     * Meetings management page.
+     *
      * Displays upcoming meetings, meeting history, and scheduling tools.
      */
     #[Route('/meetings', name: 'meetings', methods: ['GET'])]
@@ -221,15 +206,15 @@ class DashboardController extends AbstractController
             'past_meetings' => [], // TODO: Get past meetings
             'meeting_requests' => [], // TODO: Get meeting requests from apprentices
             'available_slots' => [], // TODO: Get available time slots
-            'page_title' => 'Rendez-vous'
+            'page_title' => 'Rendez-vous',
         ];
 
         return $this->render('mentor/dashboard/meetings.html.twig', $meetingsData);
     }
 
     /**
-     * Reports management page
-     * 
+     * Reports management page.
+     *
      * Displays performance reports, progress reports, and analytics.
      */
     #[Route('/reports', name: 'reports', methods: ['GET'])]
@@ -245,11 +230,9 @@ class DashboardController extends AbstractController
             'performance_reports' => [], // TODO: Get performance reports
             'company_reports' => [], // TODO: Get company-wide reports
             'custom_reports' => [], // TODO: Get custom reports
-            'page_title' => 'Rapports'
+            'page_title' => 'Rapports',
         ];
 
         return $this->render('mentor/dashboard/reports.html.twig', $reportsData);
     }
-
-
 }

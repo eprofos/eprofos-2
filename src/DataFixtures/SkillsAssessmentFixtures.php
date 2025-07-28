@@ -1,20 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
+use App\Entity\Alternance\MissionAssignment;
 use App\Entity\Alternance\SkillsAssessment;
+use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
-use App\Entity\User\Mentor;
-use App\Entity\Alternance\MissionAssignment;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
 /**
- * SkillsAssessmentFixtures
- * 
+ * SkillsAssessmentFixtures.
+ *
  * Generates realistic skills assessment data for testing the cross-evaluation system
  * between training center and company environments.
  */
@@ -23,7 +26,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create('fr_FR');
-        
+
         $students = $manager->getRepository(Student::class)->findAll();
         $teachers = $manager->getRepository(Teacher::class)->findAll();
         $mentors = $manager->getRepository(Mentor::class)->findAll();
@@ -31,6 +34,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
 
         if (empty($students) || empty($teachers) || empty($mentors)) {
             echo "Warning: Students, Teachers, or Mentors not found. Skipping SkillsAssessmentFixtures.\n";
+
             return;
         }
 
@@ -79,11 +83,13 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         $maxAssessments = 150; // Limit for performance
 
         foreach ($students as $student) {
-            if ($assessmentsCreated >= $maxAssessments) break;
-            
+            if ($assessmentsCreated >= $maxAssessments) {
+                break;
+            }
+
             $numAssessments = $faker->numberBetween(2, 8); // 2-8 assessments per student
             $assessmentDates = [];
-            
+
             // Generate spread-out assessment dates over past 12 months
             for ($i = 0; $i < $numAssessments; $i++) {
                 $assessmentDates[] = $faker->dateTimeBetween('-12 months', '-1 week');
@@ -91,30 +97,31 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             sort($assessmentDates); // Chronological order
 
             foreach ($assessmentDates as $index => $assessmentDate) {
-                if ($assessmentsCreated >= $maxAssessments) break;
+                if ($assessmentsCreated >= $maxAssessments) {
+                    break;
+                }
 
                 $assessment = new SkillsAssessment();
-                
+
                 // Basic information
                 $assessment->setStudent($student)
                     ->setAssessmentType($faker->randomElement($assessmentTypes))
                     ->setContext($faker->randomElement($contexts))
-                    ->setAssessmentDate(\DateTimeImmutable::createFromMutable($assessmentDate));
+                    ->setAssessmentDate(DateTimeImmutable::createFromMutable($assessmentDate))
+                ;
 
                 // Assign evaluators based on context
-                if (in_array($assessment->getContext(), ['centre', 'mixte'])) {
+                if (in_array($assessment->getContext(), ['centre', 'mixte'], true)) {
                     $assessment->setCenterEvaluator($faker->randomElement($teachers));
                 }
-                
-                if (in_array($assessment->getContext(), ['entreprise', 'mixte'])) {
+
+                if (in_array($assessment->getContext(), ['entreprise', 'mixte'], true)) {
                     $assessment->setMentorEvaluator($faker->randomElement($mentors));
                 }
 
                 // Link to mission if company context
-                if (!empty($missions) && in_array($assessment->getContext(), ['entreprise', 'mixte'])) {
-                    $studentMissions = array_filter($missions, function($mission) use ($student) {
-                        return $mission->getStudent() === $student;
-                    });
+                if (!empty($missions) && in_array($assessment->getContext(), ['entreprise', 'mixte'], true)) {
+                    $studentMissions = array_filter($missions, static fn ($mission) => $mission->getStudent() === $student);
                     if (!empty($studentMissions)) {
                         $assessment->setRelatedMission($faker->randomElement($studentMissions));
                     }
@@ -122,14 +129,14 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
 
                 // Generate skills evaluated (mix of technical and transversal)
                 $selectedTechnical = $faker->randomElements(
-                    array_keys($technicalSkills), 
-                    $faker->numberBetween(3, 8)
+                    array_keys($technicalSkills),
+                    $faker->numberBetween(3, 8),
                 );
                 $selectedTransversal = $faker->randomElements(
-                    array_keys($transversalSkills), 
-                    $faker->numberBetween(2, 5)
+                    array_keys($transversalSkills),
+                    $faker->numberBetween(2, 5),
                 );
-                
+
                 $skillsEvaluated = [];
                 $centerScores = [];
                 $companyScores = [];
@@ -142,7 +149,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                         'code' => $skillCode,
                         'name' => $skillName,
                         'category' => 'technique',
-                        'weight' => $faker->randomFloat(1, 0.5, 3.0)
+                        'weight' => $faker->randomFloat(1, 0.5, 3.0),
                     ];
 
                     // Progressive improvement over time
@@ -150,21 +157,21 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                     $progressionBonus = min(2, $index * 0.3); // Gradual improvement
                     $finalScore = min(5, $baseScore + $progressionBonus);
 
-                    if (in_array($assessment->getContext(), ['centre', 'mixte'])) {
+                    if (in_array($assessment->getContext(), ['centre', 'mixte'], true)) {
                         $centerScores[$skillCode] = [
                             'score' => number_format($finalScore, 1),
                             'comment' => $this->generateSkillComment($skillName, $finalScore, 'centre'),
-                            'evidence' => $this->generateEvidence($skillName, 'centre')
+                            'evidence' => $this->generateEvidence($skillName, 'centre'),
                         ];
                     }
 
-                    if (in_array($assessment->getContext(), ['entreprise', 'mixte'])) {
+                    if (in_array($assessment->getContext(), ['entreprise', 'mixte'], true)) {
                         $variation = $faker->randomFloat(1, -0.5, 0.5);
                         $companyScore = max(1, min(5, $finalScore + $variation));
                         $companyScores[$skillCode] = [
                             'score' => number_format($companyScore, 1),
                             'comment' => $this->generateSkillComment($skillName, $companyScore, 'entreprise'),
-                            'evidence' => $this->generateEvidence($skillName, 'entreprise')
+                            'evidence' => $this->generateEvidence($skillName, 'entreprise'),
                         ];
                     }
                 }
@@ -176,28 +183,28 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                         'code' => $skillCode,
                         'name' => $skillName,
                         'category' => 'transversale',
-                        'weight' => $faker->randomFloat(1, 1.0, 2.0)
+                        'weight' => $faker->randomFloat(1, 1.0, 2.0),
                     ];
 
                     $baseScore = $faker->numberBetween(2, 5);
                     $progressionBonus = min(1, $index * 0.2);
                     $finalScore = min(5, $baseScore + $progressionBonus);
 
-                    if (in_array($assessment->getContext(), ['centre', 'mixte'])) {
+                    if (in_array($assessment->getContext(), ['centre', 'mixte'], true)) {
                         $centerScores[$skillCode] = [
                             'score' => number_format($finalScore, 1),
                             'comment' => $this->generateSkillComment($skillName, $finalScore, 'centre'),
-                            'evidence' => $this->generateEvidence($skillName, 'centre')
+                            'evidence' => $this->generateEvidence($skillName, 'centre'),
                         ];
                     }
 
-                    if (in_array($assessment->getContext(), ['entreprise', 'mixte'])) {
+                    if (in_array($assessment->getContext(), ['entreprise', 'mixte'], true)) {
                         $variation = $faker->randomFloat(1, -0.3, 0.3);
                         $companyScore = max(1, min(5, $finalScore + $variation));
                         $companyScores[$skillCode] = [
                             'score' => number_format($companyScore, 1),
                             'comment' => $this->generateSkillComment($skillName, $companyScore, 'entreprise'),
-                            'evidence' => $this->generateEvidence($skillName, 'entreprise')
+                            'evidence' => $this->generateEvidence($skillName, 'entreprise'),
                         ];
                     }
                 }
@@ -209,20 +216,20 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                     'collaboration' => 'Collaboration',
                     'communication' => 'Communication',
                     'problem_solving' => 'Résolution de problèmes',
-                    'innovation' => 'Innovation'
+                    'innovation' => 'Innovation',
                 ];
 
                 foreach ($competencyAreas as $competencyCode => $competencyName) {
                     $baseLevel = $faker->numberBetween(1, 4);
                     $progressionBonus = min(2, $index * 0.25);
                     $currentLevel = min(5, $baseLevel + $progressionBonus);
-                    
+
                     $globalCompetencies[$competencyCode] = [
                         'name' => $competencyName,
                         'current_level' => (int) $currentLevel,
                         'target_level' => min(5, $currentLevel + $faker->numberBetween(0, 2)),
                         'development_priority' => $faker->randomElement(['high', 'medium', 'low']),
-                        'assessment_notes' => $this->generateCompetencyNotes($competencyName, $currentLevel)
+                        'assessment_notes' => $this->generateCompetencyNotes($competencyName, $currentLevel),
                     ];
                 }
 
@@ -230,13 +237,14 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 $assessment->setSkillsEvaluated($skillsEvaluated)
                     ->setCenterScores($centerScores)
                     ->setCompanyScores($companyScores)
-                    ->setGlobalCompetencies($globalCompetencies);
+                    ->setGlobalCompetencies($globalCompetencies)
+                ;
 
                 // Add evaluator comments
                 if ($assessment->getCenterEvaluator()) {
                     $assessment->setCenterComments($this->generateEvaluatorComments('centre', $assessment));
                 }
-                
+
                 if ($assessment->getMentorEvaluator()) {
                     $assessment->setMentorComments($this->generateEvaluatorComments('entreprise', $assessment));
                 }
@@ -264,6 +272,16 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         echo "✅ Created {$assessmentsCreated} skills assessments\n";
     }
 
+    public function getDependencies(): array
+    {
+        return [
+            StudentFixtures::class,
+            TeacherFixtures::class,
+            MentorFixtures::class,
+            MissionAssignmentFixtures::class,
+        ];
+    }
+
     private function generateSkillComment(string $skillName, float $score, string $context): string
     {
         $contextPhrases = [
@@ -272,18 +290,18 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'good' => 'Bonne compréhension avec mise en pratique réussie',
                 'satisfactory' => 'Compétence acquise, à consolider par la pratique',
                 'needs_improvement' => 'Compréhension partielle, nécessite un accompagnement',
-                'unsatisfactory' => 'Difficultés importantes, révision complète nécessaire'
+                'unsatisfactory' => 'Difficultés importantes, révision complète nécessaire',
             ],
             'entreprise' => [
                 'excellent' => 'Performance exceptionnelle en situation professionnelle',
                 'good' => 'Autonomie confirmée dans les tâches liées à cette compétence',
                 'satisfactory' => 'Application correcte avec supervision occasionnelle',
                 'needs_improvement' => 'Requiert encore de l\'accompagnement en situation réelle',
-                'unsatisfactory' => 'Difficultés persistantes malgré l\'encadrement'
-            ]
+                'unsatisfactory' => 'Difficultés persistantes malgré l\'encadrement',
+            ],
         ];
 
-        $level = match(true) {
+        $level = match (true) {
             $score >= 4.5 => 'excellent',
             $score >= 3.5 => 'good',
             $score >= 2.5 => 'satisfactory',
@@ -303,7 +321,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'Présentation technique',
                 'Code source commenté',
                 'Documentation technique produite',
-                'Quiz et évaluations théoriques'
+                'Quiz et évaluations théoriques',
             ],
             'entreprise' => [
                 'Tâche réalisée en autonomie',
@@ -311,11 +329,12 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'Résolution de problème technique',
                 'Amélioration de processus',
                 'Formation d\'un collègue',
-                'Participation à une réunion technique'
-            ]
+                'Participation à une réunion technique',
+            ],
         ];
 
         $faker = Factory::create('fr_FR');
+
         return $faker->randomElements($evidenceTypes[$context], $faker->numberBetween(1, 3));
     }
 
@@ -326,7 +345,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             2 => "Bases établies pour {$competencyName}, développement en cours.",
             3 => "Niveau satisfaisant atteint pour {$competencyName}.",
             4 => "Bonne maîtrise de {$competencyName} démontrée.",
-            5 => "Excellence et expertise confirmées pour {$competencyName}."
+            5 => "Excellence et expertise confirmées pour {$competencyName}.",
         ];
 
         return $notes[$currentLevel] ?? "Évaluation de {$competencyName} en cours.";
@@ -335,18 +354,18 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
     private function generateEvaluatorComments(string $context, SkillsAssessment $assessment): string
     {
         $faker = Factory::create('fr_FR');
-        
+
         $templates = [
             'centre' => [
                 "L'alternant démontre {progression} dans l'acquisition des compétences techniques. {detail_technique} {encouragement}",
-                "Évolution {qualificatif} observée lors des travaux pratiques. {observation_specifique} {recommandation}",
-                "Performance {niveau} en cours théoriques et applications pratiques. {point_fort} {axe_amelioration}"
+                'Évolution {qualificatif} observée lors des travaux pratiques. {observation_specifique} {recommandation}',
+                'Performance {niveau} en cours théoriques et applications pratiques. {point_fort} {axe_amelioration}',
             ],
             'entreprise' => [
                 "L'alternant s'intègre {integration} dans l'équipe et montre {autonomie} sur ses missions. {realisation} {perspective}",
                 "Adaptation {rapidite} aux méthodes de travail de l'entreprise. {competence_cle} {evolution_souhaitee}",
-                "Contribution {qualite} aux projets avec {niveau_supervision}. {satisfaction} {objectif_suivant}"
-            ]
+                'Contribution {qualite} aux projets avec {niveau_supervision}. {satisfaction} {objectif_suivant}',
+            ],
         ];
 
         $variables = [
@@ -359,7 +378,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'point_fort' => ['Points forts identifiés dans la résolution de problèmes.', 'Rigueur technique appréciée.', 'Créativité dans les solutions proposées.'],
                 'encouragement' => ['À maintenir dans cette voie.', 'Très encourageant pour la suite.', 'Objectifs pédagogiques en bonne voie.'],
                 'recommandation' => ['Continuer les exercices pratiques.', 'Approfondir certains aspects théoriques.', 'Développer l\'autonomie.'],
-                'axe_amelioration' => ['Points d\'amélioration identifiés pour la prochaine période.', 'Axes de progression définis ensemble.', 'Objectifs adaptés aux besoins.']
+                'axe_amelioration' => ['Points d\'amélioration identifiés pour la prochaine période.', 'Axes de progression définis ensemble.', 'Objectifs adaptés aux besoins.'],
             ],
             'entreprise' => [
                 'integration' => ['très bien', 'parfaitement', 'rapidement', 'naturellement'],
@@ -372,8 +391,8 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'satisfaction' => ['Très satisfait de l\'évolution.', 'Retours positifs de l\'équipe.', 'Intégration réussie dans les projets.'],
                 'perspective' => ['Perspectives d\'évolution encourageantes.', 'Potentiel confirmé pour la suite.', 'Objectifs ambitieux pour la prochaine période.'],
                 'evolution_souhaitee' => ['Montée en compétences souhaitée sur les projets avancés.', 'Élargissement du périmètre d\'intervention envisagé.', 'Prise de responsabilités progressives prévue.'],
-                'objectif_suivant' => ['Prochaine étape : autonomie complète sur le projet.', 'Objectif : contribution à l\'architecture technique.', 'But : encadrement d\'un stagiaire junior.']
-            ]
+                'objectif_suivant' => ['Prochaine étape : autonomie complète sur le projet.', 'Objectif : contribution à l\'architecture technique.', 'But : encadrement d\'un stagiaire junior.'],
+            ],
         ];
 
         $template = $faker->randomElement($templates[$context]);
@@ -396,17 +415,13 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             'long_term_objectives' => [],
             'recommended_actions' => [],
             'resources_needed' => [],
-            'success_indicators' => []
+            'success_indicators' => [],
         ];
 
         // Identify competencies needing development
-        $needsDevelopment = array_filter($globalCompetencies, function($comp) {
-            return $comp['current_level'] < $comp['target_level'];
-        });
+        $needsDevelopment = array_filter($globalCompetencies, static fn ($comp) => $comp['current_level'] < $comp['target_level']);
 
-        $priorityCompetencies = array_filter($needsDevelopment, function($comp) {
-            return $comp['development_priority'] === 'high';
-        });
+        $priorityCompetencies = array_filter($needsDevelopment, static fn ($comp) => $comp['development_priority'] === 'high');
 
         // Short-term objectives (1-3 months)
         foreach (array_slice($priorityCompetencies, 0, 2) as $code => $competency) {
@@ -415,7 +430,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'current_level' => $competency['current_level'],
                 'target_level' => min($competency['current_level'] + 1, $competency['target_level']),
                 'deadline' => $faker->dateTimeBetween('+1 month', '+3 months')->format('Y-m-d'),
-                'specific_goal' => $this->generateSpecificGoal($competency['name'], 'short_term')
+                'specific_goal' => $this->generateSpecificGoal($competency['name'], 'short_term'),
             ];
         }
 
@@ -425,7 +440,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'competency' => $competency['name'],
                 'target_level' => $competency['target_level'],
                 'deadline' => $faker->dateTimeBetween('+3 months', '+6 months')->format('Y-m-d'),
-                'milestone' => $this->generateMilestone($competency['name'])
+                'milestone' => $this->generateMilestone($competency['name']),
             ];
         }
 
@@ -433,7 +448,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
         $plan['long_term_objectives'][] = [
             'goal' => 'Atteindre l\'autonomie complète sur l\'ensemble des compétences du référentiel',
             'target_date' => $faker->dateTimeBetween('+6 months', '+12 months')->format('Y-m-d'),
-            'success_criteria' => 'Évaluation globale excellente avec validation par le tuteur entreprise'
+            'success_criteria' => 'Évaluation globale excellente avec validation par le tuteur entreprise',
         ];
 
         // Recommended actions
@@ -443,7 +458,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             'Mentorat par un senior de l\'équipe',
             'Présentation de travaux techniques à l\'équipe',
             'Veille technologique et partage de connaissances',
-            'Participation à des communautés professionnelles'
+            'Participation à des communautés professionnelles',
         ];
         $plan['recommended_actions'] = $faker->randomElements($actions, $faker->numberBetween(3, 5));
 
@@ -454,7 +469,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             'Environnement de développement avancé',
             'Temps dédié à la formation (2h/semaine)',
             'Feedback régulier du tuteur entreprise',
-            'Participation à des conférences/webinaires'
+            'Participation à des conférences/webinaires',
         ];
         $plan['resources_needed'] = $faker->randomElements($resources, $faker->numberBetween(2, 4));
 
@@ -465,7 +480,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             'Amélioration de la qualité des livrables',
             'Retours positifs de l\'équipe et du tuteur',
             'Capacité à former/accompagner d\'autres alternants',
-            'Innovation dans les solutions proposées'
+            'Innovation dans les solutions proposées',
         ];
         $plan['success_indicators'] = $faker->randomElements($indicators, $faker->numberBetween(3, 4));
 
@@ -481,8 +496,8 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
                 'Collaboration' => 'Participer activement aux réunions d\'équipe',
                 'Communication' => 'Présenter ses travaux de manière claire et structurée',
                 'Résolution de problèmes' => 'Identifier et résoudre des problèmes simples',
-                'Innovation' => 'Proposer des améliorations sur les processus existants'
-            ]
+                'Innovation' => 'Proposer des améliorations sur les processus existants',
+            ],
         ];
 
         return $goals[$timeframe][$competencyName] ?? "Développer {$competencyName} selon les objectifs définis";
@@ -496,7 +511,7 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
             'Collaboration' => 'Animation d\'une réunion ou formation d\'un pair',
             'Communication' => 'Présentation technique devant un client ou en conférence',
             'Résolution de problèmes' => 'Résolution d\'incidents critiques en autonomie',
-            'Innovation' => 'Implémentation d\'une innovation reconnue par l\'équipe'
+            'Innovation' => 'Implémentation d\'une innovation reconnue par l\'équipe',
         ];
 
         return $milestones[$competencyName] ?? "Atteindre le niveau expert pour {$competencyName}";
@@ -505,11 +520,11 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
     private function calculateAverageScore(array $centerScores, array $companyScores): float
     {
         $allScores = [];
-        
+
         foreach ($centerScores as $score) {
             $allScores[] = (float) $score['score'];
         }
-        
+
         foreach ($companyScores as $score) {
             $allScores[] = (float) $score['score'];
         }
@@ -519,22 +534,12 @@ class SkillsAssessmentFixtures extends Fixture implements DependentFixtureInterf
 
     private function determineOverallRating(float $avgScore): string
     {
-        return match(true) {
+        return match (true) {
             $avgScore >= 4.5 => 'excellent',
             $avgScore >= 3.5 => 'good',
             $avgScore >= 2.5 => 'satisfactory',
             $avgScore >= 1.5 => 'needs_improvement',
             default => 'unsatisfactory'
         };
-    }
-
-    public function getDependencies(): array
-    {
-        return [
-            StudentFixtures::class,
-            TeacherFixtures::class,
-            MentorFixtures::class,
-            MissionAssignmentFixtures::class,
-        ];
     }
 }

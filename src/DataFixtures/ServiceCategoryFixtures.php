@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Service\ServiceCategory;
@@ -8,16 +10,20 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * ServiceCategory fixtures for EPROFOS platform
- * 
+ * ServiceCategory fixtures for EPROFOS platform.
+ *
  * Creates service categories like Conseil, Formation, Certification, Accompagnement
  */
 class ServiceCategoryFixtures extends Fixture
 {
     public const SERVICE_CATEGORY_CONSEIL = 'service_category_conseil';
+
     public const SERVICE_CATEGORY_FORMATION = 'service_category_formation';
+
     public const SERVICE_CATEGORY_CERTIFICATION = 'service_category_certification';
+
     public const SERVICE_CATEGORY_ACCOMPAGNEMENT = 'service_category_accompagnement';
+
     public const SERVICE_CATEGORY_AUDIT = 'service_category_audit';
 
     private SluggerInterface $slugger;
@@ -28,7 +34,7 @@ class ServiceCategoryFixtures extends Fixture
     }
 
     /**
-     * Load service category fixtures
+     * Load service category fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -63,11 +69,11 @@ class ServiceCategoryFixtures extends Fixture
         foreach ($serviceCategories as $categoryData) {
             $serviceCategory = new ServiceCategory();
             $serviceCategory->setName($categoryData['name']);
-            $serviceCategory->setSlug($this->slugger->slug($categoryData['name'])->lower());
+            $serviceCategory->setSlug((string)$this->slugger->slug($categoryData['name'])->lower());
             $serviceCategory->setDescription($categoryData['description']);
 
             $manager->persist($serviceCategory);
-            
+
             // Add reference for use in other fixtures
             $this->addReference($categoryData['reference'], $serviceCategory);
         }

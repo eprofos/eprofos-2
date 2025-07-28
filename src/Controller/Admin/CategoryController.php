@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Training\Category;
@@ -15,8 +17,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Admin Category Controller
- * 
+ * Admin Category Controller.
+ *
  * Handles CRUD operations for categories in the admin interface.
  * Provides full management capabilities for formation categories.
  */
@@ -26,18 +28,17 @@ class CategoryController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private SluggerInterface $slugger
-    ) {
-    }
+        private SluggerInterface $slugger,
+    ) {}
 
     /**
-     * List all categories with pagination and filtering
+     * List all categories with pagination and filtering.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(CategoryRepository $categoryRepository): Response
     {
         $this->logger->info('Admin categories list accessed', [
-            'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $categories = $categoryRepository->findBy([], ['name' => 'ASC']);
@@ -47,20 +48,20 @@ class CategoryController extends AbstractController
             'page_title' => 'Gestion des catégories',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Catégories', 'url' => null]
-            ]
+                ['label' => 'Catégories', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show category details
+     * Show category details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Category $category): Response
     {
         $this->logger->info('Admin category details viewed', [
             'category_id' => $category->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/category/show.html.twig', [
@@ -69,13 +70,13 @@ class CategoryController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories', 'url' => $this->generateUrl('admin_category_index')],
-                ['label' => $category->getName(), 'url' => null]
-            ]
+                ['label' => $category->getName(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new category
+     * Create a new category.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -87,7 +88,7 @@ class CategoryController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Generate slug from name
             $slug = $this->slugger->slug($category->getName())->lower();
-            $category->setSlug($slug);
+            $category->setSlug((string)$slug);
 
             $entityManager->persist($category);
             $entityManager->flush();
@@ -95,7 +96,7 @@ class CategoryController extends AbstractController
             $this->logger->info('New category created', [
                 'category_id' => $category->getId(),
                 'category_name' => $category->getName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie a été créée avec succès.');
@@ -110,13 +111,13 @@ class CategoryController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories', 'url' => $this->generateUrl('admin_category_index')],
-                ['label' => 'Nouvelle catégorie', 'url' => null]
-            ]
+                ['label' => 'Nouvelle catégorie', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing category
+     * Edit an existing category.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Category $category, EntityManagerInterface $entityManager): Response
@@ -127,14 +128,14 @@ class CategoryController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Update slug if name changed
             $slug = $this->slugger->slug($category->getName())->lower();
-            $category->setSlug($slug);
+            $category->setSlug((string)$slug);
 
             $entityManager->flush();
 
             $this->logger->info('Category updated', [
                 'category_id' => $category->getId(),
                 'category_name' => $category->getName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie a été modifiée avec succès.');
@@ -150,21 +151,22 @@ class CategoryController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Catégories', 'url' => $this->generateUrl('admin_category_index')],
                 ['label' => $category->getName(), 'url' => $this->generateUrl('admin_category_show', ['id' => $category->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a category
+     * Delete a category.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $category->getId(), $request->getPayload()->get('_token'))) {
             // Check if category has formations
             if ($category->getFormations()->count() > 0) {
                 $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle contient des formations.');
+
                 return $this->redirectToRoute('admin_category_index');
             }
 
@@ -175,7 +177,7 @@ class CategoryController extends AbstractController
             $this->logger->info('Category deleted', [
                 'category_id' => $category->getId(),
                 'category_name' => $categoryName,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La catégorie a été supprimée avec succès.');
@@ -185,12 +187,12 @@ class CategoryController extends AbstractController
     }
 
     /**
-     * Toggle category active status
+     * Toggle category active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('toggle'.$category->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle' . $category->getId(), $request->getPayload()->get('_token'))) {
             $category->setIsActive(!$category->isActive());
             $entityManager->flush();
 
@@ -200,7 +202,7 @@ class CategoryController extends AbstractController
             $this->logger->info('Category status toggled', [
                 'category_id' => $category->getId(),
                 'new_status' => $category->isActive(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
         }
 

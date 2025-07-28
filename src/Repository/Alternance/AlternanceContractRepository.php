@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for AlternanceContract entity
- * 
+ * Repository for AlternanceContract entity.
+ *
  * Provides query methods for alternance contracts with filtering,
  * searching, and statistics functionality.
  *
@@ -22,10 +26,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find contracts by status
+     * Find contracts by status.
      *
-     * @param string $status
-     * @param int|null $limit
      * @return AlternanceContract[]
      */
     public function findByStatus(string $status, ?int $limit = null): array
@@ -33,7 +35,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('ac')
             ->where('ac.status = :status')
             ->setParameter('status', $status)
-            ->orderBy('ac.startDate', 'DESC');
+            ->orderBy('ac.startDate', 'DESC')
+        ;
 
         if ($limit) {
             $qb->setMaxResults($limit);
@@ -43,9 +46,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active contracts
+     * Find active contracts.
      *
-     * @param int|null $limit
      * @return AlternanceContract[]
      */
     public function findActiveContracts(?int $limit = null): array
@@ -54,9 +56,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find contracts by mentor
+     * Find contracts by mentor.
      *
-     * @param int $mentorId
      * @return AlternanceContract[]
      */
     public function findByMentor(int $mentorId): array
@@ -66,13 +67,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('mentorId', $mentorId)
             ->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts by student
+     * Find contracts by student.
      *
-     * @param int $studentId
      * @return AlternanceContract[]
      */
     public function findByStudent(int $studentId): array
@@ -82,13 +83,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('studentId', $studentId)
             ->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts by session
+     * Find contracts by session.
      *
-     * @param int $sessionId
      * @return AlternanceContract[]
      */
     public function findBySession(int $sessionId): array
@@ -98,13 +99,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('sessionId', $sessionId)
             ->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts by company
+     * Find contracts by company.
      *
-     * @param string $companyName
      * @return AlternanceContract[]
      */
     public function findByCompany(string $companyName): array
@@ -114,44 +115,47 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('companyName', '%' . $companyName . '%')
             ->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts by date range
+     * Find contracts by date range.
      *
-     * @param \DateTimeInterface|null $startDate
-     * @param \DateTimeInterface|null $endDate
      * @return AlternanceContract[]
      */
-    public function findByDateRange(?\DateTimeInterface $startDate = null, ?\DateTimeInterface $endDate = null): array
+    public function findByDateRange(?DateTimeInterface $startDate = null, ?DateTimeInterface $endDate = null): array
     {
         $qb = $this->createQueryBuilder('ac');
 
         if ($startDate) {
             $qb->andWhere('ac.startDate >= :startDate')
-                ->setParameter('startDate', $startDate);
+                ->setParameter('startDate', $startDate)
+            ;
         }
 
         if ($endDate) {
             $qb->andWhere('ac.endDate <= :endDate')
-                ->setParameter('endDate', $endDate);
+                ->setParameter('endDate', $endDate)
+            ;
         }
 
         return $qb->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts ending soon
+     * Find contracts ending soon.
      *
      * @param int $days Number of days to look ahead
+     *
      * @return AlternanceContract[]
      */
     public function findEndingSoon(int $days = 30): array
     {
-        $endDate = new \DateTime("+{$days} days");
+        $endDate = new DateTime("+{$days} days");
 
         return $this->createQueryBuilder('ac')
             ->where('ac.status = :status')
@@ -161,13 +165,12 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('ac.endDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get contracts statistics by status
-     *
-     * @return array
+     * Get contracts statistics by status.
      */
     public function getStatusStatistics(): array
     {
@@ -175,7 +178,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->select('ac.status', 'COUNT(ac.id) as count')
             ->groupBy('ac.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $statistics = [];
         foreach ($result as $row) {
@@ -186,9 +190,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get contracts statistics by contract type
-     *
-     * @return array
+     * Get contracts statistics by contract type.
      */
     public function getContractTypeStatistics(): array
     {
@@ -196,7 +198,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->select('ac.contractType', 'COUNT(ac.id) as count')
             ->groupBy('ac.contractType')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $statistics = [];
         foreach ($result as $row) {
@@ -207,14 +210,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get monthly contracts creation statistics
+     * Get monthly contracts creation statistics.
      *
      * @param int $months Number of months to look back
-     * @return array
      */
     public function getMonthlyCreationStatistics(int $months = 12): array
     {
-        $startDate = new \DateTime("-{$months} months");
+        $startDate = new DateTime("-{$months} months");
 
         return $this->createQueryBuilder('ac')
             ->select('DATE_FORMAT(ac.createdAt, \'%Y-%m\') as month', 'COUNT(ac.id) as count')
@@ -223,13 +225,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->groupBy('month')
             ->orderBy('month', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search contracts with filters
+     * Search contracts with filters.
      *
-     * @param array $filters
      * @return AlternanceContract[]
      */
     public function searchWithFilters(array $filters): array
@@ -238,7 +240,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->leftJoin('ac.student', 's')
             ->leftJoin('ac.mentor', 'm')
             ->leftJoin('ac.session', 'sess')
-            ->leftJoin('sess.formation', 'f');
+            ->leftJoin('sess.formation', 'f')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere($qb->expr()->orX(
@@ -247,33 +250,38 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 's.lastName LIKE :search',
                 'm.firstName LIKE :search',
                 'm.lastName LIKE :search',
-                'f.title LIKE :search'
+                'f.title LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['status'])) {
             $qb->andWhere('ac.status = :status')
-                ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['contractType'])) {
             $qb->andWhere('ac.contractType = :contractType')
-                ->setParameter('contractType', $filters['contractType']);
+                ->setParameter('contractType', $filters['contractType'])
+            ;
         }
 
         if (!empty($filters['mentorId'])) {
             $qb->andWhere('ac.mentor = :mentorId')
-                ->setParameter('mentorId', $filters['mentorId']);
+                ->setParameter('mentorId', $filters['mentorId'])
+            ;
         }
 
         if (!empty($filters['startDateFrom'])) {
             $qb->andWhere('ac.startDate >= :startDateFrom')
-                ->setParameter('startDateFrom', $filters['startDateFrom']);
+                ->setParameter('startDateFrom', $filters['startDateFrom'])
+            ;
         }
 
         if (!empty($filters['startDateTo'])) {
             $qb->andWhere('ac.startDate <= :startDateTo')
-                ->setParameter('startDateTo', $filters['startDateTo']);
+                ->setParameter('startDateTo', $filters['startDateTo'])
+            ;
         }
 
         $sortField = $filters['sort'] ?? 'startDate';
@@ -285,10 +293,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count contracts by status
-     *
-     * @param string $status
-     * @return int
+     * Count contracts by status.
      */
     public function countByStatus(string $status): int
     {
@@ -297,16 +302,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->where('ac.status = :status')
             ->setParameter('status', $status)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find contracts with relations for display
+     * Find contracts with relations for display.
      *
-     * @param array $criteria
-     * @param array $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
      * @return AlternanceContract[]
      */
     public function findWithRelations(array $criteria = [], array $orderBy = [], ?int $limit = null, ?int $offset = null): array
@@ -317,11 +319,13 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->leftJoin('ac.pedagogicalSupervisor', 'ps')
             ->leftJoin('ac.session', 'sess')
             ->leftJoin('sess.formation', 'f')
-            ->addSelect('s', 'm', 'ps', 'sess', 'f');
+            ->addSelect('s', 'm', 'ps', 'sess', 'f')
+        ;
 
         foreach ($criteria as $field => $value) {
             $qb->andWhere("ac.{$field} = :{$field}")
-                ->setParameter($field, $value);
+                ->setParameter($field, $value)
+            ;
         }
 
         foreach ($orderBy as $field => $direction) {
@@ -340,24 +344,22 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find paginated contracts with filters
+     * Find paginated contracts with filters.
      *
-     * @param array $filters
-     * @param int $page
-     * @param int $perPage
      * @return AlternanceContract[]
      */
     public function findPaginatedContracts(array $filters, int $page, int $perPage): array
     {
         $offset = ($page - 1) * $perPage;
-        
+
         $qb = $this->createQueryBuilder('ac')
             ->leftJoin('ac.student', 's')
             ->leftJoin('ac.mentor', 'm')
             ->leftJoin('ac.pedagogicalSupervisor', 'ps')
             ->leftJoin('ac.session', 'sess')
             ->leftJoin('sess.formation', 'f')
-            ->addSelect('s', 'm', 'ps', 'sess', 'f');
+            ->addSelect('s', 'm', 'ps', 'sess', 'f')
+        ;
 
         // Apply filters
         if (!empty($filters['search'])) {
@@ -369,47 +371,50 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 's.email LIKE :search',
                 'm.firstName LIKE :search',
                 'm.lastName LIKE :search',
-                'f.title LIKE :search'
+                'f.title LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['status'])) {
             $qb->andWhere('ac.status = :status')
-                ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['contractType'])) {
             $qb->andWhere('ac.contractType = :contractType')
-                ->setParameter('contractType', $filters['contractType']);
+                ->setParameter('contractType', $filters['contractType'])
+            ;
         }
 
         if (!empty($filters['mentorId'])) {
             $qb->andWhere('ac.mentor = :mentorId')
-                ->setParameter('mentorId', $filters['mentorId']);
+                ->setParameter('mentorId', $filters['mentorId'])
+            ;
         }
 
         if (!empty($filters['startDateFrom'])) {
             $qb->andWhere('ac.startDate >= :startDateFrom')
-                ->setParameter('startDateFrom', $filters['startDateFrom']);
+                ->setParameter('startDateFrom', $filters['startDateFrom'])
+            ;
         }
 
         if (!empty($filters['startDateTo'])) {
             $qb->andWhere('ac.startDate <= :startDateTo')
-                ->setParameter('startDateTo', $filters['startDateTo']);
+                ->setParameter('startDateTo', $filters['startDateTo'])
+            ;
         }
 
         return $qb->orderBy('ac.createdAt', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($perPage)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count filtered contracts
-     *
-     * @param array $filters
-     * @return int
+     * Count filtered contracts.
      */
     public function countFilteredContracts(array $filters): int
     {
@@ -418,7 +423,8 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->leftJoin('ac.student', 's')
             ->leftJoin('ac.mentor', 'm')
             ->leftJoin('ac.session', 'sess')
-            ->leftJoin('sess.formation', 'f');
+            ->leftJoin('sess.formation', 'f')
+        ;
 
         // Apply same filters as findPaginatedContracts
         if (!empty($filters['search'])) {
@@ -430,42 +436,45 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 's.email LIKE :search',
                 'm.firstName LIKE :search',
                 'm.lastName LIKE :search',
-                'f.title LIKE :search'
+                'f.title LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['status'])) {
             $qb->andWhere('ac.status = :status')
-                ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['contractType'])) {
             $qb->andWhere('ac.contractType = :contractType')
-                ->setParameter('contractType', $filters['contractType']);
+                ->setParameter('contractType', $filters['contractType'])
+            ;
         }
 
         if (!empty($filters['mentorId'])) {
             $qb->andWhere('ac.mentor = :mentorId')
-                ->setParameter('mentorId', $filters['mentorId']);
+                ->setParameter('mentorId', $filters['mentorId'])
+            ;
         }
 
         if (!empty($filters['startDateFrom'])) {
             $qb->andWhere('ac.startDate >= :startDateFrom')
-                ->setParameter('startDateFrom', $filters['startDateFrom']);
+                ->setParameter('startDateFrom', $filters['startDateFrom'])
+            ;
         }
 
         if (!empty($filters['startDateTo'])) {
             $qb->andWhere('ac.startDate <= :startDateTo')
-                ->setParameter('startDateTo', $filters['startDateTo']);
+                ->setParameter('startDateTo', $filters['startDateTo'])
+            ;
         }
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Get contract statistics for dashboard
-     *
-     * @return array
+     * Get contract statistics for dashboard.
      */
     public function getContractStatistics(): array
     {
@@ -473,14 +482,16 @@ class AlternanceContractRepository extends ServiceEntityRepository
         $total = $this->createQueryBuilder('ac')
             ->select('COUNT(ac.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Get status statistics
         $statusStats = $this->createQueryBuilder('ac')
             ->select('ac.status', 'COUNT(ac.id) as count')
             ->groupBy('ac.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $statistics = [
             'total' => (int) $total,
@@ -496,7 +507,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
         foreach ($statusStats as $stat) {
             $status = $stat['status'];
             $count = (int) $stat['count'];
-            
+
             if ($status === 'pending_validation') {
                 $statistics['pending'] = $count;
             } else {
@@ -508,7 +519,9 @@ class AlternanceContractRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active contracts by mentor
+     * Find active contracts by mentor.
+     *
+     * @param mixed $mentor
      */
     public function findActiveContractsByMentor($mentor): array
     {
@@ -519,16 +532,17 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('status', 'active')
             ->orderBy('ac.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts ending soon
+     * Find contracts ending soon.
      */
     public function findContractsEndingSoon(int $days): array
     {
-        $endDate = new \DateTime("+{$days} days");
-        
+        $endDate = new DateTime("+{$days} days");
+
         return $this->createQueryBuilder('ac')
             ->where('ac.endDate <= :endDate')
             ->andWhere('ac.status = :status')
@@ -536,16 +550,17 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('status', 'active')
             ->orderBy('ac.endDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find contracts without recent activity
+     * Find contracts without recent activity.
      */
     public function findContractsWithoutRecentActivity(int $days): array
     {
-        $cutoffDate = new \DateTime("-{$days} days");
-        
+        $cutoffDate = new DateTime("-{$days} days");
+
         return $this->createQueryBuilder('ac')
             ->where('ac.status = :status')
             ->andWhere('ac.updatedAt <= :cutoffDate')
@@ -553,11 +568,12 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('cutoffDate', $cutoffDate)
             ->orderBy('ac.updatedAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent activity
+     * Find recent activity.
      */
     public function findRecentActivity(int $limit = 10): array
     {
@@ -567,55 +583,60 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->orderBy('ac.updatedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count contracts created since date
+     * Count contracts created since date.
      */
-    public function countContractsCreatedSince(\DateTime $startDate, ?string $formation = null): int
+    public function countContractsCreatedSince(DateTime $startDate, ?string $formation = null): int
     {
         $qb = $this->createQueryBuilder('ac')
             ->select('COUNT(ac.id)')
             ->where('ac.createdAt >= :startDate')
-            ->setParameter('startDate', $startDate);
+            ->setParameter('startDate', $startDate)
+        ;
 
         if ($formation) {
             $qb->leftJoin('ac.session', 's')
-               ->leftJoin('s.formation', 'f')
-               ->andWhere('f.title LIKE :formation')
-               ->setParameter('formation', '%' . $formation . '%');
+                ->leftJoin('s.formation', 'f')
+                ->andWhere('f.title LIKE :formation')
+                ->setParameter('formation', '%' . $formation . '%')
+            ;
         }
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Count contracts completed since date
+     * Count contracts completed since date.
      */
-    public function countContractsCompletedSince(\DateTime $startDate, ?string $formation = null): int
+    public function countContractsCompletedSince(DateTime $startDate, ?string $formation = null): int
     {
         $qb = $this->createQueryBuilder('ac')
             ->select('COUNT(ac.id)')
             ->where('ac.completedAt >= :startDate')
             ->andWhere('ac.status = :status')
             ->setParameter('startDate', $startDate)
-            ->setParameter('status', 'completed');
+            ->setParameter('status', 'completed')
+        ;
 
         if ($formation) {
             $qb->leftJoin('ac.session', 's')
-               ->leftJoin('s.formation', 'f')
-               ->andWhere('f.title LIKE :formation')
-               ->setParameter('formation', '%' . $formation . '%');
+                ->leftJoin('s.formation', 'f')
+                ->andWhere('f.title LIKE :formation')
+                ->setParameter('formation', '%' . $formation . '%')
+            ;
         }
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Get success rate by formation
+     * Get success rate by formation.
      */
-    public function getSuccessRateByFormation(\DateTime $startDate): array
+    public function getSuccessRateByFormation(DateTime $startDate): array
     {
         $qb = $this->createQueryBuilder('ac')
             ->select('f.title as formation_name, COUNT(ac.id) as total_contracts, 
@@ -628,17 +649,18 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->setParameter('completedStatuses', ['completed', 'terminated'])
             ->groupBy('f.id, f.title')
             ->having('COUNT(ac.id) > 0')
-            ->orderBy('successful_contracts', 'DESC');
+            ->orderBy('successful_contracts', 'DESC')
+        ;
 
         $results = $qb->getQuery()->getResult();
-        
+
         // Calculate success rates and format data
         $formattedResults = [];
         foreach ($results as $result) {
             $totalContracts = (int) $result['total_contracts'];
             $successfulContracts = (int) $result['successful_contracts'];
             $successRate = $totalContracts > 0 ? round(($successfulContracts / $totalContracts) * 100, 1) : 0;
-            
+
             $formattedResults[] = [
                 'formation_name' => $result['formation_name'] ?? 'Formation inconnue',
                 'total_contracts' => $totalContracts,
@@ -647,7 +669,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 'average_duration' => 18, // Could be calculated separately if needed
             ];
         }
-        
+
         // If no real data, return placeholder data for development
         if (empty($formattedResults)) {
             return [
@@ -674,39 +696,41 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 ],
             ];
         }
-        
+
         return $formattedResults;
     }
 
     /**
-     * Get duration analysis
+     * Get duration analysis.
      */
-    public function getDurationAnalysis(\DateTime $startDate, ?string $formation = null): array
+    public function getDurationAnalysis(DateTime $startDate, ?string $formation = null): array
     {
         $qb = $this->createQueryBuilder('ac')
             ->select('ac.duration')
             ->where('ac.createdAt >= :startDate')
             ->andWhere('ac.duration IS NOT NULL')
-            ->setParameter('startDate', $startDate);
+            ->setParameter('startDate', $startDate)
+        ;
 
         if ($formation) {
             $qb->leftJoin('ac.session', 's')
-               ->leftJoin('s.formation', 'f')
-               ->andWhere('f.title LIKE :formation')
-               ->setParameter('formation', '%' . $formation . '%');
+                ->leftJoin('s.formation', 'f')
+                ->andWhere('f.title LIKE :formation')
+                ->setParameter('formation', '%' . $formation . '%')
+            ;
         }
 
         $durations = $qb->getQuery()->getResult();
-        
+
         // Categorize contracts by duration
         $shortDuration = 0;    // < 12 months
         $mediumDuration = 0;   // 12-18 months
         $longDuration = 0;     // 18-24 months
         $extendedDuration = 0; // > 24 months
-        
+
         foreach ($durations as $item) {
             $duration = (int) $item['duration'];
-            
+
             if ($duration < 12) {
                 $shortDuration++;
             } elseif ($duration <= 18) {
@@ -717,10 +741,10 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 $extendedDuration++;
             }
         }
-        
+
         $totalContracts = count($durations);
         $averageDuration = $totalContracts > 0 ? array_sum(array_column($durations, 'duration')) / $totalContracts : 0;
-        
+
         // If no real data, return placeholder data
         if ($totalContracts === 0) {
             return [
@@ -734,7 +758,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 'completion_rate' => 83.2,
             ];
         }
-        
+
         return [
             'short_duration' => $shortDuration,
             'medium_duration' => $mediumDuration,
@@ -747,30 +771,10 @@ class AlternanceContractRepository extends ServiceEntityRepository
         ];
     }
 
-    private function calculateCompletionRateForPeriod(\DateTime $startDate): float
-    {
-        $totalQb = $this->createQueryBuilder('ac')
-            ->select('COUNT(ac.id)')
-            ->where('ac.createdAt >= :startDate')
-            ->setParameter('startDate', $startDate);
-        
-        $completedQb = $this->createQueryBuilder('ac')
-            ->select('COUNT(ac.id)')
-            ->where('ac.createdAt >= :startDate')
-            ->andWhere('ac.status = :status')
-            ->setParameter('startDate', $startDate)
-            ->setParameter('status', 'completed');
-        
-        $total = (int) $totalQb->getQuery()->getSingleScalarResult();
-        $completed = (int) $completedQb->getQuery()->getSingleScalarResult();
-        
-        return $total > 0 ? round(($completed / $total) * 100, 1) : 0;
-    }
-
     /**
-     * Get mentor performance metrics
+     * Get mentor performance metrics.
      */
-    public function getMentorPerformanceMetrics(\DateTime $startDate): array
+    public function getMentorPerformanceMetrics(DateTime $startDate): array
     {
         $qb = $this->createQueryBuilder('ac')
             ->select('m.id as mentor_id, m.firstName, m.lastName, m.companyName,
@@ -785,28 +789,35 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->groupBy('m.id, m.firstName, m.lastName, m.companyName')
             ->having('COUNT(ac.id) > 0')
             ->orderBy('completed_contracts', 'DESC')
-            ->setMaxResults(10);
+            ->setMaxResults(10)
+        ;
 
         $results = $qb->getQuery()->getResult();
-        
+
         $mentorMetrics = [];
         foreach ($results as $result) {
             $firstName = $result['firstName'] ?? '';
             $lastName = $result['lastName'] ?? '';
             $name = trim($firstName . ' ' . $lastName);
-            
+
             // Generate initials
             $initials = '';
-            if ($firstName) $initials .= strtoupper(substr($firstName, 0, 1));
-            if ($lastName) $initials .= strtoupper(substr($lastName, 0, 1));
-            if (empty($initials)) $initials = 'NA';
-            
+            if ($firstName) {
+                $initials .= strtoupper(substr($firstName, 0, 1));
+            }
+            if ($lastName) {
+                $initials .= strtoupper(substr($lastName, 0, 1));
+            }
+            if (empty($initials)) {
+                $initials = 'NA';
+            }
+
             $totalContracts = (int) $result['total_contracts'];
             $completedContracts = (int) $result['completed_contracts'];
             $activeContracts = (int) $result['active_contracts'];
-            
+
             $successRate = $totalContracts > 0 ? round(($completedContracts / $totalContracts) * 100, 1) : 0;
-            
+
             $mentorMetrics[] = [
                 'name' => $name ?: 'Mentor inconnu',
                 'initials' => $initials,
@@ -815,10 +826,10 @@ class AlternanceContractRepository extends ServiceEntityRepository
                 'completed_contracts' => $completedContracts,
                 'success_rate' => $successRate,
                 'average_rating' => round(4.0 + ($successRate / 100), 1), // Simulated rating based on success rate
-                'last_activity' => $result['last_activity'] ?? new \DateTime('-1 week'),
+                'last_activity' => $result['last_activity'] ?? new DateTime('-1 week'),
             ];
         }
-        
+
         // If no real data, return placeholder data
         if (empty($mentorMetrics)) {
             return [
@@ -830,7 +841,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
                     'completed_contracts' => 12,
                     'success_rate' => 92.0,
                     'average_rating' => 4.6,
-                    'last_activity' => new \DateTime('-2 days'),
+                    'last_activity' => new DateTime('-2 days'),
                 ],
                 [
                     'name' => 'Sophie Durand',
@@ -840,7 +851,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
                     'completed_contracts' => 8,
                     'success_rate' => 85.0,
                     'average_rating' => 4.3,
-                    'last_activity' => new \DateTime('-1 day'),
+                    'last_activity' => new DateTime('-1 day'),
                 ],
                 [
                     'name' => 'Pierre Leblanc',
@@ -850,16 +861,16 @@ class AlternanceContractRepository extends ServiceEntityRepository
                     'completed_contracts' => 6,
                     'success_rate' => 75.0,
                     'average_rating' => 4.1,
-                    'last_activity' => new \DateTime('-3 days'),
+                    'last_activity' => new DateTime('-3 days'),
                 ],
             ];
         }
-        
+
         return $mentorMetrics;
     }
 
     /**
-     * Count completed or terminated contracts
+     * Count completed or terminated contracts.
      */
     public function countCompletedOrTerminated(): int
     {
@@ -868,11 +879,12 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->where('ac.status IN (:statuses)')
             ->setParameter('statuses', ['completed', 'terminated'])
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count active or completed contracts
+     * Count active or completed contracts.
      */
     public function countActiveOrCompleted(): int
     {
@@ -881,11 +893,12 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->where('ac.status IN (:statuses)')
             ->setParameter('statuses', ['active', 'completed'])
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Get average duration in months
+     * Get average duration in months.
      */
     public function getAverageDurationInMonths(): ?float
     {
@@ -893,13 +906,14 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->select('AVG(ac.duration)')
             ->where('ac.duration IS NOT NULL')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ? round($result, 1) : null;
     }
 
     /**
-     * Get contract type distribution
+     * Get contract type distribution.
      */
     public function getContractTypeDistribution(): array
     {
@@ -907,11 +921,12 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->select('ac.contractType, COUNT(ac.id) as count')
             ->groupBy('ac.contractType')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get status distribution
+     * Get status distribution.
      */
     public function getStatusDistribution(): array
     {
@@ -919,19 +934,20 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->select('ac.status, COUNT(ac.id) as count')
             ->groupBy('ac.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get monthly trends
+     * Get monthly trends.
      */
     public function getMonthlyTrends(int $months): array
     {
-        $startDate = new \DateTime("-{$months} months");
-        
+        $startDate = new DateTime("-{$months} months");
+
         $connection = $this->getEntityManager()->getConnection();
-        
-        $sql = "
+
+        $sql = '
             SELECT 
                 EXTRACT(YEAR FROM created_at) as year,
                 EXTRACT(MONTH FROM created_at) as month,
@@ -940,10 +956,31 @@ class AlternanceContractRepository extends ServiceEntityRepository
             WHERE created_at >= :startDate
             GROUP BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)
             ORDER BY year, month
-        ";
-        
+        ';
+
         return $connection->executeQuery($sql, [
-            'startDate' => $startDate->format('Y-m-d H:i:s')
+            'startDate' => $startDate->format('Y-m-d H:i:s'),
         ])->fetchAllAssociative();
+    }
+
+    private function calculateCompletionRateForPeriod(DateTime $startDate): float
+    {
+        $totalQb = $this->createQueryBuilder('ac')
+            ->select('COUNT(ac.id)')
+            ->where('ac.createdAt >= :startDate')
+            ->setParameter('startDate', $startDate)
+        ;
+
+        $completedQb = $this->createQueryBuilder('ac')
+            ->select('COUNT(ac.id)')
+            ->where('ac.createdAt >= :startDate')
+            ->andWhere('ac.status = :status')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('status', 'completed');
+
+        $total = (int) $totalQb->getQuery()->getSingleScalarResult();
+        $completed = (int) $completedQb->getQuery()->getSingleScalarResult();
+
+        return $total > 0 ? round(($completed / $total) * 100, 1) : 0;
     }
 }

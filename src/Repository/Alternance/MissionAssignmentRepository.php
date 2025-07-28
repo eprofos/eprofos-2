@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
-use App\Entity\Alternance\MissionAssignment;
-use App\Entity\User\Student;
-use App\Entity\User\Mentor;
 use App\Entity\Alternance\CompanyMission;
+use App\Entity\Alternance\MissionAssignment;
+use App\Entity\User\Mentor;
+use App\Entity\User\Student;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for MissionAssignment entity
- * 
+ * Repository for MissionAssignment entity.
+ *
  * Provides query methods for mission assignments with filtering,
  * searching, progress tracking, and statistics functionality.
  *
@@ -26,9 +31,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active assignments by student
+     * Find active assignments by student.
      *
-     * @param Student $student
      * @return MissionAssignment[]
      */
     public function findActiveByStudent(Student $student): array
@@ -42,18 +46,16 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->setParameter('activeStatuses', ['planifiee', 'en_cours'])
             ->orderBy('ma.startDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find completed assignments by student and period
+     * Find completed assignments by student and period.
      *
-     * @param Student $student
-     * @param \DateTimeInterface $startDate
-     * @param \DateTimeInterface $endDate
      * @return MissionAssignment[]
      */
-    public function findCompletedByStudentAndPeriod(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findCompletedByStudentAndPeriod(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('ma')
             ->leftJoin('ma.mission', 'm')
@@ -67,14 +69,12 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('ma.endDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Calculate completion statistics for a student
-     *
-     * @param Student $student
-     * @return array
+     * Calculate completion statistics for a student.
      */
     public function calculateCompletionStats(Student $student): array
     {
@@ -92,7 +92,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('ma.student = :student')
             ->setParameter('student', $student)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'total' => (int) $result['total_assignments'],
@@ -107,10 +108,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assignments by mission
+     * Find assignments by mission.
      *
-     * @param CompanyMission $mission
-     * @param string|null $status
      * @return MissionAssignment[]
      */
     public function findByMission(CompanyMission $mission, ?string $status = null): array
@@ -119,23 +118,24 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->leftJoin('ma.student', 's')
             ->addSelect('s')
             ->where('ma.mission = :mission')
-            ->setParameter('mission', $mission);
+            ->setParameter('mission', $mission)
+        ;
 
         if ($status) {
             $qb->andWhere('ma.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         return $qb->orderBy('ma.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find assignments by mentor (through mission supervisor)
+     * Find assignments by mentor (through mission supervisor).
      *
-     * @param Mentor $mentor
-     * @param string|null $status
      * @return MissionAssignment[]
      */
     public function findByMentor(Mentor $mentor, ?string $status = null): array
@@ -145,22 +145,24 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->leftJoin('ma.student', 's')
             ->addSelect('m', 's')
             ->where('m.supervisor = :mentor')
-            ->setParameter('mentor', $mentor);
+            ->setParameter('mentor', $mentor)
+        ;
 
         if ($status) {
             $qb->andWhere('ma.status = :status')
-               ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         return $qb->orderBy('ma.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find overdue assignments
+     * Find overdue assignments.
      *
-     * @param Mentor|null $mentor
      * @return MissionAssignment[]
      */
     public function findOverdueAssignments(?Mentor $mentor = null): array
@@ -171,24 +173,25 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->addSelect('m', 's')
             ->where('ma.endDate < :today')
             ->andWhere('ma.status IN (:activeStatuses)')
-            ->setParameter('today', new \DateTime())
-            ->setParameter('activeStatuses', ['planifiee', 'en_cours']);
+            ->setParameter('today', new DateTime())
+            ->setParameter('activeStatuses', ['planifiee', 'en_cours'])
+        ;
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         return $qb->orderBy('ma.endDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find assignments by status
+     * Find assignments by status.
      *
-     * @param string $status
-     * @param int|null $limit
      * @return MissionAssignment[]
      */
     public function findByStatus(string $status, ?int $limit = null): array
@@ -199,7 +202,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->addSelect('m', 's')
             ->where('ma.status = :status')
             ->setParameter('status', $status)
-            ->orderBy('ma.lastUpdated', 'DESC');
+            ->orderBy('ma.lastUpdated', 'DESC')
+        ;
 
         if ($limit) {
             $qb->setMaxResults($limit);
@@ -209,9 +213,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assignments requiring feedback
+     * Find assignments requiring feedback.
      *
-     * @param Mentor|null $mentor
      * @return MissionAssignment[]
      */
     public function findRequiringFeedback(?Mentor $mentor = null): array
@@ -222,23 +225,24 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->addSelect('m', 's')
             ->where('ma.status = :completed')
             ->andWhere('(ma.mentorFeedback IS NULL OR ma.mentorRating IS NULL)')
-            ->setParameter('completed', 'terminee');
+            ->setParameter('completed', 'terminee')
+        ;
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         return $qb->orderBy('ma.endDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent assignments (last 30 days)
+     * Find recent assignments (last 30 days).
      *
-     * @param Student|null $student
-     * @param Mentor|null $mentor
      * @return MissionAssignment[]
      */
     public function findRecentAssignments(?Student $student = null, ?Mentor $mentor = null): array
@@ -248,28 +252,29 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->leftJoin('ma.student', 's')
             ->addSelect('m', 's')
             ->where('ma.createdAt >= :since')
-            ->setParameter('since', new \DateTimeImmutable('-30 days'));
+            ->setParameter('since', new DateTimeImmutable('-30 days'))
+        ;
 
         if ($student) {
             $qb->andWhere('ma.student = :student')
-               ->setParameter('student', $student);
+                ->setParameter('student', $student)
+            ;
         }
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         return $qb->orderBy('ma.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get assignments statistics by mentor
-     *
-     * @param Mentor $mentor
-     * @return array
+     * Get assignments statistics by mentor.
      */
     public function getAssignmentStatsByMentor(Mentor $mentor): array
     {
@@ -288,7 +293,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('m.supervisor = :mentor')
             ->setParameter('mentor', $mentor)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'total' => (int) $result['total_assignments'],
@@ -305,10 +311,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assignments with low completion rates
+     * Find assignments with low completion rates.
      *
-     * @param float $threshold
-     * @param Mentor|null $mentor
      * @return MissionAssignment[]
      */
     public function findLowCompletionAssignments(float $threshold = 50.0, ?Mentor $mentor = null): array
@@ -320,23 +324,23 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('ma.completionRate < :threshold')
             ->andWhere('ma.status IN (:activeStatuses)')
             ->setParameter('threshold', $threshold)
-            ->setParameter('activeStatuses', ['en_cours']);
+            ->setParameter('activeStatuses', ['en_cours'])
+        ;
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         return $qb->orderBy('ma.completionRate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find student's assignments by complexity progression
-     *
-     * @param Student $student
-     * @return array
+     * Find student's assignments by complexity progression.
      */
     public function findStudentProgressionByComplexity(Student $student): array
     {
@@ -354,7 +358,8 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->groupBy('m.complexity')
             ->orderBy('m.complexity', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $progression = [];
         foreach ($result as $row) {
@@ -370,14 +375,11 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assignments by date range
+     * Find assignments by date range.
      *
-     * @param \DateTimeInterface $startDate
-     * @param \DateTimeInterface $endDate
-     * @param array $filters
      * @return MissionAssignment[]
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate, array $filters = []): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate, array $filters = []): array
     {
         $qb = $this->createQueryBuilder('ma')
             ->leftJoin('ma.mission', 'm')
@@ -385,34 +387,35 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->addSelect('m', 's')
             ->where('ma.startDate BETWEEN :startDate AND :endDate')
             ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate);
+            ->setParameter('endDate', $endDate)
+        ;
 
         if (isset($filters['status']) && $filters['status']) {
             $qb->andWhere('ma.status = :status')
-               ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (isset($filters['mentor']) && $filters['mentor']) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $filters['mentor']);
+                ->setParameter('mentor', $filters['mentor'])
+            ;
         }
 
         if (isset($filters['student']) && $filters['student']) {
             $qb->andWhere('ma.student = :student')
-               ->setParameter('student', $filters['student']);
+                ->setParameter('student', $filters['student'])
+            ;
         }
 
         return $qb->orderBy('ma.startDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count assignments by month for statistics
-     *
-     * @param int $year
-     * @param Mentor|null $mentor
-     * @return array
+     * Count assignments by month for statistics.
      */
     public function countAssignmentsByMonth(int $year, ?Mentor $mentor = null): array
     {
@@ -425,18 +428,20 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('YEAR(ma.startDate) = :year')
             ->setParameter('year', $year)
             ->groupBy('month')
-            ->orderBy('month', 'ASC');
+            ->orderBy('month', 'ASC')
+        ;
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         $result = $qb->getQuery()->getResult();
 
         // Initialize all months with 0
         $monthlyStats = array_fill(1, 12, 0);
-        
+
         foreach ($result as $row) {
             $monthlyStats[(int) $row['month']] = (int) $row['count'];
         }
@@ -445,9 +450,7 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Create a query builder for assignments with common joins
-     *
-     * @return QueryBuilder
+     * Create a query builder for assignments with common joins.
      */
     public function createAssignmentQueryBuilder(): QueryBuilder
     {
@@ -455,13 +458,13 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->leftJoin('ma.mission', 'm')
             ->leftJoin('ma.student', 's')
             ->leftJoin('m.supervisor', 'mentor')
-            ->addSelect('m', 's', 'mentor');
+            ->addSelect('m', 's', 'mentor')
+        ;
     }
 
     /**
-     * Find assignments needing attention (overdue or low progress)
+     * Find assignments needing attention (overdue or low progress).
      *
-     * @param Mentor|null $mentor
      * @return MissionAssignment[]
      */
     public function findAssignmentsNeedingAttention(?Mentor $mentor = null): array
@@ -473,25 +476,25 @@ class MissionAssignmentRepository extends ServiceEntityRepository
             ->where('ma.status IN (:activeStatuses)')
             ->andWhere('(ma.endDate < :today OR (ma.completionRate < 50 AND ma.startDate < :weekAgo))')
             ->setParameter('activeStatuses', ['planifiee', 'en_cours'])
-            ->setParameter('today', new \DateTime())
-            ->setParameter('weekAgo', new \DateTime('-1 week'));
+            ->setParameter('today', new DateTime())
+            ->setParameter('weekAgo', new DateTime('-1 week'))
+        ;
 
         if ($mentor) {
             $qb->andWhere('m.supervisor = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         return $qb->orderBy('ma.endDate', 'ASC')
             ->addOrderBy('ma.completionRate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get assignments dashboard data for a mentor
-     *
-     * @param Mentor $mentor
-     * @return array
+     * Get assignments dashboard data for a mentor.
      */
     public function getMentorDashboardData(Mentor $mentor): array
     {
@@ -529,7 +532,7 @@ class MissionAssignmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count assignments by status
+     * Count assignments by status.
      */
     public function countByStatus(string $status): int
     {

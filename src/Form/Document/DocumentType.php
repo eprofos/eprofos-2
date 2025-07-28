@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Document;
 
 use App\Entity\Document\Document;
-use App\Entity\Document\DocumentType as DocumentTypeEntity;
 use App\Entity\Document\DocumentCategory;
+use App\Entity\Document\DocumentType as DocumentTypeEntity;
 use App\Form\DataTransformer\TagsTransformer;
-use App\Repository\Document\DocumentTypeRepository;
 use App\Repository\Document\DocumentCategoryRepository;
+use App\Repository\Document\DocumentTypeRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -24,15 +26,15 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 
 /**
- * Form type for Document entity
- * 
+ * Form type for Document entity.
+ *
  * Provides a complex form with dynamic fields based on document type.
  * Handles type-specific validation and field visibility.
  */
 class DocumentType extends AbstractType
 {
     /**
-     * Build the document form with dynamic fields
+     * Build the document form with dynamic fields.
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -46,7 +48,7 @@ class DocumentType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Saisissez le titre du document',
                     'class' => 'form-control',
-                    'maxlength' => 255
+                    'maxlength' => 255,
                 ],
                 'constraints' => [
                     new NotBlank(message: 'Le titre est obligatoire.'),
@@ -54,9 +56,9 @@ class DocumentType extends AbstractType
                         min: 3,
                         max: 255,
                         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-                        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
-                    )
-                ]
+                        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
+                    ),
+                ],
             ])
             ->add('slug', TextType::class, [
                 'label' => 'Slug',
@@ -65,20 +67,20 @@ class DocumentType extends AbstractType
                 'attr' => [
                     'placeholder' => 'URL-friendly version du titre',
                     'class' => 'form-control',
-                    'maxlength' => 500
+                    'maxlength' => 500,
                 ],
                 'constraints' => [
                     new Length(
                         min: 3,
                         max: 500,
                         minMessage: 'Le slug doit contenir au moins {{ limit }} caractères.',
-                        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.'
+                        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.',
                     ),
                     new Regex(
                         pattern: '/^[a-z0-9\-\/]+$/',
-                        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.'
-                    )
-                ]
+                        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.',
+                    ),
+                ],
             ])
             ->add('documentType', EntityType::class, [
                 'class' => DocumentTypeEntity::class,
@@ -87,16 +89,14 @@ class DocumentType extends AbstractType
                 'help' => 'Sélectionnez le type de document',
                 'placeholder' => 'Choisissez un type...',
                 'attr' => ['class' => 'form-select'],
-                'query_builder' => function (DocumentTypeRepository $repo) {
-                    return $repo->createQueryBuilder('dt')
-                        ->where('dt.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('dt.sortOrder', 'ASC')
-                        ->addOrderBy('dt.name', 'ASC');
-                },
+                'query_builder' => static fn (DocumentTypeRepository $repo) => $repo->createQueryBuilder('dt')
+                    ->where('dt.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('dt.sortOrder', 'ASC')
+                    ->addOrderBy('dt.name', 'ASC'),
                 'constraints' => [
-                    new NotBlank(message: 'Le type de document est obligatoire.')
-                ]
+                    new NotBlank(message: 'Le type de document est obligatoire.'),
+                ],
             ])
             ->add('category', EntityType::class, [
                 'class' => DocumentCategory::class,
@@ -106,14 +106,12 @@ class DocumentType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Aucune catégorie',
                 'attr' => ['class' => 'form-select'],
-                'query_builder' => function (DocumentCategoryRepository $repo) {
-                    return $repo->createQueryBuilder('dc')
-                        ->where('dc.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('dc.level', 'ASC')
-                        ->addOrderBy('dc.sortOrder', 'ASC')
-                        ->addOrderBy('dc.name', 'ASC');
-                }
+                'query_builder' => static fn (DocumentCategoryRepository $repo) => $repo->createQueryBuilder('dc')
+                    ->where('dc.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('dc.level', 'ASC')
+                    ->addOrderBy('dc.sortOrder', 'ASC')
+                    ->addOrderBy('dc.name', 'ASC'),
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
@@ -123,14 +121,14 @@ class DocumentType extends AbstractType
                     'placeholder' => 'Description du document...',
                     'class' => 'form-control',
                     'rows' => 3,
-                    'maxlength' => 1000
+                    'maxlength' => 1000,
                 ],
                 'constraints' => [
                     new Length(
                         max: 1000,
-                        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
-                    )
-                ]
+                        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.',
+                    ),
+                ],
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu',
@@ -140,8 +138,8 @@ class DocumentType extends AbstractType
                     'placeholder' => 'Contenu du document...',
                     'class' => 'form-control editor',
                     'rows' => 15,
-                    'data-editor' => 'true'
-                ]
+                    'data-editor' => 'true',
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
@@ -149,20 +147,20 @@ class DocumentType extends AbstractType
                 'choices' => Document::STATUSES,
                 'attr' => ['class' => 'form-select'],
                 'constraints' => [
-                    new NotBlank(message: 'Le statut est obligatoire.')
-                ]
+                    new NotBlank(message: 'Le statut est obligatoire.'),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Document actif',
                 'help' => 'Décochez pour désactiver temporairement le document',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                'attr' => ['class' => 'form-check-input'],
             ])
             ->add('isPublic', CheckboxType::class, [
                 'label' => 'Document public',
                 'help' => 'Cochez pour rendre le document visible publiquement',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                'attr' => ['class' => 'form-check-input'],
             ])
             ->add('tags', TextType::class, [
                 'label' => 'Tags',
@@ -171,8 +169,8 @@ class DocumentType extends AbstractType
                 'attr' => [
                     'placeholder' => 'tag1, tag2, tag3...',
                     'class' => 'form-control',
-                    'data-tags' => 'true'
-                ]
+                    'data-tags' => 'true',
+                ],
             ])
             ->add('expiresAt', DateTimeType::class, [
                 'label' => 'Date d\'expiration',
@@ -181,8 +179,8 @@ class DocumentType extends AbstractType
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-control',
-                    'type' => 'datetime-local'
-                ]
+                    'type' => 'datetime-local',
+                ],
             ])
             ->add('tags', TextType::class, [
                 'label' => 'Tags',
@@ -191,9 +189,10 @@ class DocumentType extends AbstractType
                 'attr' => [
                     'placeholder' => 'tag1, tag2, tag3...',
                     'class' => 'form-control',
-                    'data-tags' => 'true'
-                ]
-            ]);
+                    'data-tags' => 'true',
+                ],
+            ])
+        ;
 
         // Add version management fields (only for existing documents)
         if ($document && $document->getId()) {
@@ -206,12 +205,12 @@ class DocumentType extends AbstractType
                     'choices' => [
                         'Modification mineure (correction, mise à jour légère)' => 'minor',
                         'Modification majeure (changement significatif)' => 'major',
-                        'Pas de nouvelle version (modification technique)' => 'none'
+                        'Pas de nouvelle version (modification technique)' => 'none',
                     ],
                     'data' => 'minor', // Default to minor
                     'attr' => ['class' => 'form-select'],
                     'expanded' => true,
-                    'multiple' => false
+                    'multiple' => false,
                 ])
                 ->add('versionMessage', TextareaType::class, [
                     'label' => 'Message de version',
@@ -222,15 +221,16 @@ class DocumentType extends AbstractType
                         'placeholder' => 'Ex: Mise à jour des procédures, correction des liens, ajout de nouvelles sections...',
                         'class' => 'form-control',
                         'rows' => 3,
-                        'maxlength' => 500
+                        'maxlength' => 500,
                     ],
                     'constraints' => [
                         new Length(
                             max: 500,
-                            maxMessage: 'Le message de version ne peut pas dépasser {{ limit }} caractères.'
-                        )
-                    ]
-                ]);
+                            maxMessage: 'Le message de version ne peut pas dépasser {{ limit }} caractères.',
+                        ),
+                    ],
+                ])
+            ;
         }
 
         // Add transformer for tags field to convert between array and string
@@ -242,7 +242,7 @@ class DocumentType extends AbstractType
     }
 
     /**
-     * Handle pre-set data to modify form based on document type
+     * Handle pre-set data to modify form based on document type.
      */
     public function onPreSetData(FormEvent $event): void
     {
@@ -269,7 +269,7 @@ class DocumentType extends AbstractType
     }
 
     /**
-     * Handle pre-submit to process dynamic fields
+     * Handle pre-submit to process dynamic fields.
      */
     public function onPreSubmit(FormEvent $event): void
     {
@@ -286,12 +286,37 @@ class DocumentType extends AbstractType
     }
 
     /**
-     * Add status choices based on document type configuration
+     * Configure form options.
+     */
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Document::class,
+            'validation_groups' => ['Default', 'Document'],
+            'attr' => [
+                'novalidate' => 'novalidate',
+                'data-form' => 'document',
+            ],
+        ]);
+    }
+
+    /**
+     * Form type name for Twig.
+     */
+    public function getBlockPrefix(): string
+    {
+        return 'document';
+    }
+
+    /**
+     * Add status choices based on document type configuration.
+     *
+     * @param mixed $form
      */
     private function addStatusChoices($form, DocumentTypeEntity $documentType): void
     {
         $allowedStatuses = $documentType->getAllowedStatuses();
-        
+
         if ($allowedStatuses && !empty($allowedStatuses)) {
             $statusChoices = [];
             foreach ($allowedStatuses as $status) {
@@ -307,15 +332,17 @@ class DocumentType extends AbstractType
                     'choices' => array_flip($statusChoices),
                     'attr' => ['class' => 'form-select'],
                     'constraints' => [
-                        new NotBlank(message: 'Le statut est obligatoire.')
-                    ]
+                        new NotBlank(message: 'Le statut est obligatoire.'),
+                    ],
                 ]);
             }
         }
     }
 
     /**
-     * Add expiration field if document type supports expiration
+     * Add expiration field if document type supports expiration.
+     *
+     * @param mixed $form
      */
     private function addExpirationField($form, DocumentTypeEntity $documentType): void
     {
@@ -325,12 +352,14 @@ class DocumentType extends AbstractType
     }
 
     /**
-     * Add custom metadata fields based on document type configuration
+     * Add custom metadata fields based on document type configuration.
+     *
+     * @param mixed $form
      */
     private function addMetadataFields($form, DocumentTypeEntity $documentType): void
     {
         $requiredMetadata = $documentType->getRequiredMetadata();
-        
+
         if (!$requiredMetadata || empty($requiredMetadata)) {
             return;
         }
@@ -348,8 +377,8 @@ class DocumentType extends AbstractType
                 'mapped' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'data-meta-key' => $metaKey
-                ]
+                    'data-meta-key' => $metaKey,
+                ],
             ];
 
             // Handle different field types
@@ -379,28 +408,5 @@ class DocumentType extends AbstractType
 
             $form->add('meta_' . $metaKey, $fieldType, $fieldOptions);
         }
-    }
-
-    /**
-     * Configure form options
-     */
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => Document::class,
-            'validation_groups' => ['Default', 'Document'],
-            'attr' => [
-                'novalidate' => 'novalidate',
-                'data-form' => 'document'
-            ]
-        ]);
-    }
-
-    /**
-     * Form type name for Twig
-     */
-    public function getBlockPrefix(): string
-    {
-        return 'document';
     }
 }

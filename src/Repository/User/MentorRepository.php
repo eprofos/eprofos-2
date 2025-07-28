@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
 use App\Entity\User\Mentor;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -10,12 +13,13 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * MentorRepository
- * 
+ * MentorRepository.
+ *
  * Repository for Mentor entity with security integration.
  * Provides methods for mentor authentication and management.
- * 
+ *
  * @extends ServiceEntityRepository<Mentor>
+ *
  * @implements PasswordUpgraderInterface<Mentor>
  */
 class MentorRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -40,7 +44,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Find mentor by email
+     * Find mentor by email.
      */
     public function findByEmail(string $email): ?Mentor
     {
@@ -48,11 +52,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.email = :email')
             ->setParameter('email', $email)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find mentor by email verification token
+     * Find mentor by email verification token.
      */
     public function findByEmailVerificationToken(string $token): ?Mentor
     {
@@ -60,11 +65,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.emailVerificationToken = :token')
             ->setParameter('token', $token)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find mentor by password reset token
+     * Find mentor by password reset token.
      */
     public function findByPasswordResetToken(string $token): ?Mentor
     {
@@ -72,13 +78,14 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.passwordResetToken = :token')
             ->andWhere('m.passwordResetTokenExpiresAt > :now')
             ->setParameter('token', $token)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find mentor by company SIRET
+     * Find mentor by company SIRET.
      */
     public function findByCompanySiret(string $siret): ?Mentor
     {
@@ -86,11 +93,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.companySiret = :siret')
             ->setParameter('siret', $siret)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find active mentors
+     * Find active mentors.
      */
     public function findActive(): array
     {
@@ -100,11 +108,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors with verified emails
+     * Find mentors with verified emails.
      */
     public function findVerified(): array
     {
@@ -114,11 +123,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors by company name
+     * Find mentors by company name.
      */
     public function findByCompanyName(string $companyName): array
     {
@@ -128,11 +138,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors by expertise domain
+     * Find mentors by expertise domain.
      */
     public function findByExpertiseDomain(string $domain): array
     {
@@ -142,11 +153,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors by experience years (minimum)
+     * Find mentors by experience years (minimum).
      */
     public function findByMinimumExperience(int $minYears): array
     {
@@ -156,11 +168,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.experienceYears', 'DESC')
             ->addOrderBy('m.lastName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors by education level
+     * Find mentors by education level.
      */
     public function findByEducationLevel(string $level): array
     {
@@ -170,37 +183,40 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors registered in the last N days
+     * Find mentors registered in the last N days.
      */
     public function findRecentlyRegistered(int $days = 7): array
     {
-        $since = new \DateTimeImmutable(sprintf('-%d days', $days));
+        $since = new DateTimeImmutable(sprintf('-%d days', $days));
 
         return $this->createQueryBuilder('m')
             ->andWhere('m.createdAt >= :since')
             ->setParameter('since', $since)
             ->orderBy('m.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count total mentors
+     * Count total mentors.
      */
     public function countTotal(): int
     {
         return $this->createQueryBuilder('m')
             ->select('COUNT(m.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count active mentors
+     * Count active mentors.
      */
     public function countActive(): int
     {
@@ -209,11 +225,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count verified mentors
+     * Count verified mentors.
      */
     public function countVerified(): int
     {
@@ -222,11 +239,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.emailVerified = :verified')
             ->setParameter('verified', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Search mentors by name, email, company, or position
+     * Search mentors by name, email, company, or position.
      */
     public function searchByNameEmailCompanyOrPosition(string $query): array
     {
@@ -236,11 +254,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->orderBy('m.lastName', 'ASC')
             ->addOrderBy('m.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for dashboard
+     * Get statistics for dashboard.
      */
     public function getStatistics(): array
     {
@@ -253,7 +272,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Find mentors with advanced filters
+     * Find mentors with advanced filters.
      */
     public function findWithFilters(array $filters, ?int $page = null, ?int $limit = null): array
     {
@@ -262,72 +281,88 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
         // Apply filters
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('m.firstName LIKE :search OR m.lastName LIKE :search OR m.email LIKE :search OR m.companyName LIKE :search OR m.position LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('m.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('m.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('m.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('m.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['company']) && $filters['company'] !== '') {
             $qb->andWhere('m.companyName LIKE :company')
-               ->setParameter('company', '%' . $filters['company'] . '%');
+                ->setParameter('company', '%' . $filters['company'] . '%')
+            ;
         }
 
         if (!empty($filters['expertise_domain']) && $filters['expertise_domain'] !== '') {
             $qb->andWhere('JSON_CONTAINS(m.expertiseDomains, :domain) = 1')
-               ->setParameter('domain', json_encode($filters['expertise_domain']));
+                ->setParameter('domain', json_encode($filters['expertise_domain']))
+            ;
         }
 
         if (!empty($filters['education_level']) && $filters['education_level'] !== '') {
             $qb->andWhere('m.educationLevel = :level')
-               ->setParameter('level', $filters['education_level']);
+                ->setParameter('level', $filters['education_level'])
+            ;
         }
 
         if (!empty($filters['min_experience']) && is_numeric($filters['min_experience'])) {
             $qb->andWhere('m.experienceYears >= :minExp')
-               ->setParameter('minExp', (int)$filters['min_experience']);
+                ->setParameter('minExp', (int) $filters['min_experience'])
+            ;
         }
 
         if (!empty($filters['registration_period']) && $filters['registration_period'] !== '') {
             $period = $filters['registration_period'];
-            $now = new \DateTimeImmutable();
-            
+            $now = new DateTimeImmutable();
+
             switch ($period) {
                 case 'today':
                     $qb->andWhere('DATE(m.createdAt) = :date')
-                       ->setParameter('date', $now->format('Y-m-d'));
+                        ->setParameter('date', $now->format('Y-m-d'))
+                    ;
                     break;
+
                 case 'week':
                     $weekAgo = $now->modify('-1 week');
                     $qb->andWhere('m.createdAt >= :weekAgo')
-                       ->setParameter('weekAgo', $weekAgo);
+                        ->setParameter('weekAgo', $weekAgo)
+                    ;
                     break;
+
                 case 'month':
                     $monthAgo = $now->modify('-1 month');
                     $qb->andWhere('m.createdAt >= :monthAgo')
-                       ->setParameter('monthAgo', $monthAgo);
+                        ->setParameter('monthAgo', $monthAgo)
+                    ;
                     break;
+
                 case 'year':
                     $yearAgo = $now->modify('-1 year');
                     $qb->andWhere('m.createdAt >= :yearAgo')
-                       ->setParameter('yearAgo', $yearAgo);
+                        ->setParameter('yearAgo', $yearAgo)
+                    ;
                     break;
             }
         }
@@ -339,89 +374,107 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
         if ($page !== null && $limit !== null) {
             $offset = ($page - 1) * $limit;
             $qb->setFirstResult($offset)
-               ->setMaxResults($limit);
+                ->setMaxResults($limit)
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Count mentors with filters
+     * Count mentors with filters.
      */
     public function countWithFilters(array $filters): int
     {
         $qb = $this->createQueryBuilder('m')
-                   ->select('COUNT(m.id)');
+            ->select('COUNT(m.id)')
+        ;
 
         // Apply same filters as findWithFilters but without pagination
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('m.firstName LIKE :search OR m.lastName LIKE :search OR m.email LIKE :search OR m.companyName LIKE :search OR m.position LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('m.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('m.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('m.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('m.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['company']) && $filters['company'] !== '') {
             $qb->andWhere('m.companyName LIKE :company')
-               ->setParameter('company', '%' . $filters['company'] . '%');
+                ->setParameter('company', '%' . $filters['company'] . '%')
+            ;
         }
 
         if (!empty($filters['expertise_domain']) && $filters['expertise_domain'] !== '') {
             $qb->andWhere('JSON_CONTAINS(m.expertiseDomains, :domain) = 1')
-               ->setParameter('domain', json_encode($filters['expertise_domain']));
+                ->setParameter('domain', json_encode($filters['expertise_domain']))
+            ;
         }
 
         if (!empty($filters['education_level']) && $filters['education_level'] !== '') {
             $qb->andWhere('m.educationLevel = :level')
-               ->setParameter('level', $filters['education_level']);
+                ->setParameter('level', $filters['education_level'])
+            ;
         }
 
         if (!empty($filters['min_experience']) && is_numeric($filters['min_experience'])) {
             $qb->andWhere('m.experienceYears >= :minExp')
-               ->setParameter('minExp', (int)$filters['min_experience']);
+                ->setParameter('minExp', (int) $filters['min_experience'])
+            ;
         }
 
         if (!empty($filters['registration_period']) && $filters['registration_period'] !== '') {
             $period = $filters['registration_period'];
-            $now = new \DateTimeImmutable();
-            
+            $now = new DateTimeImmutable();
+
             switch ($period) {
                 case 'today':
                     $qb->andWhere('DATE(m.createdAt) = :date')
-                       ->setParameter('date', $now->format('Y-m-d'));
+                        ->setParameter('date', $now->format('Y-m-d'))
+                    ;
                     break;
+
                 case 'week':
                     $weekAgo = $now->modify('-1 week');
                     $qb->andWhere('m.createdAt >= :weekAgo')
-                       ->setParameter('weekAgo', $weekAgo);
+                        ->setParameter('weekAgo', $weekAgo)
+                    ;
                     break;
+
                 case 'month':
                     $monthAgo = $now->modify('-1 month');
                     $qb->andWhere('m.createdAt >= :monthAgo')
-                       ->setParameter('monthAgo', $monthAgo);
+                        ->setParameter('monthAgo', $monthAgo)
+                    ;
                     break;
+
                 case 'year':
                     $yearAgo = $now->modify('-1 year');
                     $qb->andWhere('m.createdAt >= :yearAgo')
-                       ->setParameter('yearAgo', $yearAgo);
+                        ->setParameter('yearAgo', $yearAgo)
+                    ;
                     break;
             }
         }
@@ -430,7 +483,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Get distinct companies for filter dropdown
+     * Get distinct companies for filter dropdown.
      */
     public function getDistinctCompanies(): array
     {
@@ -441,13 +494,14 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->setParameter('empty', '')
             ->orderBy('m.companyName', 'ASC')
             ->getQuery()
-            ->getArrayResult();
-            
+            ->getArrayResult()
+        ;
+
         return $result ?: [];
     }
 
     /**
-     * Get distinct positions for filter dropdown
+     * Get distinct positions for filter dropdown.
      */
     public function getDistinctPositions(): array
     {
@@ -458,13 +512,14 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->setParameter('empty', '')
             ->orderBy('m.position', 'ASC')
             ->getQuery()
-            ->getArrayResult();
-            
+            ->getArrayResult()
+        ;
+
         return $result ?: [];
     }
 
     /**
-     * Count mentors with unverified emails
+     * Count mentors with unverified emails.
      */
     public function countUnverifiedEmails(): int
     {
@@ -473,11 +528,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.emailVerified = :verified')
             ->setParameter('verified', false)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count inactive mentors
+     * Count inactive mentors.
      */
     public function countInactive(): int
     {
@@ -486,28 +542,30 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.isActive = :active')
             ->setParameter('active', false)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find mentors with expired password reset tokens
+     * Find mentors with expired password reset tokens.
      */
     public function findWithExpiredPasswordResetTokens(): array
     {
         return $this->createQueryBuilder('m')
             ->andWhere('m.passwordResetToken IS NOT NULL')
             ->andWhere('m.passwordResetTokenExpiresAt < :now')
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors who haven't logged in for specified days
+     * Find mentors who haven't logged in for specified days.
      */
     public function findInactiveForDays(int $days): array
     {
-        $cutoffDate = new \DateTimeImmutable(sprintf('-%d days', $days));
+        $cutoffDate = new DateTimeImmutable(sprintf('-%d days', $days));
 
         return $this->createQueryBuilder('m')
             ->andWhere('m.isActive = :active')
@@ -516,30 +574,33 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->setParameter('cutoff', $cutoffDate)
             ->orderBy('m.lastLoginAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find mentors by multiple expertise domains
+     * Find mentors by multiple expertise domains.
      */
     public function findByExpertiseDomains(array $domains): array
     {
         $qb = $this->createQueryBuilder('m');
-        
+
         foreach ($domains as $index => $domain) {
             $qb->andWhere('JSON_CONTAINS(m.expertiseDomains, :domain' . $index . ') = 1')
-               ->setParameter('domain' . $index, json_encode($domain));
+                ->setParameter('domain' . $index, json_encode($domain))
+            ;
         }
 
         return $qb->orderBy('m.lastName', 'ASC')
-                  ->addOrderBy('m.firstName', 'ASC')
-                  ->getQuery()
-                  ->getResult();
+            ->addOrderBy('m.firstName', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
      * Find mentors available for new apprentices (to be implemented when Alternant entity exists)
-     * This is a placeholder method for future use
+     * This is a placeholder method for future use.
      */
     public function findAvailableForNewApprentices(int $maxApprenticesPerMentor = 3): array
     {
@@ -549,7 +610,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Get experience statistics
+     * Get experience statistics.
      */
     public function getExperienceStatistics(): array
     {
@@ -559,7 +620,8 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
                 MIN(m.experienceYears) as minExperience,
                 MAX(m.experienceYears) as maxExperience
             ')
-            ->andWhere('m.experienceYears IS NOT NULL');
+            ->andWhere('m.experienceYears IS NOT NULL')
+        ;
 
         $result = $qb->getQuery()->getSingleResult();
 
@@ -571,7 +633,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Get education level distribution
+     * Get education level distribution.
      */
     public function getEducationLevelDistribution(): array
     {
@@ -581,11 +643,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->groupBy('m.educationLevel')
             ->orderBy('count', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get expertise domain distribution
+     * Get expertise domain distribution.
      */
     public function getExpertiseDomainDistribution(): array
     {
@@ -595,7 +658,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Find paginated mentors with filters
+     * Find paginated mentors with filters.
      */
     public function findPaginatedMentors(array $filters, int $page, int $perPage): array
     {
@@ -603,7 +666,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Count filtered mentors
+     * Count filtered mentors.
      */
     public function countFilteredMentors(array $filters): int
     {
@@ -611,22 +674,23 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Count mentors created this month
+     * Count mentors created this month.
      */
     public function countCreatedThisMonth(): int
     {
-        $firstDayOfMonth = new \DateTimeImmutable('first day of this month 00:00:00');
-        
+        $firstDayOfMonth = new DateTimeImmutable('first day of this month 00:00:00');
+
         return $this->createQueryBuilder('m')
             ->select('COUNT(m.id)')
             ->andWhere('m.createdAt >= :firstDay')
             ->setParameter('firstDay', $firstDayOfMonth)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count unique companies
+     * Count unique companies.
      */
     public function countUniqueCompanies(): int
     {
@@ -636,11 +700,12 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
             ->andWhere('m.companyName != :empty')
             ->setParameter('empty', '')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Get average students per mentor
+     * Get average students per mentor.
      */
     public function getAverageStudentsPerMentor(): float
     {
@@ -649,7 +714,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Get mentors by company
+     * Get mentors by company.
      */
     public function getMentorsByCompany(): array
     {
@@ -664,7 +729,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Get qualification distribution
+     * Get qualification distribution.
      */
     public function getQualificationDistribution(): array
     {
@@ -672,7 +737,7 @@ class MentorRepository extends ServiceEntityRepository implements PasswordUpgrad
     }
 
     /**
-     * Find mentors for export
+     * Find mentors for export.
      */
     public function findForExport(array $filters): array
     {

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\User\Student;
+use DateTime;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -18,8 +21,8 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
- * Student Registration Form
- * 
+ * Student Registration Form.
+ *
  * Form for new student registration with validation.
  */
 class StudentRegistrationFormType extends AbstractType
@@ -31,7 +34,7 @@ class StudentRegistrationFormType extends AbstractType
                 'label' => 'Email',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'votre@email.com'
+                    'placeholder' => 'votre@email.com',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir un email']),
@@ -41,7 +44,7 @@ class StudentRegistrationFormType extends AbstractType
                 'label' => 'Prénom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre prénom'
+                    'placeholder' => 'Votre prénom',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre prénom']),
@@ -57,7 +60,7 @@ class StudentRegistrationFormType extends AbstractType
                 'label' => 'Nom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre nom'
+                    'placeholder' => 'Votre nom',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre nom']),
@@ -74,7 +77,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '01 23 45 67 89'
+                    'placeholder' => '01 23 45 67 89',
                 ],
             ])
             ->add('birthDate', DateType::class, [
@@ -83,7 +86,7 @@ class StudentRegistrationFormType extends AbstractType
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-control',
-                    'max' => (new \DateTime())->format('Y-m-d'),
+                    'max' => (new DateTime())->format('Y-m-d'),
                 ],
             ])
             ->add('address', TextType::class, [
@@ -91,7 +94,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre adresse'
+                    'placeholder' => 'Votre adresse',
                 ],
             ])
             ->add('postalCode', TextType::class, [
@@ -99,7 +102,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '75000'
+                    'placeholder' => '75000',
                 ],
             ])
             ->add('city', TextType::class, [
@@ -107,7 +110,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre ville'
+                    'placeholder' => 'Votre ville',
                 ],
             ])
             ->add('country', TextType::class, [
@@ -115,7 +118,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'France'
+                    'placeholder' => 'France',
                 ],
             ])
             ->add('educationLevel', TextType::class, [
@@ -123,7 +126,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Bac+3, Master, etc.'
+                    'placeholder' => 'Bac+3, Master, etc.',
                 ],
             ])
             ->add('profession', TextType::class, [
@@ -131,7 +134,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre profession'
+                    'placeholder' => 'Votre profession',
                 ],
             ])
             ->add('company', TextType::class, [
@@ -139,7 +142,7 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Nom de votre entreprise'
+                    'placeholder' => 'Nom de votre entreprise',
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
@@ -149,11 +152,11 @@ class StudentRegistrationFormType extends AbstractType
                 'required' => true,
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['placeholder' => 'Choisissez un mot de passe']
+                    'attr' => ['placeholder' => 'Choisissez un mot de passe'],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['placeholder' => 'Confirmez votre mot de passe']
+                    'attr' => ['placeholder' => 'Confirmez votre mot de passe'],
                 ],
                 'mapped' => false,
                 'constraints' => [

@@ -9,7 +9,9 @@ use App\Entity\User\Admin;
 use App\Form\NeedsAnalysisRequestType;
 use App\Repository\Analysis\NeedsAnalysisRequestRepository;
 use App\Service\Analysis\NeedsAnalysisService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +20,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin controller for managing needs analysis requests
- * 
+ * Admin controller for managing needs analysis requests.
+ *
  * Handles CRUD operations for needs analysis requests in the admin interface.
  * Provides functionality for creating, viewing, editing, and managing the lifecycle
  * of needs analysis requests including sending invitations and tracking responses.
@@ -32,12 +34,11 @@ class NeedsAnalysisController extends AbstractController
         private readonly NeedsAnalysisRequestRepository $repository,
         private readonly NeedsAnalysisService $needsAnalysisService,
         private readonly EntityManagerInterface $entityManager,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
-     * Display the list of all needs analysis requests with filtering and pagination
+     * Display the list of all needs analysis requests with filtering and pagination.
      */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -90,7 +91,7 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Display details of a specific needs analysis request
+     * Display details of a specific needs analysis request.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(NeedsAnalysisRequest $request): Response
@@ -101,7 +102,7 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Create a new needs analysis request
+     * Create a new needs analysis request.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
@@ -120,11 +121,11 @@ class NeedsAnalysisController extends AbstractController
                     $needsAnalysisRequest->getCompanyName(),
                     $needsAnalysisRequest->getFormation(),
                     $this->getUser(), // $admin
-                    $needsAnalysisRequest->getAdminNotes()
+                    $needsAnalysisRequest->getAdminNotes(),
                 );
 
                 $this->addFlash('success', 'Demande d\'analyse des besoins créée avec succès.');
-                
+
                 $this->logger->info('Needs analysis request created', [
                     'request_id' => $createdRequest->getId(),
                     'type' => $createdRequest->getType(),
@@ -132,11 +133,11 @@ class NeedsAnalysisController extends AbstractController
                 ]);
 
                 return $this->redirectToRoute('admin_needs_analysis_show', [
-                    'id' => $createdRequest->getId()
+                    'id' => $createdRequest->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création de la demande : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to create needs analysis request', [
                     'error' => $e->getMessage(),
                     'created_by' => $this->getUser()?->getUserIdentifier(),
@@ -151,7 +152,7 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Edit an existing needs analysis request
+     * Edit an existing needs analysis request.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
@@ -159,6 +160,7 @@ class NeedsAnalysisController extends AbstractController
         // Only allow editing if request is in pending status
         if ($needsAnalysisRequest->getStatus() !== 'pending') {
             $this->addFlash('warning', 'Seules les demandes en attente peuvent être modifiées.');
+
             return $this->redirectToRoute('admin_needs_analysis_show', ['id' => $needsAnalysisRequest->getId()]);
         }
 
@@ -170,18 +172,18 @@ class NeedsAnalysisController extends AbstractController
                 $this->entityManager->flush();
 
                 $this->addFlash('success', 'Demande d\'analyse des besoins modifiée avec succès.');
-                
+
                 $this->logger->info('Needs analysis request updated', [
                     'request_id' => $needsAnalysisRequest->getId(),
                     'updated_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 return $this->redirectToRoute('admin_needs_analysis_show', [
-                    'id' => $needsAnalysisRequest->getId()
+                    'id' => $needsAnalysisRequest->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification : ' . $e->getMessage());
-                
+
                 $this->logger->error('Failed to update needs analysis request', [
                     'request_id' => $needsAnalysisRequest->getId(),
                     'error' => $e->getMessage(),
@@ -197,29 +199,30 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Send the needs analysis request to the beneficiary
+     * Send the needs analysis request to the beneficiary.
      */
     #[Route('/{id}/send', name: 'send', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function send(NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         if ($needsAnalysisRequest->getStatus() !== 'pending') {
             $this->addFlash('error', 'Cette demande ne peut pas être envoyée.');
+
             return $this->redirectToRoute('admin_needs_analysis_show', ['id' => $needsAnalysisRequest->getId()]);
         }
 
         try {
             $this->needsAnalysisService->sendNeedsAnalysisRequest($needsAnalysisRequest);
-            
+
             $this->addFlash('success', 'Demande d\'analyse envoyée avec succès au bénéficiaire.');
-            
+
             $this->logger->info('Needs analysis request sent', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'sent_by' => $this->getUser()?->getUserIdentifier(),
                 'recipient_email' => $needsAnalysisRequest->getRecipientEmail(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'envoi : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to send needs analysis request', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'error' => $e->getMessage(),
@@ -231,13 +234,14 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Cancel a needs analysis request
+     * Cancel a needs analysis request.
      */
     #[Route('/{id}/cancel', name: 'cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function cancel(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
-        if (!in_array($needsAnalysisRequest->getStatus(), ['pending', 'sent'])) {
+        if (!in_array($needsAnalysisRequest->getStatus(), ['pending', 'sent'], true)) {
             $this->addFlash('error', 'Cette demande ne peut pas être annulée.');
+
             return $this->redirectToRoute('admin_needs_analysis_show', ['id' => $needsAnalysisRequest->getId()]);
         }
 
@@ -245,17 +249,17 @@ class NeedsAnalysisController extends AbstractController
 
         try {
             $this->needsAnalysisService->cancelRequest($needsAnalysisRequest, $reason);
-            
+
             $this->addFlash('success', 'Demande d\'analyse annulée avec succès.');
-            
+
             $this->logger->info('Needs analysis request cancelled', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'cancelled_by' => $this->getUser()?->getUserIdentifier(),
                 'reason' => $reason,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'annulation : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to cancel needs analysis request', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'error' => $e->getMessage(),
@@ -267,13 +271,14 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Delete a needs analysis request (only if pending)
+     * Delete a needs analysis request (only if pending).
      */
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         if ($needsAnalysisRequest->getStatus() !== 'pending') {
             $this->addFlash('error', 'Seules les demandes en attente peuvent être supprimées.');
+
             return $this->redirectToRoute('admin_needs_analysis_show', ['id' => $needsAnalysisRequest->getId()]);
         }
 
@@ -283,16 +288,16 @@ class NeedsAnalysisController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Demande d\'analyse supprimée avec succès.');
-            
+
             $this->logger->info('Needs analysis request deleted', [
                 'request_id' => $requestId,
                 'deleted_by' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             return $this->redirectToRoute('admin_needs_analysis_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to delete needs analysis request', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'error' => $e->getMessage(),
@@ -304,37 +309,38 @@ class NeedsAnalysisController extends AbstractController
     }
 
     /**
-     * Add admin notes to a needs analysis request
+     * Add admin notes to a needs analysis request.
      */
     #[Route('/{id}/notes', name: 'add_notes', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function addNotes(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         $newNote = trim($request->request->get('note', ''));
-        
+
         if (empty($newNote)) {
             $this->addFlash('error', 'La note ne peut pas être vide.');
+
             return $this->redirectToRoute('admin_needs_analysis_show', ['id' => $needsAnalysisRequest->getId()]);
         }
 
         try {
             $currentNotes = $needsAnalysisRequest->getAdminNotes();
-            $timestamp = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+            $timestamp = (new DateTimeImmutable())->format('Y-m-d H:i:s');
             $adminName = $this->getUser()?->getUserIdentifier() ?? 'Admin';
             $formattedNote = "[{$timestamp}] {$adminName}: {$newNote}";
             $updatedNotes = $currentNotes ? $currentNotes . "\n" . $formattedNote : $formattedNote;
-            
+
             $needsAnalysisRequest->setAdminNotes($updatedNotes);
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'Note ajoutée avec succès.');
-            
+
             $this->logger->info('Admin note added to needs analysis request', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'added_by' => $this->getUser()?->getUserIdentifier(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'ajout de la note : ' . $e->getMessage());
-            
+
             $this->logger->error('Failed to add admin note', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'error' => $e->getMessage(),

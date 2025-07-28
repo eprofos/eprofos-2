@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\Training\Session;
@@ -7,14 +9,17 @@ use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
 use App\Repository\Alternance\AlternanceContractRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * AlternanceContract entity representing an apprenticeship or professionalization contract
- * 
+ * AlternanceContract entity representing an apprenticeship or professionalization contract.
+ *
  * Contains all Qualiopi-compliant information about alternance contracts including
  * company details, supervision, objectives, and administrative data.
  */
@@ -24,6 +29,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Gedmo\Loggable]
 class AlternanceContract
 {
+    /**
+     * Available contract statuses.
+     */
+    public const STATUSES = [
+        'draft' => 'Brouillon',
+        'pending_validation' => 'En attente de validation',
+        'validated' => 'Validé',
+        'active' => 'Actif',
+        'suspended' => 'Suspendu',
+        'completed' => 'Terminé',
+        'terminated' => 'Résilié',
+    ];
+
+    /**
+     * Available contract types.
+     */
+    public const CONTRACT_TYPES = [
+        'apprentissage' => 'Contrat d\'apprentissage',
+        'professionnalisation' => 'Contrat de professionnalisation',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -45,7 +71,7 @@ class AlternanceContract
         min: 2,
         max: 255,
         minMessage: 'Le nom de l\'entreprise doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom de l\'entreprise ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $companyName = null;
@@ -76,7 +102,7 @@ class AlternanceContract
     #[Assert\NotBlank(message: 'Le type de contrat est obligatoire.')]
     #[Assert\Choice(
         choices: ['apprentissage', 'professionnalisation'],
-        message: 'Type de contrat invalide.'
+        message: 'Type de contrat invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $contractType = null;
@@ -84,22 +110,22 @@ class AlternanceContract
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $startDate = null;
+    private ?DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de fin est obligatoire.')]
     #[Assert\GreaterThan(
         propertyPath: 'startDate',
-        message: 'La date de fin doit être postérieure à la date de début.'
+        message: 'La date de fin doit être postérieure à la date de début.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $endDate = null;
+    private ?DateTimeInterface $endDate = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Assert\Range(
         min: 1,
         max: 36,
-        notInRangeMessage: 'La durée du contrat doit être comprise entre {{ min }} et {{ max }} mois.'
+        notInRangeMessage: 'La durée du contrat doit être comprise entre {{ min }} et {{ max }} mois.',
     )]
     #[Gedmo\Versioned]
     private ?int $duration = null;
@@ -110,7 +136,7 @@ class AlternanceContract
         min: 5,
         max: 255,
         minMessage: 'L\'intitulé du poste doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'L\'intitulé du poste ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'L\'intitulé du poste ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $jobTitle = null;
@@ -119,7 +145,7 @@ class AlternanceContract
     #[Assert\NotBlank(message: 'La description du poste est obligatoire.')]
     #[Assert\Length(
         min: 50,
-        minMessage: 'La description du poste doit contenir au moins {{ limit }} caractères.'
+        minMessage: 'La description du poste doit contenir au moins {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $jobDescription = null;
@@ -159,7 +185,7 @@ class AlternanceContract
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['draft', 'pending_validation', 'validated', 'active', 'suspended', 'completed', 'terminated'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     #[Gedmo\Versioned]
     private string $status = 'draft';
@@ -206,45 +232,29 @@ class AlternanceContract
     private ?array $additionalData = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $validatedAt = null;
+    private ?DateTimeImmutable $validatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $startedAt = null;
+    private ?DateTimeImmutable $startedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $completedAt = null;
-
-    /**
-     * Available contract statuses
-     */
-    public const STATUSES = [
-        'draft' => 'Brouillon',
-        'pending_validation' => 'En attente de validation',
-        'validated' => 'Validé',
-        'active' => 'Actif',
-        'suspended' => 'Suspendu',
-        'completed' => 'Terminé',
-        'terminated' => 'Résilié'
-    ];
-
-    /**
-     * Available contract types
-     */
-    public const CONTRACT_TYPES = [
-        'apprentissage' => 'Contrat d\'apprentissage',
-        'professionnalisation' => 'Contrat de professionnalisation'
-    ];
+    private ?DateTimeImmutable $completedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->getStudentFullName() . ' - ' . $this->getCompanyName() . ' (' . $this->getContractTypeLabel() . ')';
     }
 
     public function getId(): ?int
@@ -260,6 +270,7 @@ class AlternanceContract
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -271,6 +282,7 @@ class AlternanceContract
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+
         return $this;
     }
 
@@ -282,6 +294,7 @@ class AlternanceContract
     public function setCompanyName(string $companyName): static
     {
         $this->companyName = $companyName;
+
         return $this;
     }
 
@@ -293,6 +306,7 @@ class AlternanceContract
     public function setCompanyAddress(string $companyAddress): static
     {
         $this->companyAddress = $companyAddress;
+
         return $this;
     }
 
@@ -304,6 +318,7 @@ class AlternanceContract
     public function setCompanySiret(string $companySiret): static
     {
         $this->companySiret = $companySiret;
+
         return $this;
     }
 
@@ -315,6 +330,7 @@ class AlternanceContract
     public function setMentor(?Mentor $mentor): static
     {
         $this->mentor = $mentor;
+
         return $this;
     }
 
@@ -326,6 +342,7 @@ class AlternanceContract
     public function setPedagogicalSupervisor(?Teacher $pedagogicalSupervisor): static
     {
         $this->pedagogicalSupervisor = $pedagogicalSupervisor;
+
         return $this;
     }
 
@@ -338,6 +355,7 @@ class AlternanceContract
     public function setTeacher(?Teacher $teacher): static
     {
         $this->pedagogicalSupervisor = $teacher;
+
         return $this;
     }
 
@@ -349,28 +367,31 @@ class AlternanceContract
     public function setContractType(string $contractType): static
     {
         $this->contractType = $contractType;
+
         return $this;
     }
 
-    public function getStartDate(): ?\DateTimeInterface
+    public function getStartDate(): ?DateTimeInterface
     {
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): static
+    public function setStartDate(DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
-    public function getEndDate(): ?\DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): static
+    public function setEndDate(DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
@@ -382,6 +403,7 @@ class AlternanceContract
     public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
+
         return $this;
     }
 
@@ -393,6 +415,7 @@ class AlternanceContract
     public function setJobTitle(string $jobTitle): static
     {
         $this->jobTitle = $jobTitle;
+
         return $this;
     }
 
@@ -404,6 +427,7 @@ class AlternanceContract
     public function setJobDescription(string $jobDescription): static
     {
         $this->jobDescription = $jobDescription;
+
         return $this;
     }
 
@@ -415,6 +439,7 @@ class AlternanceContract
     public function setLearningObjectives(array $learningObjectives): static
     {
         $this->learningObjectives = $learningObjectives;
+
         return $this;
     }
 
@@ -426,6 +451,7 @@ class AlternanceContract
     public function setCompanyObjectives(array $companyObjectives): static
     {
         $this->companyObjectives = $companyObjectives;
+
         return $this;
     }
 
@@ -437,6 +463,7 @@ class AlternanceContract
     public function setWeeklyCenterHours(int $weeklyCenterHours): static
     {
         $this->weeklyCenterHours = $weeklyCenterHours;
+
         return $this;
     }
 
@@ -448,6 +475,7 @@ class AlternanceContract
     public function setWeeklyCompanyHours(int $weeklyCompanyHours): static
     {
         $this->weeklyCompanyHours = $weeklyCompanyHours;
+
         return $this;
     }
 
@@ -460,6 +488,7 @@ class AlternanceContract
     public function setWeeklyHours(?int $weeklyHours): static
     {
         $this->weeklyCompanyHours = $weeklyHours;
+
         return $this;
     }
 
@@ -471,6 +500,7 @@ class AlternanceContract
     public function setRemuneration(string $remuneration): static
     {
         $this->remuneration = $remuneration;
+
         return $this;
     }
 
@@ -482,6 +512,7 @@ class AlternanceContract
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -493,6 +524,7 @@ class AlternanceContract
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -504,6 +536,7 @@ class AlternanceContract
     public function setContractNumber(?string $contractNumber): static
     {
         $this->contractNumber = $contractNumber;
+
         return $this;
     }
 
@@ -515,6 +548,7 @@ class AlternanceContract
     public function setCompanyContactPerson(?string $companyContactPerson): static
     {
         $this->companyContactPerson = $companyContactPerson;
+
         return $this;
     }
 
@@ -526,6 +560,7 @@ class AlternanceContract
     public function setCompanyContactEmail(?string $companyContactEmail): static
     {
         $this->companyContactEmail = $companyContactEmail;
+
         return $this;
     }
 
@@ -537,6 +572,7 @@ class AlternanceContract
     public function setCompanyContactPhone(?string $companyContactPhone): static
     {
         $this->companyContactPhone = $companyContactPhone;
+
         return $this;
     }
 
@@ -548,6 +584,7 @@ class AlternanceContract
     public function setObjectives(?string $objectives): static
     {
         $this->objectives = $objectives;
+
         return $this;
     }
 
@@ -559,6 +596,7 @@ class AlternanceContract
     public function setTasks(?string $tasks): static
     {
         $this->tasks = $tasks;
+
         return $this;
     }
 
@@ -570,6 +608,7 @@ class AlternanceContract
     public function setEvaluationCriteria(?string $evaluationCriteria): static
     {
         $this->evaluationCriteria = $evaluationCriteria;
+
         return $this;
     }
 
@@ -581,6 +620,7 @@ class AlternanceContract
     public function setCompensation(?int $compensation): static
     {
         $this->compensation = $compensation;
+
         return $this;
     }
 
@@ -592,66 +632,72 @@ class AlternanceContract
     public function setAdditionalData(?array $additionalData): static
     {
         $this->additionalData = $additionalData;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getValidatedAt(): ?\DateTimeImmutable
+    public function getValidatedAt(): ?DateTimeImmutable
     {
         return $this->validatedAt;
     }
 
-    public function setValidatedAt(?\DateTimeImmutable $validatedAt): static
+    public function setValidatedAt(?DateTimeImmutable $validatedAt): static
     {
         $this->validatedAt = $validatedAt;
+
         return $this;
     }
 
-    public function getStartedAt(): ?\DateTimeImmutable
+    public function getStartedAt(): ?DateTimeImmutable
     {
         return $this->startedAt;
     }
 
-    public function setStartedAt(?\DateTimeImmutable $startedAt): static
+    public function setStartedAt(?DateTimeImmutable $startedAt): static
     {
         $this->startedAt = $startedAt;
+
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeImmutable
+    public function getCompletedAt(): ?DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    public function setCompletedAt(?DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
     /**
-     * Get contract duration in days
+     * Get contract duration in days.
      */
     public function getDurationInDays(): int
     {
@@ -660,19 +706,20 @@ class AlternanceContract
         }
 
         $interval = $this->startDate->diff($this->endDate);
+
         return $interval->days + 1;
     }
 
     /**
-     * Get contract duration in weeks
+     * Get contract duration in weeks.
      */
     public function getDurationInWeeks(): int
     {
-        return intval($this->getDurationInDays() / 7);
+        return (int) ($this->getDurationInDays() / 7);
     }
 
     /**
-     * Get contract duration in months
+     * Get contract duration in months.
      */
     public function getDurationInMonths(): int
     {
@@ -680,22 +727,23 @@ class AlternanceContract
             return 0;
         }
 
-        $start = new \DateTime($this->startDate->format('Y-m-d'));
-        $end = new \DateTime($this->endDate->format('Y-m-d'));
+        $start = new DateTime($this->startDate->format('Y-m-d'));
+        $end = new DateTime($this->endDate->format('Y-m-d'));
         $interval = $start->diff($end);
 
         return ($interval->y * 12) + $interval->m;
     }
 
     /**
-     * Get formatted contract duration
+     * Get formatted contract duration.
      */
     public function getFormattedDuration(): string
     {
         $months = $this->getDurationInMonths();
-        
+
         if ($months < 1) {
             $weeks = $this->getDurationInWeeks();
+
             return $weeks === 1 ? '1 semaine' : $weeks . ' semaines';
         }
 
@@ -703,7 +751,7 @@ class AlternanceContract
             return $months === 1 ? '1 mois' : $months . ' mois';
         }
 
-        $years = intval($months / 12);
+        $years = (int) ($months / 12);
         $remainingMonths = $months % 12;
 
         if ($remainingMonths === 0) {
@@ -717,7 +765,7 @@ class AlternanceContract
     }
 
     /**
-     * Get formatted date range
+     * Get formatted date range.
      */
     public function getFormattedDateRange(): string
     {
@@ -732,7 +780,7 @@ class AlternanceContract
     }
 
     /**
-     * Get status label for display
+     * Get status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -740,7 +788,7 @@ class AlternanceContract
     }
 
     /**
-     * Get status badge class for display
+     * Get status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -757,7 +805,7 @@ class AlternanceContract
     }
 
     /**
-     * Get contract type label for display
+     * Get contract type label for display.
      */
     public function getContractTypeLabel(): string
     {
@@ -765,7 +813,7 @@ class AlternanceContract
     }
 
     /**
-     * Get total weekly hours
+     * Get total weekly hours.
      */
     public function getTotalWeeklyHours(): int
     {
@@ -773,7 +821,7 @@ class AlternanceContract
     }
 
     /**
-     * Get center hours percentage
+     * Get center hours percentage.
      */
     public function getCenterHoursPercentage(): float
     {
@@ -786,7 +834,7 @@ class AlternanceContract
     }
 
     /**
-     * Get company hours percentage
+     * Get company hours percentage.
      */
     public function getCompanyHoursPercentage(): float
     {
@@ -799,7 +847,7 @@ class AlternanceContract
     }
 
     /**
-     * Check if contract is active
+     * Check if contract is active.
      */
     public function isActive(): bool
     {
@@ -807,7 +855,7 @@ class AlternanceContract
     }
 
     /**
-     * Check if contract is completed
+     * Check if contract is completed.
      */
     public function isCompleted(): bool
     {
@@ -815,7 +863,7 @@ class AlternanceContract
     }
 
     /**
-     * Check if contract is currently in progress
+     * Check if contract is currently in progress.
      */
     public function isInProgress(): bool
     {
@@ -823,12 +871,13 @@ class AlternanceContract
             return false;
         }
 
-        $now = new \DateTime();
+        $now = new DateTime();
+
         return $this->startDate <= $now && $this->endDate >= $now;
     }
 
     /**
-     * Get remaining days
+     * Get remaining days.
      */
     public function getRemainingDays(): int
     {
@@ -836,17 +885,18 @@ class AlternanceContract
             return 0;
         }
 
-        $now = new \DateTime();
+        $now = new DateTime();
         if ($now > $this->endDate) {
             return 0;
         }
 
         $interval = $now->diff($this->endDate);
+
         return $interval->days;
     }
 
     /**
-     * Get progress percentage
+     * Get progress percentage.
      */
     public function getProgressPercentage(): float
     {
@@ -854,7 +904,7 @@ class AlternanceContract
             return 0;
         }
 
-        $now = new \DateTime();
+        $now = new DateTime();
         if ($now < $this->startDate) {
             return 0;
         }
@@ -870,7 +920,7 @@ class AlternanceContract
     }
 
     /**
-     * Get full student name
+     * Get full student name.
      */
     public function getStudentFullName(): string
     {
@@ -878,7 +928,7 @@ class AlternanceContract
     }
 
     /**
-     * Get mentor full name
+     * Get mentor full name.
      */
     public function getMentorFullName(): string
     {
@@ -886,7 +936,7 @@ class AlternanceContract
     }
 
     /**
-     * Get pedagogical supervisor full name
+     * Get pedagogical supervisor full name.
      */
     public function getPedagogicalSupervisorFullName(): string
     {
@@ -894,7 +944,7 @@ class AlternanceContract
     }
 
     /**
-     * Get formation title
+     * Get formation title.
      */
     public function getFormationTitle(): string
     {
@@ -902,16 +952,11 @@ class AlternanceContract
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->getStudentFullName() . ' - ' . $this->getCompanyName() . ' (' . $this->getContractTypeLabel() . ')';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

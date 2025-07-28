@@ -1,17 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
+use App\DTO\Alternance\IntermediateObjectiveDTO;
 use App\Entity\User\Student;
 use App\Repository\Alternance\MissionAssignmentRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * MissionAssignment entity representing the assignment of a mission to a student
- * 
+ * MissionAssignment entity representing the assignment of a mission to a student.
+ *
  * Tracks the progress, feedback, and evaluation of missions assigned to apprentices
  * with full traceability for Qualiopi compliance.
  */
@@ -21,6 +27,32 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Gedmo\Loggable]
 class MissionAssignment
 {
+    /**
+     * Available statuses for mission assignments.
+     */
+    public const STATUSES = [
+        'planifiee' => 'Planifiée',
+        'en_cours' => 'En cours',
+        'terminee' => 'Terminée',
+        'suspendue' => 'Suspendue',
+    ];
+
+    /**
+     * Rating scale labels.
+     */
+    public const RATING_LABELS = [
+        1 => 'Très insuffisant',
+        2 => 'Insuffisant',
+        3 => 'Passable',
+        4 => 'Correct',
+        5 => 'Bien',
+        6 => 'Très bien',
+        7 => 'Excellent',
+        8 => 'Remarquable',
+        9 => 'Exceptionnel',
+        10 => 'Parfait',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -39,22 +71,22 @@ class MissionAssignment
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $startDate = null;
+    private ?DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de fin prévue est obligatoire.')]
     #[Assert\GreaterThan(
         propertyPath: 'startDate',
-        message: 'La date de fin doit être postérieure à la date de début.'
+        message: 'La date de fin doit être postérieure à la date de début.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $endDate = null;
+    private ?DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['planifiee', 'en_cours', 'terminee', 'suspendue'],
-        message: 'Statut de mission invalide.'
+        message: 'Statut de mission invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $status = 'planifiee';
@@ -69,7 +101,7 @@ class MissionAssignment
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'Le taux d\'avancement doit être entre {{ min }} et {{ max }}%.'
+        notInRangeMessage: 'Le taux d\'avancement doit être entre {{ min }} et {{ max }}%.',
     )]
     #[Gedmo\Versioned]
     private ?string $completionRate = '0.00';
@@ -96,7 +128,7 @@ class MissionAssignment
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'La note du tuteur doit être entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'La note du tuteur doit être entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $mentorRating = null;
@@ -105,7 +137,7 @@ class MissionAssignment
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'La satisfaction de l\'alternant doit être entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'La satisfaction de l\'alternant doit être entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $studentSatisfaction = null;
@@ -117,53 +149,35 @@ class MissionAssignment
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'create')]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?\DateTimeImmutable $lastUpdated = null;
-
-    /**
-     * Available statuses for mission assignments
-     */
-    public const STATUSES = [
-        'planifiee' => 'Planifiée',
-        'en_cours' => 'En cours',
-        'terminee' => 'Terminée',
-        'suspendue' => 'Suspendue'
-    ];
-
-    /**
-     * Rating scale labels
-     */
-    public const RATING_LABELS = [
-        1 => 'Très insuffisant',
-        2 => 'Insuffisant', 
-        3 => 'Passable',
-        4 => 'Correct',
-        5 => 'Bien',
-        6 => 'Très bien',
-        7 => 'Excellent',
-        8 => 'Remarquable',
-        9 => 'Exceptionnel',
-        10 => 'Parfait'
-    ];
+    private ?DateTimeImmutable $lastUpdated = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->lastUpdated = new \DateTimeImmutable();
-        
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+        $this->lastUpdated = new DateTimeImmutable();
+
         // Initialize array fields to prevent null reference errors
         $this->intermediateObjectives = [];
         $this->difficulties = [];
         $this->achievements = [];
         $this->competenciesAcquired = [];
+    }
+
+    public function __toString(): string
+    {
+        $missionTitle = $this->mission ? $this->mission->getTitle() : 'Mission inconnue';
+        $studentName = $this->student ? $this->student->getFullName() : 'Alternant inconnu';
+
+        return $missionTitle . ' - ' . $studentName;
     }
 
     public function getId(): ?int
@@ -179,6 +193,7 @@ class MissionAssignment
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -190,28 +205,31 @@ class MissionAssignment
     public function setMission(?CompanyMission $mission): static
     {
         $this->mission = $mission;
+
         return $this;
     }
 
-    public function getStartDate(): ?\DateTimeInterface
+    public function getStartDate(): ?DateTimeInterface
     {
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): static
+    public function setStartDate(DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
-    public function getEndDate(): ?\DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): static
+    public function setEndDate(DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
@@ -223,6 +241,7 @@ class MissionAssignment
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -234,13 +253,14 @@ class MissionAssignment
     public function setIntermediateObjectives(array $intermediateObjectives): static
     {
         $this->intermediateObjectives = $intermediateObjectives;
+
         return $this;
     }
 
     /**
-     * Get intermediate objectives as DTO objects for form usage
-     * 
-     * @return \App\DTO\Alternance\IntermediateObjectiveDTO[]
+     * Get intermediate objectives as DTO objects for form usage.
+     *
+     * @return IntermediateObjectiveDTO[]
      */
     public function getIntermediateObjectivesForForm(): array
     {
@@ -250,44 +270,45 @@ class MissionAssignment
                 // Check if this is a legacy format where keys might be wrong
                 if (isset($objectiveData[0]) && is_string($objectiveData[0])) {
                     // This might be an indexed array instead of associative
-                    $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                    $dtos[] = new IntermediateObjectiveDTO(
                         title: $objectiveData[0] ?? 'Objectif sans titre',
                         description: isset($objectiveData[1]) && is_string($objectiveData[1]) ? $objectiveData[1] : '',
-                        completed: isset($objectiveData[2]) ? (bool) $objectiveData[2] : false
+                        completed: isset($objectiveData[2]) ? (bool) $objectiveData[2] : false,
                     );
                 } else {
                     // Normal associative array
-                    $dtos[] = \App\DTO\Alternance\IntermediateObjectiveDTO::fromArray($objectiveData);
+                    $dtos[] = IntermediateObjectiveDTO::fromArray($objectiveData);
                 }
             } elseif (is_string($objectiveData)) {
                 // Handle legacy simple string objectives
-                $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                $dtos[] = new IntermediateObjectiveDTO(
                     title: $objectiveData,
                     description: '',
-                    completed: false
+                    completed: false,
                 );
             } else {
                 // Handle any other data types by creating a default objective
-                $dtos[] = new \App\DTO\Alternance\IntermediateObjectiveDTO(
+                $dtos[] = new IntermediateObjectiveDTO(
                     title: 'Objectif ' . ($index + 1),
                     description: '',
-                    completed: false
+                    completed: false,
                 );
             }
         }
+
         return $dtos;
     }
 
     /**
-     * Set intermediate objectives from DTO objects for form usage
-     * 
-     * @param \App\DTO\Alternance\IntermediateObjectiveDTO[] $dtos
+     * Set intermediate objectives from DTO objects for form usage.
+     *
+     * @param IntermediateObjectiveDTO[] $dtos
      */
     public function setIntermediateObjectivesForForm(array $dtos): static
     {
         $arrayData = [];
         foreach ($dtos as $dto) {
-            if ($dto instanceof \App\DTO\Alternance\IntermediateObjectiveDTO) {
+            if ($dto instanceof IntermediateObjectiveDTO) {
                 // Only include objectives with non-empty titles
                 if (!empty(trim($dto->title))) {
                     $arrayData[] = $dto->toArray();
@@ -295,13 +316,14 @@ class MissionAssignment
             }
         }
         $this->intermediateObjectives = $arrayData;
+
         return $this;
     }
 
     /**
-     * Get intermediate objectives as DTO objects for display
-     * 
-     * @return \App\DTO\Alternance\IntermediateObjectiveDTO[]
+     * Get intermediate objectives as DTO objects for display.
+     *
+     * @return IntermediateObjectiveDTO[]
      */
     public function getIntermediateObjectivesAsDTO(): array
     {
@@ -316,6 +338,7 @@ class MissionAssignment
     public function setCompletionRate(float $completionRate): static
     {
         $this->completionRate = (string) $completionRate;
+
         return $this;
     }
 
@@ -327,6 +350,7 @@ class MissionAssignment
     public function setDifficulties(array $difficulties): static
     {
         $this->difficulties = $difficulties;
+
         return $this;
     }
 
@@ -338,6 +362,7 @@ class MissionAssignment
     public function setAchievements(array $achievements): static
     {
         $this->achievements = $achievements;
+
         return $this;
     }
 
@@ -349,6 +374,7 @@ class MissionAssignment
     public function setMentorFeedback(?string $mentorFeedback): static
     {
         $this->mentorFeedback = $mentorFeedback;
+
         return $this;
     }
 
@@ -360,6 +386,7 @@ class MissionAssignment
     public function setStudentFeedback(?string $studentFeedback): static
     {
         $this->studentFeedback = $studentFeedback;
+
         return $this;
     }
 
@@ -371,6 +398,7 @@ class MissionAssignment
     public function setMentorRating(?int $mentorRating): static
     {
         $this->mentorRating = $mentorRating;
+
         return $this;
     }
 
@@ -382,6 +410,7 @@ class MissionAssignment
     public function setStudentSatisfaction(?int $studentSatisfaction): static
     {
         $this->studentSatisfaction = $studentSatisfaction;
+
         return $this;
     }
 
@@ -393,44 +422,48 @@ class MissionAssignment
     public function setCompetenciesAcquired(array $competenciesAcquired): static
     {
         $this->competenciesAcquired = $competenciesAcquired;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getLastUpdated(): ?\DateTimeImmutable
+    public function getLastUpdated(): ?DateTimeImmutable
     {
         return $this->lastUpdated;
     }
 
-    public function setLastUpdated(\DateTimeImmutable $lastUpdated): static
+    public function setLastUpdated(DateTimeImmutable $lastUpdated): static
     {
         $this->lastUpdated = $lastUpdated;
+
         return $this;
     }
 
     /**
-     * Get the status as human-readable label
+     * Get the status as human-readable label.
      */
     public function getStatusLabel(): string
     {
@@ -438,39 +471,39 @@ class MissionAssignment
     }
 
     /**
-     * Get mentor rating as human-readable label
+     * Get mentor rating as human-readable label.
      */
     public function getMentorRatingLabel(): string
     {
         if ($this->mentorRating === null) {
             return 'Non évalué';
         }
-        
+
         return $this->mentorRating . '/10 - ' . (self::RATING_LABELS[$this->mentorRating] ?? 'Évaluation inconnue');
     }
 
     /**
-     * Get student satisfaction as human-readable label
+     * Get student satisfaction as human-readable label.
      */
     public function getStudentSatisfactionLabel(): string
     {
         if ($this->studentSatisfaction === null) {
             return 'Non évalué';
         }
-        
+
         return $this->studentSatisfaction . '/10 - ' . (self::RATING_LABELS[$this->studentSatisfaction] ?? 'Évaluation inconnue');
     }
 
     /**
-     * Check if the assignment is active (planned or in progress)
+     * Check if the assignment is active (planned or in progress).
      */
     public function isActive(): bool
     {
-        return in_array($this->status, ['planifiee', 'en_cours']);
+        return in_array($this->status, ['planifiee', 'en_cours'], true);
     }
 
     /**
-     * Check if the assignment is completed
+     * Check if the assignment is completed.
      */
     public function isCompleted(): bool
     {
@@ -478,7 +511,7 @@ class MissionAssignment
     }
 
     /**
-     * Check if the assignment is suspended
+     * Check if the assignment is suspended.
      */
     public function isSuspended(): bool
     {
@@ -486,65 +519,65 @@ class MissionAssignment
     }
 
     /**
-     * Check if the assignment is overdue
+     * Check if the assignment is overdue.
      */
     public function isOverdue(): bool
     {
         if ($this->status === 'terminee' || $this->endDate === null) {
             return false;
         }
-        
-        return $this->endDate < new \DateTime();
+
+        return $this->endDate < new DateTime();
     }
 
     /**
-     * Get the duration of the assignment in days
+     * Get the duration of the assignment in days.
      */
     public function getDurationInDays(): int
     {
         if ($this->startDate === null || $this->endDate === null) {
             return 0;
         }
-        
+
         return $this->startDate->diff($this->endDate)->days;
     }
 
     /**
-     * Get the elapsed time since start in days
+     * Get the elapsed time since start in days.
      */
     public function getElapsedDays(): int
     {
         if ($this->startDate === null) {
             return 0;
         }
-        
-        $now = new \DateTime();
+
+        $now = new DateTime();
         if ($this->startDate > $now) {
             return 0; // Not started yet
         }
-        
+
         return $this->startDate->diff($now)->days;
     }
 
     /**
-     * Get the remaining days until end date
+     * Get the remaining days until end date.
      */
     public function getRemainingDays(): int
     {
         if ($this->endDate === null || $this->status === 'terminee') {
             return 0;
         }
-        
-        $now = new \DateTime();
+
+        $now = new DateTime();
         if ($this->endDate < $now) {
             return 0; // Overdue
         }
-        
+
         return $now->diff($this->endDate)->days;
     }
 
     /**
-     * Calculate progress percentage based on time elapsed
+     * Calculate progress percentage based on time elapsed.
      */
     public function getTimeProgressPercentage(): float
     {
@@ -552,13 +585,14 @@ class MissionAssignment
         if ($totalDays === 0) {
             return 0.0;
         }
-        
+
         $elapsedDays = $this->getElapsedDays();
+
         return min(100.0, ($elapsedDays / $totalDays) * 100);
     }
 
     /**
-     * Get completion status with percentage
+     * Get completion status with percentage.
      */
     public function getCompletionStatus(): string
     {
@@ -566,7 +600,7 @@ class MissionAssignment
     }
 
     /**
-     * Get the CSS class for the status badge
+     * Get the CSS class for the status badge.
      */
     public function getStatusBadgeClass(): string
     {
@@ -580,21 +614,22 @@ class MissionAssignment
     }
 
     /**
-     * Get the CSS class for the completion rate progress bar
+     * Get the CSS class for the completion rate progress bar.
      */
     public function getCompletionProgressClass(): string
     {
         if ($this->completionRate >= 80) {
             return 'progress-bar-success';
-        } elseif ($this->completionRate >= 50) {
-            return 'progress-bar-warning';
-        } else {
-            return 'progress-bar-danger';
         }
+        if ($this->completionRate >= 50) {
+            return 'progress-bar-warning';
+        }
+
+        return 'progress-bar-danger';
     }
 
     /**
-     * Check if both mentor and student have provided feedback
+     * Check if both mentor and student have provided feedback.
      */
     public function hasBidirectionalFeedback(): bool
     {
@@ -602,7 +637,7 @@ class MissionAssignment
     }
 
     /**
-     * Check if the assignment has been evaluated by the mentor
+     * Check if the assignment has been evaluated by the mentor.
      */
     public function isEvaluatedByMentor(): bool
     {
@@ -610,7 +645,7 @@ class MissionAssignment
     }
 
     /**
-     * Check if the student has provided satisfaction feedback
+     * Check if the student has provided satisfaction feedback.
      */
     public function hasStudentFeedback(): bool
     {
@@ -618,14 +653,14 @@ class MissionAssignment
     }
 
     /**
-     * Get a summary of intermediate objectives completion
+     * Get a summary of intermediate objectives completion.
      */
     public function getObjectivesCompletionSummary(): string
     {
         if (empty($this->intermediateObjectives)) {
             return 'Aucun objectif intermédiaire défini';
         }
-        
+
         $completed = 0;
         foreach ($this->intermediateObjectives as $objective) {
             if (is_array($objective) && isset($objective['completed']) && $objective['completed'] === true) {
@@ -635,82 +670,83 @@ class MissionAssignment
                 continue;
             }
         }
-        
+
         $total = count($this->intermediateObjectives);
+
         return $completed . '/' . $total . ' objectifs atteints (' . round(($completed / $total) * 100) . '%)';
     }
 
     /**
-     * Get a summary of competencies acquired
+     * Get a summary of competencies acquired.
      */
     public function getCompetenciesSummary(): string
     {
         if (empty($this->competenciesAcquired)) {
             return 'Aucune compétence documentée';
         }
-        
+
         $count = count($this->competenciesAcquired);
         if ($count <= 3) {
             return implode(', ', $this->competenciesAcquired);
-        } else {
-            $first3 = array_slice($this->competenciesAcquired, 0, 3);
-            return implode(', ', $first3) . ' (+' . ($count - 3) . ' autres)';
         }
+        $first3 = array_slice($this->competenciesAcquired, 0, 3);
+
+        return implode(', ', $first3) . ' (+' . ($count - 3) . ' autres)';
     }
 
     /**
-     * Start the assignment (change status to in progress)
+     * Start the assignment (change status to in progress).
      */
     public function start(): void
     {
         if ($this->status === 'planifiee') {
             $this->status = 'en_cours';
-            $this->lastUpdated = new \DateTimeImmutable();
+            $this->lastUpdated = new DateTimeImmutable();
         }
     }
 
     /**
-     * Complete the assignment (change status to completed)
+     * Complete the assignment (change status to completed).
      */
     public function complete(): void
     {
-        if (in_array($this->status, ['planifiee', 'en_cours'])) {
+        if (in_array($this->status, ['planifiee', 'en_cours'], true)) {
             $this->status = 'terminee';
             $this->completionRate = 100.0;
-            $this->lastUpdated = new \DateTimeImmutable();
+            $this->lastUpdated = new DateTimeImmutable();
         }
     }
 
     /**
-     * Suspend the assignment
+     * Suspend the assignment.
      */
     public function suspend(): void
     {
-        if (in_array($this->status, ['planifiee', 'en_cours'])) {
+        if (in_array($this->status, ['planifiee', 'en_cours'], true)) {
             $this->status = 'suspendue';
-            $this->lastUpdated = new \DateTimeImmutable();
+            $this->lastUpdated = new DateTimeImmutable();
         }
     }
 
     /**
-     * Resume a suspended assignment
+     * Resume a suspended assignment.
      */
     public function resume(): void
     {
         if ($this->status === 'suspendue') {
             $this->status = 'en_cours';
-            $this->lastUpdated = new \DateTimeImmutable();
+            $this->lastUpdated = new DateTimeImmutable();
         }
     }
 
     /**
-     * Update completion rate and last updated timestamp
+     * Update completion rate and last updated timestamp.
      */
     public function updateProgress(float $completionRate): void
     {
         $this->completionRate = max(0.0, min(100.0, $completionRate));
-        $this->lastUpdated = new \DateTimeImmutable();
-        
+        $this->lastUpdated = new DateTimeImmutable();
+
         // Auto-complete if 100%
         if ($this->completionRate >= 100.0 && $this->status !== 'terminee') {
             $this->complete();
@@ -718,20 +754,12 @@ class MissionAssignment
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->lastUpdated = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        $missionTitle = $this->mission ? $this->mission->getTitle() : 'Mission inconnue';
-        $studentName = $this->student ? $this->student->getFullName() : 'Alternant inconnu';
-        
-        return $missionTitle . ' - ' . $studentName;
+        $this->updatedAt = new DateTimeImmutable();
+        $this->lastUpdated = new DateTimeImmutable();
     }
 }

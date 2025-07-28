@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\SessionRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,8 +16,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Session entity representing a training session for a formation
- * 
+ * Session entity representing a training session for a formation.
+ *
  * Contains all information about a specific session including dates,
  * location, pricing, capacity, and registration status.
  */
@@ -33,7 +38,7 @@ class Session
         min: 3,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $name = null;
@@ -46,27 +51,27 @@ class Session
     #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
     #[Assert\GreaterThan(
         'today',
-        message: 'La date de début doit être ultérieure à aujourd\'hui.'
+        message: 'La date de début doit être ultérieure à aujourd\'hui.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $startDate = null;
+    private ?DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de fin est obligatoire.')]
     #[Assert\GreaterThan(
         propertyPath: 'startDate',
-        message: 'La date de fin doit être postérieure à la date de début.'
+        message: 'La date de fin doit être postérieure à la date de début.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $endDate = null;
+    private ?DateTimeInterface $endDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Assert\LessThan(
         propertyPath: 'startDate',
-        message: 'La date limite d\'inscription doit être antérieure à la date de début.'
+        message: 'La date limite d\'inscription doit être antérieure à la date de début.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $registrationDeadline = null;
+    private ?DateTimeInterface $registrationDeadline = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le lieu est obligatoire.')]
@@ -101,7 +106,7 @@ class Session
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['planned', 'open', 'confirmed', 'cancelled', 'completed'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     #[Gedmo\Versioned]
     private string $status = 'planned';
@@ -130,7 +135,7 @@ class Session
     #[ORM\Column(length: 50, nullable: true)]
     #[Assert\Choice(
         choices: ['apprentissage', 'professionnalisation'],
-        message: 'Type d\'alternance invalide.'
+        message: 'Type d\'alternance invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $alternanceType = null;
@@ -144,7 +149,7 @@ class Session
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $centerPercentage = null; // % temps centre
@@ -153,7 +158,7 @@ class Session
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'Le pourcentage doit être entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $companyPercentage = null; // % temps entreprise
@@ -167,10 +172,10 @@ class Session
     private ?string $alternanceRhythm = null; // Rythme alternance
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false)]
@@ -185,8 +190,13 @@ class Session
     public function __construct()
     {
         $this->registrations = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?? '';
     }
 
     public function getId(): ?int
@@ -202,6 +212,7 @@ class Session
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -213,39 +224,43 @@ class Session
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
-    public function getStartDate(): ?\DateTimeInterface
+    public function getStartDate(): ?DateTimeInterface
     {
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): static
+    public function setStartDate(DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
-    public function getEndDate(): ?\DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): static
+    public function setEndDate(DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
-    public function getRegistrationDeadline(): ?\DateTimeInterface
+    public function getRegistrationDeadline(): ?DateTimeInterface
     {
         return $this->registrationDeadline;
     }
 
-    public function setRegistrationDeadline(?\DateTimeInterface $registrationDeadline): static
+    public function setRegistrationDeadline(?DateTimeInterface $registrationDeadline): static
     {
         $this->registrationDeadline = $registrationDeadline;
+
         return $this;
     }
 
@@ -257,6 +272,7 @@ class Session
     public function setLocation(string $location): static
     {
         $this->location = $location;
+
         return $this;
     }
 
@@ -268,6 +284,7 @@ class Session
     public function setAddress(?string $address): static
     {
         $this->address = $address;
+
         return $this;
     }
 
@@ -279,6 +296,7 @@ class Session
     public function setMaxCapacity(int $maxCapacity): static
     {
         $this->maxCapacity = $maxCapacity;
+
         return $this;
     }
 
@@ -290,6 +308,7 @@ class Session
     public function setMinCapacity(int $minCapacity): static
     {
         $this->minCapacity = $minCapacity;
+
         return $this;
     }
 
@@ -301,6 +320,7 @@ class Session
     public function setCurrentRegistrations(int $currentRegistrations): static
     {
         $this->currentRegistrations = $currentRegistrations;
+
         return $this;
     }
 
@@ -312,6 +332,7 @@ class Session
     public function setPrice(?string $price): static
     {
         $this->price = $price;
+
         return $this;
     }
 
@@ -323,6 +344,7 @@ class Session
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -334,6 +356,7 @@ class Session
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -345,6 +368,7 @@ class Session
     public function setInstructor(?string $instructor): static
     {
         $this->instructor = $instructor;
+
         return $this;
     }
 
@@ -356,6 +380,7 @@ class Session
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -367,28 +392,31 @@ class Session
     public function setAdditionalInfo(?array $additionalInfo): static
     {
         $this->additionalInfo = $additionalInfo;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -400,6 +428,7 @@ class Session
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -442,6 +471,7 @@ class Session
     public function setIsAlternanceSession(?bool $isAlternanceSession): static
     {
         $this->isAlternanceSession = $isAlternanceSession;
+
         return $this;
     }
 
@@ -453,6 +483,7 @@ class Session
     public function setAlternanceType(?string $alternanceType): static
     {
         $this->alternanceType = $alternanceType;
+
         return $this;
     }
 
@@ -464,6 +495,7 @@ class Session
     public function setMinimumAlternanceDuration(?int $minimumAlternanceDuration): static
     {
         $this->minimumAlternanceDuration = $minimumAlternanceDuration;
+
         return $this;
     }
 
@@ -475,6 +507,7 @@ class Session
     public function setCenterPercentage(?int $centerPercentage): static
     {
         $this->centerPercentage = $centerPercentage;
+
         return $this;
     }
 
@@ -486,6 +519,7 @@ class Session
     public function setCompanyPercentage(?int $companyPercentage): static
     {
         $this->companyPercentage = $companyPercentage;
+
         return $this;
     }
 
@@ -497,6 +531,7 @@ class Session
     public function setAlternancePrerequisites(?array $alternancePrerequisites): static
     {
         $this->alternancePrerequisites = $alternancePrerequisites;
+
         return $this;
     }
 
@@ -508,11 +543,12 @@ class Session
     public function setAlternanceRhythm(?string $alternanceRhythm): static
     {
         $this->alternanceRhythm = $alternanceRhythm;
+
         return $this;
     }
 
     /**
-     * Get the available places
+     * Get the available places.
      */
     public function getAvailablePlaces(): int
     {
@@ -520,7 +556,7 @@ class Session
     }
 
     /**
-     * Check if session is full
+     * Check if session is full.
      */
     public function isFull(): bool
     {
@@ -528,7 +564,7 @@ class Session
     }
 
     /**
-     * Check if registration is open
+     * Check if registration is open.
      */
     public function isRegistrationOpen(): bool
     {
@@ -545,7 +581,7 @@ class Session
         }
 
         // Check registration deadline
-        if ($this->registrationDeadline && $this->registrationDeadline < new \DateTime()) {
+        if ($this->registrationDeadline && $this->registrationDeadline < new DateTime()) {
             return false;
         }
 
@@ -553,7 +589,7 @@ class Session
     }
 
     /**
-     * Check if session can be confirmed (minimum capacity reached)
+     * Check if session can be confirmed (minimum capacity reached).
      */
     public function canBeConfirmed(): bool
     {
@@ -561,7 +597,7 @@ class Session
     }
 
     /**
-     * Get session duration in days
+     * Get session duration in days.
      */
     public function getDurationInDays(): int
     {
@@ -570,11 +606,12 @@ class Session
         }
 
         $interval = $this->startDate->diff($this->endDate);
+
         return $interval->days + 1; // +1 to include both start and end days
     }
 
     /**
-     * Get formatted date range
+     * Get formatted date range.
      */
     public function getFormattedDateRange(): string
     {
@@ -593,7 +630,7 @@ class Session
     }
 
     /**
-     * Get formatted price with currency
+     * Get formatted price with currency.
      */
     public function getFormattedPrice(): string
     {
@@ -606,7 +643,7 @@ class Session
     }
 
     /**
-     * Get the effective price (session price or formation price)
+     * Get the effective price (session price or formation price).
      */
     public function getEffectivePrice(): ?string
     {
@@ -614,7 +651,7 @@ class Session
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -629,7 +666,7 @@ class Session
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -644,16 +681,17 @@ class Session
     }
 
     /**
-     * Update the current registrations count
+     * Update the current registrations count.
      */
     public function updateRegistrationsCount(): static
     {
         $this->currentRegistrations = $this->registrations->count();
+
         return $this;
     }
 
     /**
-     * Get alternance type label for display
+     * Get alternance type label for display.
      */
     public function getAlternanceTypeLabel(): string
     {
@@ -665,7 +703,7 @@ class Session
     }
 
     /**
-     * Get alternance rhythm description
+     * Get alternance rhythm description.
      */
     public function getAlternanceRhythmDescription(): string
     {
@@ -687,7 +725,7 @@ class Session
     }
 
     /**
-     * Check if alternance percentages are valid (should sum to 100)
+     * Check if alternance percentages are valid (should sum to 100).
      */
     public function hasValidAlternancePercentages(): bool
     {
@@ -703,7 +741,7 @@ class Session
     }
 
     /**
-     * Get formatted alternance duration
+     * Get formatted alternance duration.
      */
     public function getFormattedAlternanceDuration(): string
     {
@@ -720,7 +758,7 @@ class Session
             return $weeks . ' semaines minimum';
         }
 
-        $years = intval($weeks / 52);
+        $years = (int) ($weeks / 52);
         $remainingWeeks = $weeks % 52;
 
         if ($remainingWeeks === 0) {
@@ -734,7 +772,7 @@ class Session
     }
 
     /**
-     * Get formatted alternance prerequisites as formatted list
+     * Get formatted alternance prerequisites as formatted list.
      */
     public function getFormattedAlternancePrerequisites(): array
     {
@@ -743,7 +781,7 @@ class Session
 
     /**
      * Get alternance program (will be populated by service or repository)
-     * This method will be implemented when the relationship is established via service layer
+     * This method will be implemented when the relationship is established via service layer.
      */
     public function getAlternanceProgram(): ?object
     {
@@ -752,16 +790,11 @@ class Session
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

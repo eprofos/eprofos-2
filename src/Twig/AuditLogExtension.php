@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Twig;
 
 use App\Service\Core\AuditLogService;
@@ -9,17 +11,16 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
- * Twig Extension for Audit Log functionality
- * 
+ * Twig Extension for Audit Log functionality.
+ *
  * Provides Twig functions for accessing audit log services in templates.
  */
 class AuditLogExtension extends AbstractExtension
 {
     public function __construct(
         private AuditLogService $auditLogService,
-        private UrlGeneratorInterface $urlGenerator
-    ) {
-    }
+        private UrlGeneratorInterface $urlGenerator,
+    ) {}
 
     public function getFunctions(): array
     {
@@ -39,7 +40,7 @@ class AuditLogExtension extends AbstractExtension
     }
 
     /**
-     * Get the audit log service instance
+     * Get the audit log service instance.
      */
     public function getAuditLogService(): AuditLogService
     {
@@ -47,7 +48,7 @@ class AuditLogExtension extends AbstractExtension
     }
 
     /**
-     * Check if an entity is loggable
+     * Check if an entity is loggable.
      */
     public function isEntityLoggable(object $entity): bool
     {
@@ -55,27 +56,27 @@ class AuditLogExtension extends AbstractExtension
     }
 
     /**
-     * Generate audit history URL for an entity
+     * Generate audit history URL for an entity.
      */
     public function getAuditHistoryUrl(object $entity): string
     {
         $entityClass = get_class($entity);
         $entityId = method_exists($entity, 'getId') ? $entity->getId() : null;
-        
+
         if (!$entityId) {
             return '';
         }
 
         $encodedClass = base64_encode($entityClass);
-        
+
         return $this->urlGenerator->generate('admin_audit_entity_history', [
             'entityClass' => $encodedClass,
-            'entityId' => $entityId
+            'entityId' => $entityId,
         ]);
     }
 
     /**
-     * Base64 encode filter
+     * Base64 encode filter.
      */
     public function base64Encode(string $data): string
     {
@@ -83,10 +84,10 @@ class AuditLogExtension extends AbstractExtension
     }
 
     /**
-     * Base64 decode filter
+     * Base64 decode filter.
      */
     public function base64Decode(string $data): string
     {
-        return base64_decode($data);
+        return base64_decode($data, true);
     }
 }

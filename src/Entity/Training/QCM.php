@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\QCMRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * QCM entity representing a multiple choice questionnaire within a course
- * 
+ * QCM entity representing a multiple choice questionnaire within a course.
+ *
  * Contains detailed QCM information with questions, answers, and evaluation
  * criteria to meet Qualiopi requirements for knowledge assessment.
  */
@@ -38,7 +39,7 @@ class QCM
     private ?string $description = null;
 
     /**
-     * Instructions for completing the QCM (required by Qualiopi)
+     * Instructions for completing the QCM (required by Qualiopi).
      *
      * Clear instructions for participants on how to complete the questionnaire.
      */
@@ -47,7 +48,7 @@ class QCM
     private ?string $instructions = null;
 
     /**
-     * QCM questions with their answers and explanations
+     * QCM questions with their answers and explanations.
      *
      * JSON structure containing questions, possible answers, correct answers,
      * and explanations for each question.
@@ -57,7 +58,7 @@ class QCM
     private ?array $questions = null;
 
     /**
-     * Evaluation criteria for this QCM (required by Qualiopi)
+     * Evaluation criteria for this QCM (required by Qualiopi).
      *
      * How the QCM results will be evaluated and graded.
      */
@@ -66,7 +67,7 @@ class QCM
     private ?array $evaluationCriteria = null;
 
     /**
-     * Success criteria for QCM completion (required by Qualiopi)
+     * Success criteria for QCM completion (required by Qualiopi).
      *
      * Measurable indicators that demonstrate successful QCM completion.
      */
@@ -75,56 +76,56 @@ class QCM
     private ?array $successCriteria = null;
 
     /**
-     * Time limit for completing the QCM in minutes
+     * Time limit for completing the QCM in minutes.
      */
     #[ORM\Column(nullable: true)]
     #[Gedmo\Versioned]
     private ?int $timeLimitMinutes = null;
 
     /**
-     * Maximum score for this QCM
+     * Maximum score for this QCM.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $maxScore = null;
 
     /**
-     * Minimum score required to pass this QCM
+     * Minimum score required to pass this QCM.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $passingScore = null;
 
     /**
-     * Number of attempts allowed for this QCM
+     * Number of attempts allowed for this QCM.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $maxAttempts = 1;
 
     /**
-     * Whether to show correct answers after completion
+     * Whether to show correct answers after completion.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?bool $showCorrectAnswers = true;
 
     /**
-     * Whether to show explanations after completion
+     * Whether to show explanations after completion.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?bool $showExplanations = true;
 
     /**
-     * Whether to randomize question order
+     * Whether to randomize question order.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?bool $randomizeQuestions = false;
 
     /**
-     * Whether to randomize answer order
+     * Whether to randomize answer order.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
@@ -139,10 +140,10 @@ class QCM
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'qcms')]
     #[ORM\JoinColumn(nullable: false)]
@@ -150,9 +151,14 @@ class QCM
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->questions = [];
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -168,6 +174,7 @@ class QCM
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -179,6 +186,7 @@ class QCM
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -190,6 +198,7 @@ class QCM
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -201,6 +210,7 @@ class QCM
     public function setInstructions(?string $instructions): static
     {
         $this->instructions = $instructions;
+
         return $this;
     }
 
@@ -212,6 +222,7 @@ class QCM
     public function setQuestions(array $questions): static
     {
         $this->questions = $questions;
+
         return $this;
     }
 
@@ -223,6 +234,7 @@ class QCM
     public function setEvaluationCriteria(?array $evaluationCriteria): static
     {
         $this->evaluationCriteria = $evaluationCriteria;
+
         return $this;
     }
 
@@ -234,6 +246,7 @@ class QCM
     public function setSuccessCriteria(?array $successCriteria): static
     {
         $this->successCriteria = $successCriteria;
+
         return $this;
     }
 
@@ -245,6 +258,7 @@ class QCM
     public function setTimeLimitMinutes(?int $timeLimitMinutes): static
     {
         $this->timeLimitMinutes = $timeLimitMinutes;
+
         return $this;
     }
 
@@ -256,6 +270,7 @@ class QCM
     public function setMaxScore(int $maxScore): static
     {
         $this->maxScore = $maxScore;
+
         return $this;
     }
 
@@ -267,6 +282,7 @@ class QCM
     public function setPassingScore(int $passingScore): static
     {
         $this->passingScore = $passingScore;
+
         return $this;
     }
 
@@ -278,6 +294,7 @@ class QCM
     public function setMaxAttempts(int $maxAttempts): static
     {
         $this->maxAttempts = $maxAttempts;
+
         return $this;
     }
 
@@ -289,6 +306,7 @@ class QCM
     public function setShowCorrectAnswers(bool $showCorrectAnswers): static
     {
         $this->showCorrectAnswers = $showCorrectAnswers;
+
         return $this;
     }
 
@@ -300,6 +318,7 @@ class QCM
     public function setShowExplanations(bool $showExplanations): static
     {
         $this->showExplanations = $showExplanations;
+
         return $this;
     }
 
@@ -311,6 +330,7 @@ class QCM
     public function setRandomizeQuestions(bool $randomizeQuestions): static
     {
         $this->randomizeQuestions = $randomizeQuestions;
+
         return $this;
     }
 
@@ -322,6 +342,7 @@ class QCM
     public function setRandomizeAnswers(bool $randomizeAnswers): static
     {
         $this->randomizeAnswers = $randomizeAnswers;
+
         return $this;
     }
 
@@ -333,6 +354,7 @@ class QCM
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -344,28 +366,31 @@ class QCM
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -377,11 +402,12 @@ class QCM
     public function setCourse(?Course $course): static
     {
         $this->course = $course;
+
         return $this;
     }
 
     /**
-     * Get the number of questions in this QCM
+     * Get the number of questions in this QCM.
      */
     public function getQuestionCount(): int
     {
@@ -389,7 +415,7 @@ class QCM
     }
 
     /**
-     * Get passing percentage
+     * Get passing percentage.
      */
     public function getPassingPercentage(): float
     {
@@ -401,7 +427,7 @@ class QCM
     }
 
     /**
-     * Get formatted time limit
+     * Get formatted time limit.
      */
     public function getFormattedTimeLimit(): string
     {
@@ -413,7 +439,7 @@ class QCM
             return $this->timeLimitMinutes . 'min';
         }
 
-        $hours = intval($this->timeLimitMinutes / 60);
+        $hours = (int) ($this->timeLimitMinutes / 60);
         $minutes = $this->timeLimitMinutes % 60;
 
         if ($minutes === 0) {
@@ -424,16 +450,17 @@ class QCM
     }
 
     /**
-     * Add a question to the QCM
+     * Add a question to the QCM.
      */
     public function addQuestion(array $question): static
     {
         $this->questions[] = $question;
+
         return $this;
     }
 
     /**
-     * Remove a question from the QCM by index
+     * Remove a question from the QCM by index.
      */
     public function removeQuestion(int $index): static
     {
@@ -441,28 +468,25 @@ class QCM
             unset($this->questions[$index]);
             $this->questions = array_values($this->questions); // Reindex array
         }
+
         return $this;
     }
 
     /**
-     * Update a question in the QCM
+     * Update a question in the QCM.
      */
     public function updateQuestion(int $index, array $question): static
     {
         if (isset($this->questions[$index])) {
             $this->questions[$index] = $question;
         }
+
         return $this;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

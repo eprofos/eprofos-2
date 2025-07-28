@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
-use App\Entity\Alternance\AlternanceProgram;
 use App\Entity\Training\Formation;
 use App\Entity\User\Mentor;
 use App\Repository\Alternance\AlternanceContractRepository;
 use App\Repository\Alternance\AlternanceProgramRepository;
 use App\Service\Alternance\PlanningAnalyticsService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +28,7 @@ class PlanningController extends AbstractController
         private AlternanceContractRepository $contractRepository,
         private AlternanceProgramRepository $programRepository,
         private EntityManagerInterface $entityManager,
-        private PlanningAnalyticsService $analyticsService
+        private PlanningAnalyticsService $analyticsService,
     ) {}
 
     #[Route('', name: 'admin_alternance_planning_index', methods: ['GET'])]
@@ -44,44 +48,51 @@ class PlanningController extends AbstractController
         // Get contracts with pagination for planning view
         $page = $request->query->getInt('page', 1);
         $perPage = 20;
-        
+
         $qb = $this->contractRepository->createQueryBuilder('c')
             ->leftJoin('c.student', 's')
             ->leftJoin('c.session', 'session')
             ->leftJoin('session.formation', 'f')
             ->leftJoin('c.mentor', 'm')
-            ->orderBy('c.startDate', 'DESC');
+            ->orderBy('c.startDate', 'DESC')
+        ;
 
         if ($formation) {
             $qb->andWhere('f.id = :formation')
-               ->setParameter('formation', $formation);
+                ->setParameter('formation', $formation)
+            ;
         }
 
         if ($mentor) {
             $qb->andWhere('m.id = :mentor')
-               ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         $contracts = $qb->setFirstResult(($page - 1) * $perPage)
-                        ->setMaxResults($perPage)
-                        ->getQuery()
-                        ->getResult();
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult()
+        ;
 
         // Create count query with same filters
         $countQb = $this->contractRepository->createQueryBuilder('c2')
             ->select('COUNT(c2.id)')
             ->leftJoin('c2.session', 'session2')
             ->leftJoin('session2.formation', 'f2')
-            ->leftJoin('c2.mentor', 'm2');
+            ->leftJoin('c2.mentor', 'm2')
+        ;
 
         if ($formation) {
             $countQb->andWhere('f2.id = :formation')
-                   ->setParameter('formation', $formation);
+                ->setParameter('formation', $formation)
+            ;
         }
 
         if ($mentor) {
             $countQb->andWhere('m2.id = :mentor')
-                   ->setParameter('mentor', $mentor);
+                ->setParameter('mentor', $mentor)
+            ;
         }
 
         $totalContracts = (int) $countQb->getQuery()->getSingleScalarResult();
@@ -91,11 +102,13 @@ class PlanningController extends AbstractController
 
         // Get formations for filter dropdown
         $formations = $this->entityManager->getRepository(Formation::class)
-            ->findActiveFormations();
+            ->findActiveFormations()
+        ;
 
         // Get mentors for filter dropdown
         $mentors = $this->entityManager->getRepository(Mentor::class)
-            ->findAll();
+            ->findAll()
+        ;
 
         return $this->render('admin/alternance/planning/index.html.twig', [
             'view' => $view,
@@ -120,22 +133,24 @@ class PlanningController extends AbstractController
         // Generate sample calendar events for demonstration
         $events = [];
         $contracts = $this->contractRepository->findAll();
-        
+
         foreach ($contracts as $contract) {
             if ($contract->getStartDate() && $contract->getEndDate()) {
                 $events[] = [
                     'id' => $contract->getId(),
-                    'title' => sprintf('%s - %s', 
+                    'title' => sprintf(
+                        '%s - %s',
                         $contract->getStudent()->getFullName(),
-                        $contract->getSession()?->getFormation()?->getTitle() ?? 'Formation'
+                        $contract->getSession()?->getFormation()?->getTitle() ?? 'Formation',
                     ),
                     'start' => $contract->getStartDate()->format('Y-m-d'),
                     'end' => $contract->getEndDate()->format('Y-m-d'),
                     'color' => $this->getContractColor($contract),
-                    'description' => sprintf('Contrat %s - %s', 
+                    'description' => sprintf(
+                        'Contrat %s - %s',
                         $contract->getStatus(),
-                        $contract->getStudent()->getEmail()
-                    )
+                        $contract->getStudent()->getEmail(),
+                    ),
                 ];
             }
         }
@@ -151,7 +166,7 @@ class PlanningController extends AbstractController
                 // Here you would update the contract schedule
                 // For now, just show a success message
                 $this->addFlash('success', 'Planning mis à jour avec succès.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
             }
 
@@ -174,12 +189,13 @@ class PlanningController extends AbstractController
     {
         $period = $request->query->get('period', 'semester');
         $formation = $request->query->get('formation');
-        
+
         $analytics = $this->analyticsService->getAnalyticsData($period, $formation);
 
         // Get formations for filter dropdown
         $formations = $this->entityManager->getRepository(Formation::class)
-            ->findActiveFormations();
+            ->findActiveFormations()
+        ;
 
         return $this->render('admin/alternance/planning/analytics.html.twig', [
             'analytics' => $analytics,
@@ -203,16 +219,17 @@ class PlanningController extends AbstractController
                 $content = $this->generateCsvContent($exportData);
                 $contentType = 'text/csv';
             } else {
-                throw new \InvalidArgumentException("Format d'export non supporté: {$format}");
+                throw new InvalidArgumentException("Format d'export non supporté: {$format}");
             }
 
             $response = new Response($content);
             $response->headers->set('Content-Type', $contentType);
-            $response->headers->set('Content-Disposition', 'attachment; filename="planning_alternance.'.$format.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="planning_alternance.' . $format . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_planning_index');
         }
     }
@@ -220,7 +237,7 @@ class PlanningController extends AbstractController
     private function generateCsvContent(array $exportData): string
     {
         $output = fopen('php://temp', 'r+');
-        
+
         // Headers
         fputcsv($output, [
             'ID Contrat',
@@ -234,9 +251,9 @@ class PlanningController extends AbstractController
             'Heures centre',
             'Heures entreprise',
             'Tuteur',
-            'Durée'
+            'Durée',
         ]);
-        
+
         // Data
         foreach ($exportData as $row) {
             fputcsv($output, [
@@ -251,20 +268,20 @@ class PlanningController extends AbstractController
                 $row['center_hours'],
                 $row['company_hours'],
                 $row['mentor'],
-                $row['duration']
+                $row['duration'],
             ]);
         }
-        
+
         rewind($output);
         $content = stream_get_contents($output);
         fclose($output);
-        
+
         return $content;
     }
 
     private function getContractColor(AlternanceContract $contract): string
     {
-        return match($contract->getStatus()) {
+        return match ($contract->getStatus()) {
             'active' => '#28a745',
             'pending' => '#ffc107',
             'completed' => '#6c757d',
@@ -279,22 +296,22 @@ class PlanningController extends AbstractController
         return [
             'current_week' => [
                 'type' => 'enterprise',
-                'start_date' => (new \DateTime())->format('Y-m-d'),
-                'end_date' => (new \DateTime('+4 days'))->format('Y-m-d'),
-                'description' => 'Semaine en entreprise'
+                'start_date' => (new DateTime())->format('Y-m-d'),
+                'end_date' => (new DateTime('+4 days'))->format('Y-m-d'),
+                'description' => 'Semaine en entreprise',
             ],
             'next_weeks' => [
                 [
                     'type' => 'training_center',
-                    'start_date' => (new \DateTime('+7 days'))->format('Y-m-d'),
-                    'end_date' => (new \DateTime('+11 days'))->format('Y-m-d'),
-                    'description' => 'Semaine de formation au centre'
-                ]
+                    'start_date' => (new DateTime('+7 days'))->format('Y-m-d'),
+                    'end_date' => (new DateTime('+11 days'))->format('Y-m-d'),
+                    'description' => 'Semaine de formation au centre',
+                ],
             ],
             'rhythm' => '3 semaines entreprise / 1 semaine centre',
             'total_hours_enterprise' => 450,
             'total_hours_training' => 150,
-            'completion_percentage' => 65.5
+            'completion_percentage' => 65.5,
         ];
     }
 
@@ -306,9 +323,9 @@ class PlanningController extends AbstractController
                 'type' => 'overlap',
                 'severity' => 'warning',
                 'description' => 'Chevauchement possible avec les congés',
-                'date' => (new \DateTime('+15 days'))->format('Y-m-d'),
-                'suggested_action' => 'Vérifier les disponibilités'
-            ]
+                'date' => (new DateTime('+15 days'))->format('Y-m-d'),
+                'suggested_action' => 'Vérifier les disponibilités',
+            ],
         ];
     }
 }

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Entity\Assessment\QuestionnaireResponse;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CompleteQuestionnaireCommand extends Command
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -35,38 +38,42 @@ class CompleteQuestionnaireCommand extends Command
 
         try {
             $response = $this->entityManager->getRepository(QuestionnaireResponse::class)
-                ->findOneBy(['token' => $token]);
+                ->findOneBy(['token' => $token])
+            ;
 
             if (!$response) {
                 $io->error('No questionnaire response found with token: ' . $token);
+
                 return Command::FAILURE;
             }
 
             if ($response->isCompleted()) {
                 $io->warning('Questionnaire response is already completed.');
                 $io->note('You can access the completed page at: /questionnaire/completed/' . $token);
+
                 return Command::SUCCESS;
             }
 
             // Mark as completed
             $response->markAsCompleted();
-            
+
             // Set some test scores if it's an evaluation questionnaire
-            if (in_array($response->getQuestionnaire()->getType(), ['evaluation', 'skills_assessment'])) {
+            if (in_array($response->getQuestionnaire()->getType(), ['evaluation', 'skills_assessment'], true)) {
                 $response->setTotalScore(85)
                     ->setMaxPossibleScore(100)
-                    ->setScorePercentage('85.00');
+                    ->setScorePercentage('85.00')
+                ;
             }
-            
+
             $this->entityManager->flush();
 
             $io->success('Questionnaire response marked as completed!');
             $io->note('You can access the completed page at: /questionnaire/completed/' . $token);
 
             return Command::SUCCESS;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $io->error('Failed to complete questionnaire: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
     }

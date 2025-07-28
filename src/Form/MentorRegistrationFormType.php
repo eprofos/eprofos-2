@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\User\Mentor;
@@ -22,8 +24,8 @@ use Symfony\Component\Validator\Constraints\PositiveOrZero;
 use Symfony\Component\Validator\Constraints\Regex;
 
 /**
- * Mentor Registration Form
- * 
+ * Mentor Registration Form.
+ *
  * Form for new mentor registration with company information and expertise validation.
  */
 class MentorRegistrationFormType extends AbstractType
@@ -36,18 +38,18 @@ class MentorRegistrationFormType extends AbstractType
                 'label' => 'Email professionnel',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'votre@email.com'
+                    'placeholder' => 'votre@email.com',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir un email']),
                 ],
-                'help' => 'Utilisez de préférence votre email professionnel'
+                'help' => 'Utilisez de préférence votre email professionnel',
             ])
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre prénom'
+                    'placeholder' => 'Votre prénom',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre prénom']),
@@ -63,7 +65,7 @@ class MentorRegistrationFormType extends AbstractType
                 'label' => 'Nom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Votre nom'
+                    'placeholder' => 'Votre nom',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre nom']),
@@ -80,9 +82,9 @@ class MentorRegistrationFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '01 23 45 67 89'
+                    'placeholder' => '01 23 45 67 89',
                 ],
-                'help' => 'Numéro de téléphone professionnel de préférence'
+                'help' => 'Numéro de téléphone professionnel de préférence',
             ])
 
             // Professional Information
@@ -90,7 +92,7 @@ class MentorRegistrationFormType extends AbstractType
                 'label' => 'Poste / Fonction',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'ex: Responsable RH, Directeur commercial...'
+                    'placeholder' => 'ex: Responsable RH, Directeur commercial...',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre poste']),
@@ -108,7 +110,7 @@ class MentorRegistrationFormType extends AbstractType
                 'label' => 'Nom de l\'entreprise',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Raison sociale de votre entreprise'
+                    'placeholder' => 'Raison sociale de votre entreprise',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir le nom de l\'entreprise']),
@@ -125,7 +127,7 @@ class MentorRegistrationFormType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => '12345678901234 (14 chiffres)',
-                    'maxlength' => '14'
+                    'maxlength' => '14',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir le SIRET']),
@@ -135,10 +137,10 @@ class MentorRegistrationFormType extends AbstractType
                     ]),
                     new Regex([
                         'pattern' => '/^\d{14}$/',
-                        'message' => 'Le SIRET doit contenir uniquement des chiffres'
-                    ])
+                        'message' => 'Le SIRET doit contenir uniquement des chiffres',
+                    ]),
                 ],
-                'help' => 'Numéro SIRET à 14 chiffres de votre entreprise'
+                'help' => 'Numéro SIRET à 14 chiffres de votre entreprise',
             ])
 
             // Expertise and Experience
@@ -150,15 +152,15 @@ class MentorRegistrationFormType extends AbstractType
                 'attr' => [
                     'class' => 'form-select',
                     'data-controller' => 'choices',
-                    'multiple' => 'multiple'
+                    'multiple' => 'multiple',
                 ],
                 'constraints' => [
                     new Count([
                         'min' => 1,
-                        'minMessage' => 'Veuillez sélectionner au moins un domaine d\'expertise'
-                    ])
+                        'minMessage' => 'Veuillez sélectionner au moins un domaine d\'expertise',
+                    ]),
                 ],
-                'help' => 'Sélectionnez un ou plusieurs domaines dans lesquels vous pouvez encadrer des alternants'
+                'help' => 'Sélectionnez un ou plusieurs domaines dans lesquels vous pouvez encadrer des alternants',
             ])
             ->add('experienceYears', IntegerType::class, [
                 'label' => 'Années d\'expérience professionnelle',
@@ -166,25 +168,25 @@ class MentorRegistrationFormType extends AbstractType
                     'class' => 'form-control',
                     'placeholder' => 'ex: 5',
                     'min' => '0',
-                    'max' => '50'
+                    'max' => '50',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir votre expérience']),
                     new PositiveOrZero(['message' => 'L\'expérience doit être un nombre positif']),
                 ],
-                'help' => 'Nombre d\'années d\'expérience dans votre domaine'
+                'help' => 'Nombre d\'années d\'expérience dans votre domaine',
             ])
             ->add('educationLevel', ChoiceType::class, [
                 'label' => 'Niveau de formation',
                 'choices' => Mentor::EDUCATION_LEVELS,
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez sélectionner votre niveau de formation']),
                 ],
                 'placeholder' => 'Sélectionnez votre niveau',
-                'help' => 'Votre plus haut niveau de formation obtenu'
+                'help' => 'Votre plus haut niveau de formation obtenu',
             ])
 
             // Password
@@ -195,11 +197,11 @@ class MentorRegistrationFormType extends AbstractType
                 'required' => true,
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['placeholder' => 'Choisissez un mot de passe sécurisé']
+                    'attr' => ['placeholder' => 'Choisissez un mot de passe sécurisé'],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['placeholder' => 'Confirmez votre mot de passe']
+                    'attr' => ['placeholder' => 'Confirmez votre mot de passe'],
                 ],
                 'mapped' => false,
                 'constraints' => [
@@ -210,7 +212,7 @@ class MentorRegistrationFormType extends AbstractType
                         'max' => 4096,
                     ]),
                 ],
-                'help' => 'Minimum 8 caractères avec lettres, chiffres et caractères spéciaux recommandés'
+                'help' => 'Minimum 8 caractères avec lettres, chiffres et caractères spéciaux recommandés',
             ])
 
             // Terms and Conditions
@@ -243,7 +245,7 @@ class MentorRegistrationFormType extends AbstractType
                         'message' => 'Vous devez accepter les conditions spécifiques aux mentors.',
                     ]),
                 ],
-                'help' => 'En tant que mentor, vous vous engagez à accompagner les alternants selon les standards de qualité EPROFOS'
+                'help' => 'En tant que mentor, vous vous engagez à accompagner les alternants selon les standards de qualité EPROFOS',
             ])
         ;
     }

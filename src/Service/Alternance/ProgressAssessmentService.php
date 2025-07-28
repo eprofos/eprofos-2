@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\ProgressAssessment;
-use App\Entity\User\Student;
 use App\Entity\Core\StudentProgress;
+use App\Entity\User\Student;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Core\StudentProgressRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * ProgressAssessmentService
- * 
+ * ProgressAssessmentService.
+ *
  * Handles business logic for progress assessment management including
  * creation, calculation, risk assessment, and progression tracking.
  */
@@ -22,20 +26,20 @@ class ProgressAssessmentService
         private EntityManagerInterface $entityManager,
         private ProgressAssessmentRepository $progressAssessmentRepository,
         private StudentProgressRepository $studentProgressRepository,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Create a new progress assessment
+     * Create a new progress assessment.
      */
     public function createProgressAssessment(
         Student $student,
-        \DateTimeInterface $period
+        DateTimeInterface $period,
     ): ProgressAssessment {
         $assessment = new ProgressAssessment();
         $assessment->setStudent($student)
-            ->setPeriod($period);
+            ->setPeriod($period)
+        ;
 
         // Calculate initial progression values
         $this->calculateProgression($assessment);
@@ -46,14 +50,14 @@ class ProgressAssessmentService
         $this->logger->info('Progress assessment created', [
             'assessment_id' => $assessment->getId(),
             'student_id' => $student->getId(),
-            'period' => $period->format('Y-m-d')
+            'period' => $period->format('Y-m-d'),
         ]);
 
         return $assessment;
     }
 
     /**
-     * Calculate progression for an assessment
+     * Calculate progression for an assessment.
      */
     public function calculateProgression(ProgressAssessment $assessment): ProgressAssessment
     {
@@ -62,8 +66,9 @@ class ProgressAssessmentService
 
         if (!$studentProgress) {
             $this->logger->warning('No student progress found for progression calculation', [
-                'student_id' => $student->getId()
+                'student_id' => $student->getId(),
             ]);
+
             return $assessment;
         }
 
@@ -88,19 +93,19 @@ class ProgressAssessmentService
     }
 
     /**
-     * Update progress assessment with objectives
+     * Update progress assessment with objectives.
      */
     public function updateObjectives(
         ProgressAssessment $assessment,
         array $completedObjectives = [],
         array $pendingObjectives = [],
-        array $upcomingObjectives = []
+        array $upcomingObjectives = [],
     ): ProgressAssessment {
         foreach ($completedObjectives as $objective) {
             $assessment->addCompletedObjective(
                 $objective['category'] ?? 'general',
                 $objective['objective'],
-                isset($objective['completed_at']) ? new \DateTime($objective['completed_at']) : null
+                isset($objective['completed_at']) ? new DateTime($objective['completed_at']) : null,
             );
         }
 
@@ -109,7 +114,7 @@ class ProgressAssessmentService
                 $objective['category'] ?? 'general',
                 $objective['objective'],
                 $objective['target_date'] ?? null,
-                $objective['priority'] ?? 3
+                $objective['priority'] ?? 3,
             );
         }
 
@@ -117,7 +122,7 @@ class ProgressAssessmentService
             $assessment->addUpcomingObjective(
                 $objective['category'] ?? 'general',
                 $objective['objective'],
-                $objective['start_date'] ?? null
+                $objective['start_date'] ?? null,
             );
         }
 
@@ -127,7 +132,7 @@ class ProgressAssessmentService
     }
 
     /**
-     * Add difficulties to assessment
+     * Add difficulties to assessment.
      */
     public function addDifficulties(ProgressAssessment $assessment, array $difficulties): ProgressAssessment
     {
@@ -135,7 +140,7 @@ class ProgressAssessmentService
             $assessment->addDifficulty(
                 $difficulty['area'] ?? 'general',
                 $difficulty['description'],
-                $difficulty['severity'] ?? 3
+                $difficulty['severity'] ?? 3,
             );
         }
 
@@ -148,7 +153,7 @@ class ProgressAssessmentService
     }
 
     /**
-     * Add support needed to assessment
+     * Add support needed to assessment.
      */
     public function addSupportNeeded(ProgressAssessment $assessment, array $supportItems): ProgressAssessment
     {
@@ -156,7 +161,7 @@ class ProgressAssessmentService
             $assessment->addSupportNeeded(
                 $support['type'] ?? 'general',
                 $support['description'],
-                $support['urgency'] ?? 3
+                $support['urgency'] ?? 3,
             );
         }
 
@@ -169,9 +174,9 @@ class ProgressAssessmentService
     }
 
     /**
-     * Generate comprehensive progress report
+     * Generate comprehensive progress report.
      */
-    public function generateProgressReport(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function generateProgressReport(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $assessments = $this->progressAssessmentRepository->findByStudentAndDateRange($student, $startDate, $endDate);
         $trend = $this->progressAssessmentRepository->getStudentProgressionTrend($student, 6);
@@ -180,20 +185,20 @@ class ProgressAssessmentService
             'student' => [
                 'id' => $student->getId(),
                 'name' => $student->getFullName(),
-                'email' => $student->getEmail()
+                'email' => $student->getEmail(),
             ],
             'period' => [
                 'start' => $startDate->format('Y-m-d'),
-                'end' => $endDate->format('Y-m-d')
+                'end' => $endDate->format('Y-m-d'),
             ],
             'summary' => [
                 'total_assessments' => count($assessments),
                 'current_risk_level' => null,
                 'current_progression' => null,
-                'progression_trend' => $this->calculateProgressionTrend($trend)
+                'progression_trend' => $this->calculateProgressionTrend($trend),
             ],
             'assessments' => [],
-            'recommendations' => []
+            'recommendations' => [],
         ];
 
         if (!empty($assessments)) {
@@ -210,7 +215,7 @@ class ProgressAssessmentService
                     'overall_progression' => (float) $assessment->getOverallProgression(),
                     'risk_level' => $assessment->getRiskLevel(),
                     'objectives_summary' => $assessment->getObjectivesSummary(),
-                    'skills_summary' => $assessment->getSkillsMatrixSummary()
+                    'skills_summary' => $assessment->getSkillsMatrixSummary(),
                 ];
             }
 
@@ -222,14 +227,14 @@ class ProgressAssessmentService
     }
 
     /**
-     * Detect students at risk
+     * Detect students at risk.
      */
     public function detectStudentsAtRisk(int $riskThreshold = 3): array
     {
         $atRiskAssessments = $this->progressAssessmentRepository->findStudentsAtRisk($riskThreshold);
-        
+
         $studentsAtRisk = [];
-        
+
         foreach ($atRiskAssessments as $assessment) {
             $student = $assessment->getStudent();
             $studentData = [
@@ -238,9 +243,9 @@ class ProgressAssessmentService
                 'risk_level' => $assessment->getRiskLevel(),
                 'risk_factors' => $assessment->getRiskFactorsAnalysis(),
                 'last_assessment_date' => $assessment->getPeriod(),
-                'recommendations' => $this->generateRecommendations($assessment)
+                'recommendations' => $this->generateRecommendations($assessment),
             ];
-            
+
             $studentsAtRisk[] = $studentData;
         }
 
@@ -248,7 +253,7 @@ class ProgressAssessmentService
     }
 
     /**
-     * Generate intervention plan for at-risk student
+     * Generate intervention plan for at-risk student.
      */
     public function generateInterventionPlan(ProgressAssessment $assessment): array
     {
@@ -265,9 +270,9 @@ class ProgressAssessmentService
                         'actions' => [
                             'Entretien avec le référent pédagogique',
                             'Plan de rattrapage personnalisé',
-                            'Tutorat intensif'
+                            'Tutorat intensif',
                         ],
-                        'timeline' => '2 semaines'
+                        'timeline' => '2 semaines',
                     ];
                     break;
 
@@ -279,9 +284,9 @@ class ProgressAssessmentService
                         'actions' => [
                             'Rencontre tripartite étudiant-formateur-tuteur',
                             'Adaptation du rythme de formation',
-                            'Ressources pédagogiques supplémentaires'
+                            'Ressources pédagogiques supplémentaires',
                         ],
-                        'timeline' => '1 semaine'
+                        'timeline' => '1 semaine',
                     ];
                     break;
 
@@ -293,9 +298,9 @@ class ProgressAssessmentService
                         'actions' => [
                             'Réunion de coordination tripartite',
                             'Ajustement du planning alternance',
-                            'Clarification des objectifs'
+                            'Clarification des objectifs',
                         ],
-                        'timeline' => '3 semaines'
+                        'timeline' => '3 semaines',
                     ];
                     break;
             }
@@ -310,9 +315,9 @@ class ProgressAssessmentService
                 'actions' => [
                     'Entretien de situation',
                     'Évaluation des besoins',
-                    'Plan d\'accompagnement personnalisé'
+                    'Plan d\'accompagnement personnalisé',
                 ],
-                'timeline' => '2 semaines'
+                'timeline' => '2 semaines',
             ];
         }
 
@@ -320,12 +325,171 @@ class ProgressAssessmentService
     }
 
     /**
-     * Calculate company progression from student progress
+     * Update assessment from external data source.
+     */
+    public function updateFromExternalData(ProgressAssessment $assessment, array $externalData): ProgressAssessment
+    {
+        // This method would be used to update assessments from external systems
+        // Implementation depends on the specific external data format
+
+        if (isset($externalData['progression'])) {
+            $progression = $externalData['progression'];
+            if (isset($progression['center'])) {
+                $assessment->setCenterProgression(number_format($progression['center'], 2));
+            }
+            if (isset($progression['company'])) {
+                $assessment->setCompanyProgression(number_format($progression['company'], 2));
+            }
+            $assessment->calculateOverallProgression();
+        }
+
+        if (isset($externalData['skills_matrix'])) {
+            foreach ($externalData['skills_matrix'] as $skillCode => $skillData) {
+                $assessment->updateSkillInMatrix(
+                    $skillCode,
+                    $skillData['name'],
+                    $skillData['level'],
+                    $skillData['last_assessed'] ?? null,
+                );
+            }
+        }
+
+        $assessment->calculateRiskLevel();
+        $this->entityManager->flush();
+
+        return $assessment;
+    }
+
+    /**
+     * Generate period report for multiple students.
+     */
+    public function generatePeriodReport(DateTimeInterface $startDate, DateTimeInterface $endDate): array
+    {
+        return $this->progressAssessmentRepository->generateProgressionReport($startDate, $endDate);
+    }
+
+    /**
+     * Export progress data for Qualiopi compliance.
+     */
+    public function exportProgressData(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
+    {
+        $assessments = $this->progressAssessmentRepository->findByStudentAndDateRange($student, $startDate, $endDate);
+
+        $exportData = [
+            'student' => [
+                'id' => $student->getId(),
+                'name' => $student->getFullName(),
+                'email' => $student->getEmail(),
+            ],
+            'period' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+            ],
+            'progression_data' => [],
+            'compliance_indicators' => [],
+        ];
+
+        foreach ($assessments as $assessment) {
+            $exportData['progression_data'][] = [
+                'id' => $assessment->getId(),
+                'period' => $assessment->getPeriod()->format('Y-m-d'),
+                'center_progression' => (float) $assessment->getCenterProgression(),
+                'company_progression' => (float) $assessment->getCompanyProgression(),
+                'overall_progression' => (float) $assessment->getOverallProgression(),
+                'risk_level' => $assessment->getRiskLevel(),
+                'objectives_completion_rate' => $assessment->calculateObjectivesCompletionRate(),
+                'skills_mastery_rate' => $assessment->getSkillsMatrixSummary()['mastered_skills'] ?? 0,
+                'progression_status' => $assessment->getProgressionStatus(),
+            ];
+        }
+
+        // Add compliance indicators
+        if (!empty($assessments)) {
+            $latestAssessment = end($assessments);
+            $exportData['compliance_indicators'] = [
+                'regular_assessment' => count($assessments) >= 4, // Quarterly assessments
+                'progression_tracking' => true,
+                'risk_monitoring' => $latestAssessment->getRiskLevel() <= 3,
+                'skills_development' => !empty($latestAssessment->getSkillsMatrix()),
+                'objectives_management' => $latestAssessment->calculateObjectivesCompletionRate() > 0,
+            ];
+        }
+
+        return $exportData;
+    }
+
+    /**
+     * Analyze assessment and provide detailed insights.
+     */
+    public function analyzeAssessment(ProgressAssessment $assessment): array
+    {
+        return [
+            'overall_status' => $this->getOverallStatus($assessment),
+            'progression_analysis' => $this->analyzeProgression($assessment),
+            'risk_analysis' => $assessment->getRiskFactorsAnalysis(),
+            'objectives_analysis' => $this->analyzeObjectives($assessment),
+            'skills_analysis' => $this->analyzeSkills($assessment),
+            'recommendations' => $this->generateRecommendations($assessment),
+            'intervention_plan' => $this->generateInterventionPlan($assessment),
+            'trends' => $this->getProgressionTrends($assessment),
+        ];
+    }
+
+    /**
+     * Approve an assessment.
+     */
+    public function approveAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
+    {
+        // For now, we'll add a note to the assessment about approval
+        // In a real implementation, you might add a validation_status field to the entity
+        $assessment->setNextSteps(
+            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
+            '[VALIDÉ ' . (new DateTime())->format('d/m/Y H:i') . '] ' .
+            ($comments ?: 'Évaluation approuvée'),
+        );
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Progress assessment approved', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments,
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Reject an assessment.
+     */
+    public function rejectAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
+    {
+        // For now, we'll add a note to the assessment about rejection
+        // In a real implementation, you might add a validation_status field to the entity
+        $assessment->setNextSteps(
+            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
+            '[REJETÉ ' . (new DateTime())->format('d/m/Y H:i') . '] ' .
+            ($comments ?: 'Évaluation rejetée - révision nécessaire'),
+        );
+
+        $this->entityManager->flush();
+
+        $this->logger->info('Progress assessment rejected', [
+            'assessment_id' => $assessment->getId(),
+            'student_id' => $assessment->getStudent()->getId(),
+            'comments' => $comments,
+        ]);
+
+        return $assessment;
+    }
+
+    /**
+     * Calculate company progression from student progress.
      */
     private function calculateCompanyProgression(StudentProgress $studentProgress): float
     {
         $missionProgress = $studentProgress->getMissionProgress();
-        
+
         if (empty($missionProgress)) {
             return 0.0;
         }
@@ -336,7 +500,7 @@ class ProgressAssessmentService
         foreach ($missionProgress as $mission) {
             $completionRate = $mission['completion_rate'] ?? 0;
             $weight = 1; // All missions have equal weight for now
-            
+
             $weightedCompletion += $completionRate * $weight;
             $totalWeight += $weight;
         }
@@ -345,24 +509,24 @@ class ProgressAssessmentService
     }
 
     /**
-     * Update skills matrix in assessment
+     * Update skills matrix in assessment.
      */
     private function updateSkillsMatrix(ProgressAssessment $assessment, StudentProgress $studentProgress): void
     {
         $skillsAcquired = $studentProgress->getSkillsAcquired();
-        
+
         foreach ($skillsAcquired as $skillCode => $skillData) {
             $assessment->updateSkillInMatrix(
                 $skillCode,
                 $skillData['name'] ?? $skillCode,
                 $skillData['level'] ?? 0,
-                $skillData['acquired_at'] ?? null
+                $skillData['acquired_at'] ?? null,
             );
         }
     }
 
     /**
-     * Calculate progression trend
+     * Calculate progression trend.
      */
     private function calculateProgressionTrend(array $trend): string
     {
@@ -384,15 +548,16 @@ class ProgressAssessmentService
 
         if ($difference > 10) {
             return 'improving';
-        } elseif ($difference < -10) {
-            return 'declining';
-        } else {
-            return 'stable';
         }
+        if ($difference < -10) {
+            return 'declining';
+        }
+
+        return 'stable';
     }
 
     /**
-     * Generate recommendations based on assessment
+     * Generate recommendations based on assessment.
      */
     private function generateRecommendations(ProgressAssessment $assessment): array
     {
@@ -406,14 +571,14 @@ class ProgressAssessmentService
                 'type' => 'urgent_intervention',
                 'priority' => 'high',
                 'title' => 'Intervention urgente requise',
-                'description' => 'Le niveau de risque critique nécessite une intervention immédiate.'
+                'description' => 'Le niveau de risque critique nécessite une intervention immédiate.',
             ];
         } elseif ($riskLevel >= 3) {
             $recommendations[] = [
                 'type' => 'increased_monitoring',
                 'priority' => 'medium',
                 'title' => 'Surveillance renforcée',
-                'description' => 'Augmenter la fréquence des points de suivi.'
+                'description' => 'Augmenter la fréquence des points de suivi.',
             ];
         }
 
@@ -423,14 +588,14 @@ class ProgressAssessmentService
                 'type' => 'intensive_support',
                 'priority' => 'high',
                 'title' => 'Soutien intensif nécessaire',
-                'description' => 'Mise en place d\'un plan de rattrapage intensif.'
+                'description' => 'Mise en place d\'un plan de rattrapage intensif.',
             ];
         } elseif ($progressionStatus === 'needs_improvement') {
             $recommendations[] = [
                 'type' => 'additional_support',
                 'priority' => 'medium',
                 'title' => 'Accompagnement supplémentaire',
-                'description' => 'Renforcer l\'accompagnement pédagogique et professionnel.'
+                'description' => 'Renforcer l\'accompagnement pédagogique et professionnel.',
             ];
         }
 
@@ -441,7 +606,7 @@ class ProgressAssessmentService
                 'type' => 'objectives_review',
                 'priority' => 'medium',
                 'title' => 'Révision des objectifs',
-                'description' => 'Revoir et adapter les objectifs pédagogiques.'
+                'description' => 'Revoir et adapter les objectifs pédagogiques.',
             ];
         }
 
@@ -451,7 +616,7 @@ class ProgressAssessmentService
                 'type' => 'skills_reinforcement',
                 'priority' => 'medium',
                 'title' => 'Renforcement des compétences',
-                'description' => 'Focus sur les compétences en régression.'
+                'description' => 'Focus sur les compétences en régression.',
             ];
         }
 
@@ -459,174 +624,13 @@ class ProgressAssessmentService
     }
 
     /**
-     * Update assessment from external data source
-     */
-    public function updateFromExternalData(ProgressAssessment $assessment, array $externalData): ProgressAssessment
-    {
-        // This method would be used to update assessments from external systems
-        // Implementation depends on the specific external data format
-        
-        if (isset($externalData['progression'])) {
-            $progression = $externalData['progression'];
-            if (isset($progression['center'])) {
-                $assessment->setCenterProgression(number_format($progression['center'], 2));
-            }
-            if (isset($progression['company'])) {
-                $assessment->setCompanyProgression(number_format($progression['company'], 2));
-            }
-            $assessment->calculateOverallProgression();
-        }
-
-        if (isset($externalData['skills_matrix'])) {
-            foreach ($externalData['skills_matrix'] as $skillCode => $skillData) {
-                $assessment->updateSkillInMatrix(
-                    $skillCode,
-                    $skillData['name'],
-                    $skillData['level'],
-                    $skillData['last_assessed'] ?? null
-                );
-            }
-        }
-
-        $assessment->calculateRiskLevel();
-        $this->entityManager->flush();
-
-        return $assessment;
-    }
-
-    /**
-     * Generate period report for multiple students
-     */
-    public function generatePeriodReport(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
-    {
-        return $this->progressAssessmentRepository->generateProgressionReport($startDate, $endDate);
-    }
-
-    /**
-     * Export progress data for Qualiopi compliance
-     */
-    public function exportProgressData(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
-    {
-        $assessments = $this->progressAssessmentRepository->findByStudentAndDateRange($student, $startDate, $endDate);
-        
-        $exportData = [
-            'student' => [
-                'id' => $student->getId(),
-                'name' => $student->getFullName(),
-                'email' => $student->getEmail()
-            ],
-            'period' => [
-                'start' => $startDate->format('Y-m-d'),
-                'end' => $endDate->format('Y-m-d')
-            ],
-            'progression_data' => [],
-            'compliance_indicators' => []
-        ];
-
-        foreach ($assessments as $assessment) {
-            $exportData['progression_data'][] = [
-                'id' => $assessment->getId(),
-                'period' => $assessment->getPeriod()->format('Y-m-d'),
-                'center_progression' => (float) $assessment->getCenterProgression(),
-                'company_progression' => (float) $assessment->getCompanyProgression(),
-                'overall_progression' => (float) $assessment->getOverallProgression(),
-                'risk_level' => $assessment->getRiskLevel(),
-                'objectives_completion_rate' => $assessment->calculateObjectivesCompletionRate(),
-                'skills_mastery_rate' => $assessment->getSkillsMatrixSummary()['mastered_skills'] ?? 0,
-                'progression_status' => $assessment->getProgressionStatus()
-            ];
-        }
-
-        // Add compliance indicators
-        if (!empty($assessments)) {
-            $latestAssessment = end($assessments);
-            $exportData['compliance_indicators'] = [
-                'regular_assessment' => count($assessments) >= 4, // Quarterly assessments
-                'progression_tracking' => true,
-                'risk_monitoring' => $latestAssessment->getRiskLevel() <= 3,
-                'skills_development' => !empty($latestAssessment->getSkillsMatrix()),
-                'objectives_management' => $latestAssessment->calculateObjectivesCompletionRate() > 0
-            ];
-        }
-
-        return $exportData;
-    }
-
-    /**
-     * Analyze assessment and provide detailed insights
-     */
-    public function analyzeAssessment(ProgressAssessment $assessment): array
-    {
-        $analysis = [
-            'overall_status' => $this->getOverallStatus($assessment),
-            'progression_analysis' => $this->analyzeProgression($assessment),
-            'risk_analysis' => $assessment->getRiskFactorsAnalysis(),
-            'objectives_analysis' => $this->analyzeObjectives($assessment),
-            'skills_analysis' => $this->analyzeSkills($assessment),
-            'recommendations' => $this->generateRecommendations($assessment),
-            'intervention_plan' => $this->generateInterventionPlan($assessment),
-            'trends' => $this->getProgressionTrends($assessment),
-        ];
-
-        return $analysis;
-    }
-
-    /**
-     * Approve an assessment
-     */
-    public function approveAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
-    {
-        // For now, we'll add a note to the assessment about approval
-        // In a real implementation, you might add a validation_status field to the entity
-        $assessment->setNextSteps(
-            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
-            "[VALIDÉ " . (new \DateTime())->format('d/m/Y H:i') . "] " . 
-            ($comments ?: 'Évaluation approuvée')
-        );
-
-        $this->entityManager->flush();
-
-        $this->logger->info('Progress assessment approved', [
-            'assessment_id' => $assessment->getId(),
-            'student_id' => $assessment->getStudent()->getId(),
-            'comments' => $comments
-        ]);
-
-        return $assessment;
-    }
-
-    /**
-     * Reject an assessment
-     */
-    public function rejectAssessment(ProgressAssessment $assessment, string $comments = ''): ProgressAssessment
-    {
-        // For now, we'll add a note to the assessment about rejection
-        // In a real implementation, you might add a validation_status field to the entity
-        $assessment->setNextSteps(
-            ($assessment->getNextSteps() ? $assessment->getNextSteps() . "\n\n" : '') .
-            "[REJETÉ " . (new \DateTime())->format('d/m/Y H:i') . "] " . 
-            ($comments ?: 'Évaluation rejetée - révision nécessaire')
-        );
-
-        $this->entityManager->flush();
-
-        $this->logger->info('Progress assessment rejected', [
-            'assessment_id' => $assessment->getId(),
-            'student_id' => $assessment->getStudent()->getId(),
-            'comments' => $comments
-        ]);
-
-        return $assessment;
-    }
-
-    /**
-     * Get overall status of assessment
+     * Get overall status of assessment.
      */
     private function getOverallStatus(ProgressAssessment $assessment): array
     {
         $overallProgression = (float) $assessment->getOverallProgression();
         $riskLevel = $assessment->getRiskLevel();
-        
+
         if ($overallProgression >= 80 && $riskLevel <= 2) {
             $status = 'excellent';
             $message = 'Progression excellente, aucune intervention requise';
@@ -648,73 +652,73 @@ class ProgressAssessmentService
             'status' => $status,
             'message' => $message,
             'progression' => $overallProgression,
-            'risk_level' => $riskLevel
+            'risk_level' => $riskLevel,
         ];
     }
 
     /**
-     * Analyze progression details
+     * Analyze progression details.
      */
     private function analyzeProgression(ProgressAssessment $assessment): array
     {
         $centerProgression = (float) $assessment->getCenterProgression();
         $companyProgression = (float) $assessment->getCompanyProgression();
         $overallProgression = (float) $assessment->getOverallProgression();
-        
+
         $imbalance = abs($centerProgression - $companyProgression);
-        
+
         return [
             'center_progression' => $centerProgression,
             'company_progression' => $companyProgression,
             'overall_progression' => $overallProgression,
             'imbalance' => $imbalance,
             'imbalance_level' => $imbalance > 20 ? 'high' : ($imbalance > 10 ? 'medium' : 'low'),
-            'progression_status' => $assessment->getProgressionStatus()
+            'progression_status' => $assessment->getProgressionStatus(),
         ];
     }
 
     /**
-     * Analyze objectives completion
+     * Analyze objectives completion.
      */
     private function analyzeObjectives(ProgressAssessment $assessment): array
     {
         $summary = $assessment->getObjectivesSummary();
-        
+
         return [
             'summary' => $summary,
             'completion_rate' => $summary['completion_rate'] ?? 0,
             'at_risk_objectives' => $this->getAtRiskObjectives($assessment),
-            'priority_objectives' => $this->getPriorityObjectives($assessment)
+            'priority_objectives' => $this->getPriorityObjectives($assessment),
         ];
     }
 
     /**
-     * Analyze skills development
+     * Analyze skills development.
      */
     private function analyzeSkills(ProgressAssessment $assessment): array
     {
         $skillsSummary = $assessment->getSkillsMatrixSummary();
-        
+
         return [
             'summary' => $skillsSummary,
             'strong_skills' => $this->getStrongSkills($assessment),
             'weak_skills' => $this->getWeakSkills($assessment),
-            'developing_skills' => $this->getDevelopingSkills($assessment)
+            'developing_skills' => $this->getDevelopingSkills($assessment),
         ];
     }
 
     /**
-     * Get progression trends for a student
+     * Get progression trends for a student.
      */
     private function getProgressionTrends(ProgressAssessment $assessment): array
     {
         $student = $assessment->getStudent();
         $trend = $this->progressAssessmentRepository->getStudentProgressionTrend($student, 6);
-        
+
         return [
             'trend_direction' => $this->calculateProgressionTrend($trend),
             'recent_assessments' => array_slice($trend['overall_progression'] ?? [], -3),
-            'improvement_rate' => $this->calculateImprovementRate($trend)
+            'improvement_rate' => $this->calculateImprovementRate($trend),
         ];
     }
 
@@ -757,7 +761,7 @@ class ProgressAssessmentService
         $progressions = $trend['overall_progression'];
         $first = reset($progressions);
         $last = end($progressions);
-        
+
         return $last - $first;
     }
 }

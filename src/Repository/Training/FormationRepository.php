@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
-use App\Entity\Training\Formation;
 use App\Entity\Training\Category;
+use App\Entity\Training\Formation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for Formation entity
- * 
+ * Repository for Formation entity.
+ *
  * Provides advanced query methods for formation catalog with
  * search, filtering, sorting, and pagination capabilities.
- * 
+ *
  * @extends ServiceEntityRepository<Formation>
  */
 class FormationRepository extends ServiceEntityRepository
@@ -24,8 +26,8 @@ class FormationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active formations ordered by creation date
-     * 
+     * Find all active formations ordered by creation date.
+     *
      * @return Formation[]
      */
     public function findActiveFormations(): array
@@ -37,12 +39,13 @@ class FormationRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('f.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find featured formations for homepage
-     * 
+     * Find featured formations for homepage.
+     *
      * @return Formation[]
      */
     public function findFeaturedFormations(int $limit = 6): array
@@ -57,11 +60,12 @@ class FormationRepository extends ServiceEntityRepository
             ->orderBy('f.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find formation by slug with category
+     * Find formation by slug with category.
      */
     public function findBySlugWithCategory(string $slug): ?Formation
     {
@@ -73,12 +77,13 @@ class FormationRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Create query builder for formation catalog with filters
-     * 
+     * Create query builder for formation catalog with filters.
+     *
      * @param array<string, mixed> $filters
      */
     public function createCatalogQueryBuilder(array $filters = []): QueryBuilder
@@ -87,57 +92,67 @@ class FormationRepository extends ServiceEntityRepository
             ->leftJoin('f.category', 'c')
             ->addSelect('c')
             ->where('f.isActive = :active')
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         // Filter by category
         if (!empty($filters['category'])) {
             if ($filters['category'] instanceof Category) {
                 $qb->andWhere('f.category = :category')
-                   ->setParameter('category', $filters['category']);
+                    ->setParameter('category', $filters['category'])
+                ;
             } elseif (is_string($filters['category'])) {
                 $qb->andWhere('c.slug = :categorySlug')
-                   ->setParameter('categorySlug', $filters['category']);
+                    ->setParameter('categorySlug', $filters['category'])
+                ;
             }
         }
 
         // Filter by level
         if (!empty($filters['level'])) {
             $qb->andWhere('f.level = :level')
-               ->setParameter('level', $filters['level']);
+                ->setParameter('level', $filters['level'])
+            ;
         }
 
         // Filter by format
         if (!empty($filters['format'])) {
             $qb->andWhere('f.format = :format')
-               ->setParameter('format', $filters['format']);
+                ->setParameter('format', $filters['format'])
+            ;
         }
 
         // Filter by price range
         if (!empty($filters['minPrice'])) {
             $qb->andWhere('f.price >= :minPrice')
-               ->setParameter('minPrice', $filters['minPrice']);
+                ->setParameter('minPrice', $filters['minPrice'])
+            ;
         }
 
         if (!empty($filters['maxPrice'])) {
             $qb->andWhere('f.price <= :maxPrice')
-               ->setParameter('maxPrice', $filters['maxPrice']);
+                ->setParameter('maxPrice', $filters['maxPrice'])
+            ;
         }
 
         // Filter by duration range
         if (!empty($filters['minDuration'])) {
             $qb->andWhere('f.durationHours >= :minDuration')
-               ->setParameter('minDuration', $filters['minDuration']);
+                ->setParameter('minDuration', $filters['minDuration'])
+            ;
         }
 
         if (!empty($filters['maxDuration'])) {
             $qb->andWhere('f.durationHours <= :maxDuration')
-               ->setParameter('maxDuration', $filters['maxDuration']);
+                ->setParameter('maxDuration', $filters['maxDuration'])
+            ;
         }
 
         // Search in title and description
         if (!empty($filters['search'])) {
             $qb->andWhere('f.title LIKE :search OR f.description LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         // Apply sorting
@@ -148,15 +163,19 @@ class FormationRepository extends ServiceEntityRepository
             case 'title':
                 $qb->orderBy('f.title', $sortOrder);
                 break;
+
             case 'price':
                 $qb->orderBy('f.price', $sortOrder);
                 break;
+
             case 'duration':
                 $qb->orderBy('f.durationHours', $sortOrder);
                 break;
+
             case 'category':
                 $qb->orderBy('c.name', $sortOrder);
                 break;
+
             default:
                 $qb->orderBy('f.createdAt', $sortOrder);
         }
@@ -165,8 +184,8 @@ class FormationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find formations by category with pagination support
-     * 
+     * Find formations by category with pagination support.
+     *
      * @return Formation[]
      */
     public function findByCategory(Category $category, ?int $limit = null, ?int $offset = null): array
@@ -176,7 +195,8 @@ class FormationRepository extends ServiceEntityRepository
             ->andWhere('f.isActive = :active')
             ->setParameter('category', $category)
             ->setParameter('active', true)
-            ->orderBy('f.createdAt', 'DESC');
+            ->orderBy('f.createdAt', 'DESC')
+        ;
 
         if ($limit !== null) {
             $qb->setMaxResults($limit);
@@ -190,8 +210,8 @@ class FormationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get all available levels from active formations
-     * 
+     * Get all available levels from active formations.
+     *
      * @return array<string>
      */
     public function getAvailableLevels(): array
@@ -202,14 +222,15 @@ class FormationRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('f.level', 'ASC')
             ->getQuery()
-            ->getScalarResult();
+            ->getScalarResult()
+        ;
 
         return array_column($result, 'level');
     }
 
     /**
-     * Get all available formats from active formations
-     * 
+     * Get all available formats from active formations.
+     *
      * @return array<string>
      */
     public function getAvailableFormats(): array
@@ -220,14 +241,15 @@ class FormationRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('f.format', 'ASC')
             ->getQuery()
-            ->getScalarResult();
+            ->getScalarResult()
+        ;
 
         return array_column($result, 'format');
     }
 
     /**
-     * Get price range from active formations
-     * 
+     * Get price range from active formations.
+     *
      * @return array{min: float, max: float}
      */
     public function getPriceRange(): array
@@ -237,17 +259,18 @@ class FormationRepository extends ServiceEntityRepository
             ->where('f.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'min' => (float) ($result['minPrice'] ?? 0),
-            'max' => (float) ($result['maxPrice'] ?? 0)
+            'max' => (float) ($result['maxPrice'] ?? 0),
         ];
     }
 
     /**
-     * Get duration range from active formations
-     * 
+     * Get duration range from active formations.
+     *
      * @return array{min: int, max: int}
      */
     public function getDurationRange(): array
@@ -257,17 +280,18 @@ class FormationRepository extends ServiceEntityRepository
             ->where('f.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         return [
             'min' => (int) ($result['minDuration'] ?? 0),
-            'max' => (int) ($result['maxDuration'] ?? 0)
+            'max' => (int) ($result['maxDuration'] ?? 0),
         ];
     }
 
     /**
-     * Count formations matching filters
-     * 
+     * Count formations matching filters.
+     *
      * @param array<string, mixed> $filters
      */
     public function countByFilters(array $filters = []): int
@@ -275,59 +299,69 @@ class FormationRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('f')
             ->leftJoin('f.category', 'c')
             ->where('f.isActive = :active')
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         // Apply the same filters as createCatalogQueryBuilder but without ordering
-        
+
         // Filter by category
         if (!empty($filters['category'])) {
             if ($filters['category'] instanceof Category) {
                 $qb->andWhere('f.category = :category')
-                   ->setParameter('category', $filters['category']);
+                    ->setParameter('category', $filters['category'])
+                ;
             } elseif (is_string($filters['category'])) {
                 $qb->andWhere('c.slug = :categorySlug')
-                   ->setParameter('categorySlug', $filters['category']);
+                    ->setParameter('categorySlug', $filters['category'])
+                ;
             }
         }
 
         // Filter by level
         if (!empty($filters['level'])) {
             $qb->andWhere('f.level = :level')
-               ->setParameter('level', $filters['level']);
+                ->setParameter('level', $filters['level'])
+            ;
         }
 
         // Filter by format
         if (!empty($filters['format'])) {
             $qb->andWhere('f.format = :format')
-               ->setParameter('format', $filters['format']);
+                ->setParameter('format', $filters['format'])
+            ;
         }
 
         // Filter by price range
         if (!empty($filters['minPrice'])) {
             $qb->andWhere('f.price >= :minPrice')
-               ->setParameter('minPrice', $filters['minPrice']);
+                ->setParameter('minPrice', $filters['minPrice'])
+            ;
         }
 
         if (!empty($filters['maxPrice'])) {
             $qb->andWhere('f.price <= :maxPrice')
-               ->setParameter('maxPrice', $filters['maxPrice']);
+                ->setParameter('maxPrice', $filters['maxPrice'])
+            ;
         }
 
         // Filter by duration range
         if (!empty($filters['minDuration'])) {
             $qb->andWhere('f.durationHours >= :minDuration')
-               ->setParameter('minDuration', $filters['minDuration']);
+                ->setParameter('minDuration', $filters['minDuration'])
+            ;
         }
 
         if (!empty($filters['maxDuration'])) {
             $qb->andWhere('f.durationHours <= :maxDuration')
-               ->setParameter('maxDuration', $filters['maxDuration']);
+                ->setParameter('maxDuration', $filters['maxDuration'])
+            ;
         }
 
         // Search in title and description
         if (!empty($filters['search'])) {
             $qb->andWhere('f.title LIKE :search OR f.description LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         $qb->select('COUNT(f.id)');
@@ -336,8 +370,8 @@ class FormationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find similar formations based on category and level
-     * 
+     * Find similar formations based on category and level.
+     *
      * @return Formation[]
      */
     public function findSimilarFormations(Formation $formation, int $limit = 4): array
@@ -356,11 +390,12 @@ class FormationRepository extends ServiceEntityRepository
             ->orderBy('f.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Save a formation entity
+     * Save a formation entity.
      */
     public function save(Formation $entity, bool $flush = false): void
     {
@@ -372,7 +407,7 @@ class FormationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a formation entity
+     * Remove a formation entity.
      */
     public function remove(Formation $entity, bool $flush = false): void
     {

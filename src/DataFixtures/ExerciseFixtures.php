@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Training\Exercise;
 use App\Entity\Training\Course;
+use App\Entity\Training\Exercise;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -14,9 +16,9 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create('fr_FR');
-        
+
         $courses = $manager->getRepository(Course::class)->findAll();
-        
+
         if (empty($courses)) {
             return;
         }
@@ -83,14 +85,14 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
         ];
 
         $exerciseIndex = 0;
-        
+
         foreach ($courses as $course) {
             $exercisesPerCourse = $faker->numberBetween(1, 3);
-            
+
             for ($i = 0; $i < $exercisesPerCourse; $i++) {
                 $type = $faker->randomElement($exerciseTypes);
                 $templates = $exerciseTemplates[$type];
-                
+
                 $exercise = new Exercise();
                 $exercise->setTitle($faker->randomElement($templates));
                 $exercise->setSlug($faker->slug . '-' . $exerciseIndex);
@@ -102,10 +104,10 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                 $exercise->setPassingPoints($faker->numberBetween(10, 60));
                 $exercise->setOrderIndex($i + 1);
                 $exercise->setCourse($course);
-                
+
                 // Set detailed instructions
                 $exercise->setInstructions($faker->paragraphs(3, true));
-                
+
                 // Set Qualiopi-compliant fields
                 $exercise->setExpectedOutcomes([
                     'Réalisation complète de l\'exercice selon les consignes',
@@ -113,7 +115,7 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                     'Production d\'un livrable de qualité',
                     'Respect des délais et contraintes',
                 ]);
-                
+
                 $exercise->setEvaluationCriteria([
                     'Exactitude de la réalisation',
                     'Qualité de l\'analyse',
@@ -121,7 +123,7 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                     'Originalité et créativité',
                     'Présentation et communication',
                 ]);
-                
+
                 $exercise->setResources([
                     'Documentation technique',
                     'Outils et logiciels nécessaires',
@@ -129,24 +131,24 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                     'Support pédagogique',
                     'Accès aux ressources en ligne',
                 ]);
-                
+
                 $exercise->setPrerequisites($faker->sentence);
-                
+
                 $exercise->setSuccessCriteria([
                     'Obtention de la note minimale requise',
                     'Validation par l\'évaluateur',
                     'Respect des critères qualité',
                     'Démonstration de la maîtrise des concepts',
                 ]);
-                
+
                 $manager->persist($exercise);
                 $exerciseIndex++;
             }
         }
-        
+
         $manager->flush();
     }
-    
+
     public function getDependencies(): array
     {
         return [

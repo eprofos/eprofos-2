@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\QCM;
@@ -17,7 +19,9 @@ class QCMRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find active QCMs for a specific course
+     * Find active QCMs for a specific course.
+     *
+     * @param mixed $courseId
      */
     public function findActiveByCourse($courseId): array
     {
@@ -28,11 +32,12 @@ class QCMRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find QCMs with time limits
+     * Find QCMs with time limits.
      */
     public function findWithTimeLimit(): array
     {
@@ -42,11 +47,12 @@ class QCMRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find QCMs by question count range
+     * Find QCMs by question count range.
      */
     public function findByQuestionCountRange(int $min, int $max): array
     {
@@ -59,11 +65,12 @@ class QCMRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find QCMs with multiple attempts allowed
+     * Find QCMs with multiple attempts allowed.
      */
     public function findWithMultipleAttempts(): array
     {
@@ -73,11 +80,12 @@ class QCMRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('q.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get average passing percentage
+     * Get average passing percentage.
      */
     public function getAveragePassingPercentage(): float
     {
@@ -87,13 +95,14 @@ class QCMRepository extends ServiceEntityRepository
             ->andWhere('q.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ? (float) $result : 0.0;
     }
 
     /**
-     * Find QCMs with specific evaluation criteria
+     * Find QCMs with specific evaluation criteria.
      */
     public function findWithEvaluationCriteria(): array
     {

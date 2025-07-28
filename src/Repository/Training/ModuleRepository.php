@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\Module;
@@ -17,7 +19,7 @@ class ModuleRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find modules by formation with order
+     * Find modules by formation with order.
      */
     public function findByFormationOrdered(int $formationId): array
     {
@@ -27,11 +29,12 @@ class ModuleRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->orderBy('m.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find active modules for a formation
+     * Find active modules for a formation.
      */
     public function findActiveByFormation(int $formationId): array
     {
@@ -41,11 +44,12 @@ class ModuleRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->orderBy('m.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find module by slug with formation
+     * Find module by slug with formation.
      */
     public function findBySlugWithFormation(string $slug): ?Module
     {
@@ -56,11 +60,12 @@ class ModuleRepository extends ServiceEntityRepository
             ->andWhere('m.isActive = true')
             ->setParameter('slug', $slug)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Get modules with chapter count
+     * Get modules with chapter count.
      */
     public function findWithChapterCount(): array
     {
@@ -71,11 +76,12 @@ class ModuleRepository extends ServiceEntityRepository
             ->groupBy('m.id')
             ->orderBy('m.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get next order index for a formation
+     * Get next order index for a formation.
      */
     public function getNextOrderIndex(int $formationId): int
     {
@@ -84,25 +90,26 @@ class ModuleRepository extends ServiceEntityRepository
             ->where('m.formation = :formationId')
             ->setParameter('formationId', $formationId)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return ($result ?? 0) + 1;
     }
 
     /**
-     * Update order indexes for modules
+     * Update order indexes for modules.
      */
     public function updateOrderIndexes(array $moduleIds): void
     {
         $em = $this->getEntityManager();
-        
+
         foreach ($moduleIds as $index => $moduleId) {
             $em->createQuery(
-                'UPDATE App\Entity\Module m SET m.orderIndex = :orderIndex WHERE m.id = :id'
+                'UPDATE App\Entity\Module m SET m.orderIndex = :orderIndex WHERE m.id = :id',
             )
-            ->setParameter('orderIndex', $index + 1)
-            ->setParameter('id', $moduleId)
-            ->execute();
+                ->setParameter('orderIndex', $index + 1)
+                ->setParameter('id', $moduleId)
+                ->execute();
         }
     }
 }

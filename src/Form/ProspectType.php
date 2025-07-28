@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
-use App\Entity\Training\Formation;
 use App\Entity\CRM\Prospect;
 use App\Entity\Service\Service;
+use App\Entity\Training\Formation;
 use App\Entity\User\Admin;
-use App\Repository\Training\FormationRepository;
 use App\Repository\Service\ServiceRepository;
+use App\Repository\Training\FormationRepository;
 use App\Repository\User\AdminRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -22,15 +24,15 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Form type for Prospect entity
- * 
+ * Form type for Prospect entity.
+ *
  * Provides form fields for creating and editing prospects
  * in the EPROFOS prospect management system.
  */
 class ProspectType extends AbstractType
 {
     /**
-     * Build the prospect form
+     * Build the prospect form.
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -39,47 +41,47 @@ class ProspectType extends AbstractType
                 'label' => 'Prénom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Prénom du prospect'
-                ]
+                    'placeholder' => 'Prénom du prospect',
+                ],
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Nom du prospect'
-                ]
+                    'placeholder' => 'Nom du prospect',
+                ],
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'email@exemple.com'
-                ]
+                    'placeholder' => 'email@exemple.com',
+                ],
             ])
             ->add('phone', TelType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '01 23 45 67 89'
+                    'placeholder' => '01 23 45 67 89',
                 ],
-                'help' => 'Format français (01 23 45 67 89 ou +33 1 23 45 67 89)'
+                'help' => 'Format français (01 23 45 67 89 ou +33 1 23 45 67 89)',
             ])
             ->add('company', TextType::class, [
                 'label' => 'Entreprise',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Nom de l\'entreprise'
-                ]
+                    'placeholder' => 'Nom de l\'entreprise',
+                ],
             ])
             ->add('position', TextType::class, [
                 'label' => 'Poste',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Poste occupé'
-                ]
+                    'placeholder' => 'Poste occupé',
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
@@ -89,12 +91,12 @@ class ProspectType extends AbstractType
                     'Qualifié' => 'qualified',
                     'Négociation' => 'negotiation',
                     'Client' => 'customer',
-                    'Perdu' => 'lost'
+                    'Perdu' => 'lost',
                 ],
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Statut actuel du prospect dans le processus commercial'
+                'help' => 'Statut actuel du prospect dans le processus commercial',
             ])
             ->add('priority', ChoiceType::class, [
                 'label' => 'Priorité',
@@ -102,11 +104,11 @@ class ProspectType extends AbstractType
                     'Faible' => 'low',
                     'Moyenne' => 'medium',
                     'Élevée' => 'high',
-                    'Urgente' => 'urgent'
+                    'Urgente' => 'urgent',
                 ],
                 'attr' => [
-                    'class' => 'form-select'
-                ]
+                    'class' => 'form-select',
+                ],
             ])
             ->add('source', ChoiceType::class, [
                 'label' => 'Source',
@@ -119,13 +121,13 @@ class ProspectType extends AbstractType
                     'Appel téléphonique' => 'phone_call',
                     'Événement' => 'event',
                     'Publicité' => 'advertising',
-                    'Autre' => 'other'
+                    'Autre' => 'other',
                 ],
                 'placeholder' => 'Sélectionner une source',
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Comment ce prospect nous a-t-il trouvés ?'
+                'help' => 'Comment ce prospect nous a-t-il trouvés ?',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
@@ -133,9 +135,9 @@ class ProspectType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 4,
-                    'placeholder' => 'Informations supplémentaires sur le prospect...'
+                    'placeholder' => 'Informations supplémentaires sur le prospect...',
                 ],
-                'help' => 'Toute information utile concernant ce prospect'
+                'help' => 'Toute information utile concernant ce prospect',
             ])
             ->add('estimatedBudget', MoneyType::class, [
                 'label' => 'Budget estimé',
@@ -143,47 +145,43 @@ class ProspectType extends AbstractType
                 'currency' => 'EUR',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '0.00'
+                    'placeholder' => '0.00',
                 ],
-                'help' => 'Budget estimé du prospect pour nos services'
+                'help' => 'Budget estimé du prospect pour nos services',
             ])
             ->add('expectedClosureDate', DateType::class, [
                 'label' => 'Date de clôture prévue',
                 'required' => false,
                 'widget' => 'single_text',
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
-                'help' => 'Date prévue pour finaliser l\'affaire'
+                'help' => 'Date prévue pour finaliser l\'affaire',
             ])
             ->add('nextFollowUpDate', DateType::class, [
                 'label' => 'Date de prochain suivi',
                 'required' => false,
                 'widget' => 'single_text',
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
-                'help' => 'Date prévue pour le prochain contact'
+                'help' => 'Date prévue pour le prochain contact',
             ])
             ->add('assignedTo', EntityType::class, [
                 'label' => 'Assigné à',
                 'class' => Admin::class,
-                'choice_label' => function (Admin $admin) {
-                    return $admin->getFullName();
-                },
+                'choice_label' => static fn (Admin $admin) => $admin->getFullName(),
                 'placeholder' => 'Sélectionner un administrateur',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'query_builder' => function (AdminRepository $repo) {
-                    return $repo->createQueryBuilder('a')
-                        ->where('a.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('a.firstName', 'ASC')
-                        ->addOrderBy('a.lastName', 'ASC');
-                },
-                'help' => 'Administrateur responsable de ce prospect'
+                'query_builder' => static fn (AdminRepository $repo) => $repo->createQueryBuilder('a')
+                    ->where('a.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('a.firstName', 'ASC')
+                    ->addOrderBy('a.lastName', 'ASC'),
+                'help' => 'Administrateur responsable de ce prospect',
             ])
             ->add('interestedFormations', EntityType::class, [
                 'label' => 'Formations d\'intérêt',
@@ -194,15 +192,13 @@ class ProspectType extends AbstractType
                 'attr' => [
                     'class' => 'form-select',
                     'multiple' => true,
-                    'size' => 5
+                    'size' => 5,
                 ],
-                'query_builder' => function (FormationRepository $repo) {
-                    return $repo->createQueryBuilder('f')
-                        ->where('f.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('f.title', 'ASC');
-                },
-                'help' => 'Formations qui intéressent ce prospect'
+                'query_builder' => static fn (FormationRepository $repo) => $repo->createQueryBuilder('f')
+                    ->where('f.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('f.title', 'ASC'),
+                'help' => 'Formations qui intéressent ce prospect',
             ])
             ->add('interestedServices', EntityType::class, [
                 'label' => 'Services d\'intérêt',
@@ -213,28 +209,27 @@ class ProspectType extends AbstractType
                 'attr' => [
                     'class' => 'form-select',
                     'multiple' => true,
-                    'size' => 5
+                    'size' => 5,
                 ],
-                'query_builder' => function (ServiceRepository $repo) {
-                    return $repo->createQueryBuilder('s')
-                        ->where('s.isActive = :active')
-                        ->setParameter('active', true)
-                        ->orderBy('s.title', 'ASC');
-                },
-                'help' => 'Services qui intéressent ce prospect'
-            ]);
+                'query_builder' => static fn (ServiceRepository $repo) => $repo->createQueryBuilder('s')
+                    ->where('s.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('s.title', 'ASC'),
+                'help' => 'Services qui intéressent ce prospect',
+            ])
+        ;
     }
 
     /**
-     * Configure form options
+     * Configure form options.
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Prospect::class,
             'attr' => [
-                'novalidate' => 'novalidate'
-            ]
+                'novalidate' => 'novalidate',
+            ],
         ]);
     }
 }

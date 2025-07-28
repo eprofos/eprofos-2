@@ -1,15 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\Alternance\SkillsAssessment;
+use App\Repository\Alternance\AlternanceContractRepository;
 use App\Repository\Alternance\ProgressAssessmentRepository;
 use App\Repository\Alternance\SkillsAssessmentRepository;
-use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\ProgressAssessmentService;
 use App\Service\Alternance\SkillsAssessmentService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +31,7 @@ class EvaluationController extends AbstractController
         private AlternanceContractRepository $contractRepository,
         private ProgressAssessmentService $progressService,
         private SkillsAssessmentService $skillsService,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_evaluation_index', methods: ['GET'])]
@@ -50,7 +55,7 @@ class EvaluationController extends AbstractController
 
         // Combine and sort by date
         $evaluations = array_merge($progressEvaluations, $skillsEvaluations);
-        usort($evaluations, fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
+        usort($evaluations, static fn ($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
 
         // Get evaluation statistics
         $statistics = $this->getEvaluationStatistics();
@@ -150,7 +155,7 @@ class EvaluationController extends AbstractController
             } else {
                 $this->addFlash('error', 'Action invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la validation : ' . $e->getMessage());
         }
 
@@ -173,7 +178,7 @@ class EvaluationController extends AbstractController
             } else {
                 $this->addFlash('error', 'Action invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la validation : ' . $e->getMessage());
         }
 
@@ -186,15 +191,16 @@ class EvaluationController extends AbstractController
         $evaluationIds = $request->request->all('evaluation_ids');
         $action = $request->request->get('action');
         $type = $request->request->get('type'); // 'progress' or 'skills'
-        
+
         if (empty($evaluationIds) || !$action || !$type) {
             $this->addFlash('error', 'Paramètres manquants pour l\'action groupée.');
+
             return $this->redirectToRoute('admin_alternance_evaluation_index');
         }
 
         try {
             $processed = 0;
-            
+
             if ($type === 'progress') {
                 $evaluations = $this->progressRepository->findBy(['id' => $evaluationIds]);
                 foreach ($evaluations as $evaluation) {
@@ -218,10 +224,10 @@ class EvaluationController extends AbstractController
                     }
                 }
             }
-            
+
             $this->entityManager->flush();
             $this->addFlash('success', sprintf('%d évaluation(s) traitée(s) avec succès.', $processed));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du traitement : ' . $e->getMessage());
         }
 
@@ -233,7 +239,7 @@ class EvaluationController extends AbstractController
     {
         $period = $request->query->get('period', '30'); // days
         $formation = $request->query->get('formation');
-        
+
         $analytics = $this->getEvaluationAnalytics($period, $formation);
 
         return $this->render('admin/alternance/evaluation/analytics.html.twig', [
@@ -258,11 +264,12 @@ class EvaluationController extends AbstractController
 
             $response = new Response($data);
             $response->headers->set('Content-Type', $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="evaluations_export.'.$format.'"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="evaluations_export.' . $format . '"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_evaluation_index');
         }
     }
@@ -287,9 +294,9 @@ class EvaluationController extends AbstractController
     {
         $recentProgress = $this->progressRepository->findBy([], ['createdAt' => 'DESC'], 5);
         $recentSkills = $this->skillsRepository->findBy([], ['createdAt' => 'DESC'], 5);
-        
+
         $activity = [];
-        
+
         foreach ($recentProgress as $evaluation) {
             $activity[] = [
                 'type' => 'progress',
@@ -297,7 +304,7 @@ class EvaluationController extends AbstractController
                 'date' => $evaluation->getCreatedAt(),
             ];
         }
-        
+
         foreach ($recentSkills as $evaluation) {
             $activity[] = [
                 'type' => 'skills',
@@ -305,17 +312,17 @@ class EvaluationController extends AbstractController
                 'date' => $evaluation->getCreatedAt(),
             ];
         }
-        
+
         // Sort by date
-        usort($activity, fn($a, $b) => $b['date'] <=> $a['date']);
-        
+        usort($activity, static fn ($a, $b) => $b['date'] <=> $a['date']);
+
         return array_slice($activity, 0, 10);
     }
 
     private function getEvaluationAnalytics(string $period, ?string $formation): array
     {
         $days = (int) $period;
-        $startDate = new \DateTime("-{$days} days");
+        $startDate = new DateTime("-{$days} days");
 
         return [
             'evaluation_trends' => $this->progressRepository->getEvaluationTrends($startDate),
@@ -327,7 +334,7 @@ class EvaluationController extends AbstractController
         ];
     }
 
-    private function generateRecommendations(\DateTime $startDate): array
+    private function generateRecommendations(DateTime $startDate): array
     {
         // Generate recommendations as a simple array of strings for the template
         return [
@@ -335,14 +342,14 @@ class EvaluationController extends AbstractController
             'Mettre en place un suivi renforcé pour les 3 alternants en difficulté identifiés',
             'Développer des modules spécifiques sur les compétences Communication et Gestion de projet',
             'Réviser les critères d\'évaluation pour homogénéiser les pratiques entre mentors',
-            'Planifier des entretiens individuels avec les alternants à risque de décrochage'
+            'Planifier des entretiens individuels avec les alternants à risque de décrochage',
         ];
     }
 
     private function exportEvaluations(string $type, array $filters, string $format): string
     {
         $evaluations = [];
-        
+
         if ($type === 'progress' || $type === 'all') {
             $progressEvaluations = $this->progressRepository->findForExport($filters);
             foreach ($progressEvaluations as $eval) {
@@ -356,7 +363,7 @@ class EvaluationController extends AbstractController
                 ];
             }
         }
-        
+
         if ($type === 'skills' || $type === 'all') {
             $skillsEvaluations = $this->skillsRepository->findForExport($filters);
             foreach ($skillsEvaluations as $eval) {
@@ -373,7 +380,7 @@ class EvaluationController extends AbstractController
 
         if ($format === 'csv') {
             $output = fopen('php://temp', 'r+');
-            
+
             // Headers
             fputcsv($output, [
                 'Type d\'évaluation',
@@ -381,21 +388,21 @@ class EvaluationController extends AbstractController
                 'Mentor',
                 'Date',
                 'Statut',
-                'Score'
+                'Score',
             ]);
-            
+
             // Data
             foreach ($evaluations as $evaluation) {
                 fputcsv($output, $evaluation);
             }
-            
+
             rewind($output);
             $content = stream_get_contents($output);
             fclose($output);
-            
+
             return $content;
         }
 
-        throw new \InvalidArgumentException("Format d'export non supporté: {$format}");
+        throw new InvalidArgumentException("Format d'export non supporté: {$format}");
     }
 }

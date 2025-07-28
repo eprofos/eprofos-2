@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form;
 
-use App\Entity\Analysis\IndividualNeedsAnalysis;
 use App\Entity\Analysis\NeedsAnalysisRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,8 +17,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Form type for individual needs analysis
- * 
+ * Form type for individual needs analysis.
+ *
  * Comprehensive form for collecting individual training needs analysis
  * data to comply with Qualiopi 2.4 criteria.
  */
@@ -66,7 +65,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                     'placeholder' => 'Votre adresse complète',
                 ],
             ])
-            
+
             // Professional Status
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut professionnel',
@@ -92,7 +91,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'À remplir uniquement si vous avez sélectionné "Autre"',
             ])
-            
+
             // Funding
             ->add('funding_type', ChoiceType::class, [
                 'label' => 'Mode de financement',
@@ -120,7 +119,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'Si nécessaire, précisez les détails du financement',
             ])
-            
+
             // Training Objectives
             ->add('desired_training_title', TextType::class, [
                 'label' => 'Intitulé de la formation souhaitée',
@@ -152,7 +151,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'Évaluez votre niveau actuel dans le domaine de la formation',
             ])
-            
+
             // Training Preferences
             ->add('desired_duration_hours', IntegerType::class, [
                 'label' => 'Durée souhaitée (en heures)',
@@ -203,7 +202,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                 ],
                 'help' => 'Avez-vous besoin d\'aménagements particuliers pour suivre la formation ?',
             ])
-            
+
             // Training Expectations
             ->add('training_expectations', TextareaType::class, [
                 'label' => 'Attentes et objectifs pédagogiques',
@@ -223,7 +222,8 @@ class IndividualNeedsAnalysisType extends AbstractType
                     'placeholder' => 'Contraintes horaires, besoins particuliers, contexte spécifique...',
                 ],
                 'help' => 'Avez-vous des contraintes particulières ou des besoins spécifiques à prendre en compte ?',
-            ]);
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -235,7 +235,7 @@ class IndividualNeedsAnalysisType extends AbstractType
                 'novalidate' => 'novalidate',
             ],
         ]);
-        
+
         $resolver->setAllowedTypes('needs_analysis_request', ['null', NeedsAnalysisRequest::class]);
     }
 }

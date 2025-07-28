@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\User;
 
 use App\Entity\Alternance\MissionAssignment;
 use App\Repository\User\StudentRepository;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,8 +17,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Student entity for student authentication and management
- * 
+ * Student entity for student authentication and management.
+ *
  * Represents a student user with authentication capabilities for accessing
  * their personal dashboard, training progress, and educational resources.
  */
@@ -61,7 +65,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $phone = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $birthDate = null;
+    private ?DateTimeInterface $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255, maxMessage: 'L\'adresse ne peut pas dépasser 255 caractères')]
@@ -101,26 +105,26 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $emailVerificationToken = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $emailVerifiedAt = null;
+    private ?DateTimeImmutable $emailVerifiedAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastLoginAt = null;
+    private ?DateTimeImmutable $lastLoginAt = null;
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $passwordResetToken = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $passwordResetTokenExpiresAt = null;
+    private ?DateTimeImmutable $passwordResetTokenExpiresAt = null;
 
     /**
-     * Collection of mission assignments for this student
-     * 
+     * Collection of mission assignments for this student.
+     *
      * @var Collection<int, MissionAssignment>
      */
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: MissionAssignment::class, cascade: ['persist', 'remove'])]
@@ -129,9 +133,14 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->missionAssignments = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->roles = ['ROLE_STUDENT'];
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFullName() ?: $this->email ?: '';
     }
 
     public function getId(): ?int
@@ -147,6 +156,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -162,6 +172,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     *
      * @return list<string>
      */
     public function getRoles(): array
@@ -179,6 +190,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
         return $this;
     }
 
@@ -193,6 +205,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -213,6 +226,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -224,6 +238,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -235,17 +250,19 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
     }
 
-    public function getBirthDate(): ?\DateTimeInterface
+    public function getBirthDate(): ?DateTimeInterface
     {
         return $this->birthDate;
     }
 
-    public function setBirthDate(?\DateTimeInterface $birthDate): static
+    public function setBirthDate(?DateTimeInterface $birthDate): static
     {
         $this->birthDate = $birthDate;
+
         return $this;
     }
 
@@ -257,6 +274,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAddress(?string $address): static
     {
         $this->address = $address;
+
         return $this;
     }
 
@@ -268,6 +286,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPostalCode(?string $postalCode): static
     {
         $this->postalCode = $postalCode;
+
         return $this;
     }
 
@@ -279,6 +298,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCity(?string $city): static
     {
         $this->city = $city;
+
         return $this;
     }
 
@@ -290,6 +310,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCountry(?string $country): static
     {
         $this->country = $country;
+
         return $this;
     }
 
@@ -301,6 +322,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEducationLevel(?string $educationLevel): static
     {
         $this->educationLevel = $educationLevel;
+
         return $this;
     }
 
@@ -312,6 +334,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setProfession(?string $profession): static
     {
         $this->profession = $profession;
+
         return $this;
     }
 
@@ -323,6 +346,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCompany(?string $company): static
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -334,6 +358,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -345,6 +370,7 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailVerified(bool $emailVerified): static
     {
         $this->emailVerified = $emailVerified;
+
         return $this;
     }
 
@@ -356,50 +382,55 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailVerificationToken(?string $emailVerificationToken): static
     {
         $this->emailVerificationToken = $emailVerificationToken;
+
         return $this;
     }
 
-    public function getEmailVerifiedAt(): ?\DateTimeImmutable
+    public function getEmailVerifiedAt(): ?DateTimeImmutable
     {
         return $this->emailVerifiedAt;
     }
 
-    public function setEmailVerifiedAt(?\DateTimeImmutable $emailVerifiedAt): static
+    public function setEmailVerifiedAt(?DateTimeImmutable $emailVerifiedAt): static
     {
         $this->emailVerifiedAt = $emailVerifiedAt;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getLastLoginAt(): ?\DateTimeImmutable
+    public function getLastLoginAt(): ?DateTimeImmutable
     {
         return $this->lastLoginAt;
     }
 
-    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): static
+    public function setLastLoginAt(?DateTimeImmutable $lastLoginAt): static
     {
         $this->lastLoginAt = $lastLoginAt;
+
         return $this;
     }
 
@@ -411,22 +442,24 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPasswordResetToken(?string $passwordResetToken): static
     {
         $this->passwordResetToken = $passwordResetToken;
+
         return $this;
     }
 
-    public function getPasswordResetTokenExpiresAt(): ?\DateTimeImmutable
+    public function getPasswordResetTokenExpiresAt(): ?DateTimeImmutable
     {
         return $this->passwordResetTokenExpiresAt;
     }
 
-    public function setPasswordResetTokenExpiresAt(?\DateTimeImmutable $passwordResetTokenExpiresAt): static
+    public function setPasswordResetTokenExpiresAt(?DateTimeImmutable $passwordResetTokenExpiresAt): static
     {
         $this->passwordResetTokenExpiresAt = $passwordResetTokenExpiresAt;
+
         return $this;
     }
 
     /**
-     * Get the full name of the student
+     * Get the full name of the student.
      */
     public function getFullName(): string
     {
@@ -434,55 +467,57 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Get the initials of the student for avatar display
+     * Get the initials of the student for avatar display.
      */
     public function getInitials(): string
     {
         $firstInitial = $this->firstName ? strtoupper(substr($this->firstName, 0, 1)) : '';
         $lastInitial = $this->lastName ? strtoupper(substr($this->lastName, 0, 1)) : '';
-        
+
         return $firstInitial . $lastInitial;
     }
 
     /**
-     * Update the last login timestamp
+     * Update the last login timestamp.
      */
     public function updateLastLogin(): void
     {
-        $this->lastLoginAt = new \DateTimeImmutable();
+        $this->lastLoginAt = new DateTimeImmutable();
     }
 
     /**
-     * Generate email verification token
+     * Generate email verification token.
      */
     public function generateEmailVerificationToken(): string
     {
         $this->emailVerificationToken = bin2hex(random_bytes(32));
+
         return $this->emailVerificationToken;
     }
 
     /**
-     * Verify email address
+     * Verify email address.
      */
     public function verifyEmail(): void
     {
         $this->emailVerified = true;
         $this->emailVerificationToken = null;
-        $this->emailVerifiedAt = new \DateTimeImmutable();
+        $this->emailVerifiedAt = new DateTimeImmutable();
     }
 
     /**
-     * Generate password reset token
+     * Generate password reset token.
      */
     public function generatePasswordResetToken(): string
     {
         $this->passwordResetToken = bin2hex(random_bytes(32));
-        $this->passwordResetTokenExpiresAt = new \DateTimeImmutable('+1 hour');
+        $this->passwordResetTokenExpiresAt = new DateTimeImmutable('+1 hour');
+
         return $this->passwordResetToken;
     }
 
     /**
-     * Clear password reset token
+     * Clear password reset token.
      */
     public function clearPasswordResetToken(): void
     {
@@ -491,17 +526,17 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Check if password reset token is valid
+     * Check if password reset token is valid.
      */
     public function isPasswordResetTokenValid(): bool
     {
-        return $this->passwordResetToken !== null 
-            && $this->passwordResetTokenExpiresAt !== null 
-            && $this->passwordResetTokenExpiresAt > new \DateTimeImmutable();
+        return $this->passwordResetToken !== null
+            && $this->passwordResetTokenExpiresAt !== null
+            && $this->passwordResetTokenExpiresAt > new DateTimeImmutable();
     }
 
     /**
-     * Get the complete address as a string
+     * Get the complete address as a string.
      */
     public function getCompleteAddress(): string
     {
@@ -509,19 +544,19 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
             $this->address,
             $this->postalCode,
             $this->city,
-            $this->country
+            $this->country,
         ]);
 
         return implode(', ', $addressParts);
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     /**
@@ -552,10 +587,5 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getFullName() ?: $this->email ?: '';
     }
 }

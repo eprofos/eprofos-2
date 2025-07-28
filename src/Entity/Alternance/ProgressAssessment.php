@@ -1,17 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\User\Student;
 use App\Repository\Alternance\ProgressAssessmentRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * ProgressAssessment entity for global progression tracking in alternance programs
- * 
+ * ProgressAssessment entity for global progression tracking in alternance programs.
+ *
  * This entity provides comprehensive tracking of student progression across both
  * training center and company environments, essential for Qualiopi compliance.
  */
@@ -24,6 +29,61 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[ORM\Index(columns: ['overall_progression'], name: 'idx_overall_progression')]
 class ProgressAssessment
 {
+    /**
+     * Risk level constants.
+     */
+    public const RISK_LEVELS = [
+        1 => 'Très faible',
+        2 => 'Faible',
+        3 => 'Modéré',
+        4 => 'Élevé',
+        5 => 'Critique',
+    ];
+
+    /**
+     * Risk level colors.
+     */
+    public const RISK_LEVEL_COLORS = [
+        1 => 'success',
+        2 => 'info',
+        3 => 'warning',
+        4 => 'danger',
+        5 => 'dark',
+    ];
+
+    /**
+     * Standard objectives framework.
+     */
+    public const STANDARD_OBJECTIVES = [
+        'technical' => [
+            'name' => 'Objectifs techniques',
+            'categories' => [
+                'basic_skills' => 'Maîtrise des compétences de base',
+                'advanced_skills' => 'Développement des compétences avancées',
+                'tools_mastery' => 'Maîtrise des outils professionnels',
+                'quality_standards' => 'Respect des standards qualité',
+            ],
+        ],
+        'professional' => [
+            'name' => 'Objectifs professionnels',
+            'categories' => [
+                'autonomy' => 'Développement de l\'autonomie',
+                'responsibility' => 'Prise de responsabilités',
+                'initiative' => 'Prise d\'initiatives',
+                'problem_solving' => 'Résolution de problèmes',
+            ],
+        ],
+        'transversal' => [
+            'name' => 'Objectifs transversaux',
+            'categories' => [
+                'communication' => 'Communication professionnelle',
+                'teamwork' => 'Travail en équipe',
+                'time_management' => 'Gestion du temps',
+                'adaptability' => 'Capacité d\'adaptation',
+            ],
+        ],
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -37,13 +97,13 @@ class ProgressAssessment
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotNull(message: 'La période d\'évaluation est obligatoire.')]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $period = null;
+    private ?DateTimeInterface $period = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'La progression centre doit être entre {{ min }}% et {{ max }}%'
+        notInRangeMessage: 'La progression centre doit être entre {{ min }}% et {{ max }}%',
     )]
     #[Gedmo\Versioned]
     private ?string $centerProgression = '0.00';
@@ -52,7 +112,7 @@ class ProgressAssessment
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'La progression entreprise doit être entre {{ min }}% et {{ max }}%'
+        notInRangeMessage: 'La progression entreprise doit être entre {{ min }}% et {{ max }}%',
     )]
     #[Gedmo\Versioned]
     private ?string $companyProgression = '0.00';
@@ -61,7 +121,7 @@ class ProgressAssessment
     #[Assert\Range(
         min: 0,
         max: 100,
-        notInRangeMessage: 'La progression globale doit être entre {{ min }}% et {{ max }}%'
+        notInRangeMessage: 'La progression globale doit être entre {{ min }}% et {{ max }}%',
     )]
     #[Gedmo\Versioned]
     private ?string $overallProgression = '0.00';
@@ -104,79 +164,24 @@ class ProgressAssessment
     #[Assert\Range(
         min: 1,
         max: 5,
-        notInRangeMessage: 'Le niveau de risque doit être entre {{ min }} et {{ max }}'
+        notInRangeMessage: 'Le niveau de risque doit être entre {{ min }} et {{ max }}',
     )]
     #[Gedmo\Versioned]
     private ?int $riskLevel = 1;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'create')]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    /**
-     * Risk level constants
-     */
-    public const RISK_LEVELS = [
-        1 => 'Très faible',
-        2 => 'Faible',
-        3 => 'Modéré',
-        4 => 'Élevé',
-        5 => 'Critique'
-    ];
-
-    /**
-     * Risk level colors
-     */
-    public const RISK_LEVEL_COLORS = [
-        1 => 'success',
-        2 => 'info',
-        3 => 'warning',
-        4 => 'danger',
-        5 => 'dark'
-    ];
-
-    /**
-     * Standard objectives framework
-     */
-    public const STANDARD_OBJECTIVES = [
-        'technical' => [
-            'name' => 'Objectifs techniques',
-            'categories' => [
-                'basic_skills' => 'Maîtrise des compétences de base',
-                'advanced_skills' => 'Développement des compétences avancées',
-                'tools_mastery' => 'Maîtrise des outils professionnels',
-                'quality_standards' => 'Respect des standards qualité'
-            ]
-        ],
-        'professional' => [
-            'name' => 'Objectifs professionnels',
-            'categories' => [
-                'autonomy' => 'Développement de l\'autonomie',
-                'responsibility' => 'Prise de responsabilités',
-                'initiative' => 'Prise d\'initiatives',
-                'problem_solving' => 'Résolution de problèmes'
-            ]
-        ],
-        'transversal' => [
-            'name' => 'Objectifs transversaux',
-            'categories' => [
-                'communication' => 'Communication professionnelle',
-                'teamwork' => 'Travail en équipe',
-                'time_management' => 'Gestion du temps',
-                'adaptability' => 'Capacité d\'adaptation'
-            ]
-        ]
-    ];
+    private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->period = new \DateTime();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+        $this->period = new DateTime();
         $this->completedObjectives = [];
         $this->pendingObjectives = [];
         $this->upcomingObjectives = [];
@@ -184,6 +189,16 @@ class ProgressAssessment
         $this->supportNeeded = [];
         $this->skillsMatrix = [];
         $this->riskLevel = 1;
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s - %s (%.1f%%)',
+            $this->student?->getFullName() ?? 'Alternant inconnu',
+            $this->period?->format('m/Y') ?? '',
+            (float) $this->overallProgression,
+        );
     }
 
     public function getId(): ?int
@@ -199,17 +214,19 @@ class ProgressAssessment
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
-    public function getPeriod(): ?\DateTimeInterface
+    public function getPeriod(): ?DateTimeInterface
     {
         return $this->period;
     }
 
-    public function setPeriod(\DateTimeInterface $period): static
+    public function setPeriod(DateTimeInterface $period): static
     {
         $this->period = $period;
+
         return $this;
     }
 
@@ -221,6 +238,7 @@ class ProgressAssessment
     public function setCenterProgression(string $centerProgression): static
     {
         $this->centerProgression = $centerProgression;
+
         return $this;
     }
 
@@ -232,6 +250,7 @@ class ProgressAssessment
     public function setCompanyProgression(string $companyProgression): static
     {
         $this->companyProgression = $companyProgression;
+
         return $this;
     }
 
@@ -243,6 +262,7 @@ class ProgressAssessment
     public function setOverallProgression(string $overallProgression): static
     {
         $this->overallProgression = $overallProgression;
+
         return $this;
     }
 
@@ -254,6 +274,7 @@ class ProgressAssessment
     public function setCompletedObjectives(array $completedObjectives): static
     {
         $this->completedObjectives = $completedObjectives;
+
         return $this;
     }
 
@@ -265,6 +286,7 @@ class ProgressAssessment
     public function setPendingObjectives(array $pendingObjectives): static
     {
         $this->pendingObjectives = $pendingObjectives;
+
         return $this;
     }
 
@@ -276,6 +298,7 @@ class ProgressAssessment
     public function setUpcomingObjectives(array $upcomingObjectives): static
     {
         $this->upcomingObjectives = $upcomingObjectives;
+
         return $this;
     }
 
@@ -287,6 +310,7 @@ class ProgressAssessment
     public function setDifficulties(array $difficulties): static
     {
         $this->difficulties = $difficulties;
+
         return $this;
     }
 
@@ -298,6 +322,7 @@ class ProgressAssessment
     public function setSupportNeeded(array $supportNeeded): static
     {
         $this->supportNeeded = $supportNeeded;
+
         return $this;
     }
 
@@ -309,6 +334,7 @@ class ProgressAssessment
     public function setNextSteps(?string $nextSteps): static
     {
         $this->nextSteps = $nextSteps;
+
         return $this;
     }
 
@@ -320,6 +346,7 @@ class ProgressAssessment
     public function setSkillsMatrix(array $skillsMatrix): static
     {
         $this->skillsMatrix = $skillsMatrix;
+
         return $this;
     }
 
@@ -331,33 +358,36 @@ class ProgressAssessment
     public function setRiskLevel(int $riskLevel): static
     {
         $this->riskLevel = max(1, min(5, $riskLevel));
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
     /**
-     * Get risk level label
+     * Get risk level label.
      */
     public function getRiskLevelLabel(): string
     {
@@ -365,7 +395,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get risk level color
+     * Get risk level color.
      */
     public function getRiskLevelColor(): string
     {
@@ -373,7 +403,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get risk level badge class
+     * Get risk level badge class.
      */
     public function getRiskLevelBadgeClass(): string
     {
@@ -381,42 +411,45 @@ class ProgressAssessment
     }
 
     /**
-     * Calculate overall progression from center and company progression
+     * Calculate overall progression from center and company progression.
      */
     public function calculateOverallProgression(): static
     {
         $centerProg = (float) $this->centerProgression;
         $companyProg = (float) $this->companyProgression;
-        
+
         // Weighted average: 60% center, 40% company
         $overall = ($centerProg * 0.6) + ($companyProg * 0.4);
         $this->overallProgression = number_format($overall, 2);
-        
+
         return $this;
     }
 
     /**
-     * Get progression status
+     * Get progression status.
      */
     public function getProgressionStatus(): string
     {
         $progression = (float) $this->overallProgression;
-        
+
         if ($progression >= 90) {
             return 'excellent';
-        } elseif ($progression >= 75) {
-            return 'satisfactory';
-        } elseif ($progression >= 50) {
-            return 'average';
-        } elseif ($progression >= 25) {
-            return 'needs_improvement';
-        } else {
-            return 'critical';
         }
+        if ($progression >= 75) {
+            return 'satisfactory';
+        }
+        if ($progression >= 50) {
+            return 'average';
+        }
+        if ($progression >= 25) {
+            return 'needs_improvement';
+        }
+
+        return 'critical';
     }
 
     /**
-     * Get progression status label
+     * Get progression status label.
      */
     public function getProgressionStatusLabel(): string
     {
@@ -431,7 +464,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get progression status badge class
+     * Get progression status badge class.
      */
     public function getProgressionStatusBadgeClass(): string
     {
@@ -446,22 +479,22 @@ class ProgressAssessment
     }
 
     /**
-     * Add completed objective
+     * Add completed objective.
      */
-    public function addCompletedObjective(string $category, string $objective, ?\DateTimeInterface $completedAt = null): static
+    public function addCompletedObjective(string $category, string $objective, ?DateTimeInterface $completedAt = null): static
     {
         $this->completedObjectives[] = [
             'category' => $category,
             'objective' => $objective,
-            'completed_at' => ($completedAt ?? new \DateTime())->format('Y-m-d H:i:s'),
-            'added_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'completed_at' => ($completedAt ?? new DateTime())->format('Y-m-d H:i:s'),
+            'added_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ];
 
         return $this;
     }
 
     /**
-     * Add pending objective
+     * Add pending objective.
      */
     public function addPendingObjective(string $category, string $objective, ?string $targetDate = null, ?int $priority = null): static
     {
@@ -471,14 +504,14 @@ class ProgressAssessment
             'target_date' => $targetDate,
             'priority' => $priority ?? 3,
             'progress_percentage' => 0,
-            'added_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'added_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ];
 
         return $this;
     }
 
     /**
-     * Add upcoming objective
+     * Add upcoming objective.
      */
     public function addUpcomingObjective(string $category, string $objective, ?string $startDate = null): static
     {
@@ -487,14 +520,14 @@ class ProgressAssessment
             'objective' => $objective,
             'start_date' => $startDate,
             'prerequisites' => [],
-            'added_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'added_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ];
 
         return $this;
     }
 
     /**
-     * Add difficulty
+     * Add difficulty.
      */
     public function addDifficulty(string $area, string $description, int $severity = 3): static
     {
@@ -502,15 +535,15 @@ class ProgressAssessment
             'area' => $area,
             'description' => $description,
             'severity' => max(1, min(5, $severity)),
-            'identified_at' => (new \DateTime())->format('Y-m-d H:i:s'),
-            'status' => 'active'
+            'identified_at' => (new DateTime())->format('Y-m-d H:i:s'),
+            'status' => 'active',
         ];
 
         return $this;
     }
 
     /**
-     * Add support needed
+     * Add support needed.
      */
     public function addSupportNeeded(string $type, string $description, int $urgency = 3): static
     {
@@ -518,50 +551,30 @@ class ProgressAssessment
             'type' => $type,
             'description' => $description,
             'urgency' => max(1, min(5, $urgency)),
-            'requested_at' => (new \DateTime())->format('Y-m-d H:i:s'),
-            'status' => 'requested'
+            'requested_at' => (new DateTime())->format('Y-m-d H:i:s'),
+            'status' => 'requested',
         ];
 
         return $this;
     }
 
     /**
-     * Update skill in matrix
+     * Update skill in matrix.
      */
     public function updateSkillInMatrix(string $skillCode, string $skillName, float $level, ?string $lastAssessed = null): static
     {
         $this->skillsMatrix[$skillCode] = [
             'name' => $skillName,
             'level' => max(0, min(20, $level)), // Scale 0-20
-            'last_assessed' => $lastAssessed ?? (new \DateTime())->format('Y-m-d'),
-            'progression_trend' => $this->calculateSkillTrend($skillCode, $level)
+            'last_assessed' => $lastAssessed ?? (new DateTime())->format('Y-m-d'),
+            'progression_trend' => $this->calculateSkillTrend($skillCode, $level),
         ];
 
         return $this;
     }
 
     /**
-     * Calculate skill progression trend
-     */
-    private function calculateSkillTrend(string $skillCode, float $newLevel): string
-    {
-        if (!isset($this->skillsMatrix[$skillCode])) {
-            return 'new';
-        }
-
-        $previousLevel = $this->skillsMatrix[$skillCode]['level'] ?? 0;
-        
-        if ($newLevel > $previousLevel + 1) {
-            return 'improving';
-        } elseif ($newLevel < $previousLevel - 1) {
-            return 'declining';
-        } else {
-            return 'stable';
-        }
-    }
-
-    /**
-     * Get objectives summary
+     * Get objectives summary.
      */
     public function getObjectivesSummary(): array
     {
@@ -570,17 +583,17 @@ class ProgressAssessment
             'pending' => count($this->pendingObjectives),
             'upcoming' => count($this->upcomingObjectives),
             'total' => count($this->completedObjectives) + count($this->pendingObjectives) + count($this->upcomingObjectives),
-            'completion_rate' => $this->calculateObjectivesCompletionRate()
+            'completion_rate' => $this->calculateObjectivesCompletionRate(),
         ];
     }
 
     /**
-     * Calculate objectives completion rate
+     * Calculate objectives completion rate.
      */
     public function calculateObjectivesCompletionRate(): float
     {
         $total = count($this->completedObjectives) + count($this->pendingObjectives);
-        
+
         if ($total === 0) {
             return 0.0;
         }
@@ -589,7 +602,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get skills matrix summary
+     * Get skills matrix summary.
      */
     public function getSkillsMatrixSummary(): array
     {
@@ -599,7 +612,7 @@ class ProgressAssessment
                 'average_level' => 0.0,
                 'mastered_skills' => 0,
                 'improving_skills' => 0,
-                'declining_skills' => 0
+                'declining_skills' => 0,
             ];
         }
 
@@ -629,12 +642,12 @@ class ProgressAssessment
             'average_level' => $totalLevel / count($this->skillsMatrix),
             'mastered_skills' => $masteredCount,
             'improving_skills' => $improvingCount,
-            'declining_skills' => $decliningCount
+            'declining_skills' => $decliningCount,
         ];
     }
 
     /**
-     * Calculate risk level based on various factors
+     * Calculate risk level based on various factors.
      */
     public function calculateRiskLevel(): static
     {
@@ -644,42 +657,42 @@ class ProgressAssessment
         if ((float) $this->overallProgression < 50) {
             $riskFactors += 2;
         } elseif ((float) $this->overallProgression < 75) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
 
         // High number of difficulties
-        $severeDifficulties = array_filter($this->difficulties, fn($d) => ($d['severity'] ?? 3) >= 4);
+        $severeDifficulties = array_filter($this->difficulties, static fn ($d) => ($d['severity'] ?? 3) >= 4);
         if (count($severeDifficulties) >= 2) {
             $riskFactors += 2;
         } elseif (count($this->difficulties) >= 3) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
 
         // Support needed with high urgency
-        $urgentSupport = array_filter($this->supportNeeded, fn($s) => ($s['urgency'] ?? 3) >= 4);
+        $urgentSupport = array_filter($this->supportNeeded, static fn ($s) => ($s['urgency'] ?? 3) >= 4);
         if (count($urgentSupport) >= 1) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
 
         // Low objectives completion rate
         $completionRate = $this->calculateObjectivesCompletionRate();
         if ($completionRate < 50) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
 
         // Skills matrix issues
         $skillsSummary = $this->getSkillsMatrixSummary();
         if ($skillsSummary['declining_skills'] > $skillsSummary['improving_skills']) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
 
         $this->riskLevel = min(5, max(1, $riskFactors + 1));
-        
+
         return $this;
     }
 
     /**
-     * Get risk factors analysis
+     * Get risk factors analysis.
      */
     public function getRiskFactorsAnalysis(): array
     {
@@ -689,25 +702,25 @@ class ProgressAssessment
             $factors[] = [
                 'factor' => 'Progression globale faible',
                 'severity' => 'high',
-                'description' => 'La progression globale est inférieure à 50%'
+                'description' => 'La progression globale est inférieure à 50%',
             ];
         }
 
-        $severeDifficulties = array_filter($this->difficulties, fn($d) => ($d['severity'] ?? 3) >= 4);
+        $severeDifficulties = array_filter($this->difficulties, static fn ($d) => ($d['severity'] ?? 3) >= 4);
         if (!empty($severeDifficulties)) {
             $factors[] = [
                 'factor' => 'Difficultés importantes',
                 'severity' => 'high',
-                'description' => count($severeDifficulties) . ' difficulté(s) importante(s) identifiée(s)'
+                'description' => count($severeDifficulties) . ' difficulté(s) importante(s) identifiée(s)',
             ];
         }
 
-        $urgentSupport = array_filter($this->supportNeeded, fn($s) => ($s['urgency'] ?? 3) >= 4);
+        $urgentSupport = array_filter($this->supportNeeded, static fn ($s) => ($s['urgency'] ?? 3) >= 4);
         if (!empty($urgentSupport)) {
             $factors[] = [
                 'factor' => 'Accompagnement urgent nécessaire',
                 'severity' => 'medium',
-                'description' => count($urgentSupport) . ' demande(s) d\'accompagnement urgent'
+                'description' => count($urgentSupport) . ' demande(s) d\'accompagnement urgent',
             ];
         }
 
@@ -715,32 +728,33 @@ class ProgressAssessment
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     /**
-     * Get evaluation status based on progression
+     * Get evaluation status based on progression.
      */
     public function getStatus(): string
     {
         $progression = (float) $this->overallProgression;
-        
+
         if ($progression >= 80) {
             return 'validated';
-        } elseif ($progression >= 50) {
-            return 'pending';
-        } else {
-            return 'rejected';
         }
+        if ($progression >= 50) {
+            return 'pending';
+        }
+
+        return 'rejected';
     }
 
     /**
-     * Get overall score as decimal for compatibility with controller
+     * Get overall score as decimal for compatibility with controller.
      */
     public function getOverallScore(): ?float
     {
@@ -748,7 +762,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get mentor for compatibility with controller (from alternance contract)
+     * Get mentor for compatibility with controller (from alternance contract).
      */
     public function getMentor()
     {
@@ -760,27 +774,23 @@ class ProgressAssessment
     }
 
     /**
-     * Get achieved objectives for template compatibility
+     * Get achieved objectives for template compatibility.
      */
     public function getAchievedObjectives(): array
     {
-        return array_map(function($obj) {
-            return $obj['objective'] ?? $obj;
-        }, $this->completedObjectives);
+        return array_map(static fn ($obj) => $obj['objective'] ?? $obj, $this->completedObjectives);
     }
 
     /**
-     * Get planned objectives for template compatibility
+     * Get planned objectives for template compatibility.
      */
     public function getPlannedObjectives(): array
     {
-        return array_map(function($obj) {
-            return $obj['objective'] ?? $obj;
-        }, $this->upcomingObjectives);
+        return array_map(static fn ($obj) => $obj['objective'] ?? $obj, $this->upcomingObjectives);
     }
 
     /**
-     * Get total objectives count
+     * Get total objectives count.
      */
     public function getTotalObjectives(): int
     {
@@ -788,33 +798,37 @@ class ProgressAssessment
     }
 
     /**
-     * Get period start date for template compatibility  
+     * Get period start date for template compatibility.
      */
-    public function getPeriodStart(): ?\DateTimeInterface
+    public function getPeriodStart(): ?DateTimeInterface
     {
         // Assume period is the start of the evaluation period
         if ($this->period) {
-            $date = new \DateTime($this->period->format('Y-m-d'));
+            $date = new DateTime($this->period->format('Y-m-d'));
+
             return $date->modify('first day of this month');
         }
+
         return null;
     }
 
     /**
-     * Get period end date for template compatibility
+     * Get period end date for template compatibility.
      */
-    public function getPeriodEnd(): ?\DateTimeInterface
+    public function getPeriodEnd(): ?DateTimeInterface
     {
         // Assume period end is the last day of the month
         if ($this->period) {
-            $date = new \DateTime($this->period->format('Y-m-d'));
+            $date = new DateTime($this->period->format('Y-m-d'));
+
             return $date->modify('last day of this month');
         }
+
         return null;
     }
 
     /**
-     * Get mentor comments for template compatibility
+     * Get mentor comments for template compatibility.
      */
     public function getMentorComments(): ?string
     {
@@ -823,7 +837,7 @@ class ProgressAssessment
     }
 
     /**
-     * Get student comments for template compatibility
+     * Get student comments for template compatibility.
      */
     public function getStudentComments(): ?string
     {
@@ -834,11 +848,12 @@ class ProgressAssessment
                 $comments[] = $difficulty['description'];
             }
         }
+
         return !empty($comments) ? implode("\n", $comments) : null;
     }
 
     /**
-     * Get admin comments (placeholder for template compatibility)
+     * Get admin comments (placeholder for template compatibility).
      */
     public function getAdminComments(): ?string
     {
@@ -846,16 +861,16 @@ class ProgressAssessment
     }
 
     /**
-     * Get validation date (placeholder for template compatibility)
+     * Get validation date (placeholder for template compatibility).
      */
-    public function getValidatedAt(): ?\DateTimeImmutable
+    public function getValidatedAt(): ?DateTimeImmutable
     {
         // Could track when the assessment was validated
         return null; // Could be added later if needed
     }
 
     /**
-     * Get validator (placeholder for template compatibility)
+     * Get validator (placeholder for template compatibility).
      */
     public function getValidatedBy()
     {
@@ -863,20 +878,31 @@ class ProgressAssessment
     }
 
     /**
-     * Get entity type for template compatibility
+     * Get entity type for template compatibility.
      */
     public function getEntityType(): string
     {
         return 'progress';
     }
 
-    public function __toString(): string
+    /**
+     * Calculate skill progression trend.
+     */
+    private function calculateSkillTrend(string $skillCode, float $newLevel): string
     {
-        return sprintf(
-            '%s - %s (%.1f%%)',
-            $this->student?->getFullName() ?? 'Alternant inconnu',
-            $this->period?->format('m/Y') ?? '',
-            (float) $this->overallProgression
-        );
+        if (!isset($this->skillsMatrix[$skillCode])) {
+            return 'new';
+        }
+
+        $previousLevel = $this->skillsMatrix[$skillCode]['level'] ?? 0;
+
+        if ($newLevel > $previousLevel + 1) {
+            return 'improving';
+        }
+        if ($newLevel < $previousLevel - 1) {
+            return 'declining';
+        }
+
+        return 'stable';
     }
 }

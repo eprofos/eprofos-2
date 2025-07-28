@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\Training\Session;
 use App\Repository\Alternance\AlternanceProgramRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * AlternanceProgram entity representing an alternance pedagogical program
- * 
+ * AlternanceProgram entity representing an alternance pedagogical program.
+ *
  * Contains all pedagogical information for managing alternance training
  * including modules, coordination points, and assessment periods.
  */
@@ -21,6 +24,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Gedmo\Loggable]
 class AlternanceProgram
 {
+    /**
+     * Common rhythm patterns for alternance programs.
+     */
+    public const RHYTHM_PATTERNS = [
+        '1-1' => '1 semaine centre / 1 semaine entreprise',
+        '2-2' => '2 semaines centre / 2 semaines entreprise',
+        '3-1' => '3 semaines centre / 1 semaine entreprise',
+        '1-3' => '1 semaine centre / 3 semaines entreprise',
+        '2-3' => '2 semaines centre / 3 semaines entreprise',
+        '3-2' => '3 semaines centre / 2 semaines entreprise',
+        '4-4' => '4 semaines centre / 4 semaines entreprise',
+        'custom' => 'Rythme personnalisé',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -37,7 +54,7 @@ class AlternanceProgram
         min: 5,
         max: 255,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $title = null;
@@ -46,7 +63,7 @@ class AlternanceProgram
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(
         min: 50,
-        minMessage: 'La description doit contenir au moins {{ limit }} caractères.'
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $description = null;
@@ -108,29 +125,20 @@ class AlternanceProgram
     private ?array $additionalData = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    /**
-     * Common rhythm patterns for alternance programs
-     */
-    public const RHYTHM_PATTERNS = [
-        '1-1' => '1 semaine centre / 1 semaine entreprise',
-        '2-2' => '2 semaines centre / 2 semaines entreprise',
-        '3-1' => '3 semaines centre / 1 semaine entreprise',
-        '1-3' => '1 semaine centre / 3 semaines entreprise',
-        '2-3' => '2 semaines centre / 3 semaines entreprise',
-        '3-2' => '3 semaines centre / 2 semaines entreprise',
-        '4-4' => '4 semaines centre / 4 semaines entreprise',
-        'custom' => 'Rythme personnalisé'
-    ];
+    private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -146,6 +154,7 @@ class AlternanceProgram
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+
         return $this;
     }
 
@@ -157,6 +166,7 @@ class AlternanceProgram
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -168,6 +178,7 @@ class AlternanceProgram
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -179,6 +190,7 @@ class AlternanceProgram
     public function setTotalDuration(int $totalDuration): static
     {
         $this->totalDuration = $totalDuration;
+
         return $this;
     }
 
@@ -190,6 +202,7 @@ class AlternanceProgram
     public function setCenterDuration(int $centerDuration): static
     {
         $this->centerDuration = $centerDuration;
+
         return $this;
     }
 
@@ -201,6 +214,7 @@ class AlternanceProgram
     public function setCompanyDuration(int $companyDuration): static
     {
         $this->companyDuration = $companyDuration;
+
         return $this;
     }
 
@@ -212,6 +226,7 @@ class AlternanceProgram
     public function setCenterModules(array $centerModules): static
     {
         $this->centerModules = $centerModules;
+
         return $this;
     }
 
@@ -223,6 +238,7 @@ class AlternanceProgram
     public function setCompanyModules(array $companyModules): static
     {
         $this->companyModules = $companyModules;
+
         return $this;
     }
 
@@ -234,6 +250,7 @@ class AlternanceProgram
     public function setCoordinationPoints(array $coordinationPoints): static
     {
         $this->coordinationPoints = $coordinationPoints;
+
         return $this;
     }
 
@@ -245,6 +262,7 @@ class AlternanceProgram
     public function setAssessmentPeriods(array $assessmentPeriods): static
     {
         $this->assessmentPeriods = $assessmentPeriods;
+
         return $this;
     }
 
@@ -256,6 +274,7 @@ class AlternanceProgram
     public function setRhythm(string $rhythm): static
     {
         $this->rhythm = $rhythm;
+
         return $this;
     }
 
@@ -267,6 +286,7 @@ class AlternanceProgram
     public function setLearningProgression(array $learningProgression): static
     {
         $this->learningProgression = $learningProgression;
+
         return $this;
     }
 
@@ -278,6 +298,7 @@ class AlternanceProgram
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -289,33 +310,36 @@ class AlternanceProgram
     public function setAdditionalData(?array $additionalData): static
     {
         $this->additionalData = $additionalData;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
     /**
-     * Get center duration percentage
+     * Get center duration percentage.
      */
     public function getCenterDurationPercentage(): float
     {
@@ -327,7 +351,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get company duration percentage
+     * Get company duration percentage.
      */
     public function getCompanyDurationPercentage(): float
     {
@@ -339,7 +363,7 @@ class AlternanceProgram
     }
 
     /**
-     * Check if durations are consistent
+     * Check if durations are consistent.
      */
     public function hasConsistentDurations(): bool
     {
@@ -347,7 +371,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get formatted total duration
+     * Get formatted total duration.
      */
     public function getFormattedTotalDuration(): string
     {
@@ -363,7 +387,7 @@ class AlternanceProgram
             return $this->totalDuration . ' semaines';
         }
 
-        $years = intval($this->totalDuration / 52);
+        $years = (int) ($this->totalDuration / 52);
         $remainingWeeks = $this->totalDuration % 52;
 
         if ($remainingWeeks === 0) {
@@ -377,7 +401,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get rhythm description
+     * Get rhythm description.
      */
     public function getRhythmDescription(): string
     {
@@ -385,7 +409,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get number of center modules
+     * Get number of center modules.
      */
     public function getCenterModulesCount(): int
     {
@@ -393,7 +417,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get number of company modules
+     * Get number of company modules.
      */
     public function getCompanyModulesCount(): int
     {
@@ -401,7 +425,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get number of coordination points
+     * Get number of coordination points.
      */
     public function getCoordinationPointsCount(): int
     {
@@ -409,7 +433,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get number of assessment periods
+     * Get number of assessment periods.
      */
     public function getAssessmentPeriodsCount(): int
     {
@@ -417,7 +441,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get learning progression steps count
+     * Get learning progression steps count.
      */
     public function getLearningProgressionStepsCount(): int
     {
@@ -425,7 +449,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get formation title
+     * Get formation title.
      */
     public function getFormationTitle(): string
     {
@@ -433,7 +457,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get session name
+     * Get session name.
      */
     public function getSessionName(): string
     {
@@ -441,7 +465,7 @@ class AlternanceProgram
     }
 
     /**
-     * Check if program has center modules
+     * Check if program has center modules.
      */
     public function hasCenterModules(): bool
     {
@@ -449,7 +473,7 @@ class AlternanceProgram
     }
 
     /**
-     * Check if program has company modules
+     * Check if program has company modules.
      */
     public function hasCompanyModules(): bool
     {
@@ -457,7 +481,7 @@ class AlternanceProgram
     }
 
     /**
-     * Check if program has coordination points
+     * Check if program has coordination points.
      */
     public function hasCoordinationPoints(): bool
     {
@@ -465,7 +489,7 @@ class AlternanceProgram
     }
 
     /**
-     * Check if program has assessment periods
+     * Check if program has assessment periods.
      */
     public function hasAssessmentPeriods(): bool
     {
@@ -473,7 +497,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get center modules titles
+     * Get center modules titles.
      */
     public function getCenterModulesTitles(): array
     {
@@ -481,7 +505,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get company modules titles
+     * Get company modules titles.
      */
     public function getCompanyModulesTitles(): array
     {
@@ -489,7 +513,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get coordination points summaries
+     * Get coordination points summaries.
      */
     public function getCoordinationPointsSummaries(): array
     {
@@ -497,7 +521,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get assessment periods names
+     * Get assessment periods names.
      */
     public function getAssessmentPeriodsNames(): array
     {
@@ -505,7 +529,7 @@ class AlternanceProgram
     }
 
     /**
-     * Get learning progression milestones
+     * Get learning progression milestones.
      */
     public function getLearningProgressionMilestones(): array
     {
@@ -513,16 +537,11 @@ class AlternanceProgram
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

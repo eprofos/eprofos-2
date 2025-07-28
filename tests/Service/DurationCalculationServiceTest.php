@@ -1,31 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
-use App\Entity\Training\Formation;
-use App\Entity\Training\Module;
+use App\Entity\Training\Category;
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
+use App\Entity\Training\Formation;
+use App\Entity\Training\Module;
 use App\Entity\Training\QCM;
-use App\Entity\Training\Category;
 use App\Service\Training\DurationCalculationService;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * Test class for DurationCalculationService
+ * Test class for DurationCalculationService.
  */
 class DurationCalculationServiceTest extends TestCase
 {
     private DurationCalculationService $service;
-    private MockObject&EntityManagerInterface $entityManager;
-    private MockObject&CacheInterface $cache;
-    private MockObject&LoggerInterface $logger;
+
+    private EntityManagerInterface&MockObject $entityManager;
+
+    private CacheInterface&MockObject $cache;
+
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -36,7 +41,7 @@ class DurationCalculationServiceTest extends TestCase
         $this->service = new DurationCalculationService(
             $this->entityManager,
             $this->cache,
-            $this->logger
+            $this->logger,
         );
     }
 
@@ -86,8 +91,8 @@ class DurationCalculationServiceTest extends TestCase
                 'question' => 'What is 2+2?',
                 'answers' => ['3', '4', '5'],
                 'correct' => 1,
-                'explanation' => '2+2 equals 4'
-            ]
+                'explanation' => '2+2 equals 4',
+            ],
         ]);
         $qcm->setTimeLimitMinutes(15);
         $qcm->setMaxScore(100);
@@ -104,8 +109,10 @@ class DurationCalculationServiceTest extends TestCase
         $this->cache->method('get')
             ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
+
                 return $callback($item);
-            });
+            })
+        ;
 
         // Test calculation
         $totalDuration = $this->service->calculateCourseDuration($course);
@@ -152,15 +159,19 @@ class DurationCalculationServiceTest extends TestCase
         $this->cache->method('get')
             ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
+
                 return $callback($item);
-            });
+            })
+        ;
 
         // Mock the course duration calculations
         $this->cache->method('get')
             ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
+
                 return $callback($item);
-            });
+            })
+        ;
 
         // Test calculation
         $totalDuration = $this->service->calculateChapterDuration($chapter);
@@ -253,8 +264,10 @@ class DurationCalculationServiceTest extends TestCase
         $this->cache->method('get')
             ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
+
                 return $callback($item);
-            });
+            })
+        ;
 
         // Test calculation
         $totalDuration = $this->service->calculateModuleDuration($module);
@@ -355,8 +368,10 @@ class DurationCalculationServiceTest extends TestCase
         $this->cache->method('get')
             ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
+
                 return $callback($item);
-            });
+            })
+        ;
 
         // Test calculation
         $totalDuration = $this->service->calculateFormationDuration($formation);

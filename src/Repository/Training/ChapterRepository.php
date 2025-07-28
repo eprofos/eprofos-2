@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\Chapter;
@@ -17,7 +19,7 @@ class ChapterRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find chapters by module ordered by order index
+     * Find chapters by module ordered by order index.
      */
     public function findByModuleOrdered(int $moduleId): array
     {
@@ -27,11 +29,12 @@ class ChapterRepository extends ServiceEntityRepository
             ->setParameter('moduleId', $moduleId)
             ->orderBy('c.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find all chapters by module (including inactive ones)
+     * Find all chapters by module (including inactive ones).
      */
     public function findAllByModuleOrdered(int $moduleId): array
     {
@@ -40,11 +43,12 @@ class ChapterRepository extends ServiceEntityRepository
             ->setParameter('moduleId', $moduleId)
             ->orderBy('c.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get the next order index for a module
+     * Get the next order index for a module.
      */
     public function getNextOrderIndex(int $moduleId): int
     {
@@ -53,62 +57,68 @@ class ChapterRepository extends ServiceEntityRepository
             ->where('c.module = :moduleId')
             ->setParameter('moduleId', $moduleId)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return ($result ?? 0) + 1;
     }
 
     /**
-     * Update order indexes for chapters
+     * Update order indexes for chapters.
      */
     public function updateOrderIndexes(array $chapterIds): void
     {
         $connection = $this->getEntityManager()->getConnection();
-        
+
         foreach ($chapterIds as $index => $chapterId) {
             $connection->update(
                 'chapter',
                 ['order_index' => $index + 1],
-                ['id' => $chapterId]
+                ['id' => $chapterId],
             );
         }
     }
 
     /**
-     * Find chapters with search filters
+     * Find chapters with search filters.
      */
     public function findWithFilters(array $filters = []): array
     {
         $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.module', 'm')
             ->leftJoin('m.formation', 'f')
-            ->orderBy('c.orderIndex', 'ASC');
+            ->orderBy('c.orderIndex', 'ASC')
+        ;
 
         if (isset($filters['module'])) {
             $qb->andWhere('c.module = :module')
-               ->setParameter('module', $filters['module']);
+                ->setParameter('module', $filters['module'])
+            ;
         }
 
         if (isset($filters['formation'])) {
             $qb->andWhere('m.formation = :formation')
-               ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         if (isset($filters['active'])) {
             $qb->andWhere('c.isActive = :active')
-               ->setParameter('active', $filters['active']);
+                ->setParameter('active', $filters['active'])
+            ;
         }
 
         if (isset($filters['search'])) {
             $qb->andWhere('c.title LIKE :search OR c.description LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Get total duration for all chapters in a module
+     * Get total duration for all chapters in a module.
      */
     public function getTotalDurationForModule(int $moduleId): int
     {

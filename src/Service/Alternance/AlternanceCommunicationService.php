@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
 /**
- * Service for managing communication between training center and companies
- * 
+ * Service for managing communication between training center and companies.
+ *
  * Handles messaging, notifications, and digital liaison book for apprenticeship
  * coordination, ensuring optimal communication for Qualiopi compliance.
  */
@@ -21,12 +26,14 @@ class AlternanceCommunicationService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MailerInterface $mailer,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Send coordination message between mentor and pedagogical supervisor
+     * Send coordination message between mentor and pedagogical supervisor.
+     *
+     * @param mixed $sender
+     * @param mixed $recipient
      */
     public function sendCoordinationMessage(
         $sender, // Teacher or Mentor
@@ -35,14 +42,15 @@ class AlternanceCommunicationService
         string $subject,
         string $message,
         array $attachments = [],
-        string $priority = 'normal'
+        string $priority = 'normal',
     ): bool {
         try {
             $email = (new Email())
                 ->from($sender->getEmail())
                 ->to($recipient->getEmail())
                 ->subject($this->formatSubject($subject, $student))
-                ->html($this->formatMessage($sender, $recipient, $student, $message));
+                ->html($this->formatMessage($sender, $recipient, $student, $message))
+            ;
 
             // Add priority header if high priority
             if ($priority === 'high') {
@@ -59,12 +67,12 @@ class AlternanceCommunicationService
             $this->logCommunication($sender, $recipient, $student, $subject, 'email_sent');
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send coordination message', [
                 'sender' => $sender->getEmail(),
                 'recipient' => $recipient->getEmail(),
                 'student_id' => $student->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -72,16 +80,16 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Send automated alert for coordination issues
+     * Send automated alert for coordination issues.
      */
     public function sendCoordinationAlert(
         Student $student,
         string $alertType,
         string $description,
-        array $recipients = []
+        array $recipients = [],
     ): void {
         $alertConfig = $this->getAlertConfiguration($alertType);
-        
+
         if (empty($recipients)) {
             $recipients = $this->getDefaultAlertRecipients($student, $alertType);
         }
@@ -94,7 +102,7 @@ class AlternanceCommunicationService
                 $alertConfig['subject'],
                 $this->formatAlertMessage($alertType, $description, $student),
                 [],
-                'high'
+                'high',
             );
         }
 
@@ -102,20 +110,22 @@ class AlternanceCommunicationService
             null,
             null,
             $student,
-            "Alert: $alertType",
-            'alert_sent'
+            "Alert: {$alertType}",
+            'alert_sent',
         );
     }
 
     /**
-     * Create digital liaison book entry
+     * Create digital liaison book entry.
+     *
+     * @param mixed $author
      */
     public function createLiaisonBookEntry(
         Student $student,
         $author, // Teacher or Mentor
         string $entryType,
         string $content,
-        array $metadata = []
+        array $metadata = [],
     ): array {
         $entry = [
             'id' => uniqid(),
@@ -126,8 +136,8 @@ class AlternanceCommunicationService
             'entry_type' => $entryType,
             'content' => $content,
             'metadata' => $metadata,
-            'created_at' => new \DateTimeImmutable(),
-            'read_by' => []
+            'created_at' => new DateTimeImmutable(),
+            'read_by' => [],
         ];
 
         // Store in database or cache
@@ -140,31 +150,31 @@ class AlternanceCommunicationService
         $this->logger->info('Liaison book entry created', [
             'student_id' => $student->getId(),
             'author_type' => $entry['author_type'],
-            'entry_type' => $entryType
+            'entry_type' => $entryType,
         ]);
 
         return $entry;
     }
 
     /**
-     * Get liaison book entries for student
+     * Get liaison book entries for student.
      */
     public function getLiaisonBookEntries(Student $student, int $limit = 50): array
     {
         // TODO: Implement proper retrieval from storage
         // This would fetch from database with proper filtering and pagination
-        
+
         return [];
     }
 
     /**
-     * Send meeting reminder notifications
+     * Send meeting reminder notifications.
      */
     public function sendMeetingReminders(array $meetings, int $hoursBeforeMeeting = 24): void
     {
         foreach ($meetings as $meeting) {
             $timeUntilMeeting = $meeting->getTimeUntilMeeting();
-            
+
             if ($timeUntilMeeting && $timeUntilMeeting->h <= $hoursBeforeMeeting) {
                 $this->sendMeetingReminderEmail($meeting);
             }
@@ -172,7 +182,9 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Send visit confirmation notifications
+     * Send visit confirmation notifications.
+     *
+     * @param mixed $visit
      */
     public function sendVisitConfirmation($visit): void
     {
@@ -184,7 +196,7 @@ class AlternanceCommunicationService
             'Confirmation de visite en entreprise',
             $this->formatVisitConfirmationMessage($visit, 'mentor'),
             [],
-            'normal'
+            'normal',
         );
 
         // Send to student
@@ -192,24 +204,24 @@ class AlternanceCommunicationService
             $this->sendStudentNotification(
                 $visit->getStudent(),
                 'Visite programmée en entreprise',
-                $this->formatVisitConfirmationMessage($visit, 'student')
+                $this->formatVisitConfirmationMessage($visit, 'student'),
             );
         }
     }
 
     /**
-     * Send urgent coordination alert
+     * Send urgent coordination alert.
      */
     public function sendUrgentAlert(
         Student $student,
         string $alertType,
         string $urgentMessage,
-        array $escalationList = []
+        array $escalationList = [],
     ): void {
         // Send immediate notifications to all stakeholders
         $recipients = array_merge(
             $this->getDefaultAlertRecipients($student, 'urgent'),
-            $escalationList
+            $escalationList,
         );
 
         foreach ($recipients as $recipient) {
@@ -217,10 +229,10 @@ class AlternanceCommunicationService
                 $this->getSystemSender(),
                 $recipient,
                 $student,
-                "URGENT: $alertType",
+                "URGENT: {$alertType}",
                 $this->formatUrgentAlertMessage($alertType, $urgentMessage, $student),
                 [],
-                'high'
+                'high',
             );
         }
 
@@ -228,77 +240,80 @@ class AlternanceCommunicationService
         $this->logger->warning('Urgent coordination alert sent', [
             'student_id' => $student->getId(),
             'alert_type' => $alertType,
-            'recipients_count' => count($recipients)
+            'recipients_count' => count($recipients),
         ]);
     }
 
     /**
-     * Generate communication report
+     * Generate communication report.
      */
     public function generateCommunicationReport(
         Student $student,
-        \DateTimeInterface $startDate,
-        \DateTimeInterface $endDate
+        DateTimeInterface $startDate,
+        DateTimeInterface $endDate,
     ): array {
         // TODO: Implement proper communication tracking and reporting
-        
+
         return [
             'student' => $student->getFullName(),
             'period' => [
                 'start' => $startDate->format('d/m/Y'),
-                'end' => $endDate->format('d/m/Y')
+                'end' => $endDate->format('d/m/Y'),
             ],
             'communication_stats' => [
                 'total_messages' => 0,
                 'meetings_scheduled' => 0,
                 'visits_organized' => 0,
                 'alerts_sent' => 0,
-                'liaison_book_entries' => 0
+                'liaison_book_entries' => 0,
             ],
             'response_times' => [
                 'average_response_time' => null,
                 'mentor_response_rate' => null,
-                'supervisor_response_rate' => null
+                'supervisor_response_rate' => null,
             ],
             'quality_indicators' => [
                 'communication_frequency' => 'adequate',
                 'responsiveness' => 'good',
-                'coordination_effectiveness' => 'satisfactory'
-            ]
+                'coordination_effectiveness' => 'satisfactory',
+            ],
         ];
     }
 
     /**
-     * Format subject line with student context
+     * Format subject line with student context.
      */
     private function formatSubject(string $subject, Student $student): string
     {
-        return "[Alternance - {$student->getFullName()}] $subject";
+        return "[Alternance - {$student->getFullName()}] {$subject}";
     }
 
     /**
-     * Format email message with proper template
+     * Format email message with proper template.
+     *
+     * @param mixed $sender
+     * @param mixed $recipient
      */
     private function formatMessage($sender, $recipient, Student $student, string $message): string
     {
-        $template = "
+        return "
         <h3>Message de coordination - Alternance</h3>
         <p><strong>Alternant concerné:</strong> {$student->getFullName()}</p>
         <p><strong>De:</strong> {$sender->getFullName()} ({$this->getAuthorType($sender)})</p>
         <p><strong>À:</strong> {$recipient->getFullName()} ({$this->getAuthorType($recipient)})</p>
         <hr>
         <div style='margin: 20px 0;'>
-            " . nl2br(htmlspecialchars($message)) . "
+            " . nl2br(htmlspecialchars($message)) . '
         </div>
         <hr>
         <p><small>Ce message a été envoyé via le système de coordination EPROFOS.</small></p>
-        ";
-
-        return $template;
+        ';
     }
 
     /**
-     * Get author type for display
+     * Get author type for display.
+     *
+     * @param mixed $author
      */
     private function getAuthorType($author): string
     {
@@ -310,76 +325,84 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Get alert configuration by type
+     * Get alert configuration by type.
      */
     private function getAlertConfiguration(string $alertType): array
     {
         $configurations = [
             'absence_prolonged' => [
                 'subject' => 'Alerte - Absence prolongée',
-                'priority' => 'high'
+                'priority' => 'high',
             ],
             'performance_concern' => [
                 'subject' => 'Alerte - Préoccupation performance',
-                'priority' => 'medium'
+                'priority' => 'medium',
             ],
             'integration_issue' => [
                 'subject' => 'Alerte - Problème d\'intégration',
-                'priority' => 'high'
+                'priority' => 'high',
             ],
             'mission_difficulty' => [
                 'subject' => 'Alerte - Difficulté sur mission',
-                'priority' => 'medium'
+                'priority' => 'medium',
             ],
             'coordination_needed' => [
                 'subject' => 'Coordination requise',
-                'priority' => 'normal'
-            ]
+                'priority' => 'normal',
+            ],
         ];
 
         return $configurations[$alertType] ?? [
             'subject' => 'Alerte de coordination',
-            'priority' => 'normal'
+            'priority' => 'normal',
         ];
     }
 
     /**
-     * Get default alert recipients for student
+     * Get default alert recipients for student.
      */
     private function getDefaultAlertRecipients(Student $student, string $alertType): array
     {
-        $recipients = [];
-
+        return [];
         // TODO: Get actual mentor and pedagogical supervisor from student's alternance contract
         // For now, return empty array - this would be implemented when relationships are established
-        
-        return $recipients;
     }
 
     /**
-     * Get system sender for automated messages
+     * Get system sender for automated messages.
      */
     private function getSystemSender(): object
     {
         return new class {
-            public function getEmail(): string { return 'coordination@eprofos.fr'; }
-            public function getFullName(): string { return 'Système EPROFOS'; }
-            public function getId(): int { return 0; }
+            public function getEmail(): string
+            {
+                return 'coordination@eprofos.fr';
+            }
+
+            public function getFullName(): string
+            {
+                return 'Système EPROFOS';
+            }
+
+            public function getId(): int
+            {
+                return 0;
+            }
         };
     }
 
     /**
-     * Format alert message
+     * Format alert message.
      */
     private function formatAlertMessage(string $alertType, string $description, Student $student): string
     {
         return "
         Une alerte de coordination a été déclenchée pour l'alternant {$student->getFullName()}.
         
-        Type d'alerte: $alertType
+        Type d'alerte: {$alertType}
         
         Description:
-        $description
+        {$description}
         
         Cette situation nécessite votre attention et une coordination rapide entre le centre de formation et l'entreprise.
         
@@ -388,7 +411,7 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Format urgent alert message
+     * Format urgent alert message.
      */
     private function formatUrgentAlertMessage(string $alertType, string $urgentMessage, Student $student): string
     {
@@ -396,10 +419,10 @@ class AlternanceCommunicationService
         ⚠️ ALERTE URGENTE ⚠️
         
         Alternant: {$student->getFullName()}
-        Type: $alertType
+        Type: {$alertType}
         
         Message urgent:
-        $urgentMessage
+        {$urgentMessage}
         
         Cette situation nécessite une intervention immédiate.
         Merci de contacter rapidement tous les intervenants concernés.
@@ -407,42 +430,48 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Store liaison book entry
+     * Store liaison book entry.
      */
     private function storeLiaisonBookEntry(array $entry): void
     {
         // TODO: Implement proper storage in database
         $this->logger->info('Liaison book entry stored', [
             'entry_id' => $entry['id'],
-            'student_id' => $entry['student_id']
+            'student_id' => $entry['student_id'],
         ]);
     }
 
     /**
-     * Notify about new liaison book entry
+     * Notify about new liaison book entry.
+     *
+     * @param mixed $author
      */
     private function notifyLiaisonBookEntry(Student $student, $author, string $entryType): void
     {
         // TODO: Send notifications to relevant parties about new entry
         $this->logger->info('Liaison book entry notification sent', [
             'student_id' => $student->getId(),
-            'entry_type' => $entryType
+            'entry_type' => $entryType,
         ]);
     }
 
     /**
-     * Send meeting reminder email
+     * Send meeting reminder email.
+     *
+     * @param mixed $meeting
      */
     private function sendMeetingReminderEmail($meeting): void
     {
         // TODO: Implement meeting reminder email sending
         $this->logger->info('Meeting reminder sent', [
-            'meeting_id' => $meeting->getId()
+            'meeting_id' => $meeting->getId(),
         ]);
     }
 
     /**
-     * Format visit confirmation message
+     * Format visit confirmation message.
+     *
+     * @param mixed $visit
      */
     private function formatVisitConfirmationMessage($visit, string $recipientType): string
     {
@@ -467,19 +496,22 @@ class AlternanceCommunicationService
     }
 
     /**
-     * Send notification to student
+     * Send notification to student.
      */
     private function sendStudentNotification(Student $student, string $subject, string $message): void
     {
         // TODO: Implement student notification system
         $this->logger->info('Student notification sent', [
             'student_id' => $student->getId(),
-            'subject' => $subject
+            'subject' => $subject,
         ]);
     }
 
     /**
-     * Log communication activity
+     * Log communication activity.
+     *
+     * @param mixed $sender
+     * @param mixed $recipient
      */
     private function logCommunication($sender, $recipient, Student $student, string $subject, string $action): void
     {
@@ -488,7 +520,7 @@ class AlternanceCommunicationService
             'student_id' => $student->getId(),
             'sender' => $sender ? $sender->getEmail() : 'system',
             'recipient' => $recipient ? $recipient->getEmail() : 'multiple',
-            'subject' => $subject
+            'subject' => $subject,
         ]);
     }
 }

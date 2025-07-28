@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Assessment;
 
 use App\Entity\Training\Formation;
 use App\Repository\Assessment\QuestionnaireResponseRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * QuestionnaireResponse entity representing a user's response to a questionnaire
- * 
+ * QuestionnaireResponse entity representing a user's response to a questionnaire.
+ *
  * Contains user information and all their responses to questionnaire questions
  */
 #[ORM\Entity(repositoryClass: QuestionnaireResponseRepository::class)]
@@ -20,12 +23,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 class QuestionnaireResponse
 {
     public const STATUS_STARTED = 'started';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_ABANDONED = 'abandoned';
 
     public const EVALUATION_STATUS_PENDING = 'pending';
+
     public const EVALUATION_STATUS_IN_REVIEW = 'in_review';
+
     public const EVALUATION_STATUS_COMPLETED = 'completed';
 
     #[ORM\Id]
@@ -42,7 +50,7 @@ class QuestionnaireResponse
         min: 2,
         max: 100,
         minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $firstName = null;
 
@@ -52,7 +60,7 @@ class QuestionnaireResponse
         min: 2,
         max: 100,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $lastName = null;
 
@@ -70,7 +78,7 @@ class QuestionnaireResponse
     #[ORM\Column(length: 20)]
     #[Assert\Choice(
         choices: ['started', 'in_progress', 'completed', 'abandoned'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     private string $status = self::STATUS_STARTED;
 
@@ -89,7 +97,7 @@ class QuestionnaireResponse
     #[ORM\Column(length: 20)]
     #[Assert\Choice(
         choices: ['pending', 'in_review', 'completed'],
-        message: 'Statut d\'évaluation invalide.'
+        message: 'Statut d\'évaluation invalide.',
     )]
     private string $evaluationStatus = self::EVALUATION_STATUS_PENDING;
 
@@ -103,19 +111,19 @@ class QuestionnaireResponse
     private ?int $durationMinutes = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $startedAt = null;
+    private ?DateTimeImmutable $startedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $completedAt = null;
+    private ?DateTimeImmutable $completedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $evaluatedAt = null;
+    private ?DateTimeImmutable $evaluatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Questionnaire::class, inversedBy: 'responses')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -134,9 +142,14 @@ class QuestionnaireResponse
     public function __construct()
     {
         $this->questionResponses = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->token = $this->generateToken();
+    }
+
+    public function __toString(): string
+    {
+        return $this->getFullName() . ' - ' . ($this->questionnaire?->getTitle() ?? '');
     }
 
     public function getId(): ?int
@@ -152,6 +165,7 @@ class QuestionnaireResponse
     public function setToken(string $token): static
     {
         $this->token = $token;
+
         return $this;
     }
 
@@ -163,6 +177,7 @@ class QuestionnaireResponse
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -174,6 +189,7 @@ class QuestionnaireResponse
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -185,6 +201,7 @@ class QuestionnaireResponse
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -196,6 +213,7 @@ class QuestionnaireResponse
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
     }
 
@@ -207,6 +225,7 @@ class QuestionnaireResponse
     public function setCompany(?string $company): static
     {
         $this->company = $company;
+
         return $this;
     }
 
@@ -218,6 +237,7 @@ class QuestionnaireResponse
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -229,6 +249,7 @@ class QuestionnaireResponse
     public function setCurrentStep(?int $currentStep): static
     {
         $this->currentStep = $currentStep;
+
         return $this;
     }
 
@@ -240,6 +261,7 @@ class QuestionnaireResponse
     public function setTotalScore(?int $totalScore): static
     {
         $this->totalScore = $totalScore;
+
         return $this;
     }
 
@@ -251,6 +273,7 @@ class QuestionnaireResponse
     public function setMaxPossibleScore(?int $maxPossibleScore): static
     {
         $this->maxPossibleScore = $maxPossibleScore;
+
         return $this;
     }
 
@@ -262,6 +285,7 @@ class QuestionnaireResponse
     public function setScorePercentage(?string $scorePercentage): static
     {
         $this->scorePercentage = $scorePercentage;
+
         return $this;
     }
 
@@ -273,6 +297,7 @@ class QuestionnaireResponse
     public function setEvaluationStatus(string $evaluationStatus): static
     {
         $this->evaluationStatus = $evaluationStatus;
+
         return $this;
     }
 
@@ -284,6 +309,7 @@ class QuestionnaireResponse
     public function setEvaluatorNotes(?string $evaluatorNotes): static
     {
         $this->evaluatorNotes = $evaluatorNotes;
+
         return $this;
     }
 
@@ -295,6 +321,7 @@ class QuestionnaireResponse
     public function setRecommendation(?string $recommendation): static
     {
         $this->recommendation = $recommendation;
+
         return $this;
     }
 
@@ -306,61 +333,67 @@ class QuestionnaireResponse
     public function setDurationMinutes(?int $durationMinutes): static
     {
         $this->durationMinutes = $durationMinutes;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getStartedAt(): ?\DateTimeImmutable
+    public function getStartedAt(): ?DateTimeImmutable
     {
         return $this->startedAt;
     }
 
-    public function setStartedAt(?\DateTimeImmutable $startedAt): static
+    public function setStartedAt(?DateTimeImmutable $startedAt): static
     {
         $this->startedAt = $startedAt;
+
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeImmutable
+    public function getCompletedAt(): ?DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    public function setCompletedAt(?DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
-    public function getEvaluatedAt(): ?\DateTimeImmutable
+    public function getEvaluatedAt(): ?DateTimeImmutable
     {
         return $this->evaluatedAt;
     }
 
-    public function setEvaluatedAt(?\DateTimeImmutable $evaluatedAt): static
+    public function setEvaluatedAt(?DateTimeImmutable $evaluatedAt): static
     {
         $this->evaluatedAt = $evaluatedAt;
+
         return $this;
     }
 
@@ -372,6 +405,7 @@ class QuestionnaireResponse
     public function setQuestionnaire(?Questionnaire $questionnaire): static
     {
         $this->questionnaire = $questionnaire;
+
         return $this;
     }
 
@@ -383,6 +417,7 @@ class QuestionnaireResponse
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -416,7 +451,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get the full name of the respondent
+     * Get the full name of the respondent.
      */
     public function getFullName(): string
     {
@@ -424,7 +459,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -438,7 +473,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -452,7 +487,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get the evaluation status label for display
+     * Get the evaluation status label for display.
      */
     public function getEvaluationStatusLabel(): string
     {
@@ -465,7 +500,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get the evaluation status badge class for display
+     * Get the evaluation status badge class for display.
      */
     public function getEvaluationStatusBadgeClass(): string
     {
@@ -478,7 +513,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Check if response is completed
+     * Check if response is completed.
      */
     public function isCompleted(): bool
     {
@@ -486,15 +521,15 @@ class QuestionnaireResponse
     }
 
     /**
-     * Check if response is in progress
+     * Check if response is in progress.
      */
     public function isInProgress(): bool
     {
-        return in_array($this->status, [self::STATUS_STARTED, self::STATUS_IN_PROGRESS]);
+        return in_array($this->status, [self::STATUS_STARTED, self::STATUS_IN_PROGRESS], true);
     }
 
     /**
-     * Check if evaluation is completed
+     * Check if evaluation is completed.
      */
     public function isEvaluated(): bool
     {
@@ -502,50 +537,54 @@ class QuestionnaireResponse
     }
 
     /**
-     * Mark response as started
+     * Mark response as started.
      */
     public function markAsStarted(): static
     {
         $this->status = self::STATUS_STARTED;
-        $this->startedAt = new \DateTimeImmutable();
+        $this->startedAt = new DateTimeImmutable();
+
         return $this;
     }
 
     /**
-     * Mark response as in progress
+     * Mark response as in progress.
      */
     public function markAsInProgress(): static
     {
         $this->status = self::STATUS_IN_PROGRESS;
         if (!$this->startedAt) {
-            $this->startedAt = new \DateTimeImmutable();
+            $this->startedAt = new DateTimeImmutable();
         }
+
         return $this;
     }
 
     /**
-     * Mark response as completed
+     * Mark response as completed.
      */
     public function markAsCompleted(): static
     {
         $this->status = self::STATUS_COMPLETED;
-        $this->completedAt = new \DateTimeImmutable();
+        $this->completedAt = new DateTimeImmutable();
         $this->calculateScore();
+
         return $this;
     }
 
     /**
-     * Mark as evaluated
+     * Mark as evaluated.
      */
     public function markAsEvaluated(): static
     {
         $this->evaluationStatus = self::EVALUATION_STATUS_COMPLETED;
-        $this->evaluatedAt = new \DateTimeImmutable();
+        $this->evaluatedAt = new DateTimeImmutable();
+
         return $this;
     }
 
     /**
-     * Calculate total score based on question responses
+     * Calculate total score based on question responses.
      */
     public function calculateScore(): static
     {
@@ -555,14 +594,14 @@ class QuestionnaireResponse
         foreach ($this->questionResponses as $response) {
             $questionScore = $response->calculateScore();
             $totalScore += $questionScore;
-            
+
             // Add question points to max possible score
             $maxPossibleScore += $response->getQuestion()->getPoints() ?? 0;
         }
 
         $this->totalScore = $totalScore;
         $this->maxPossibleScore = $maxPossibleScore;
-        
+
         if ($maxPossibleScore > 0) {
             $this->scorePercentage = number_format(($totalScore / $maxPossibleScore) * 100, 2);
         }
@@ -571,36 +610,36 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get progress percentage
+     * Get progress percentage.
      */
     public function getProgressPercentage(): int
     {
         if (!$this->questionnaire) {
             return 0;
         }
-        
+
         $totalSteps = $this->questionnaire->getStepCount();
         if ($totalSteps === 0) {
             return 0;
         }
-        
+
         return (int) (($this->currentStep / $totalSteps) * 100);
     }
 
     /**
-     * Get completion time in minutes
+     * Get completion time in minutes.
      */
     public function getCompletionTimeMinutes(): ?int
     {
         if (!$this->startedAt || !$this->completedAt) {
             return null;
         }
-        
+
         return $this->startedAt->diff($this->completedAt)->i;
     }
 
     /**
-     * Get response for a specific question
+     * Get response for a specific question.
      */
     public function getResponseForQuestion(Question $question): ?QuestionResponse
     {
@@ -609,38 +648,31 @@ class QuestionnaireResponse
                 return $response;
             }
         }
-        
+
         return null;
     }
 
     /**
-     * Check if response has answer for a specific question
+     * Check if response has answer for a specific question.
      */
     public function hasAnswerForQuestion(Question $question): bool
     {
         $response = $this->getResponseForQuestion($question);
+
         return $response && $response->hasAnswer();
     }
 
     /**
-     * Generate unique token for the response
-     */
-    private function generateToken(): string
-    {
-        return bin2hex(random_bytes(16));
-    }
-
-    /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     /**
-     * Get participant name (alias for getFullName)
+     * Get participant name (alias for getFullName).
      */
     public function getParticipantName(): string
     {
@@ -648,7 +680,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get participant email
+     * Get participant email.
      */
     public function getParticipantEmail(): string
     {
@@ -656,7 +688,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get final score as percentage
+     * Get final score as percentage.
      */
     public function getFinalScore(): ?float
     {
@@ -664,7 +696,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get score obtained
+     * Get score obtained.
      */
     public function getScoreObtained(): ?int
     {
@@ -672,7 +704,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Get score total
+     * Get score total.
      */
     public function getScoreTotal(): ?int
     {
@@ -680,7 +712,7 @@ class QuestionnaireResponse
     }
 
     /**
-     * Check if response has file responses
+     * Check if response has file responses.
      */
     public function hasFileResponses(): bool
     {
@@ -689,11 +721,15 @@ class QuestionnaireResponse
                 return true;
             }
         }
+
         return false;
     }
 
-    public function __toString(): string
+    /**
+     * Generate unique token for the response.
+     */
+    private function generateToken(): string
     {
-        return $this->getFullName() . ' - ' . ($this->questionnaire?->getTitle() ?? '');
+        return bin2hex(random_bytes(16));
     }
 }

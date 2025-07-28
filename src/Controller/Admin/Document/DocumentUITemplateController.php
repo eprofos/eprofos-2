@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\DocumentUIComponent;
@@ -8,18 +10,18 @@ use App\Form\DocumentUITemplateType;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Repository\Document\DocumentUITemplateRepository;
 use App\Service\Document\DocumentUITemplateService;
-use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Document UI Template Controller
- * 
+ * Admin Document UI Template Controller.
+ *
  * Handles CRUD operations for document UI templates in the admin interface.
  * Provides management for configurable UI layouts and PDF generation templates.
  */
@@ -29,18 +31,17 @@ class DocumentUITemplateController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private DocumentUITemplateService $uiTemplateService
-    ) {
-    }
+        private DocumentUITemplateService $uiTemplateService,
+    ) {}
 
     /**
-     * List all document UI templates with statistics
+     * List all document UI templates with statistics.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(DocumentUITemplateRepository $uiTemplateRepository): Response
     {
         $this->logger->info('Admin document UI templates list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         // Get templates with statistics
@@ -52,37 +53,37 @@ class DocumentUITemplateController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
-                ['label' => 'Modèles UI', 'url' => null]
-            ]
+                ['label' => 'Modèles UI', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * List all UI components across all templates
+     * List all UI components across all templates.
      */
     #[Route('/components', name: 'all_components', methods: ['GET'])]
     public function allComponents(DocumentUIComponentRepository $componentRepository): Response
     {
         $this->logger->info('Admin all document UI components list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         // Get all components with their templates
         $components = $componentRepository->findAllWithTemplates();
-        
+
         // Group components by template and zone
         $componentsByTemplate = [];
         foreach ($components as $component) {
             $template = $component->getUiTemplate();
             $templateId = $template->getId();
-            
+
             if (!isset($componentsByTemplate[$templateId])) {
                 $componentsByTemplate[$templateId] = [
                     'template' => $template,
-                    'components' => []
+                    'components' => [],
                 ];
             }
-            
+
             $componentsByTemplate[$templateId]['components'][$component->getZone()][] = $component;
         }
 
@@ -96,20 +97,20 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
-                ['label' => 'Composants UI', 'url' => null]
-            ]
+                ['label' => 'Composants UI', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show UI template details
+     * Show UI template details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentUITemplate $uiTemplate): Response
     {
         $this->logger->info('Admin document UI template details viewed', [
             'template_id' => $uiTemplate->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         // Get template components
@@ -124,7 +125,7 @@ class DocumentUITemplateController extends AbstractController
             'is_global' => $uiTemplate->isGlobal(),
             'page_format' => $uiTemplate->getPaperSize() . ' ' . $uiTemplate->getOrientation(),
             'validation_errors' => $uiTemplate->validateConfiguration(),
-            'recent_usage' => [] // TODO: Implement recent usage tracking if needed
+            'recent_usage' => [], // TODO: Implement recent usage tracking if needed
         ];
 
         return $this->render('admin/document_ui_template/show.html.twig', [
@@ -136,19 +137,19 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
-                ['label' => $uiTemplate->getName(), 'url' => null]
-            ]
+                ['label' => $uiTemplate->getName(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new UI template
+     * Create a new UI template.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $uiTemplate = new DocumentUITemplate();
-        
+
         // Set default values
         $uiTemplate->setIsActive(true);
         $uiTemplate->setUsageCount(0);
@@ -168,13 +169,13 @@ class DocumentUITemplateController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $result = $this->uiTemplateService->createUITemplate($uiTemplate);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', 'Le modèle UI a été créé avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
-            } else {
-                $this->addFlash('error', $result['error']);
             }
+            $this->addFlash('error', $result['error']);
         }
 
         return $this->render('admin/document_ui_template/new.html.twig', [
@@ -185,13 +186,13 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
-                ['label' => 'Nouveau', 'url' => null]
-            ]
+                ['label' => 'Nouveau', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing UI template
+     * Edit an existing UI template.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentUITemplate $uiTemplate): Response
@@ -201,13 +202,13 @@ class DocumentUITemplateController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $result = $this->uiTemplateService->updateUITemplate($uiTemplate);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', 'Le modèle UI a été modifié avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
-            } else {
-                $this->addFlash('error', $result['error']);
             }
+            $this->addFlash('error', $result['error']);
         }
 
         return $this->render('admin/document_ui_template/edit.html.twig', [
@@ -219,20 +220,20 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $uiTemplate->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $uiTemplate->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a UI template
+     * Delete a UI template.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentUITemplate $uiTemplate): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$uiTemplate->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
             $result = $this->uiTemplateService->deleteUITemplate($uiTemplate);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', 'Le modèle UI a été supprimé avec succès.');
             } else {
@@ -244,14 +245,14 @@ class DocumentUITemplateController extends AbstractController
     }
 
     /**
-     * Toggle UI template active status
+     * Toggle UI template active status.
      */
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, DocumentUITemplate $uiTemplate): Response
     {
-        if ($this->isCsrfTokenValid('toggle'.$uiTemplate->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
             $result = $this->uiTemplateService->toggleActiveStatus($uiTemplate);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', $result['message']);
             } else {
@@ -263,27 +264,27 @@ class DocumentUITemplateController extends AbstractController
     }
 
     /**
-     * Duplicate a UI template
+     * Duplicate a UI template.
      */
     #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, DocumentUITemplate $uiTemplate): Response
     {
-        if ($this->isCsrfTokenValid('duplicate'.$uiTemplate->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('duplicate' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
             $result = $this->uiTemplateService->duplicateUITemplate($uiTemplate);
-            
+
             if ($result['success']) {
                 $this->addFlash('success', 'Le modèle UI a été dupliqué avec succès.');
+
                 return $this->redirectToRoute('admin_document_ui_template_edit', ['id' => $result['template']->getId()]);
-            } else {
-                $this->addFlash('error', $result['error']);
             }
+            $this->addFlash('error', $result['error']);
         }
 
         return $this->redirectToRoute('admin_document_ui_template_index');
     }
 
     /**
-     * Preview UI template
+     * Preview UI template.
      */
     #[Route('/{id}/preview', name: 'preview', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function preview(Request $request, DocumentUITemplate $uiTemplate): Response
@@ -305,9 +306,10 @@ class DocumentUITemplateController extends AbstractController
         ];
 
         $result = $this->uiTemplateService->renderTemplate($uiTemplate, $previewData);
-        
+
         if (!$result['success']) {
             $this->addFlash('error', $result['error']);
+
             return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
         }
 
@@ -323,28 +325,28 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $uiTemplate->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $uiTemplate->getId()])],
-                ['label' => 'Aperçu', 'url' => null]
-            ]
+                ['label' => 'Aperçu', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Export UI template configuration
+     * Export UI template configuration.
      */
     #[Route('/{id}/export', name: 'export', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function export(DocumentUITemplate $uiTemplate): Response
     {
         $config = $this->uiTemplateService->exportTemplate($uiTemplate);
-        
+
         $filename = 'ui-template-' . $uiTemplate->getSlug() . '.json';
         $response = new JsonResponse($config);
         $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
-        
+
         return $response;
     }
 
     /**
-     * Import UI template configuration
+     * Import UI template configuration.
      */
     #[Route('/import', name: 'import', methods: ['GET', 'POST'])]
     public function import(Request $request): Response
@@ -352,13 +354,13 @@ class DocumentUITemplateController extends AbstractController
         if ($request->isMethod('POST')) {
             $uploadedFile = $request->files->get('template_file');
             $documentTypeId = $request->request->get('document_type_id');
-            
+
             if (!$uploadedFile) {
                 $this->addFlash('error', 'Veuillez sélectionner un fichier.');
             } else {
                 try {
                     $config = json_decode(file_get_contents($uploadedFile->getPathname()), true);
-                    
+
                     if (json_last_error() !== JSON_ERROR_NONE) {
                         $this->addFlash('error', 'Fichier JSON invalide.');
                     } else {
@@ -366,19 +368,19 @@ class DocumentUITemplateController extends AbstractController
                         if ($documentTypeId) {
                             $documentType = $this->uiTemplateService->getDocumentTypeById((int) $documentTypeId);
                         }
-                        
+
                         $result = $this->uiTemplateService->importTemplate($config, $documentType);
-                        
+
                         if ($result['success']) {
                             $this->addFlash('success', 'Modèle UI importé avec succès.');
+
                             return $this->redirectToRoute('admin_document_ui_template_edit', [
-                                'id' => $result['template']->getId()
+                                'id' => $result['template']->getId(),
                             ]);
-                        } else {
-                            $this->addFlash('error', $result['error']);
                         }
+                        $this->addFlash('error', $result['error']);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->addFlash('error', 'Erreur lors de l\'importation: ' . $e->getMessage());
                 }
             }
@@ -390,19 +392,19 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
-                ['label' => 'Importer', 'url' => null]
-            ]
+                ['label' => 'Importer', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Manage UI template components
+     * Manage UI template components.
      */
     #[Route('/{id}/components', name: 'components', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function components(DocumentUITemplate $uiTemplate): Response
     {
         $components = $uiTemplate->getComponents();
-        
+
         // Group components by zone
         $componentsByZone = [];
         foreach ($components as $component) {
@@ -419,30 +421,30 @@ class DocumentUITemplateController extends AbstractController
                 ['label' => 'Gestion documentaire', 'url' => $this->generateUrl('admin_document_index')],
                 ['label' => 'Modèles UI', 'url' => $this->generateUrl('admin_document_ui_template_index')],
                 ['label' => $uiTemplate->getName(), 'url' => $this->generateUrl('admin_document_ui_template_show', ['id' => $uiTemplate->getId()])],
-                ['label' => 'Composants', 'url' => null]
-            ]
+                ['label' => 'Composants', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Update component sort orders via AJAX
+     * Update component sort orders via AJAX.
      */
     #[Route('/{id}/components/sort', name: 'sort_components', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sortComponents(Request $request, DocumentUITemplate $uiTemplate): JsonResponse
     {
         $componentIds = $request->request->get('component_ids');
-        
+
         if (!is_array($componentIds)) {
             return new JsonResponse(['success' => false, 'error' => 'Invalid data'], 400);
         }
-        
+
         $result = $this->uiTemplateService->updateComponentSortOrders($uiTemplate, $componentIds);
-        
+
         return new JsonResponse($result);
     }
 
     /**
-     * Generate PDF preview
+     * Generate PDF preview.
      */
     #[Route('/{id}/pdf-preview', name: 'pdf_preview', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function pdfPreview(DocumentUITemplate $uiTemplate): Response
@@ -450,7 +452,7 @@ class DocumentUITemplateController extends AbstractController
         // This would integrate with a PDF generation service
         // For now, return a placeholder
         return new Response('PDF Preview functionality to be implemented', 200, [
-            'Content-Type' => 'text/plain'
+            'Content-Type' => 'text/plain',
         ]);
     }
 }

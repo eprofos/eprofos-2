@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Document\DocumentCategory;
@@ -7,17 +9,24 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document Category Fixtures - Creates hierarchical categories for document organization
+ * Document Category Fixtures - Creates hierarchical categories for document organization.
  */
 class DocumentCategoryFixtures extends Fixture
 {
     public const LEGAL_CATEGORY_REFERENCE = 'document-category-legal';
+
     public const REGULATORY_CATEGORY_REFERENCE = 'document-category-regulatory';
+
     public const ACCESSIBILITY_CATEGORY_REFERENCE = 'document-category-accessibility';
+
     public const QUALITY_CATEGORY_REFERENCE = 'document-category-quality';
+
     public const TRAINING_CATEGORY_REFERENCE = 'document-category-training';
+
     public const INTERNAL_CATEGORY_REFERENCE = 'document-category-internal';
+
     public const STUDENT_CATEGORY_REFERENCE = 'document-category-student';
+
     public const ADMIN_CATEGORY_REFERENCE = 'document-category-admin';
 
     public function load(ObjectManager $manager): void
@@ -42,7 +51,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-book-open',
                         'color' => '#dc3545',
                         'sortOrder' => 1,
-                        'reference' => self::REGULATORY_CATEGORY_REFERENCE
+                        'reference' => self::REGULATORY_CATEGORY_REFERENCE,
                     ],
                     [
                         'name' => 'Accessibilité',
@@ -51,9 +60,9 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-universal-access',
                         'color' => '#20c997',
                         'sortOrder' => 2,
-                        'reference' => self::ACCESSIBILITY_CATEGORY_REFERENCE
-                    ]
-                ]
+                        'reference' => self::ACCESSIBILITY_CATEGORY_REFERENCE,
+                    ],
+                ],
             ],
             [
                 'name' => 'Système qualité',
@@ -73,7 +82,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-clipboard-check',
                         'color' => '#ffc107',
                         'sortOrder' => 1,
-                        'reference' => 'document-category-quality-procedures'
+                        'reference' => 'document-category-quality-procedures',
                     ],
                     [
                         'name' => 'Indicateurs et tableaux de bord',
@@ -82,9 +91,9 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-chart-line',
                         'color' => '#ffc107',
                         'sortOrder' => 2,
-                        'reference' => 'document-category-quality-indicators'
-                    ]
-                ]
+                        'reference' => 'document-category-quality-indicators',
+                    ],
+                ],
             ],
             [
                 'name' => 'Formation et pédagogie',
@@ -104,7 +113,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-file-powerpoint',
                         'color' => '#e83e8c',
                         'sortOrder' => 1,
-                        'reference' => 'document-category-training-materials'
+                        'reference' => 'document-category-training-materials',
                     ],
                     [
                         'name' => 'Évaluations',
@@ -113,9 +122,9 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-tasks',
                         'color' => '#e83e8c',
                         'sortOrder' => 2,
-                        'reference' => 'document-category-training-evaluations'
-                    ]
-                ]
+                        'reference' => 'document-category-training-evaluations',
+                    ],
+                ],
             ],
             [
                 'name' => 'Documents internes',
@@ -135,7 +144,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-users',
                         'color' => '#6f42c1',
                         'sortOrder' => 1,
-                        'reference' => 'document-category-internal-hr'
+                        'reference' => 'document-category-internal-hr',
                     ],
                     [
                         'name' => 'Administration',
@@ -144,9 +153,9 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-cogs',
                         'color' => '#6f42c1',
                         'sortOrder' => 2,
-                        'reference' => self::ADMIN_CATEGORY_REFERENCE
-                    ]
-                ]
+                        'reference' => self::ADMIN_CATEGORY_REFERENCE,
+                    ],
+                ],
             ],
             [
                 'name' => 'Documents étudiants',
@@ -166,7 +175,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-book',
                         'color' => '#007bff',
                         'sortOrder' => 1,
-                        'reference' => 'document-category-student-handbooks'
+                        'reference' => 'document-category-student-handbooks',
                     ],
                     [
                         'name' => 'Règlements',
@@ -175,7 +184,7 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-balance-scale',
                         'color' => '#007bff',
                         'sortOrder' => 2,
-                        'reference' => 'document-category-student-regulations'
+                        'reference' => 'document-category-student-regulations',
                     ],
                     [
                         'name' => 'Conditions générales',
@@ -184,10 +193,10 @@ class DocumentCategoryFixtures extends Fixture
                         'icon' => 'fas fa-handshake',
                         'color' => '#007bff',
                         'sortOrder' => 3,
-                        'reference' => 'document-category-student-terms'
-                    ]
-                ]
-            ]
+                        'reference' => 'document-category-student-terms',
+                    ],
+                ],
+            ],
         ];
 
         $this->createCategoriesRecursively($manager, $categories, null);
@@ -200,14 +209,15 @@ class DocumentCategoryFixtures extends Fixture
         foreach ($categories as $categoryData) {
             $category = new DocumentCategory();
             $category->setName($categoryData['name'])
-                    ->setSlug($categoryData['slug'])
-                    ->setDescription($categoryData['description'])
-                    ->setIcon($categoryData['icon'])
-                    ->setColor($categoryData['color'])
-                    ->setParent($parent)
-                    ->setLevel($parent ? $parent->getLevel() + 1 : 0)
-                    ->setSortOrder($categoryData['sortOrder'])
-                    ->setIsActive(true);
+                ->setSlug($categoryData['slug'])
+                ->setDescription($categoryData['description'])
+                ->setIcon($categoryData['icon'])
+                ->setColor($categoryData['color'])
+                ->setParent($parent)
+                ->setLevel($parent ? $parent->getLevel() + 1 : 0)
+                ->setSortOrder($categoryData['sortOrder'])
+                ->setIsActive(true)
+            ;
 
             $manager->persist($category);
             $this->addReference($categoryData['reference'], $category);

@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
-use App\Entity\Training\Formation;
 use App\Entity\Assessment\Questionnaire;
+use App\Entity\Training\Formation;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Questionnaire fixtures for EPROFOS platform
- * 
+ * Questionnaire fixtures for EPROFOS platform.
+ *
  * Creates realistic questionnaires for positioning and evaluation
  * in compliance with Qualiopi criteria 2.8
  */
@@ -19,11 +21,17 @@ class QuestionnaireFixtures extends Fixture implements DependentFixtureInterface
 {
     // Constants for referencing questionnaires in other fixtures
     public const QUESTIONNAIRE_PHP_POSITIONING = 'questionnaire_php_positioning';
+
     public const QUESTIONNAIRE_LEADERSHIP_EVALUATION = 'questionnaire_leadership_evaluation';
+
     public const QUESTIONNAIRE_CYBERSECURITY_SKILLS = 'questionnaire_cybersecurity_skills';
+
     public const QUESTIONNAIRE_EXCEL_ASSESSMENT = 'questionnaire_excel_assessment';
+
     public const QUESTIONNAIRE_ENGLISH_POSITIONING = 'questionnaire_english_positioning';
+
     public const QUESTIONNAIRE_MARKETING_SATISFACTION = 'questionnaire_marketing_satisfaction';
+
     public const QUESTIONNAIRE_GENERAL_SATISFACTION = 'questionnaire_general_satisfaction';
 
     private SluggerInterface $slugger;
@@ -34,7 +42,7 @@ class QuestionnaireFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Load questionnaire fixtures
+     * Load questionnaire fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -212,7 +220,7 @@ class QuestionnaireFixtures extends Fixture implements DependentFixtureInterface
             }
 
             $manager->persist($questionnaire);
-            
+
             // Add reference for use in other fixtures
             $this->addReference($questionnaireData['reference'], $questionnaire);
         }
@@ -221,15 +229,25 @@ class QuestionnaireFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * Get formation references by finding formations by title
+     * Define fixture dependencies.
+     */
+    public function getDependencies(): array
+    {
+        return [
+            FormationFixtures::class,
+        ];
+    }
+
+    /**
+     * Get formation references by finding formations by title.
      */
     private function getFormationReferences(ObjectManager $manager): array
     {
         $formationRepository = $manager->getRepository(Formation::class);
-        
+
         // Map formation titles to their entities
         $formations = [];
-        
+
         $formations['php'] = $formationRepository->findOneBy(['title' => 'Développement Web avec PHP et Symfony']);
         $formations['leadership'] = $formationRepository->findOneBy(['title' => 'Leadership et Management d\'Équipe']);
         $formations['cybersecurity'] = $formationRepository->findOneBy(['title' => 'Cybersécurité et Protection des Données']);
@@ -237,17 +255,7 @@ class QuestionnaireFixtures extends Fixture implements DependentFixtureInterface
         $formations['english'] = $formationRepository->findOneBy(['title' => 'Anglais Professionnel - Business English']);
         $formations['marketing'] = $formationRepository->findOneBy(['title' => 'Marketing Digital et Réseaux Sociaux']);
         $formations['scrum'] = $formationRepository->findOneBy(['title' => 'Gestion de Projet Agile - Scrum Master']);
-        
-        return $formations;
-    }
 
-    /**
-     * Define fixture dependencies
-     */
-    public function getDependencies(): array
-    {
-        return [
-            FormationFixtures::class,
-        ];
+        return $formations;
     }
 }

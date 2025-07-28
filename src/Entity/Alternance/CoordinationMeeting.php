@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
 use App\Repository\Alternance\CoordinationMeetingRepository;
+use DateInterval;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * CoordinationMeeting entity for managing coordination meetings between training center and companies
- * 
+ * CoordinationMeeting entity for managing coordination meetings between training center and companies.
+ *
  * Represents coordination meetings between pedagogical supervisors and company mentors
  * for apprenticeship follow-up, essential for Qualiopi compliance regarding optimal coordination.
  */
@@ -27,6 +33,60 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['type'], name: 'idx_coordination_type')]
 class CoordinationMeeting
 {
+    // Meeting type constants
+    public const TYPE_PREPARATORY = 'preparatory';
+
+    public const TYPE_FOLLOW_UP = 'follow_up';
+
+    public const TYPE_EVALUATION = 'evaluation';
+
+    public const TYPE_PROBLEM_SOLVING = 'problem_solving';
+
+    public const TYPE_ORIENTATION = 'orientation';
+
+    // Location constants
+    public const LOCATION_TRAINING_CENTER = 'training_center';
+
+    public const LOCATION_COMPANY = 'company';
+
+    public const LOCATION_VIDEO_CONFERENCE = 'video_conference';
+
+    public const LOCATION_PHONE = 'phone';
+
+    // Status constants
+    public const STATUS_PLANNED = 'planned';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const STATUS_POSTPONED = 'postponed';
+
+    // Meeting types labels
+    public const TYPE_LABELS = [
+        self::TYPE_PREPARATORY => 'Réunion préparatoire',
+        self::TYPE_FOLLOW_UP => 'Réunion de suivi',
+        self::TYPE_EVALUATION => 'Réunion d\'évaluation',
+        self::TYPE_PROBLEM_SOLVING => 'Résolution de problème',
+        self::TYPE_ORIENTATION => 'Réunion d\'orientation',
+    ];
+
+    // Location labels
+    public const LOCATION_LABELS = [
+        self::LOCATION_TRAINING_CENTER => 'Centre de formation',
+        self::LOCATION_COMPANY => 'Entreprise',
+        self::LOCATION_VIDEO_CONFERENCE => 'Visioconférence',
+        self::LOCATION_PHONE => 'Téléphone',
+    ];
+
+    // Status labels
+    public const STATUS_LABELS = [
+        self::STATUS_PLANNED => 'Planifiée',
+        self::STATUS_COMPLETED => 'Réalisée',
+        self::STATUS_CANCELLED => 'Annulée',
+        self::STATUS_POSTPONED => 'Reportée',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -52,10 +112,10 @@ class CoordinationMeeting
     #[Assert\GreaterThan(
         'today',
         message: 'La date de réunion doit être dans le futur.',
-        groups: ['creation']
+        groups: ['creation'],
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $date = null;
+    private ?DateTimeInterface $date = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le type de réunion est obligatoire.')]
@@ -65,9 +125,9 @@ class CoordinationMeeting
             self::TYPE_FOLLOW_UP,
             self::TYPE_EVALUATION,
             self::TYPE_PROBLEM_SOLVING,
-            self::TYPE_ORIENTATION
+            self::TYPE_ORIENTATION,
         ],
-        message: 'Type de réunion invalide.'
+        message: 'Type de réunion invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $type = self::TYPE_FOLLOW_UP;
@@ -79,9 +139,9 @@ class CoordinationMeeting
             self::LOCATION_TRAINING_CENTER,
             self::LOCATION_COMPANY,
             self::LOCATION_VIDEO_CONFERENCE,
-            self::LOCATION_PHONE
+            self::LOCATION_PHONE,
         ],
-        message: 'Lieu de réunion invalide.'
+        message: 'Lieu de réunion invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $location = self::LOCATION_VIDEO_CONFERENCE;
@@ -109,15 +169,15 @@ class CoordinationMeeting
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\GreaterThan(
         propertyPath: 'date',
-        message: 'La prochaine réunion doit être postérieure à la réunion actuelle.'
+        message: 'La prochaine réunion doit être postérieure à la réunion actuelle.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $nextMeetingDate = null;
+    private ?DateTimeInterface $nextMeetingDate = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 5000,
-        maxMessage: 'Le compte-rendu ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le compte-rendu ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $meetingReport = null;
@@ -128,9 +188,9 @@ class CoordinationMeeting
             self::STATUS_PLANNED,
             self::STATUS_COMPLETED,
             self::STATUS_CANCELLED,
-            self::STATUS_POSTPONED
+            self::STATUS_POSTPONED,
         ],
-        message: 'Statut de réunion invalide.'
+        message: 'Statut de réunion invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $status = self::STATUS_PLANNED;
@@ -149,7 +209,7 @@ class CoordinationMeeting
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'Les notes ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les notes ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $notes = null;
 
@@ -157,72 +217,33 @@ class CoordinationMeeting
     #[Assert\Range(
         min: 1,
         max: 5,
-        notInRangeMessage: 'La satisfaction doit être comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'La satisfaction doit être comprise entre {{ min }} et {{ max }}.',
     )]
     private ?int $satisfactionRating = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $createdBy = null;
 
-    // Meeting type constants
-    public const TYPE_PREPARATORY = 'preparatory';
-    public const TYPE_FOLLOW_UP = 'follow_up';
-    public const TYPE_EVALUATION = 'evaluation';
-    public const TYPE_PROBLEM_SOLVING = 'problem_solving';
-    public const TYPE_ORIENTATION = 'orientation';
-
-    // Location constants
-    public const LOCATION_TRAINING_CENTER = 'training_center';
-    public const LOCATION_COMPANY = 'company';
-    public const LOCATION_VIDEO_CONFERENCE = 'video_conference';
-    public const LOCATION_PHONE = 'phone';
-
-    // Status constants
-    public const STATUS_PLANNED = 'planned';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_POSTPONED = 'postponed';
-
-    // Meeting types labels
-    public const TYPE_LABELS = [
-        self::TYPE_PREPARATORY => 'Réunion préparatoire',
-        self::TYPE_FOLLOW_UP => 'Réunion de suivi',
-        self::TYPE_EVALUATION => 'Réunion d\'évaluation',
-        self::TYPE_PROBLEM_SOLVING => 'Résolution de problème',
-        self::TYPE_ORIENTATION => 'Réunion d\'orientation'
-    ];
-
-    // Location labels
-    public const LOCATION_LABELS = [
-        self::LOCATION_TRAINING_CENTER => 'Centre de formation',
-        self::LOCATION_COMPANY => 'Entreprise',
-        self::LOCATION_VIDEO_CONFERENCE => 'Visioconférence',
-        self::LOCATION_PHONE => 'Téléphone'
-    ];
-
-    // Status labels
-    public const STATUS_LABELS = [
-        self::STATUS_PLANNED => 'Planifiée',
-        self::STATUS_COMPLETED => 'Réalisée',
-        self::STATUS_CANCELLED => 'Annulée',
-        self::STATUS_POSTPONED => 'Reportée'
-    ];
-
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->agenda = [];
         $this->discussionPoints = [];
         $this->decisions = [];
         $this->actionPlan = [];
         $this->attendees = [];
+    }
+
+    public function __toString(): string
+    {
+        return $this->getMeetingSummary();
     }
 
     public function getId(): ?int
@@ -238,6 +259,7 @@ class CoordinationMeeting
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -249,6 +271,7 @@ class CoordinationMeeting
     public function setPedagogicalSupervisor(?Teacher $pedagogicalSupervisor): static
     {
         $this->pedagogicalSupervisor = $pedagogicalSupervisor;
+
         return $this;
     }
 
@@ -260,17 +283,19 @@ class CoordinationMeeting
     public function setMentor(?Mentor $mentor): static
     {
         $this->mentor = $mentor;
+
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTimeInterface $date): static
+    public function setDate(?DateTimeInterface $date): static
     {
         $this->date = $date;
+
         return $this;
     }
 
@@ -282,6 +307,7 @@ class CoordinationMeeting
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -293,6 +319,7 @@ class CoordinationMeeting
     public function setLocation(string $location): static
     {
         $this->location = $location;
+
         return $this;
     }
 
@@ -304,6 +331,7 @@ class CoordinationMeeting
     public function setAgenda(array $agenda): static
     {
         $this->agenda = $agenda;
+
         return $this;
     }
 
@@ -315,6 +343,7 @@ class CoordinationMeeting
     public function setDiscussionPoints(array $discussionPoints): static
     {
         $this->discussionPoints = $discussionPoints;
+
         return $this;
     }
 
@@ -326,6 +355,7 @@ class CoordinationMeeting
     public function setDecisions(array $decisions): static
     {
         $this->decisions = $decisions;
+
         return $this;
     }
 
@@ -337,17 +367,19 @@ class CoordinationMeeting
     public function setActionPlan(array $actionPlan): static
     {
         $this->actionPlan = $actionPlan;
+
         return $this;
     }
 
-    public function getNextMeetingDate(): ?\DateTimeInterface
+    public function getNextMeetingDate(): ?DateTimeInterface
     {
         return $this->nextMeetingDate;
     }
 
-    public function setNextMeetingDate(?\DateTimeInterface $nextMeetingDate): static
+    public function setNextMeetingDate(?DateTimeInterface $nextMeetingDate): static
     {
         $this->nextMeetingDate = $nextMeetingDate;
+
         return $this;
     }
 
@@ -359,6 +391,7 @@ class CoordinationMeeting
     public function setMeetingReport(?string $meetingReport): static
     {
         $this->meetingReport = $meetingReport;
+
         return $this;
     }
 
@@ -370,6 +403,7 @@ class CoordinationMeeting
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -381,6 +415,7 @@ class CoordinationMeeting
     public function setAttendees(array $attendees): static
     {
         $this->attendees = $attendees;
+
         return $this;
     }
 
@@ -392,6 +427,7 @@ class CoordinationMeeting
     public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
+
         return $this;
     }
 
@@ -403,6 +439,7 @@ class CoordinationMeeting
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -414,28 +451,31 @@ class CoordinationMeeting
     public function setSatisfactionRating(?int $satisfactionRating): static
     {
         $this->satisfactionRating = $satisfactionRating;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -447,11 +487,12 @@ class CoordinationMeeting
     public function setCreatedBy(?string $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
     /**
-     * Get type label for display
+     * Get type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -459,7 +500,7 @@ class CoordinationMeeting
     }
 
     /**
-     * Get location label for display
+     * Get location label for display.
      */
     public function getLocationLabel(): string
     {
@@ -467,7 +508,7 @@ class CoordinationMeeting
     }
 
     /**
-     * Get status label for display
+     * Get status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -475,7 +516,7 @@ class CoordinationMeeting
     }
 
     /**
-     * Get status badge class for display
+     * Get status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -489,19 +530,19 @@ class CoordinationMeeting
     }
 
     /**
-     * Check if meeting is upcoming
+     * Check if meeting is upcoming.
      */
     public function isUpcoming(): bool
     {
         if (!$this->date) {
             return false;
         }
-        
-        return $this->status === self::STATUS_PLANNED && $this->date > new \DateTime();
+
+        return $this->status === self::STATUS_PLANNED && $this->date > new DateTime();
     }
 
     /**
-     * Check if meeting is completed
+     * Check if meeting is completed.
      */
     public function isCompleted(): bool
     {
@@ -509,24 +550,25 @@ class CoordinationMeeting
     }
 
     /**
-     * Check if meeting can be edited
+     * Check if meeting can be edited.
      */
     public function canBeEdited(): bool
     {
-        return in_array($this->status, [self::STATUS_PLANNED, self::STATUS_POSTPONED]);
+        return in_array($this->status, [self::STATUS_PLANNED, self::STATUS_POSTPONED], true);
     }
 
     /**
-     * Add agenda item
+     * Add agenda item.
      */
     public function addAgendaItem(string $item): static
     {
         $this->agenda[] = $item;
+
         return $this;
     }
 
     /**
-     * Remove agenda item
+     * Remove agenda item.
      */
     public function removeAgendaItem(int $index): static
     {
@@ -534,75 +576,83 @@ class CoordinationMeeting
             unset($this->agenda[$index]);
             $this->agenda = array_values($this->agenda); // Reindex
         }
+
         return $this;
     }
 
     /**
-     * Add discussion point
+     * Add discussion point.
      */
     public function addDiscussionPoint(string $point): static
     {
         $this->discussionPoints[] = $point;
+
         return $this;
     }
 
     /**
-     * Add decision
+     * Add decision.
      */
     public function addDecision(string $decision): static
     {
         $this->decisions[] = $decision;
+
         return $this;
     }
 
     /**
-     * Add action item to plan
+     * Add action item to plan.
      */
     public function addActionItem(array $actionItem): static
     {
         $this->actionPlan[] = $actionItem;
+
         return $this;
     }
 
     /**
-     * Add attendee
+     * Add attendee.
      */
     public function addAttendee(array $attendee): static
     {
         $this->attendees[] = $attendee;
+
         return $this;
     }
 
     /**
-     * Mark as completed
+     * Mark as completed.
      */
     public function markCompleted(): static
     {
         $this->status = self::STATUS_COMPLETED;
+
         return $this;
     }
 
     /**
-     * Mark as cancelled
+     * Mark as cancelled.
      */
     public function markCancelled(): static
     {
         $this->status = self::STATUS_CANCELLED;
+
         return $this;
     }
 
     /**
-     * Postpone meeting
+     * Postpone meeting.
      */
-    public function postpone(\DateTimeInterface $newDate): static
+    public function postpone(DateTimeInterface $newDate): static
     {
         $this->status = self::STATUS_POSTPONED;
         $this->date = $newDate;
+
         return $this;
     }
 
     /**
-     * Get meeting duration in human readable format
+     * Get meeting duration in human readable format.
      */
     public function getDurationFormatted(): string
     {
@@ -615,15 +665,16 @@ class CoordinationMeeting
 
         if ($hours > 0 && $minutes > 0) {
             return $hours . 'h ' . $minutes . 'min';
-        } elseif ($hours > 0) {
-            return $hours . 'h';
-        } else {
-            return $minutes . 'min';
         }
+        if ($hours > 0) {
+            return $hours . 'h';
+        }
+
+        return $minutes . 'min';
     }
 
     /**
-     * Get satisfaction rating with stars
+     * Get satisfaction rating with stars.
      */
     public function getSatisfactionStars(): string
     {
@@ -635,7 +686,7 @@ class CoordinationMeeting
     }
 
     /**
-     * Get meeting summary for notifications
+     * Get meeting summary for notifications.
      */
     public function getMeetingSummary(): string
     {
@@ -644,43 +695,39 @@ class CoordinationMeeting
             $this->getTypeLabel(),
             $this->student?->getFullName() ?? 'Alternant',
             $this->mentor?->getFullName() ?? 'Tuteur',
-            $this->date?->format('d/m/Y à H:i') ?? 'Date non définie'
+            $this->date?->format('d/m/Y à H:i') ?? 'Date non définie',
         );
     }
 
     /**
-     * Check if meeting requires follow-up
+     * Check if meeting requires follow-up.
      */
     public function requiresFollowUp(): bool
     {
-        return $this->isCompleted() && 
-               (count($this->actionPlan) > 0 || $this->nextMeetingDate !== null);
+        return $this->isCompleted()
+               && (count($this->actionPlan) > 0 || $this->nextMeetingDate !== null);
     }
 
     /**
-     * Calculate time until meeting
+     * Calculate time until meeting.
      */
-    public function getTimeUntilMeeting(): ?\DateInterval
+    public function getTimeUntilMeeting(): ?DateInterval
     {
         if (!$this->date || !$this->isUpcoming()) {
             return null;
         }
 
-        $now = new \DateTime();
+        $now = new DateTime();
+
         return $now->diff($this->date);
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->getMeetingSummary();
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Document\Document;
+use App\Entity\Document\DocumentCategory;
+use App\Entity\Document\DocumentType;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
 /**
- * Document Fixtures - Creates comprehensive test documents
- * 
+ * Document Fixtures - Creates comprehensive test documents.
+ *
  * Provides realistic test data for the Document Management System,
  * including various document types with proper relationships to
  * categories and types for testing and demonstration purposes.
@@ -18,12 +23,19 @@ use Faker\Factory;
 class DocumentFixtures extends Fixture implements DependentFixtureInterface
 {
     public const CGVF_DOCUMENT_REFERENCE = 'document-cgvf';
+
     public const ACCESSIBILITY_POLICY_REFERENCE = 'document-accessibility-policy';
+
     public const QUALITY_MANUAL_REFERENCE = 'document-quality-manual';
+
     public const STUDENT_HANDBOOK_REFERENCE = 'document-student-handbook';
+
     public const INTERNAL_REGULATIONS_REFERENCE = 'document-internal-regulations';
+
     public const PRIVACY_POLICY_REFERENCE = 'document-privacy-policy';
+
     public const COURSE_CATALOG_REFERENCE = 'document-course-catalog';
+
     public const EVALUATION_PROCEDURE_REFERENCE = 'document-evaluation-procedure';
 
     public function load(ObjectManager $manager): void
@@ -43,8 +55,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '2.1',
                 'tags' => ['cgvf', 'formation', 'conditions', 'légal'],
-                'publishedAt' => new \DateTimeImmutable('-3 months'),
-                'reference' => self::CGVF_DOCUMENT_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-3 months'),
+                'reference' => self::CGVF_DOCUMENT_REFERENCE,
             ],
             [
                 'title' => 'Politique d\'Accessibilité Numérique',
@@ -58,8 +70,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '1.3',
                 'tags' => ['accessibilité', 'handicap', 'inclusion', 'numérique'],
-                'publishedAt' => new \DateTimeImmutable('-2 months'),
-                'reference' => self::ACCESSIBILITY_POLICY_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-2 months'),
+                'reference' => self::ACCESSIBILITY_POLICY_REFERENCE,
             ],
             [
                 'title' => 'Manuel Qualité Qualiopi',
@@ -73,9 +85,9 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => false,
                 'version' => '3.0',
                 'tags' => ['qualité', 'qualiopi', 'certification', 'management'],
-                'publishedAt' => new \DateTimeImmutable('-1 month'),
-                'expiresAt' => new \DateTimeImmutable('+11 months'),
-                'reference' => self::QUALITY_MANUAL_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-1 month'),
+                'expiresAt' => new DateTimeImmutable('+11 months'),
+                'reference' => self::QUALITY_MANUAL_REFERENCE,
             ],
             [
                 'title' => 'Livret d\'Accueil Apprenant 2025',
@@ -89,8 +101,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '1.0',
                 'tags' => ['accueil', 'apprenant', 'orientation', '2025'],
-                'publishedAt' => new \DateTimeImmutable('-2 weeks'),
-                'reference' => self::STUDENT_HANDBOOK_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-2 weeks'),
+                'reference' => self::STUDENT_HANDBOOK_REFERENCE,
             ],
             [
                 'title' => 'Règlement Intérieur Formation',
@@ -104,8 +116,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '1.5',
                 'tags' => ['règlement', 'formation', 'apprenant', 'discipline'],
-                'publishedAt' => new \DateTimeImmutable('-6 months'),
-                'reference' => self::INTERNAL_REGULATIONS_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-6 months'),
+                'reference' => self::INTERNAL_REGULATIONS_REFERENCE,
             ],
             [
                 'title' => 'Politique de Confidentialité et Protection des Données',
@@ -119,8 +131,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '2.0',
                 'tags' => ['rgpd', 'confidentialité', 'données', 'protection'],
-                'publishedAt' => new \DateTimeImmutable('-4 months'),
-                'reference' => self::PRIVACY_POLICY_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-4 months'),
+                'reference' => self::PRIVACY_POLICY_REFERENCE,
             ],
             [
                 'title' => 'Catalogue de Formations 2025',
@@ -134,8 +146,8 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => true,
                 'version' => '1.0',
                 'tags' => ['catalogue', 'formations', '2025', 'offre'],
-                'publishedAt' => new \DateTimeImmutable('-1 week'),
-                'reference' => self::COURSE_CATALOG_REFERENCE
+                'publishedAt' => new DateTimeImmutable('-1 week'),
+                'reference' => self::COURSE_CATALOG_REFERENCE,
             ],
             [
                 'title' => 'Procédure d\'Évaluation des Apprentissages',
@@ -149,25 +161,26 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'isPublic' => false,
                 'version' => '1.2',
                 'tags' => ['évaluation', 'compétences', 'apprentissage', 'procédure'],
-                'publishedAt' => new \DateTimeImmutable('-3 weeks'),
-                'reference' => self::EVALUATION_PROCEDURE_REFERENCE
-            ]
+                'publishedAt' => new DateTimeImmutable('-3 weeks'),
+                'reference' => self::EVALUATION_PROCEDURE_REFERENCE,
+            ],
         ];
 
         foreach ($documents as $docData) {
             $document = new Document();
             $document->setTitle($docData['title'])
-                    ->setSlug($docData['slug'])
-                    ->setDescription($docData['description'])
-                    ->setContent($docData['content'])
-                    ->setDocumentType($this->getReference($docData['documentType'], \App\Entity\Document\DocumentType::class))
-                    ->setCategory($this->getReference($docData['category'], \App\Entity\Document\DocumentCategory::class))
-                    ->setStatus($docData['status'])
-                    ->setIsActive($docData['isActive'])
-                    ->setIsPublic($docData['isPublic'])
-                    ->setVersion($docData['version'])
-                    ->setTags($docData['tags'])
-                    ->setPublishedAt($docData['publishedAt']);
+                ->setSlug($docData['slug'])
+                ->setDescription($docData['description'])
+                ->setContent($docData['content'])
+                ->setDocumentType($this->getReference($docData['documentType'], DocumentType::class))
+                ->setCategory($this->getReference($docData['category'], DocumentCategory::class))
+                ->setStatus($docData['status'])
+                ->setIsActive($docData['isActive'])
+                ->setIsPublic($docData['isPublic'])
+                ->setVersion($docData['version'])
+                ->setTags($docData['tags'])
+                ->setPublishedAt($docData['publishedAt'])
+            ;
 
             if (isset($docData['expiresAt'])) {
                 $document->setExpiresAt($docData['expiresAt']);
@@ -191,7 +204,7 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'content' => '<div class="document-content"><h1>Nouvelle Procédure d\'Inscription en ligne</h1><p class="text-muted"><em>Contenu en cours de rédaction...</em></p><div class="alert alert-warning"><p>📝 Ce document est actuellement en cours de rédaction par l\'équipe pédagogique.</p></div></div>',
                 'documentType' => DocumentTypeFixtures::PROCEDURE_TYPE_REFERENCE,
                 'category' => DocumentCategoryFixtures::ADMIN_CATEGORY_REFERENCE,
-                'status' => Document::STATUS_DRAFT
+                'status' => Document::STATUS_DRAFT,
             ],
             [
                 'title' => 'Politique RSE en révision',
@@ -200,23 +213,24 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
                 'content' => '<div class="document-content"><h1>Politique RSE</h1><p class="text-info"><em>Révision en cours suite aux nouvelles réglementations...</em></p><div class="alert alert-info"><p>🔄 Ce document est en cours de révision pour intégrer les nouvelles exigences réglementaires en matière de RSE.</p></div></div>',
                 'documentType' => DocumentTypeFixtures::POLICY_TYPE_REFERENCE,
                 'category' => DocumentCategoryFixtures::INTERNAL_CATEGORY_REFERENCE,
-                'status' => Document::STATUS_REVIEW
-            ]
+                'status' => Document::STATUS_REVIEW,
+            ],
         ];
 
         foreach ($draftDocuments as $docData) {
             $document = new Document();
             $document->setTitle($docData['title'])
-                    ->setSlug($docData['slug'])
-                    ->setDescription($docData['description'])
-                    ->setContent($docData['content'])
-                    ->setDocumentType($this->getReference($docData['documentType'], \App\Entity\Document\DocumentType::class))
-                    ->setCategory($this->getReference($docData['category'], \App\Entity\Document\DocumentCategory::class))
-                    ->setStatus($docData['status'])
-                    ->setIsActive(true)
-                    ->setIsPublic(false)
-                    ->setVersion('0.1')
-                    ->setTags(['draft', 'en-cours']);
+                ->setSlug($docData['slug'])
+                ->setDescription($docData['description'])
+                ->setContent($docData['content'])
+                ->setDocumentType($this->getReference($docData['documentType'], DocumentType::class))
+                ->setCategory($this->getReference($docData['category'], DocumentCategory::class))
+                ->setStatus($docData['status'])
+                ->setIsActive(true)
+                ->setIsPublic(false)
+                ->setVersion('0.1')
+                ->setTags(['draft', 'en-cours'])
+            ;
 
             $manager->persist($document);
         }
@@ -234,7 +248,7 @@ class DocumentFixtures extends Fixture implements DependentFixtureInterface
 
     private function getCgvfContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>CONDITIONS GÉNÉRALES DE VENTE DE FORMATION (CGVF)</h1>
 
@@ -340,7 +354,7 @@ EOF;
 
     private function getAccessibilityPolicyContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>POLITIQUE D'ACCESSIBILITÉ NUMÉRIQUE</h1>
 
@@ -407,7 +421,7 @@ EOF;
 
     private function getQualityManualContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>MANUEL QUALITÉ QUALIOPI</h1>
 
@@ -533,7 +547,7 @@ EOF;
 
     private function getStudentHandbookContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>LIVRET D'ACCUEIL APPRENANT 2025</h1>
     
@@ -736,7 +750,7 @@ EOF;
 
     private function getInternalRegulationsContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>RÈGLEMENT INTÉRIEUR FORMATION</h1>
 
@@ -931,7 +945,7 @@ EOF;
 
     private function getPrivacyPolicyContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>POLITIQUE DE CONFIDENTIALITÉ ET PROTECTION DES DONNÉES</h1>
 
@@ -1189,7 +1203,7 @@ EOF;
 
     private function getCourseCatalogContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>CATALOGUE DE FORMATIONS 2025</h1>
 
@@ -1451,7 +1465,7 @@ EOF;
 
     private function getEvaluationProcedureContent(): string
     {
-        return <<<EOF
+        return <<<'EOF'
 <div class="document-content">
     <h1>PROCÉDURE D'ÉVALUATION DES APPRENTISSAGES</h1>
 

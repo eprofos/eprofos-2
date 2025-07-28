@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Core;
 
 use App\Entity\Alternance\CompanyMission;
@@ -7,13 +9,16 @@ use App\Entity\Training\Session;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Repository\Core\AttendanceRecordRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * AttendanceRecord entity for tracking student attendance in training sessions
- * 
+ * AttendanceRecord entity for tracking student attendance in training sessions.
+ *
  * Essential for Qualiopi Criterion 12 compliance - provides detailed attendance tracking,
  * participation scoring, and absence management for all training sessions.
  */
@@ -26,6 +31,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(columns: ['student_id', 'session_id'], name: 'unique_student_session')]
 class AttendanceRecord
 {
+    // Status constants
+    public const STATUS_PRESENT = 'present';
+
+    public const STATUS_ABSENT = 'absent';
+
+    public const STATUS_LATE = 'late';
+
+    public const STATUS_PARTIAL = 'partial';
+
+    // Location constants for alternance
+    public const LOCATION_CENTER = 'center';
+
+    public const LOCATION_COMPANY = 'company';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,168 +59,168 @@ class AttendanceRecord
     private ?Session $session = null;
 
     /**
-     * Attendance status
+     * Attendance status.
      */
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Le statut de présence est obligatoire')]
     #[Assert\Choice(
         choices: [self::STATUS_PRESENT, self::STATUS_ABSENT, self::STATUS_LATE, self::STATUS_PARTIAL],
-        message: 'Statut de présence invalide'
+        message: 'Statut de présence invalide',
     )]
     private ?string $status = self::STATUS_PRESENT;
 
     /**
-     * Participation score (0-10)
+     * Participation score (0-10).
      */
     #[ORM\Column]
     #[Assert\Range(
         min: 0,
         max: 10,
-        notInRangeMessage: 'Le score de participation doit être entre {{ min }} et {{ max }}'
+        notInRangeMessage: 'Le score de participation doit être entre {{ min }} et {{ max }}',
     )]
     private ?int $participationScore = 5;
 
     /**
-     * Reason for absence (if applicable)
+     * Reason for absence (if applicable).
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 500,
-        maxMessage: 'La raison d\'absence ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'La raison d\'absence ne peut pas dépasser {{ limit }} caractères',
     )]
     private ?string $absenceReason = null;
 
     /**
-     * Whether the absence is excused
+     * Whether the absence is excused.
      */
     #[ORM\Column]
     private ?bool $excused = false;
 
     /**
-     * Administrative notes about attendance
+     * Administrative notes about attendance.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'Les notes administratives ne peuvent pas dépasser {{ limit }} caractères'
+        maxMessage: 'Les notes administratives ne peuvent pas dépasser {{ limit }} caractères',
     )]
     private ?string $adminNotes = null;
 
     /**
-     * Time when student arrived (for late arrivals)
+     * Time when student arrived (for late arrivals).
      */
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $arrivalTime = null;
+    private ?DateTimeInterface $arrivalTime = null;
 
     /**
-     * Time when student left (for early departures)
+     * Time when student left (for early departures).
      */
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $departureTime = null;
+    private ?DateTimeInterface $departureTime = null;
 
     /**
-     * Minutes late (calculated field)
+     * Minutes late (calculated field).
      */
     #[ORM\Column(nullable: true)]
     private ?int $minutesLate = null;
 
     /**
-     * Minutes of early departure (calculated field)
+     * Minutes of early departure (calculated field).
      */
     #[ORM\Column(nullable: true)]
     private ?int $minutesEarlyDeparture = null;
 
     /**
-     * Additional metadata for attendance tracking
+     * Additional metadata for attendance tracking.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $metadata = null;
 
     /**
-     * Attendance location for alternance tracking
+     * Attendance location for alternance tracking.
      */
     #[ORM\Column(length: 20, nullable: true)]
     #[Assert\Choice(
         choices: [self::LOCATION_CENTER, self::LOCATION_COMPANY],
-        message: 'Lieu de présence invalide'
+        message: 'Lieu de présence invalide',
     )]
     private ?string $attendanceLocation = null;
 
     /**
-     * Related company mission for alternance tracking
+     * Related company mission for alternance tracking.
      */
     #[ORM\ManyToOne(targetEntity: CompanyMission::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?CompanyMission $relatedMission = null;
 
     /**
-     * Supervising mentor for company attendance
+     * Supervising mentor for company attendance.
      */
     #[ORM\ManyToOne(targetEntity: Mentor::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Mentor $supervisingMentor = null;
 
     /**
-     * Company evaluation criteria for alternance
+     * Company evaluation criteria for alternance.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $companyEvaluationCriteria = null;
 
     /**
-     * Company notes for alternance tracking
+     * Company notes for alternance tracking.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'Les notes entreprise ne peuvent pas dépasser {{ limit }} caractères'
+        maxMessage: 'Les notes entreprise ne peuvent pas dépasser {{ limit }} caractères',
     )]
     private ?string $companyNotes = null;
 
     /**
-     * Company rating for alternance performance
+     * Company rating for alternance performance.
      */
     #[ORM\Column(nullable: true)]
     #[Assert\Range(
         min: 0,
         max: 10,
-        notInRangeMessage: 'La note entreprise doit être entre {{ min }} et {{ max }}'
+        notInRangeMessage: 'La note entreprise doit être entre {{ min }} et {{ max }}',
     )]
     private ?float $companyRating = null;
 
     /**
-     * When this attendance record was created/recorded
+     * When this attendance record was created/recorded.
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $recordedAt = null;
+    private ?DateTimeInterface $recordedAt = null;
 
     /**
-     * Who recorded this attendance (admin user)
+     * Who recorded this attendance (admin user).
      */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $recordedBy = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    // Status constants
-    public const STATUS_PRESENT = 'present';
-    public const STATUS_ABSENT = 'absent';
-    public const STATUS_LATE = 'late';
-    public const STATUS_PARTIAL = 'partial';
-
-    // Location constants for alternance
-    public const LOCATION_CENTER = 'center';
-    public const LOCATION_COMPANY = 'company';
+    private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->recordedAt = new \DateTime();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+        $this->recordedAt = new DateTime();
         $this->metadata = [];
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s - %s (%s)',
+            $this->student?->getFullName() ?? 'Étudiant inconnu',
+            $this->session?->getName() ?? 'Session inconnue',
+            $this->getStatusLabel(),
+        );
     }
 
     public function getId(): ?int
@@ -217,6 +236,7 @@ class AttendanceRecord
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -228,6 +248,7 @@ class AttendanceRecord
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+
         return $this;
     }
 
@@ -239,6 +260,7 @@ class AttendanceRecord
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -250,6 +272,7 @@ class AttendanceRecord
     public function setParticipationScore(int $participationScore): static
     {
         $this->participationScore = max(0, min(10, $participationScore));
+
         return $this;
     }
 
@@ -261,6 +284,7 @@ class AttendanceRecord
     public function setAbsenceReason(?string $absenceReason): static
     {
         $this->absenceReason = $absenceReason;
+
         return $this;
     }
 
@@ -272,6 +296,7 @@ class AttendanceRecord
     public function setExcused(bool $excused): static
     {
         $this->excused = $excused;
+
         return $this;
     }
 
@@ -283,30 +308,33 @@ class AttendanceRecord
     public function setAdminNotes(?string $adminNotes): static
     {
         $this->adminNotes = $adminNotes;
+
         return $this;
     }
 
-    public function getArrivalTime(): ?\DateTimeInterface
+    public function getArrivalTime(): ?DateTimeInterface
     {
         return $this->arrivalTime;
     }
 
-    public function setArrivalTime(?\DateTimeInterface $arrivalTime): static
+    public function setArrivalTime(?DateTimeInterface $arrivalTime): static
     {
         $this->arrivalTime = $arrivalTime;
         $this->calculateLateness();
+
         return $this;
     }
 
-    public function getDepartureTime(): ?\DateTimeInterface
+    public function getDepartureTime(): ?DateTimeInterface
     {
         return $this->departureTime;
     }
 
-    public function setDepartureTime(?\DateTimeInterface $departureTime): static
+    public function setDepartureTime(?DateTimeInterface $departureTime): static
     {
         $this->departureTime = $departureTime;
         $this->calculateEarlyDeparture();
+
         return $this;
     }
 
@@ -318,6 +346,7 @@ class AttendanceRecord
     public function setMinutesLate(?int $minutesLate): static
     {
         $this->minutesLate = $minutesLate;
+
         return $this;
     }
 
@@ -329,6 +358,7 @@ class AttendanceRecord
     public function setMinutesEarlyDeparture(?int $minutesEarlyDeparture): static
     {
         $this->minutesEarlyDeparture = $minutesEarlyDeparture;
+
         return $this;
     }
 
@@ -340,6 +370,7 @@ class AttendanceRecord
     public function setMetadata(?array $metadata): static
     {
         $this->metadata = $metadata;
+
         return $this;
     }
 
@@ -351,6 +382,7 @@ class AttendanceRecord
     public function setAttendanceLocation(?string $attendanceLocation): static
     {
         $this->attendanceLocation = $attendanceLocation;
+
         return $this;
     }
 
@@ -362,6 +394,7 @@ class AttendanceRecord
     public function setRelatedMission(?CompanyMission $relatedMission): static
     {
         $this->relatedMission = $relatedMission;
+
         return $this;
     }
 
@@ -373,6 +406,7 @@ class AttendanceRecord
     public function setSupervisingMentor(?Mentor $supervisingMentor): static
     {
         $this->supervisingMentor = $supervisingMentor;
+
         return $this;
     }
 
@@ -384,6 +418,7 @@ class AttendanceRecord
     public function setCompanyEvaluationCriteria(?array $companyEvaluationCriteria): static
     {
         $this->companyEvaluationCriteria = $companyEvaluationCriteria;
+
         return $this;
     }
 
@@ -395,6 +430,7 @@ class AttendanceRecord
     public function setCompanyNotes(?string $companyNotes): static
     {
         $this->companyNotes = $companyNotes;
+
         return $this;
     }
 
@@ -406,17 +442,19 @@ class AttendanceRecord
     public function setCompanyRating(?float $companyRating): static
     {
         $this->companyRating = $companyRating;
+
         return $this;
     }
 
-    public function getRecordedAt(): ?\DateTimeInterface
+    public function getRecordedAt(): ?DateTimeInterface
     {
         return $this->recordedAt;
     }
 
-    public function setRecordedAt(\DateTimeInterface $recordedAt): static
+    public function setRecordedAt(DateTimeInterface $recordedAt): static
     {
         $this->recordedAt = $recordedAt;
+
         return $this;
     }
 
@@ -428,41 +466,44 @@ class AttendanceRecord
     public function setRecordedBy(?string $recordedBy): static
     {
         $this->recordedBy = $recordedBy;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
     /**
-     * Check if the student was present
+     * Check if the student was present.
      */
     public function isPresent(): bool
     {
-        return in_array($this->status, [self::STATUS_PRESENT, self::STATUS_LATE, self::STATUS_PARTIAL]);
+        return in_array($this->status, [self::STATUS_PRESENT, self::STATUS_LATE, self::STATUS_PARTIAL], true);
     }
 
     /**
-     * Check if the student was absent
+     * Check if the student was absent.
      */
     public function isAbsent(): bool
     {
@@ -470,7 +511,7 @@ class AttendanceRecord
     }
 
     /**
-     * Check if the student was late
+     * Check if the student was late.
      */
     public function isLate(): bool
     {
@@ -478,7 +519,7 @@ class AttendanceRecord
     }
 
     /**
-     * Check if the student had partial attendance
+     * Check if the student had partial attendance.
      */
     public function isPartial(): bool
     {
@@ -486,7 +527,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get status label for display
+     * Get status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -500,7 +541,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get status badge class for display
+     * Get status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -514,71 +555,25 @@ class AttendanceRecord
     }
 
     /**
-     * Get participation score badge class
+     * Get participation score badge class.
      */
     public function getParticipationBadgeClass(): string
     {
         if ($this->participationScore >= 8) {
             return 'bg-success';
-        } elseif ($this->participationScore >= 6) {
+        }
+        if ($this->participationScore >= 6) {
             return 'bg-warning';
-        } elseif ($this->participationScore >= 4) {
+        }
+        if ($this->participationScore >= 4) {
             return 'bg-info';
-        } else {
-            return 'bg-danger';
         }
+
+        return 'bg-danger';
     }
 
     /**
-     * Calculate lateness in minutes
-     */
-    private function calculateLateness(): void
-    {
-        if (!$this->session || !$this->arrivalTime) {
-            $this->minutesLate = null;
-            return;
-        }
-
-        $sessionStart = $this->session->getStartDate();
-        if ($sessionStart && $this->arrivalTime > $sessionStart) {
-            $diff = $sessionStart->diff($this->arrivalTime);
-            $this->minutesLate = ($diff->h * 60) + $diff->i;
-            
-            // Automatically set status to late if more than 5 minutes
-            if ($this->minutesLate > 5 && $this->status === self::STATUS_PRESENT) {
-                $this->status = self::STATUS_LATE;
-            }
-        } else {
-            $this->minutesLate = 0;
-        }
-    }
-
-    /**
-     * Calculate early departure in minutes
-     */
-    private function calculateEarlyDeparture(): void
-    {
-        if (!$this->session || !$this->departureTime) {
-            $this->minutesEarlyDeparture = null;
-            return;
-        }
-
-        $sessionEnd = $this->session->getEndDate();
-        if ($sessionEnd && $this->departureTime < $sessionEnd) {
-            $diff = $this->departureTime->diff($sessionEnd);
-            $this->minutesEarlyDeparture = ($diff->h * 60) + $diff->i;
-            
-            // Automatically set status to partial if left early
-            if ($this->minutesEarlyDeparture > 15 && $this->status === self::STATUS_PRESENT) {
-                $this->status = self::STATUS_PARTIAL;
-            }
-        } else {
-            $this->minutesEarlyDeparture = 0;
-        }
-    }
-
-    /**
-     * Mark as present
+     * Mark as present.
      */
     public function markPresent(): static
     {
@@ -588,11 +583,12 @@ class AttendanceRecord
         $this->minutesLate = null;
         $this->minutesEarlyDeparture = null;
         $this->absenceReason = null;
+
         return $this;
     }
 
     /**
-     * Mark as absent with reason
+     * Mark as absent with reason.
      */
     public function markAbsent(?string $reason = null, bool $excused = false): static
     {
@@ -602,44 +598,48 @@ class AttendanceRecord
         $this->participationScore = 0;
         $this->arrivalTime = null;
         $this->departureTime = null;
+
         return $this;
     }
 
     /**
-     * Mark as late with arrival time
+     * Mark as late with arrival time.
      */
-    public function markLate(\DateTimeInterface $arrivalTime): static
+    public function markLate(DateTimeInterface $arrivalTime): static
     {
         $this->status = self::STATUS_LATE;
         $this->setArrivalTime($arrivalTime);
+
         return $this;
     }
 
     /**
-     * Mark as partial attendance
+     * Mark as partial attendance.
      */
-    public function markPartial(?\DateTimeInterface $departureTime = null): static
+    public function markPartial(?DateTimeInterface $departureTime = null): static
     {
         $this->status = self::STATUS_PARTIAL;
         if ($departureTime) {
             $this->setDepartureTime($departureTime);
         }
+
         return $this;
     }
 
     /**
-     * Add metadata
+     * Add metadata.
      */
     public function addMetadata(string $key, mixed $value): static
     {
         $metadata = $this->getMetadata();
         $metadata[$key] = $value;
         $this->setMetadata($metadata);
+
         return $this;
     }
 
     /**
-     * Get metadata value
+     * Get metadata value.
      */
     public function getMetadataValue(string $key): mixed
     {
@@ -647,7 +647,7 @@ class AttendanceRecord
     }
 
     /**
-     * Calculate attendance weight for scoring (0-1)
+     * Calculate attendance weight for scoring (0-1).
      */
     public function getAttendanceWeight(): float
     {
@@ -661,7 +661,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get participation score percentage
+     * Get participation score percentage.
      */
     public function getParticipationPercentage(): float
     {
@@ -669,7 +669,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get detailed attendance info for reports
+     * Get detailed attendance info for reports.
      */
     public function getAttendanceInfo(): array
     {
@@ -690,12 +690,12 @@ class AttendanceRecord
             'isCompanyAttendance' => $this->isCompanyAttendance(),
             'isCenterAttendance' => $this->isCenterAttendance(),
             'companyRating' => $this->companyRating,
-            'companyNotes' => $this->companyNotes
+            'companyNotes' => $this->companyNotes,
         ];
     }
 
     /**
-     * Check if attendance is at company
+     * Check if attendance is at company.
      */
     public function isCompanyAttendance(): bool
     {
@@ -703,7 +703,7 @@ class AttendanceRecord
     }
 
     /**
-     * Check if attendance is at training center
+     * Check if attendance is at training center.
      */
     public function isCenterAttendance(): bool
     {
@@ -711,7 +711,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get location context for display
+     * Get location context for display.
      */
     public function getLocationContext(): string
     {
@@ -723,7 +723,7 @@ class AttendanceRecord
     }
 
     /**
-     * Get location badge class
+     * Get location badge class.
      */
     public function getLocationBadgeClass(): string
     {
@@ -735,18 +735,19 @@ class AttendanceRecord
     }
 
     /**
-     * Set company attendance with mentor
+     * Set company attendance with mentor.
      */
     public function setCompanyAttendance(Mentor $mentor, ?CompanyMission $mission = null): static
     {
         $this->attendanceLocation = self::LOCATION_COMPANY;
         $this->supervisingMentor = $mentor;
         $this->relatedMission = $mission;
+
         return $this;
     }
 
     /**
-     * Set center attendance
+     * Set center attendance.
      */
     public function setCenterAttendance(): static
     {
@@ -756,22 +757,24 @@ class AttendanceRecord
         $this->companyRating = null;
         $this->companyNotes = null;
         $this->companyEvaluationCriteria = null;
+
         return $this;
     }
 
     /**
-     * Add company evaluation criterion
+     * Add company evaluation criterion.
      */
     public function addCompanyEvaluationCriterion(array $criterion): static
     {
         $criteria = $this->getCompanyEvaluationCriteria();
         $criteria[] = $criterion;
         $this->setCompanyEvaluationCriteria($criteria);
+
         return $this;
     }
 
     /**
-     * Get combined rating (center + company for alternance)
+     * Get combined rating (center + company for alternance).
      */
     public function getCombinedRating(): ?float
     {
@@ -779,28 +782,69 @@ class AttendanceRecord
             // For company attendance, combine participation score and company rating
             $participationNormalized = $this->participationScore / 10; // Normalize to 0-1
             $companyNormalized = $this->companyRating / 10; // Normalize to 0-1
+
             return (($participationNormalized + $companyNormalized) / 2) * 10; // Back to 0-10 scale
         }
-        
+
         return (float) $this->participationScore;
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
-    public function __toString(): string
+    /**
+     * Calculate lateness in minutes.
+     */
+    private function calculateLateness(): void
     {
-        return sprintf(
-            '%s - %s (%s)',
-            $this->student?->getFullName() ?? 'Étudiant inconnu',
-            $this->session?->getName() ?? 'Session inconnue',
-            $this->getStatusLabel()
-        );
+        if (!$this->session || !$this->arrivalTime) {
+            $this->minutesLate = null;
+
+            return;
+        }
+
+        $sessionStart = $this->session->getStartDate();
+        if ($sessionStart && $this->arrivalTime > $sessionStart) {
+            $diff = $sessionStart->diff($this->arrivalTime);
+            $this->minutesLate = ($diff->h * 60) + $diff->i;
+
+            // Automatically set status to late if more than 5 minutes
+            if ($this->minutesLate > 5 && $this->status === self::STATUS_PRESENT) {
+                $this->status = self::STATUS_LATE;
+            }
+        } else {
+            $this->minutesLate = 0;
+        }
+    }
+
+    /**
+     * Calculate early departure in minutes.
+     */
+    private function calculateEarlyDeparture(): void
+    {
+        if (!$this->session || !$this->departureTime) {
+            $this->minutesEarlyDeparture = null;
+
+            return;
+        }
+
+        $sessionEnd = $this->session->getEndDate();
+        if ($sessionEnd && $this->departureTime < $sessionEnd) {
+            $diff = $this->departureTime->diff($sessionEnd);
+            $this->minutesEarlyDeparture = ($diff->h * 60) + $diff->i;
+
+            // Automatically set status to partial if left early
+            if ($this->minutesEarlyDeparture > 15 && $this->status === self::STATUS_PRESENT) {
+                $this->status = self::STATUS_PARTIAL;
+            }
+        } else {
+            $this->minutesEarlyDeparture = 0;
+        }
     }
 }

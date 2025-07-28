@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
-use App\Entity\Document\DocumentUITemplate;
 use App\Entity\Document\DocumentType;
+use App\Entity\Document\DocumentUITemplate;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,7 +20,7 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active UI templates
+     * Find all active UI templates.
      */
     public function findActive(): array
     {
@@ -28,35 +30,40 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->orderBy('dut.sortOrder', 'ASC')
             ->addOrderBy('dut.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find UI templates by document type
+     * Find UI templates by document type.
      */
     public function findByDocumentType(?DocumentType $documentType): array
     {
         $qb = $this->createQueryBuilder('dut')
             ->where('dut.isActive = :active')
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         if ($documentType) {
             $qb->andWhere('(dut.documentType = :type OR dut.isGlobal = :global)')
-              ->setParameter('type', $documentType)
-              ->setParameter('global', true);
+                ->setParameter('type', $documentType)
+                ->setParameter('global', true)
+            ;
         } else {
             $qb->andWhere('dut.isGlobal = :global')
-              ->setParameter('global', true);
+                ->setParameter('global', true)
+            ;
         }
 
         return $qb->orderBy('dut.sortOrder', 'ASC')
-                 ->addOrderBy('dut.name', 'ASC')
-                 ->getQuery()
-                 ->getResult();
+            ->addOrderBy('dut.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find global UI templates
+     * Find global UI templates.
      */
     public function findGlobal(): array
     {
@@ -68,11 +75,12 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->orderBy('dut.sortOrder', 'ASC')
             ->addOrderBy('dut.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find default template for document type
+     * Find default template for document type.
      */
     public function findDefaultForType(?DocumentType $documentType): ?DocumentUITemplate
     {
@@ -80,25 +88,29 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->where('dut.isDefault = :default')
             ->andWhere('dut.isActive = :active')
             ->setParameter('default', true)
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         if ($documentType) {
             $qb->andWhere('(dut.documentType = :type OR dut.isGlobal = :global)')
-              ->setParameter('type', $documentType)
-              ->setParameter('global', true)
-              ->orderBy('dut.isGlobal', 'ASC'); // Prefer type-specific over global
+                ->setParameter('type', $documentType)
+                ->setParameter('global', true)
+                ->orderBy('dut.isGlobal', 'ASC') // Prefer type-specific over global
+            ;
         } else {
             $qb->andWhere('dut.isGlobal = :global')
-              ->setParameter('global', true);
+                ->setParameter('global', true)
+            ;
         }
 
         return $qb->setMaxResults(1)
-                 ->getQuery()
-                 ->getOneOrNullResult();
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find templates with usage statistics
+     * Find templates with usage statistics.
      */
     public function findWithStats(): array
     {
@@ -109,11 +121,12 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->orderBy('dut.sortOrder', 'ASC')
             ->addOrderBy('dut.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find templates by search criteria
+     * Find templates by search criteria.
      */
     public function findBySearchCriteria(array $criteria): array
     {
@@ -121,42 +134,49 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
 
         if (!empty($criteria['search'])) {
             $qb->andWhere('(dut.name LIKE :search OR dut.description LIKE :search)')
-              ->setParameter('search', '%' . $criteria['search'] . '%');
+                ->setParameter('search', '%' . $criteria['search'] . '%')
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('dut.documentType = :type')
-              ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (isset($criteria['active'])) {
             $qb->andWhere('dut.isActive = :active')
-              ->setParameter('active', $criteria['active']);
+                ->setParameter('active', $criteria['active'])
+            ;
         }
 
         if (isset($criteria['global'])) {
             $qb->andWhere('dut.isGlobal = :global')
-              ->setParameter('global', $criteria['global']);
+                ->setParameter('global', $criteria['global'])
+            ;
         }
 
         if (!empty($criteria['orientation'])) {
             $qb->andWhere('dut.orientation = :orientation')
-              ->setParameter('orientation', $criteria['orientation']);
+                ->setParameter('orientation', $criteria['orientation'])
+            ;
         }
 
         if (!empty($criteria['paperSize'])) {
             $qb->andWhere('dut.paperSize = :paperSize')
-              ->setParameter('paperSize', $criteria['paperSize']);
+                ->setParameter('paperSize', $criteria['paperSize'])
+            ;
         }
 
         return $qb->orderBy('dut.sortOrder', 'ASC')
-                 ->addOrderBy('dut.name', 'ASC')
-                 ->getQuery()
-                 ->getResult();
+            ->addOrderBy('dut.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find most used templates
+     * Find most used templates.
      */
     public function findMostUsed(int $limit = 10): array
     {
@@ -167,40 +187,44 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->addOrderBy('dut.name', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get next sort order
+     * Get next sort order.
      */
     public function getNextSortOrder(): int
     {
         $result = $this->createQueryBuilder('dut')
             ->select('MAX(dut.sortOrder)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
-        return (int)$result + 1;
+        return (int) $result + 1;
     }
 
     /**
-     * Count templates by type
+     * Count templates by type.
      */
     public function countByType(?DocumentType $documentType = null): int
     {
         $qb = $this->createQueryBuilder('dut')
-            ->select('COUNT(dut.id)');
+            ->select('COUNT(dut.id)')
+        ;
 
         if ($documentType) {
             $qb->where('dut.documentType = :type')
-              ->setParameter('type', $documentType);
+                ->setParameter('type', $documentType)
+            ;
         }
 
-        return (int)$qb->getQuery()->getSingleScalarResult();
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Find templates by slug
+     * Find templates by slug.
      */
     public function findBySlug(string $slug): ?DocumentUITemplate
     {
@@ -208,31 +232,37 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->where('dut.slug = :slug')
             ->setParameter('slug', $slug)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find similar templates by name
+     * Find similar templates by name.
      */
     public function findSimilarByName(string $name, ?int $excludeId = null): array
     {
         $qb = $this->createQueryBuilder('dut')
             ->where('dut.name LIKE :name')
-            ->setParameter('name', '%' . $name . '%');
+            ->setParameter('name', '%' . $name . '%')
+        ;
 
         if ($excludeId) {
             $qb->andWhere('dut.id != :excludeId')
-              ->setParameter('excludeId', $excludeId);
+                ->setParameter('excludeId', $excludeId)
+            ;
         }
 
         return $qb->orderBy('dut.name', 'ASC')
-                 ->setMaxResults(10)
-                 ->getQuery()
-                 ->getResult();
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-    * Find templates created by admin
+     * Find templates created by admin.
+     *
+     * @param mixed $admin
      */
     public function findByCreatedBy($admin): array
     {
@@ -241,11 +271,12 @@ class DocumentUITemplateRepository extends ServiceEntityRepository
             ->setParameter('admin', $admin)
             ->orderBy('dut.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recently updated templates
+     * Find recently updated templates.
      */
     public function findRecentlyUpdated(int $limit = 10): array
     {

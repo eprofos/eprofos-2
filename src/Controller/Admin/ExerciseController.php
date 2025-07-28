@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Entity\Training\Exercise;
 use App\Entity\Training\Course;
+use App\Entity\Training\Exercise;
 use App\Repository\Training\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +19,7 @@ class ExerciseController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
     ) {}
 
     #[Route('/', name: 'admin_exercise_index', methods: ['GET'])]
@@ -33,13 +35,15 @@ class ExerciseController extends AbstractController
             ->leftJoin('ch.module', 'm')
             ->leftJoin('m.formation', 'f')
             ->addSelect('c', 'ch', 'm', 'f')
-            ->orderBy('e.createdAt', 'DESC');
+            ->orderBy('e.createdAt', 'DESC')
+        ;
 
         // Create a separate count query to avoid grouping issues
         $countQueryBuilder = $exerciseRepository->createQueryBuilder('e')
-            ->select('COUNT(e.id)');
+            ->select('COUNT(e.id)')
+        ;
         $totalExercises = $countQueryBuilder->getQuery()->getSingleScalarResult();
-        
+
         $exercises = $queryBuilder->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult();
 
         $totalPages = ceil($totalExercises / $limit);
@@ -60,9 +64,9 @@ class ExerciseController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            
+
             $exercise->setTitle($data['title']);
-            $exercise->setSlug($this->slugger->slug($data['title'])->lower());
+            $exercise->setSlug((string)$this->slugger->slug($data['title'])->lower());
             $exercise->setDescription($data['description']);
             $exercise->setType($data['type']);
             $exercise->setDifficulty($data['difficulty']);
@@ -71,27 +75,27 @@ class ExerciseController extends AbstractController
             $exercise->setMaxPoints((int) $data['max_points']);
             $exercise->setPassingPoints((int) $data['passing_points']);
             $exercise->setOrderIndex((int) $data['order_index']);
-            
+
             $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
             $exercise->setCourse($course);
-            
+
             // Handle JSON arrays
             if (!empty($data['expected_outcomes'])) {
                 $exercise->setExpectedOutcomes(array_filter(explode("\n", $data['expected_outcomes'])));
             }
-            
+
             if (!empty($data['evaluation_criteria'])) {
                 $exercise->setEvaluationCriteria(array_filter(explode("\n", $data['evaluation_criteria'])));
             }
-            
+
             if (!empty($data['resources'])) {
                 $exercise->setResources(array_filter(explode("\n", $data['resources'])));
             }
-            
+
             if (!empty($data['success_criteria'])) {
                 $exercise->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
             }
-            
+
             $exercise->setPrerequisites($data['prerequisites'] ?? null);
             $exercise->setIsActive(isset($data['is_active']));
 
@@ -99,6 +103,7 @@ class ExerciseController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Exercice créé avec succès.');
+
             return $this->redirectToRoute('admin_exercise_index');
         }
 
@@ -125,9 +130,9 @@ class ExerciseController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            
+
             $exercise->setTitle($data['title']);
-            $exercise->setSlug($this->slugger->slug($data['title'])->lower());
+            $exercise->setSlug((string)$this->slugger->slug($data['title'])->lower());
             $exercise->setDescription($data['description']);
             $exercise->setType($data['type']);
             $exercise->setDifficulty($data['difficulty']);
@@ -136,33 +141,34 @@ class ExerciseController extends AbstractController
             $exercise->setMaxPoints((int) $data['max_points']);
             $exercise->setPassingPoints((int) $data['passing_points']);
             $exercise->setOrderIndex((int) $data['order_index']);
-            
+
             $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
             $exercise->setCourse($course);
-            
+
             // Handle JSON arrays
             if (!empty($data['expected_outcomes'])) {
                 $exercise->setExpectedOutcomes(array_filter(explode("\n", $data['expected_outcomes'])));
             }
-            
+
             if (!empty($data['evaluation_criteria'])) {
                 $exercise->setEvaluationCriteria(array_filter(explode("\n", $data['evaluation_criteria'])));
             }
-            
+
             if (!empty($data['resources'])) {
                 $exercise->setResources(array_filter(explode("\n", $data['resources'])));
             }
-            
+
             if (!empty($data['success_criteria'])) {
                 $exercise->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
             }
-            
+
             $exercise->setPrerequisites($data['prerequisites'] ?? null);
             $exercise->setIsActive(isset($data['is_active']));
 
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Exercice modifié avec succès.');
+
             return $this->redirectToRoute('admin_exercise_index');
         }
 
@@ -177,7 +183,7 @@ class ExerciseController extends AbstractController
     #[Route('/{id}', name: 'admin_exercise_delete', methods: ['POST'])]
     public function delete(Request $request, Exercise $exercise): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$exercise->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $exercise->getId(), $request->request->get('_token'))) {
             $this->entityManager->remove($exercise);
             $this->entityManager->flush();
             $this->addFlash('success', 'Exercice supprimé avec succès.');

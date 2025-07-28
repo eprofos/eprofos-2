@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Training;
 
 use App\Entity\Training\Chapter;
@@ -25,32 +27,32 @@ class ChapterType extends AbstractType
                 'label' => 'Titre du chapitre',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: Introduction aux concepts de base'
+                    'placeholder' => 'Ex: Introduction aux concepts de base',
                 ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Le titre est obligatoire']),
-                    new Assert\Length(['max' => 255, 'maxMessage' => 'Le titre ne peut pas dépasser 255 caractères'])
-                ]
+                    new Assert\Length(['max' => 255, 'maxMessage' => 'Le titre ne peut pas dépasser 255 caractères']),
+                ],
             ])
             ->add('slug', TextType::class, [
                 'label' => 'Slug (URL)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Généré automatiquement si vide'
+                    'placeholder' => 'Généré automatiquement si vide',
                 ],
-                'help' => 'Laissez vide pour générer automatiquement à partir du titre'
+                'help' => 'Laissez vide pour générer automatiquement à partir du titre',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 4,
-                    'placeholder' => 'Description détaillée du chapitre...'
+                    'placeholder' => 'Description détaillée du chapitre...',
                 ],
                 'constraints' => [
-                    new Assert\NotBlank(['message' => 'La description est obligatoire'])
-                ]
+                    new Assert\NotBlank(['message' => 'La description est obligatoire']),
+                ],
             ])
             ->add('contentOutline', TextareaType::class, [
                 'label' => 'Plan du contenu',
@@ -58,9 +60,9 @@ class ChapterType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 5,
-                    'placeholder' => 'Structure détaillée du contenu du chapitre...'
+                    'placeholder' => 'Structure détaillée du contenu du chapitre...',
                 ],
-                'help' => 'Plan structuré avec les points clés et sous-points à couvrir (requis par Qualiopi)'
+                'help' => 'Plan structuré avec les points clés et sous-points à couvrir (requis par Qualiopi)',
             ])
             ->add('learningObjectives', CollectionType::class, [
                 'label' => 'Objectifs d\'apprentissage',
@@ -72,16 +74,16 @@ class ChapterType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Comprendre les concepts fondamentaux...'
-                    ]
+                        'placeholder' => 'Ex: Comprendre les concepts fondamentaux...',
+                    ],
                 ],
                 'attr' => [
                     'data-controller' => 'collection',
                     'data-collection-index-value' => 0,
                     'data-collection-prototype-name-value' => '__name__',
-                    'data-add-text' => 'Ajouter un objectif'
+                    'data-add-text' => 'Ajouter un objectif',
                 ],
-                'help' => 'Objectifs spécifiques et mesurables pour ce chapitre (requis par Qualiopi)'
+                'help' => 'Objectifs spécifiques et mesurables pour ce chapitre (requis par Qualiopi)',
             ])
             ->add('learningOutcomes', CollectionType::class, [
                 'label' => 'Résultats d\'apprentissage attendus',
@@ -93,16 +95,16 @@ class ChapterType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Être capable de...'
-                    ]
+                        'placeholder' => 'Ex: Être capable de...',
+                    ],
                 ],
                 'attr' => [
                     'data-controller' => 'collection',
                     'data-collection-index-value' => 0,
                     'data-collection-prototype-name-value' => '__name__',
-                    'data-add-text' => 'Ajouter un résultat'
+                    'data-add-text' => 'Ajouter un résultat',
                 ],
-                'help' => 'Ce que les participants sauront ou pourront faire après ce chapitre'
+                'help' => 'Ce que les participants sauront ou pourront faire après ce chapitre',
             ])
             ->add('prerequisites', TextareaType::class, [
                 'label' => 'Prérequis',
@@ -110,9 +112,9 @@ class ChapterType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Connaissances ou compétences requises...'
+                    'placeholder' => 'Connaissances ou compétences requises...',
                 ],
-                'help' => 'Prérequis spécifiques nécessaires pour ce chapitre'
+                'help' => 'Prérequis spécifiques nécessaires pour ce chapitre',
             ])
             ->add('teachingMethods', TextareaType::class, [
                 'label' => 'Méthodes pédagogiques',
@@ -120,9 +122,9 @@ class ChapterType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Méthodes d\'enseignement utilisées...'
+                    'placeholder' => 'Méthodes d\'enseignement utilisées...',
                 ],
-                'help' => 'Approches pédagogiques employées dans ce chapitre (requis par Qualiopi)'
+                'help' => 'Approches pédagogiques employées dans ce chapitre (requis par Qualiopi)',
             ])
             ->add('assessmentMethods', TextareaType::class, [
                 'label' => 'Méthodes d\'évaluation',
@@ -130,9 +132,9 @@ class ChapterType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Comment l\'apprentissage est évalué...'
+                    'placeholder' => 'Comment l\'apprentissage est évalué...',
                 ],
-                'help' => 'Méthodes d\'évaluation utilisées pour ce chapitre (requis par Qualiopi)'
+                'help' => 'Méthodes d\'évaluation utilisées pour ce chapitre (requis par Qualiopi)',
             ])
             ->add('resources', CollectionType::class, [
                 'label' => 'Ressources et matériaux',
@@ -144,16 +146,16 @@ class ChapterType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Support PDF, Vidéo explicative...'
-                    ]
+                        'placeholder' => 'Ex: Support PDF, Vidéo explicative...',
+                    ],
                 ],
                 'attr' => [
                     'data-controller' => 'collection',
                     'data-collection-index-value' => 0,
                     'data-collection-prototype-name-value' => '__name__',
-                    'data-add-text' => 'Ajouter une ressource'
+                    'data-add-text' => 'Ajouter une ressource',
                 ],
-                'help' => 'Matériaux pédagogiques utilisés dans ce chapitre'
+                'help' => 'Matériaux pédagogiques utilisés dans ce chapitre',
             ])
             ->add('successCriteria', CollectionType::class, [
                 'label' => 'Critères de réussite',
@@ -165,65 +167,62 @@ class ChapterType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Obtenir 80% aux exercices...'
-                    ]
+                        'placeholder' => 'Ex: Obtenir 80% aux exercices...',
+                    ],
                 ],
                 'attr' => [
                     'data-controller' => 'collection',
                     'data-collection-index-value' => 0,
                     'data-collection-prototype-name-value' => '__name__',
-                    'data-add-text' => 'Ajouter un critère'
+                    'data-add-text' => 'Ajouter un critère',
                 ],
-                'help' => 'Indicateurs mesurables de réussite du chapitre'
+                'help' => 'Indicateurs mesurables de réussite du chapitre',
             ])
             ->add('durationMinutes', IntegerType::class, [
                 'label' => 'Durée (en minutes)',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: 90'
+                    'placeholder' => 'Ex: 90',
                 ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'La durée est obligatoire']),
-                    new Assert\Positive(['message' => 'La durée doit être positive'])
-                ]
+                    new Assert\Positive(['message' => 'La durée doit être positive']),
+                ],
             ])
             ->add('orderIndex', IntegerType::class, [
                 'label' => 'Ordre d\'affichage',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Position dans le module'
+                    'placeholder' => 'Position dans le module',
                 ],
-                'help' => 'Laissez vide pour placer à la fin'
+                'help' => 'Laissez vide pour placer à la fin',
             ])
             ->add('module', EntityType::class, [
                 'class' => Module::class,
-                'choice_label' => function (Module $module) {
-                    return $module->getFormation()->getTitle() . ' - ' . $module->getTitle();
-                },
+                'choice_label' => static fn (Module $module) => $module->getFormation()->getTitle() . ' - ' . $module->getTitle(),
                 'placeholder' => 'Sélectionner un module',
-                'query_builder' => function (ModuleRepository $repository) {
-                    return $repository->createQueryBuilder('m')
-                        ->join('m.formation', 'f')
-                        ->where('m.isActive = true')
-                        ->orderBy('f.title', 'ASC')
-                        ->addOrderBy('m.orderIndex', 'ASC');
-                },
+                'query_builder' => static fn (ModuleRepository $repository) => $repository->createQueryBuilder('m')
+                    ->join('m.formation', 'f')
+                    ->where('m.isActive = true')
+                    ->orderBy('f.title', 'ASC')
+                    ->addOrderBy('m.orderIndex', 'ASC'),
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
                 'constraints' => [
-                    new Assert\NotBlank(['message' => 'Le module est obligatoire'])
-                ]
+                    new Assert\NotBlank(['message' => 'Le module est obligatoire']),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Actif',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-check-input'
+                    'class' => 'form-check-input',
                 ],
-                'help' => 'Décochez pour désactiver ce chapitre'
-            ]);
+                'help' => 'Décochez pour désactiver ce chapitre',
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

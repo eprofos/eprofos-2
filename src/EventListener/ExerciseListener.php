@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Training\Exercise;
 use App\Service\Training\DurationCalculationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Event\PostPersistEventArgs;
-use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Events;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
  * Entity listener for Exercise duration synchronization
- * DISABLED: Using DurationUpdateListener instead
+ * DISABLED: Using DurationUpdateListener instead.
  */
 // #[AsEntityListener(event: Events::postPersist, method: 'postPersist', entity: Exercise::class)]
 // #[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Exercise::class)]
@@ -22,9 +25,8 @@ class ExerciseListener
 {
     public function __construct(
         private DurationCalculationService $durationService,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     public function postPersist(PostPersistEventArgs $args): void
     {
@@ -62,27 +64,26 @@ class ExerciseListener
         if ($this->durationService->isSyncMode()) {
             return;
         }
-        
+
         try {
             $course = $exercise->getCourse();
-            
+
             if ($course) {
                 // Update the parent course duration (which will cascade up)
                 $this->durationService->updateEntityDuration($course);
-                
+
                 $this->logger->info('Exercise duration change propagated', [
                     'exercise_id' => $exercise->getId(),
                     'exercise_title' => $exercise->getTitle(),
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle(),
-                    'operation' => $operation
+                    'operation' => $operation,
                 ]);
             }
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update course duration from exercise', [
                 'exercise_id' => $exercise->getId(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -1,23 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Public;
 
 use App\Entity\Assessment\Questionnaire;
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\QuestionResponse;
+use App\Entity\Question;
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Assessment\QuestionnaireResponseRepository;
 use App\Repository\Training\FormationRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * Public controller for questionnaire completion
+ * Public controller for questionnaire completion.
  */
 #[Route('/questionnaire', name: 'questionnaire_')]
 class QuestionnaireController extends AbstractController
@@ -26,27 +31,26 @@ class QuestionnaireController extends AbstractController
         private EntityManagerInterface $entityManager,
         private QuestionnaireRepository $questionnaireRepository,
         private QuestionnaireResponseRepository $responseRepository,
-        private FormationRepository $formationRepository
-    ) {
-    }
+        private FormationRepository $formationRepository,
+    ) {}
 
     #[Route('/complete/{token}', name: 'complete', methods: ['GET'])]
     public function complete(string $token): Response
     {
         $response = $this->responseRepository->findByToken($token);
-        
+
         if (!$response) {
             throw $this->createNotFoundException('Token de questionnaire invalide.');
         }
 
         if ($response->isCompleted()) {
             return $this->render('public/questionnaire/already_completed.html.twig', [
-                'response' => $response
+                'response' => $response,
             ]);
         }
 
         $questionnaire = $response->getQuestionnaire();
-        
+
         if (!$questionnaire->isActive()) {
             throw $this->createNotFoundException('Ce questionnaire n\'est plus actif.');
         }
@@ -59,11 +63,11 @@ class QuestionnaireController extends AbstractController
 
         $currentStep = $response->getCurrentStep() ?? 1;
         $totalSteps = $questionnaire->getStepCount();
-        
+
         // Redirect to the current step
         return $this->redirectToRoute('questionnaire_step', [
             'token' => $token,
-            'step' => $currentStep
+            'step' => $currentStep,
         ]);
     }
 
@@ -71,7 +75,7 @@ class QuestionnaireController extends AbstractController
     public function step(Request $request, string $token, int $step): Response
     {
         $response = $this->responseRepository->findByToken($token);
-        
+
         if (!$response) {
             throw $this->createNotFoundException('Token de questionnaire invalide.');
         }
@@ -91,7 +95,7 @@ class QuestionnaireController extends AbstractController
         if ($step > $response->getCurrentStep() && !$questionnaire->isAllowBackNavigation()) {
             return $this->redirectToRoute('questionnaire_step', [
                 'token' => $token,
-                'step' => $response->getCurrentStep()
+                'step' => $response->getCurrentStep(),
             ]);
         }
 
@@ -99,26 +103,25 @@ class QuestionnaireController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $this->handleStepSubmission($request, $response, $questions, $step);
-            
+
             // Update current step
             $response->setCurrentStep(max($response->getCurrentStep(), $step));
             $response->markAsInProgress();
-            
+
             // Check if this is the last step
             if ($step >= $totalSteps) {
                 $response->markAsCompleted();
                 $this->entityManager->flush();
-                
+
                 return $this->redirectToRoute('questionnaire_completed', ['token' => $token]);
-            } else {
-                $this->entityManager->flush();
-                
-                // Redirect to next step
-                return $this->redirectToRoute('questionnaire_step', [
-                    'token' => $token,
-                    'step' => $step + 1
-                ]);
             }
+            $this->entityManager->flush();
+
+            // Redirect to next step
+            return $this->redirectToRoute('questionnaire_step', [
+                'token' => $token,
+                'step' => $step + 1,
+            ]);
         }
 
         // Get existing responses for this step
@@ -137,7 +140,7 @@ class QuestionnaireController extends AbstractController
             'currentStep' => $step,
             'totalSteps' => $totalSteps,
             'existingResponses' => $existingResponses,
-            'progressPercentage' => (int) (($step / $totalSteps) * 100)
+            'progressPercentage' => (int) (($step / $totalSteps) * 100),
         ]);
     }
 
@@ -145,7 +148,7 @@ class QuestionnaireController extends AbstractController
     public function completed(string $token): Response
     {
         $response = $this->responseRepository->findByToken($token);
-        
+
         if (!$response) {
             throw $this->createNotFoundException('Token de questionnaire invalide.');
         }
@@ -155,7 +158,7 @@ class QuestionnaireController extends AbstractController
         }
 
         return $this->render('public/questionnaire/completed.html.twig', [
-            'response' => $response
+            'response' => $response,
         ]);
     }
 
@@ -175,7 +178,7 @@ class QuestionnaireController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Token invalide']);
         }
 
-        $question = $this->entityManager->getRepository(\App\Entity\Question::class)->find($questionId);
+        $question = $this->entityManager->getRepository(Question::class)->find($questionId);
         if (!$question || $question->getQuestionnaire() !== $response->getQuestionnaire()) {
             return new JsonResponse(['success' => false, 'message' => 'Question invalide']);
         }
@@ -183,18 +186,18 @@ class QuestionnaireController extends AbstractController
         // Validate file type and size
         if ($question->getAllowedFileTypes()) {
             $extension = $file->getClientOriginalExtension();
-            if (!in_array($extension, $question->getAllowedFileTypes())) {
+            if (!in_array($extension, $question->getAllowedFileTypes(), true)) {
                 return new JsonResponse([
-                    'success' => false, 
-                    'message' => 'Type de fichier non autorisé. Types autorisés : ' . implode(', ', $question->getAllowedFileTypes())
+                    'success' => false,
+                    'message' => 'Type de fichier non autorisé. Types autorisés : ' . implode(', ', $question->getAllowedFileTypes()),
                 ]);
             }
         }
 
         if ($question->getMaxFileSize() && $file->getSize() > $question->getMaxFileSize()) {
             return new JsonResponse([
-                'success' => false, 
-                'message' => 'Fichier trop volumineux. Taille maximale : ' . $question->getFormattedMaxFileSize()
+                'success' => false,
+                'message' => 'Fichier trop volumineux. Taille maximale : ' . $question->getFormattedMaxFileSize(),
             ]);
         }
 
@@ -212,10 +215,9 @@ class QuestionnaireController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'filename' => $filename,
-                'originalName' => $file->getClientOriginalName()
+                'originalName' => $file->getClientOriginalName(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse(['success' => false, 'message' => 'Erreur lors du téléchargement']);
         }
     }
@@ -238,26 +240,27 @@ class QuestionnaireController extends AbstractController
             if (!$questionResponse) {
                 $questionResponse = new QuestionResponse();
                 $questionResponse->setQuestion($question)
-                    ->setQuestionnaireResponse($response);
+                    ->setQuestionnaireResponse($response)
+                ;
                 $this->entityManager->persist($questionResponse);
                 $response->addQuestionResponse($questionResponse);
             }
 
             // Set response value based on question type
             switch ($question->getType()) {
-                case \App\Entity\Question::TYPE_SINGLE_CHOICE:
+                case Question::TYPE_SINGLE_CHOICE:
                     if ($responseValue) {
                         $questionResponse->setChoiceResponse([(int) $responseValue]);
                     }
                     break;
 
-                case \App\Entity\Question::TYPE_MULTIPLE_CHOICE:
+                case Question::TYPE_MULTIPLE_CHOICE:
                     if (is_array($responseValue)) {
                         $questionResponse->setChoiceResponse(array_map('intval', $responseValue));
                     }
                     break;
 
-                case \App\Entity\Question::TYPE_FILE_UPLOAD:
+                case Question::TYPE_FILE_UPLOAD:
                     // File upload is handled via AJAX
                     $filename = $data['file_' . $questionId] ?? null;
                     if ($filename) {
@@ -265,17 +268,17 @@ class QuestionnaireController extends AbstractController
                     }
                     break;
 
-                case \App\Entity\Question::TYPE_NUMBER:
+                case Question::TYPE_NUMBER:
                     if ($responseValue !== null && $responseValue !== '') {
                         $questionResponse->setNumberResponse((int) $responseValue);
                     }
                     break;
 
-                case \App\Entity\Question::TYPE_DATE:
+                case Question::TYPE_DATE:
                     if ($responseValue) {
                         try {
-                            $questionResponse->setDateResponse(new \DateTime($responseValue));
-                        } catch (\Exception $e) {
+                            $questionResponse->setDateResponse(new DateTime($responseValue));
+                        } catch (Exception $e) {
                             // Invalid date, skip
                         }
                     }

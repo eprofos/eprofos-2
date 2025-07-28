@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\User\Student;
+use DateTime;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -10,16 +13,15 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Email;
 
 /**
- * Student Form Type for Admin Interface
- * 
+ * Student Form Type for Admin Interface.
+ *
  * Form for creating and editing students in the admin interface.
  * Provides comprehensive fields for student management with validation.
  */
@@ -35,19 +37,19 @@ class StudentType extends AbstractType
                 'label' => 'Email',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'email@example.com'
+                    'placeholder' => 'email@example.com',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'L\'email est obligatoire']),
                     new Email(['message' => 'Format d\'email invalide']),
                 ],
-                'help' => 'L\'adresse email servira d\'identifiant de connexion'
+                'help' => 'L\'adresse email servira d\'identifiant de connexion',
             ])
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Prénom de l\'étudiant'
+                    'placeholder' => 'Prénom de l\'étudiant',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le prénom est obligatoire']),
@@ -63,7 +65,7 @@ class StudentType extends AbstractType
                 'label' => 'Nom',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Nom de famille de l\'étudiant'
+                    'placeholder' => 'Nom de famille de l\'étudiant',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le nom est obligatoire']),
@@ -80,9 +82,9 @@ class StudentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '01 23 45 67 89'
+                    'placeholder' => '01 23 45 67 89',
                 ],
-                'help' => 'Numéro de téléphone pour contact (optionnel)'
+                'help' => 'Numéro de téléphone pour contact (optionnel)',
             ])
             ->add('birthDate', DateType::class, [
                 'label' => 'Date de naissance',
@@ -90,25 +92,25 @@ class StudentType extends AbstractType
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-control',
-                    'max' => (new \DateTime())->format('Y-m-d'),
+                    'max' => (new DateTime())->format('Y-m-d'),
                 ],
-                'help' => 'Date de naissance (optionnel)'
+                'help' => 'Date de naissance (optionnel)',
             ])
             ->add('address', TextType::class, [
                 'label' => 'Adresse',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Adresse complète'
+                    'placeholder' => 'Adresse complète',
                 ],
-                'help' => 'Adresse postale (optionnel)'
+                'help' => 'Adresse postale (optionnel)',
             ])
             ->add('postalCode', TextType::class, [
                 'label' => 'Code postal',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '75000'
+                    'placeholder' => '75000',
                 ],
             ])
             ->add('city', TextType::class, [
@@ -116,7 +118,7 @@ class StudentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ville de résidence'
+                    'placeholder' => 'Ville de résidence',
                 ],
             ])
             ->add('country', TextType::class, [
@@ -124,36 +126,36 @@ class StudentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'France'
+                    'placeholder' => 'France',
                 ],
-                'data' => 'France' // Default value
+                'data' => 'France', // Default value
             ])
             ->add('educationLevel', TextType::class, [
                 'label' => 'Niveau d\'études',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Bac, Bac+2, Bac+3, Master, etc.'
+                    'placeholder' => 'Bac, Bac+2, Bac+3, Master, etc.',
                 ],
-                'help' => 'Dernier niveau d\'études obtenu (optionnel)'
+                'help' => 'Dernier niveau d\'études obtenu (optionnel)',
             ])
             ->add('profession', TextType::class, [
                 'label' => 'Profession',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Profession actuelle'
+                    'placeholder' => 'Profession actuelle',
                 ],
-                'help' => 'Profession ou poste occupé (optionnel)'
+                'help' => 'Profession ou poste occupé (optionnel)',
             ])
             ->add('company', TextType::class, [
                 'label' => 'Entreprise',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Nom de l\'entreprise'
+                    'placeholder' => 'Nom de l\'entreprise',
                 ],
-                'help' => 'Nom de l\'entreprise actuelle (optionnel)'
+                'help' => 'Nom de l\'entreprise actuelle (optionnel)',
             ])
         ;
 
@@ -166,7 +168,7 @@ class StudentType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => $isEdit ? 'Nouveau mot de passe...' : 'Mot de passe...',
-                    'autocomplete' => 'new-password'
+                    'autocomplete' => 'new-password',
                 ],
                 'constraints' => $isEdit ? [] : [
                     new NotBlank(['message' => 'Le mot de passe est obligatoire']),
@@ -176,9 +178,9 @@ class StudentType extends AbstractType
                         'max' => 4096,
                     ]),
                 ],
-                'help' => $isEdit ? 
-                    'Laisser vide pour conserver le mot de passe actuel' : 
-                    'Minimum 6 caractères'
+                'help' => $isEdit ?
+                    'Laisser vide pour conserver le mot de passe actuel' :
+                    'Minimum 6 caractères',
             ]);
         }
 
@@ -195,7 +197,7 @@ class StudentType extends AbstractType
                         'class' => 'form-check-label',
                     ],
                     'help' => 'Décocher pour désactiver le compte étudiant',
-                    'data' => true // Default to active
+                    'data' => true, // Default to active
                 ])
                 ->add('emailVerified', CheckboxType::class, [
                     'label' => 'Email vérifié',
@@ -206,7 +208,7 @@ class StudentType extends AbstractType
                     'label_attr' => [
                         'class' => 'form-check-label',
                     ],
-                    'help' => 'Cocher si l\'email a été vérifié manuellement'
+                    'help' => 'Cocher si l\'email a été vérifié manuellement',
                 ])
             ;
         }
@@ -224,7 +226,7 @@ class StudentType extends AbstractType
                     'class' => 'form-check-label',
                 ],
                 'help' => 'Envoyer automatiquement un email de bienvenue avec les informations de connexion',
-                'data' => true
+                'data' => true,
             ]);
         }
     }

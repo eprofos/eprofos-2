@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentCategory;
 use App\Entity\Document\DocumentType;
 use App\Entity\User\Admin;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -21,7 +24,7 @@ class DocumentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all published documents
+     * Find all published documents.
      */
     public function findPublished(): array
     {
@@ -30,14 +33,15 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt IS NOT NULL')
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('d.publishedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find documents by type
+     * Find documents by type.
      */
     public function findByType(DocumentType $type): array
     {
@@ -46,11 +50,12 @@ class DocumentRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('d.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find documents by category
+     * Find documents by category.
      */
     public function findByCategory(DocumentCategory $category): array
     {
@@ -59,11 +64,12 @@ class DocumentRepository extends ServiceEntityRepository
             ->setParameter('category', $category)
             ->orderBy('d.publishedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find published documents by category
+     * Find published documents by category.
      */
     public function findPublishedByCategory(DocumentCategory $category): array
     {
@@ -74,14 +80,15 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('category', $category)
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('d.publishedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find document by slug
+     * Find document by slug.
      */
     public function findBySlug(string $slug): ?Document
     {
@@ -89,11 +96,12 @@ class DocumentRepository extends ServiceEntityRepository
             ->where('d.slug = :slug')
             ->setParameter('slug', $slug)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find published document by slug
+     * Find published document by slug.
      */
     public function findPublishedBySlug(string $slug): ?Document
     {
@@ -104,13 +112,14 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('slug', $slug)
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find documents by author
+     * Find documents by author.
      */
     public function findByAuthor(Admin $author): array
     {
@@ -119,11 +128,12 @@ class DocumentRepository extends ServiceEntityRepository
             ->setParameter('author', $author)
             ->orderBy('d.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find documents requiring approval
+     * Find documents requiring approval.
      */
     public function findRequiringApproval(): array
     {
@@ -135,15 +145,16 @@ class DocumentRepository extends ServiceEntityRepository
             ->setParameter('requiresApproval', true)
             ->orderBy('d.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find documents with expiring validity
+     * Find documents with expiring validity.
      */
     public function findExpiringDocuments(int $days = 30): array
     {
-        $cutoffDate = new \DateTime();
+        $cutoffDate = new DateTime();
         $cutoffDate->modify("+{$days} days");
 
         return $this->createQueryBuilder('d')
@@ -153,57 +164,65 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.expiresAt > :now')
             ->setParameter('status', Document::STATUS_PUBLISHED)
             ->setParameter('cutoffDate', $cutoffDate)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('d.expiresAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search documents
+     * Search documents.
      */
     public function search(string $query, array $filters = []): array
     {
         $qb = $this->createQueryBuilder('d')
             ->where('d.status = :status')
-            ->setParameter('status', Document::STATUS_PUBLISHED);
+            ->setParameter('status', Document::STATUS_PUBLISHED)
+        ;
 
         // Text search
         if (!empty($query)) {
             $qb->andWhere('LOWER(d.title) LIKE LOWER(:query) OR LOWER(d.description) LIKE LOWER(:query) OR LOWER(d.content) LIKE LOWER(:query)')
-               ->setParameter('query', '%' . $query . '%');
+                ->setParameter('query', '%' . $query . '%')
+            ;
         }
 
         // Type filter
         if (!empty($filters['type'])) {
             $qb->andWhere('d.documentType = :type')
-               ->setParameter('type', $filters['type']);
+                ->setParameter('type', $filters['type'])
+            ;
         }
 
         // Category filter
         if (!empty($filters['category'])) {
             $qb->andWhere('d.category = :category')
-               ->setParameter('category', $filters['category']);
+                ->setParameter('category', $filters['category'])
+            ;
         }
 
         // Date range filter
         if (!empty($filters['dateFrom'])) {
             $qb->andWhere('d.publishedAt >= :dateFrom')
-               ->setParameter('dateFrom', $filters['dateFrom']);
+                ->setParameter('dateFrom', $filters['dateFrom'])
+            ;
         }
 
         if (!empty($filters['dateTo'])) {
             $qb->andWhere('d.publishedAt <= :dateTo')
-               ->setParameter('dateTo', $filters['dateTo']);
+                ->setParameter('dateTo', $filters['dateTo'])
+            ;
         }
 
         return $qb->orderBy('d.publishedAt', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Create query builder for catalog with filters
+     * Create query builder for catalog with filters.
      */
     public function createCatalogQueryBuilder(array $filters = []): QueryBuilder
     {
@@ -214,71 +233,81 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt IS NOT NULL')
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime());
+            ->setParameter('now', new DateTime())
+        ;
 
         if (!empty($filters['type'])) {
             $qb->andWhere('dt.id = :typeId')
-               ->setParameter('typeId', $filters['type']);
+                ->setParameter('typeId', $filters['type'])
+            ;
         }
 
         if (!empty($filters['category'])) {
             $qb->andWhere('dc.id = :categoryId')
-               ->setParameter('categoryId', $filters['category']);
+                ->setParameter('categoryId', $filters['category'])
+            ;
         }
 
         if (!empty($filters['search'])) {
             $qb->andWhere('LOWER(d.title) LIKE LOWER(:search) OR LOWER(d.description) LIKE LOWER(:search)')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         return $qb->orderBy('d.publishedAt', 'DESC');
     }
 
     /**
-     * Create query builder for admin with filters (all documents regardless of status)
+     * Create query builder for admin with filters (all documents regardless of status).
      */
     public function createAdminQueryBuilder(array $filters = []): QueryBuilder
     {
         $qb = $this->createQueryBuilder('d')
             ->leftJoin('d.documentType', 'dt')
             ->leftJoin('d.category', 'dc')
-            ->leftJoin('d.createdBy', 'cb');
+            ->leftJoin('d.createdBy', 'cb')
+        ;
 
         // Status filter
         if (!empty($filters['status'])) {
             $qb->andWhere('d.status = :status')
-               ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         // Type filter
         if (!empty($filters['type'])) {
             $qb->andWhere('dt.id = :typeId')
-               ->setParameter('typeId', $filters['type']);
+                ->setParameter('typeId', $filters['type'])
+            ;
         }
 
         // Category filter
         if (!empty($filters['category'])) {
             $qb->andWhere('dc.id = :categoryId')
-               ->setParameter('categoryId', $filters['category']);
+                ->setParameter('categoryId', $filters['category'])
+            ;
         }
 
         // Author filter
         if (!empty($filters['author'])) {
             $qb->andWhere('cb.id = :authorId')
-               ->setParameter('authorId', $filters['author']);
+                ->setParameter('authorId', $filters['author'])
+            ;
         }
 
         // Search filter
         if (!empty($filters['search'])) {
             $qb->andWhere('LOWER(d.title) LIKE LOWER(:search) OR LOWER(d.description) LIKE LOWER(:search) OR LOWER(d.content) LIKE LOWER(:search)')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         return $qb->orderBy('d.updatedAt', 'DESC');
     }
 
     /**
-     * Get most recent documents
+     * Get most recent documents.
      */
     public function findRecent(int $limit = 10): array
     {
@@ -287,15 +316,16 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt IS NOT NULL')
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('d.publishedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get most popular documents by download count
+     * Get most popular documents by download count.
      */
     public function findMostPopular(int $limit = 10): array
     {
@@ -304,15 +334,16 @@ class DocumentRepository extends ServiceEntityRepository
             ->andWhere('d.publishedAt IS NOT NULL')
             ->andWhere('d.publishedAt <= :now')
             ->setParameter('status', Document::STATUS_PUBLISHED)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('d.publishedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find documents with versions
+     * Find documents with versions.
      */
     public function findWithVersions(): array
     {
@@ -320,32 +351,36 @@ class DocumentRepository extends ServiceEntityRepository
             ->where('SIZE(d.versions) > 0')
             ->orderBy('d.title', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get document statistics
+     * Get document statistics.
      */
     public function getStatistics(): array
     {
         $totalDocs = $this->createQueryBuilder('d')
             ->select('COUNT(d.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $publishedDocs = $this->createQueryBuilder('d')
             ->select('COUNT(d.id)')
             ->where('d.status = :status')
             ->setParameter('status', Document::STATUS_PUBLISHED)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $pendingDocs = $this->createQueryBuilder('d')
             ->select('COUNT(d.id)')
             ->where('d.status = :status')
             ->setParameter('status', Document::STATUS_REVIEW)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Skip download count for now until migration is run
         $totalDownloads = 0;

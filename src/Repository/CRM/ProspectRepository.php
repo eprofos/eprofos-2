@@ -1,17 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\CRM;
 
 use App\Entity\CRM\Prospect;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for Prospect entity
- * 
+ * Repository for Prospect entity.
+ *
  * Provides query methods for managing prospects with filtering,
  * statistics, and follow-up management capabilities.
- * 
+ *
  * @extends ServiceEntityRepository<Prospect>
  */
 class ProspectRepository extends ServiceEntityRepository
@@ -22,8 +27,8 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find prospects by status
-     * 
+     * Find prospects by status.
+     *
      * @return Prospect[]
      */
     public function findByStatus(string $status): array
@@ -37,12 +42,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('status', $status)
             ->orderBy('p.updatedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects by priority
-     * 
+     * Find prospects by priority.
+     *
      * @return Prospect[]
      */
     public function findByPriority(string $priority): array
@@ -55,12 +61,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->orderBy('p.nextFollowUpDate', 'ASC')
             ->addOrderBy('p.updatedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects assigned to an admin
-     * 
+     * Find prospects assigned to an admin.
+     *
      * @return Prospect[]
      */
     public function findByAssignedAdmin(int $adminId): array
@@ -74,18 +81,19 @@ class ProspectRepository extends ServiceEntityRepository
             ->orderBy('p.priority', 'DESC')
             ->addOrderBy('p.nextFollowUpDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects that need follow-up
-     * 
+     * Find prospects that need follow-up.
+     *
      * @return Prospect[]
      */
     public function findNeedingFollowUp(): array
     {
-        $now = new \DateTime();
-        
+        $now = new DateTime();
+
         return $this->createQueryBuilder('p')
             ->leftJoin('p.assignedTo', 'u')
             ->addSelect('u')
@@ -96,18 +104,19 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('closedStatuses', ['customer', 'lost'])
             ->orderBy('p.nextFollowUpDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find overdue prospects (no follow-up for more than X days)
-     * 
+     * Find overdue prospects (no follow-up for more than X days).
+     *
      * @return Prospect[]
      */
     public function findOverdueProspects(int $days = 7): array
     {
-        $cutoffDate = new \DateTime("-{$days} days");
-        
+        $cutoffDate = new DateTime("-{$days} days");
+
         return $this->createQueryBuilder('p')
             ->leftJoin('p.assignedTo', 'u')
             ->addSelect('u')
@@ -117,12 +126,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('closedStatuses', ['customer', 'lost'])
             ->orderBy('p.lastContactDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects by source
-     * 
+     * Find prospects by source.
+     *
      * @return Prospect[]
      */
     public function findBySource(string $source): array
@@ -134,15 +144,16 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('source', $source)
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects created within date range
-     * 
+     * Find prospects created within date range.
+     *
      * @return Prospect[]
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.assignedTo', 'u')
@@ -153,12 +164,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects interested in a specific formation
-     * 
+     * Find prospects interested in a specific formation.
+     *
      * @return Prospect[]
      */
     public function findByFormationInterest(int $formationId): array
@@ -171,12 +183,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find prospects interested in a specific service
-     * 
+     * Find prospects interested in a specific service.
+     *
      * @return Prospect[]
      */
     public function findByServiceInterest(int $serviceId): array
@@ -189,18 +202,19 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('serviceId', $serviceId)
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search prospects by name, email, or company
-     * 
+     * Search prospects by name, email, or company.
+     *
      * @return Prospect[]
      */
     public function searchProspects(string $query): array
     {
         $searchTerms = '%' . strtolower($query) . '%';
-        
+
         return $this->createQueryBuilder('p')
             ->leftJoin('p.assignedTo', 'u')
             ->addSelect('u')
@@ -212,12 +226,13 @@ class ProspectRepository extends ServiceEntityRepository
             ->orderBy('p.lastName', 'ASC')
             ->addOrderBy('p.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count prospects by status
-     * 
+     * Count prospects by status.
+     *
      * @return array<string, int>
      */
     public function countByStatus(): array
@@ -226,7 +241,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->select('p.status', 'COUNT(p.id) as count')
             ->groupBy('p.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -237,8 +253,8 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count prospects by priority
-     * 
+     * Count prospects by priority.
+     *
      * @return array<string, int>
      */
     public function countByPriority(): array
@@ -247,7 +263,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->select('p.priority', 'COUNT(p.id) as count')
             ->groupBy('p.priority')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -258,8 +275,8 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count prospects by source
-     * 
+     * Count prospects by source.
+     *
      * @return array<string, int>
      */
     public function countBySource(): array
@@ -269,7 +286,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->where('p.source IS NOT NULL')
             ->groupBy('p.source')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -280,8 +298,8 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count prospects by assigned admin
-     * 
+     * Count prospects by assigned admin.
+     *
      * @return array<string, int>
      */
     public function countByAssignedAdmin(): array
@@ -292,7 +310,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->where('p.assignedTo IS NOT NULL')
             ->groupBy('p.assignedTo')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -303,8 +322,8 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get prospects conversion statistics
-     * 
+     * Get prospects conversion statistics.
+     *
      * @return array<string, mixed>
      */
     public function getConversionStatistics(): array
@@ -315,13 +334,14 @@ class ProspectRepository extends ServiceEntityRepository
         $active = $totalProspects - $customers - $lost;
 
         // Get prospects from last 30 days
-        $thirtyDaysAgo = new \DateTimeImmutable('-30 days');
+        $thirtyDaysAgo = new DateTimeImmutable('-30 days');
         $recentProspects = $this->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->where('p.createdAt >= :thirtyDaysAgo')
             ->setParameter('thirtyDaysAgo', $thirtyDaysAgo)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Get average days to conversion
         $avgDaysToConversion = $this->createQueryBuilder('p')
@@ -329,7 +349,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->where('p.status = :status')
             ->setParameter('status', 'customer')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total' => $totalProspects,
@@ -338,13 +359,13 @@ class ProspectRepository extends ServiceEntityRepository
             'active' => $active,
             'recent' => (int) $recentProspects,
             'conversion_rate' => $totalProspects > 0 ? round(($customers / $totalProspects) * 100, 2) : 0,
-            'avg_days_to_conversion' => $avgDaysToConversion ? round((float) $avgDaysToConversion, 1) : null
+            'avg_days_to_conversion' => $avgDaysToConversion ? round((float) $avgDaysToConversion, 1) : null,
         ];
     }
 
     /**
-     * Get dashboard statistics
-     * 
+     * Get dashboard statistics.
+     *
      * @return array<string, mixed>
      */
     public function getDashboardStatistics(): array
@@ -361,19 +382,21 @@ class ProspectRepository extends ServiceEntityRepository
             ->setParameter('priorities', ['high', 'urgent'])
             ->setParameter('hotStatuses', ['qualified', 'negotiation'])
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Converted prospects (customer status)
         $convertedProspects = $this->count(['status' => 'customer']);
 
         // Recent activity (prospects created or updated in last 7 days)
-        $weekAgo = new \DateTimeImmutable('-7 days');
+        $weekAgo = new DateTimeImmutable('-7 days');
         $recentActivity = $this->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->where('p.createdAt >= :weekAgo OR p.updatedAt >= :weekAgo')
             ->setParameter('weekAgo', $weekAgo)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total' => $totalProspects,
@@ -383,19 +406,19 @@ class ProspectRepository extends ServiceEntityRepository
             'needing_follow_up' => $needingFollowUp,
             'overdue' => $overdueProspects,
             'recent_activity' => (int) $recentActivity,
-            'conversion_rate' => $totalProspects > 0 ? round(($convertedProspects / $totalProspects) * 100, 1) : 0
+            'conversion_rate' => $totalProspects > 0 ? round(($convertedProspects / $totalProspects) * 100, 1) : 0,
         ];
     }
 
     /**
-     * Get monthly statistics for charts
-     * 
+     * Get monthly statistics for charts.
+     *
      * @return array<string, mixed>
      */
     public function getMonthlyStatistics(int $months = 12): array
     {
-        $startDate = new \DateTimeImmutable("-{$months} months");
-        
+        $startDate = new DateTimeImmutable("-{$months} months");
+
         $result = $this->createQueryBuilder('p')
             ->select('DATE_FORMAT(p.createdAt, \'%Y-%m\') as month', 'COUNT(p.id) as count')
             ->where('p.createdAt >= :startDate')
@@ -403,7 +426,8 @@ class ProspectRepository extends ServiceEntityRepository
             ->groupBy('month')
             ->orderBy('month', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $statistics = [];
         foreach ($result as $row) {
@@ -414,7 +438,7 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save a prospect entity
+     * Save a prospect entity.
      */
     public function save(Prospect $entity, bool $flush = false): void
     {
@@ -426,7 +450,7 @@ class ProspectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a prospect entity
+     * Remove a prospect entity.
      */
     public function remove(Prospect $entity, bool $flush = false): void
     {

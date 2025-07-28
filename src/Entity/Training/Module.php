@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Training;
 
 use App\Repository\Training\ModuleRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Module entity representing a learning module within a formation
- * 
+ * Module entity representing a learning module within a formation.
+ *
  * Contains structured pedagogical content with objectives, evaluation methods,
  * and duration information to meet Qualiopi requirements for training structure.
  */
@@ -38,7 +41,7 @@ class Module
     private ?string $description = null;
 
     /**
-     * Specific learning objectives for this module (required by Qualiopi)
+     * Specific learning objectives for this module (required by Qualiopi).
      *
      * Concrete, measurable objectives that participants will achieve
      * by completing this specific module.
@@ -48,7 +51,7 @@ class Module
     private ?array $learningObjectives = null;
 
     /**
-     * Prerequisites specific to this module (required by Qualiopi)
+     * Prerequisites specific to this module (required by Qualiopi).
      *
      * Knowledge, skills, or experience required before starting this module.
      */
@@ -57,21 +60,21 @@ class Module
     private ?string $prerequisites = null;
 
     /**
-     * Duration in hours for this module (required by Qualiopi)
+     * Duration in hours for this module (required by Qualiopi).
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $durationHours = null;
 
     /**
-     * Order/position of this module within the formation
+     * Order/position of this module within the formation.
      */
     #[ORM\Column]
     #[Gedmo\Versioned]
     private ?int $orderIndex = null;
 
     /**
-     * Evaluation methods specific to this module (required by Qualiopi)
+     * Evaluation methods specific to this module (required by Qualiopi).
      *
      * How learning outcomes are assessed within this module.
      */
@@ -80,7 +83,7 @@ class Module
     private ?string $evaluationMethods = null;
 
     /**
-     * Teaching methods used in this module (required by Qualiopi)
+     * Teaching methods used in this module (required by Qualiopi).
      *
      * Pedagogical approaches and methodologies employed.
      */
@@ -89,7 +92,7 @@ class Module
     private ?string $teachingMethods = null;
 
     /**
-     * Resources and materials for this module (required by Qualiopi)
+     * Resources and materials for this module (required by Qualiopi).
      *
      * Educational resources, documents, tools, and materials used.
      */
@@ -98,7 +101,7 @@ class Module
     private ?array $resources = null;
 
     /**
-     * Success criteria for module completion (required by Qualiopi)
+     * Success criteria for module completion (required by Qualiopi).
      *
      * Measurable indicators that demonstrate successful module completion.
      */
@@ -111,13 +114,13 @@ class Module
     private ?bool $isActive = true;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     /**
-     * Parent formation this module belongs to
+     * Parent formation this module belongs to.
      */
     #[ORM\ManyToOne(inversedBy: 'modules')]
     #[ORM\JoinColumn(nullable: false)]
@@ -133,8 +136,13 @@ class Module
     public function __construct()
     {
         $this->chapters = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function getId(): ?int
@@ -150,6 +158,7 @@ class Module
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -161,6 +170,7 @@ class Module
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -172,6 +182,7 @@ class Module
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -183,6 +194,7 @@ class Module
     public function setLearningObjectives(?array $learningObjectives): static
     {
         $this->learningObjectives = $learningObjectives;
+
         return $this;
     }
 
@@ -194,6 +206,7 @@ class Module
     public function setPrerequisites(?string $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -205,6 +218,7 @@ class Module
     public function setDurationHours(int $durationHours): static
     {
         $this->durationHours = $durationHours;
+
         return $this;
     }
 
@@ -216,6 +230,7 @@ class Module
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -227,6 +242,7 @@ class Module
     public function setEvaluationMethods(?string $evaluationMethods): static
     {
         $this->evaluationMethods = $evaluationMethods;
+
         return $this;
     }
 
@@ -238,6 +254,7 @@ class Module
     public function setTeachingMethods(?string $teachingMethods): static
     {
         $this->teachingMethods = $teachingMethods;
+
         return $this;
     }
 
@@ -249,6 +266,7 @@ class Module
     public function setResources(?array $resources): static
     {
         $this->resources = $resources;
+
         return $this;
     }
 
@@ -260,6 +278,7 @@ class Module
     public function setSuccessCriteria(?array $successCriteria): static
     {
         $this->successCriteria = $successCriteria;
+
         return $this;
     }
 
@@ -271,28 +290,31 @@ class Module
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -304,6 +326,7 @@ class Module
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
+
         return $this;
     }
 
@@ -338,19 +361,17 @@ class Module
     }
 
     /**
-     * Get active chapters for this module
-     * 
+     * Get active chapters for this module.
+     *
      * @return Collection<int, Chapter>
      */
     public function getActiveChapters(): Collection
     {
-        return $this->chapters->filter(function (Chapter $chapter) {
-            return $chapter->isActive();
-        });
+        return $this->chapters->filter(static fn (Chapter $chapter) => $chapter->isActive());
     }
 
     /**
-     * Get total duration of all chapters in this module
+     * Get total duration of all chapters in this module.
      */
     public function getTotalChaptersDuration(): int
     {
@@ -358,11 +379,12 @@ class Module
         foreach ($this->chapters as $chapter) {
             $totalDuration += $chapter->getDurationMinutes();
         }
+
         return $totalDuration;
     }
 
     /**
-     * Get formatted duration as human readable string
+     * Get formatted duration as human readable string.
      */
     public function getFormattedDuration(): string
     {
@@ -374,7 +396,7 @@ class Module
             return $this->durationHours . 'h';
         }
 
-        $days = intval($this->durationHours / 8);
+        $days = (int) ($this->durationHours / 8);
         $remainingHours = $this->durationHours % 8;
 
         if ($remainingHours === 0) {
@@ -385,16 +407,11 @@ class Module
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

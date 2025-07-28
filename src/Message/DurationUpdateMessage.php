@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Message;
 
 /**
- * Message for asynchronous duration updates
+ * Message for asynchronous duration updates.
  */
 class DurationUpdateMessage
 {
@@ -11,9 +13,8 @@ class DurationUpdateMessage
         private string $entityClass,
         private int $entityId,
         private string $operation = 'update',
-        private array $context = []
-    ) {
-    }
+        private array $context = [],
+    ) {}
 
     public function getEntityClass(): string
     {

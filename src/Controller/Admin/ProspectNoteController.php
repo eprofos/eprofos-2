@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
 use App\Form\ProspectNoteType;
 use App\Repository\CRM\ProspectNoteRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,8 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Prospect Note Controller
- * 
+ * Admin Prospect Note Controller.
+ *
  * Handles CRUD operations for prospect notes in the admin interface.
  * Manages interactions, tasks, and follow-ups for prospects.
  */
@@ -25,18 +28,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProspectNoteController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * List all prospect notes with filtering
+     * List all prospect notes with filtering.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Admin prospect notes list accessed', [
-                'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $type = $request->query->get('type');
@@ -48,21 +50,25 @@ class ProspectNoteController extends AbstractController
             ->leftJoin('pn.prospect', 'p')
             ->leftJoin('pn.createdBy', 'u')
             ->addSelect('p', 'u')
-            ->orderBy('pn.createdAt', 'DESC');
+            ->orderBy('pn.createdAt', 'DESC')
+        ;
 
         if ($type) {
             $queryBuilder->andWhere('pn.type = :type')
-                ->setParameter('type', $type);
+                ->setParameter('type', $type)
+            ;
         }
 
         if ($status) {
             $queryBuilder->andWhere('pn.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         if ($important) {
             $queryBuilder->andWhere('pn.isImportant = :important')
-                ->setParameter('important', $important === 'true');
+                ->setParameter('important', $important === 'true')
+            ;
         }
 
         if ($search) {
@@ -72,7 +78,7 @@ class ProspectNoteController extends AbstractController
                  LOWER(pn.content) LIKE :search OR 
                  LOWER(p.firstName) LIKE :search OR 
                  LOWER(p.lastName) LIKE :search OR 
-                 LOWER(p.company) LIKE :search'
+                 LOWER(p.company) LIKE :search',
             )->setParameter('search', $searchTerms);
         }
 
@@ -95,13 +101,13 @@ class ProspectNoteController extends AbstractController
             'page_title' => 'Gestion des notes prospects',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Notes prospects', 'url' => null]
-            ]
+                ['label' => 'Notes prospects', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show note details
+     * Show note details.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ProspectNote $note): Response
@@ -109,7 +115,7 @@ class ProspectNoteController extends AbstractController
         $this->logger->info('Admin prospect note details viewed', [
             'note_id' => $note->getId(),
             'prospect_id' => $note->getProspect()?->getId(),
-                'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $this->render('admin/prospect_note/show.html.twig', [
@@ -118,13 +124,13 @@ class ProspectNoteController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Notes prospects', 'url' => $this->generateUrl('admin_prospect_note_index')],
-                ['label' => 'Note #' . $note->getId(), 'url' => null]
-            ]
+                ['label' => 'Note #' . $note->getId(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new note
+     * Create a new note.
      */
     #[Route('/new', name: 'new_standalone', methods: ['GET', 'POST'])]
     public function newStandalone(Request $request, EntityManagerInterface $entityManager): Response
@@ -133,14 +139,14 @@ class ProspectNoteController extends AbstractController
     }
 
     /**
-     * Create a new note for a specific prospect
+     * Create a new note for a specific prospect.
      */
     #[Route('/new/{prospect}', name: 'new', methods: ['GET', 'POST'], requirements: ['prospect' => '\d+'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ?Prospect $prospect = null): Response
     {
         $note = new ProspectNote();
         $note->setCreatedBy($this->getUser());
-        
+
         // Set the prospect if provided via URL parameter
         if ($prospect) {
             $note->setProspect($prospect);
@@ -148,14 +154,14 @@ class ProspectNoteController extends AbstractController
 
         $form = $this->createForm(ProspectNoteType::class, $note, [
             'show_created_by' => true,
-            'prospect_context' => $prospect !== null
+            'prospect_context' => $prospect !== null,
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update prospect's last contact date if note is completed
             if ($note->isCompleted() && $note->getProspect()) {
-                $note->getProspect()->setLastContactDate(new \DateTime());
+                $note->getProspect()->setLastContactDate(new DateTime());
             }
 
             $entityManager->persist($note);
@@ -165,7 +171,7 @@ class ProspectNoteController extends AbstractController
                 'note_id' => $note->getId(),
                 'prospect_id' => $note->getProspect()?->getId(),
                 'note_type' => $note->getType(),
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La note a été créée avec succès.');
@@ -196,26 +202,26 @@ class ProspectNoteController extends AbstractController
             'form' => $form,
             'prospect' => $prospect,
             'page_title' => $prospect ? 'Nouvelle note pour ' . $prospect->getFullName() : 'Nouvelle note',
-            'breadcrumb' => $breadcrumb
+            'breadcrumb' => $breadcrumb,
         ]);
     }
 
     /**
-     * Edit an existing note
+     * Edit an existing note.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ProspectNoteType::class, $note, [
             'show_created_by' => true,
-            'prospect_context' => true  // In edit mode, prospect is already determined
+            'prospect_context' => true,  // In edit mode, prospect is already determined
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update prospect's last contact date if note is completed
             if ($note->isCompleted() && $note->getProspect()) {
-                $note->getProspect()->setLastContactDate(new \DateTime());
+                $note->getProspect()->setLastContactDate(new DateTime());
             }
 
             $entityManager->flush();
@@ -223,7 +229,7 @@ class ProspectNoteController extends AbstractController
             $this->logger->info('Prospect note updated', [
                 'note_id' => $note->getId(),
                 'prospect_id' => $note->getProspect()?->getId(),
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La note a été modifiée avec succès.');
@@ -239,28 +245,28 @@ class ProspectNoteController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Notes prospects', 'url' => $this->generateUrl('admin_prospect_note_index')],
                 ['label' => 'Note #' . $note->getId(), 'url' => $this->generateUrl('admin_prospect_note_show', ['id' => $note->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a note
+     * Delete a note.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$note->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $note->getId(), $request->getPayload()->get('_token'))) {
             $noteId = $note->getId();
             $prospectId = $note->getProspect()?->getId();
-            
+
             $entityManager->remove($note);
             $entityManager->flush();
 
             $this->logger->info('Prospect note deleted', [
                 'note_id' => $noteId,
                 'prospect_id' => $prospectId,
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La note a été supprimée avec succès.');
@@ -270,29 +276,29 @@ class ProspectNoteController extends AbstractController
     }
 
     /**
-     * Update note status
+     * Update note status.
      */
     #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
-        
-        if ($this->isCsrfTokenValid('update_status'.$note->getId(), $request->getPayload()->get('_token'))) {
+
+        if ($this->isCsrfTokenValid('update_status' . $note->getId(), $request->getPayload()->get('_token'))) {
             $oldStatus = $note->getStatus();
             $note->setStatus($newStatus);
-            
+
             // Update prospect's last contact date if note is completed
             if ($note->isCompleted() && $note->getProspect()) {
-                $note->getProspect()->setLastContactDate(new \DateTime());
+                $note->getProspect()->setLastContactDate(new DateTime());
             }
-            
+
             $entityManager->flush();
 
             $this->logger->info('Prospect note status updated', [
                 'note_id' => $note->getId(),
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le statut de la note a été mis à jour avec succès.');
@@ -302,25 +308,25 @@ class ProspectNoteController extends AbstractController
     }
 
     /**
-     * Mark note as important
+     * Mark note as important.
      */
     #[Route('/{id}/toggle-important', name: 'toggle_important', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleImportant(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('toggle_important'.$note->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle_important' . $note->getId(), $request->getPayload()->get('_token'))) {
             $note->setIsImportant(!$note->isImportant());
             $entityManager->flush();
 
             $this->logger->info('Prospect note importance toggled', [
                 'note_id' => $note->getId(),
                 'is_important' => $note->isImportant(),
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
-            $message = $note->isImportant() 
+            $message = $note->isImportant()
                 ? 'La note a été marquée comme importante.'
                 : 'La note n\'est plus marquée comme importante.';
-                
+
             $this->addFlash('success', $message);
         }
 
@@ -328,13 +334,13 @@ class ProspectNoteController extends AbstractController
     }
 
     /**
-     * List pending tasks
+     * List pending tasks.
      */
     #[Route('/tasks/pending', name: 'pending_tasks', methods: ['GET'])]
     public function pendingTasks(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Pending prospect tasks accessed', [
-                'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $pendingNotes = $noteRepository->findPendingNotes();
@@ -349,19 +355,19 @@ class ProspectNoteController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Notes prospects', 'url' => $this->generateUrl('admin_prospect_note_index')],
-                ['label' => 'Tâches en attente', 'url' => null]
-            ]
+                ['label' => 'Tâches en attente', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * List important notes
+     * List important notes.
      */
     #[Route('/important', name: 'important', methods: ['GET'])]
     public function important(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Important prospect notes accessed', [
-                'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $importantNotes = $noteRepository->findImportantNotes();
@@ -372,13 +378,13 @@ class ProspectNoteController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Notes prospects', 'url' => $this->generateUrl('admin_prospect_note_index')],
-                ['label' => 'Notes importantes', 'url' => null]
-            ]
+                ['label' => 'Notes importantes', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Export notes to CSV
+     * Export notes to CSV.
      */
     #[Route('/export', name: 'export', methods: ['GET'])]
     public function export(ProspectNoteRepository $noteRepository): Response
@@ -390,7 +396,7 @@ class ProspectNoteController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="prospect_notes_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://output', 'w');
-        
+
         // CSV headers
         fputcsv($output, [
             'ID',
@@ -404,7 +410,7 @@ class ProspectNoteController extends AbstractController
             'Privé',
             'Planifié le',
             'Créé le',
-            'Terminé le'
+            'Terminé le',
         ]);
 
         // CSV data
@@ -421,7 +427,7 @@ class ProspectNoteController extends AbstractController
                 $note->isPrivate() ? 'Oui' : 'Non',
                 $note->getScheduledAt()?->format('d/m/Y H:i'),
                 $note->getCreatedAt()?->format('d/m/Y H:i'),
-                $note->getCompletedAt()?->format('d/m/Y H:i')
+                $note->getCompletedAt()?->format('d/m/Y H:i'),
             ]);
         }
 
@@ -429,7 +435,7 @@ class ProspectNoteController extends AbstractController
 
         $this->logger->info('Prospect notes exported', [
             'count' => count($notes),
-                'admin' => $this->getUser()?->getUserIdentifier()
+            'admin' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $response;

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Assessment;
 
-use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\Questionnaire;
+use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Training\Formation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -19,7 +21,7 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find response by token
+     * Find response by token.
      */
     public function findByToken(string $token): ?QuestionnaireResponse
     {
@@ -31,11 +33,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->where('r.token = :token')
             ->setParameter('token', $token)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find responses by questionnaire
+     * Find responses by questionnaire.
      */
     public function findByQuestionnaire(Questionnaire $questionnaire): array
     {
@@ -44,11 +47,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->setParameter('questionnaire', $questionnaire)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find completed responses by questionnaire
+     * Find completed responses by questionnaire.
      */
     public function findCompletedByQuestionnaire(Questionnaire $questionnaire): array
     {
@@ -59,11 +63,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->setParameter('status', QuestionnaireResponse::STATUS_COMPLETED)
             ->orderBy('r.completedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find responses by formation
+     * Find responses by formation.
      */
     public function findByFormation(Formation $formation): array
     {
@@ -72,11 +77,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->setParameter('formation', $formation)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find responses pending evaluation
+     * Find responses pending evaluation.
      */
     public function findPendingEvaluation(): array
     {
@@ -87,11 +93,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->setParameter('pending', QuestionnaireResponse::EVALUATION_STATUS_PENDING)
             ->orderBy('r.completedAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find responses by email
+     * Find responses by email.
      */
     public function findByEmail(string $email): array
     {
@@ -100,11 +107,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->setParameter('email', $email)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find responses with statistics
+     * Find responses with statistics.
      */
     public function findWithStatistics(Questionnaire $questionnaire): array
     {
@@ -116,11 +124,12 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->groupBy('r.id')
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get completion statistics for a questionnaire
+     * Get completion statistics for a questionnaire.
      */
     public function getCompletionStatistics(Questionnaire $questionnaire): array
     {
@@ -128,16 +137,17 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->select('r.status, COUNT(r.id) as count')
             ->where('r.questionnaire = :questionnaire')
             ->setParameter('questionnaire', $questionnaire)
-            ->groupBy('r.status');
+            ->groupBy('r.status')
+        ;
 
         $result = $qb->getQuery()->getResult();
-        
+
         $stats = [
             'total' => 0,
             'started' => 0,
             'in_progress' => 0,
             'completed' => 0,
-            'abandoned' => 0
+            'abandoned' => 0,
         ];
 
         foreach ($result as $row) {
@@ -149,7 +159,7 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get evaluation statistics for a questionnaire
+     * Get evaluation statistics for a questionnaire.
      */
     public function getEvaluationStatistics(Questionnaire $questionnaire): array
     {
@@ -159,15 +169,16 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->andWhere('r.status = :completed')
             ->setParameter('questionnaire', $questionnaire)
             ->setParameter('completed', QuestionnaireResponse::STATUS_COMPLETED)
-            ->groupBy('r.evaluationStatus');
+            ->groupBy('r.evaluationStatus')
+        ;
 
         $result = $qb->getQuery()->getResult();
-        
+
         $stats = [
             'total' => 0,
             'pending' => 0,
             'in_review' => 0,
-            'completed' => 0
+            'completed' => 0,
         ];
 
         foreach ($result as $row) {
@@ -179,7 +190,7 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get average completion time for a questionnaire
+     * Get average completion time for a questionnaire.
      */
     public function getAverageCompletionTime(Questionnaire $questionnaire): ?float
     {
@@ -189,13 +200,14 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->andWhere('r.status = :completed')
             ->andWhere('r.durationMinutes IS NOT NULL')
             ->setParameter('questionnaire', $questionnaire)
-            ->setParameter('completed', QuestionnaireResponse::STATUS_COMPLETED);
+            ->setParameter('completed', QuestionnaireResponse::STATUS_COMPLETED)
+        ;
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Get score distribution for a questionnaire
+     * Get score distribution for a questionnaire.
      */
     public function getScoreDistribution(Questionnaire $questionnaire): array
     {
@@ -206,17 +218,18 @@ class QuestionnaireResponseRepository extends ServiceEntityRepository
             ->andWhere('r.scorePercentage IS NOT NULL')
             ->setParameter('questionnaire', $questionnaire)
             ->setParameter('completed', QuestionnaireResponse::STATUS_COMPLETED)
-            ->orderBy('r.scorePercentage', 'ASC');
+            ->orderBy('r.scorePercentage', 'ASC')
+        ;
 
         $scores = $qb->getQuery()->getSingleColumnResult();
         $totalScores = count($scores);
-        
+
         $distribution = [
             '0-20%' => ['count' => 0, 'percentage' => 0],
             '21-40%' => ['count' => 0, 'percentage' => 0],
             '41-60%' => ['count' => 0, 'percentage' => 0],
             '61-80%' => ['count' => 0, 'percentage' => 0],
-            '81-100%' => ['count' => 0, 'percentage' => 0]
+            '81-100%' => ['count' => 0, 'percentage' => 0],
         ];
 
         foreach ($scores as $score) {

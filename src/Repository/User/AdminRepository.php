@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
 use App\Entity\User\Admin;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -10,11 +13,11 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * Repository for Admin entity
- * 
+ * Repository for Admin entity.
+ *
  * Provides custom query methods for Admin entity and implements
  * PasswordUpgraderInterface for automatic password rehashing.
- * 
+ *
  * @extends ServiceEntityRepository<Admin>
  */
 class AdminRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -39,8 +42,8 @@ class AdminRepository extends ServiceEntityRepository implements PasswordUpgrade
     }
 
     /**
-     * Find active admin users only
-     * 
+     * Find active admin users only.
+     *
      * @return Admin[]
      */
     public function findActiveAdmins(): array
@@ -51,11 +54,12 @@ class AdminRepository extends ServiceEntityRepository implements PasswordUpgrade
             ->orderBy('u.lastName', 'ASC')
             ->addOrderBy('u.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find admin user by email (case insensitive)
+     * Find admin user by email (case insensitive).
      */
     public function findByEmailIgnoreCase(string $email): ?Admin
     {
@@ -63,11 +67,12 @@ class AdminRepository extends ServiceEntityRepository implements PasswordUpgrade
             ->andWhere('LOWER(u.email) = LOWER(:email)')
             ->setParameter('email', $email)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Count total active admin users
+     * Count total active admin users.
      */
     public function countActiveAdmins(): int
     {
@@ -76,18 +81,19 @@ class AdminRepository extends ServiceEntityRepository implements PasswordUpgrade
             ->andWhere('u.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find admin users who logged in recently
-     * 
+     * Find admin users who logged in recently.
+     *
      * @return Admin[]
      */
     public function findRecentlyLoggedInAdmins(int $days = 30): array
     {
-        $since = new \DateTimeImmutable(sprintf('-%d days', $days));
-        
+        $since = new DateTimeImmutable(sprintf('-%d days', $days));
+
         return $this->createQueryBuilder('u')
             ->andWhere('u.lastLoginAt >= :since')
             ->andWhere('u.isActive = :active')
@@ -95,11 +101,12 @@ class AdminRepository extends ServiceEntityRepository implements PasswordUpgrade
             ->setParameter('active', true)
             ->orderBy('u.lastLoginAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Update last login timestamp for admin user
+     * Update last login timestamp for admin user.
      */
     public function updateLastLogin(Admin $admin): void
     {

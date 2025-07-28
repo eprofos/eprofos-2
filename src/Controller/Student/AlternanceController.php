@@ -1,24 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Student;
 
-use App\Entity\User\Student;
+use App\Entity\Alternance\CoordinationMeeting;
 use App\Entity\Alternance\MissionAssignment;
 use App\Entity\Alternance\SkillsAssessment;
-use App\Entity\Alternance\CoordinationMeeting;
+use App\Entity\User\Student;
 use App\Service\Alternance\MissionAssignmentService;
 use App\Service\Alternance\SkillsAssessmentService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Student Alternance Controller
- * 
+ * Student Alternance Controller.
+ *
  * Handles alternance-specific features for students including
  * mission assignments, skills assessments, and coordination meetings.
  */
@@ -29,11 +33,11 @@ class AlternanceController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MissionAssignmentService $assignmentService,
-        private SkillsAssessmentService $assessmentService
+        private SkillsAssessmentService $assessmentService,
     ) {}
 
     /**
-     * Alternance dashboard for students
+     * Alternance dashboard for students.
      */
     #[Route('/', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
@@ -43,11 +47,13 @@ class AlternanceController extends AbstractController
 
         // Get current assignments
         $assignments = $this->entityManager->getRepository(MissionAssignment::class)
-            ->findBy(['student' => $student], ['createdAt' => 'DESC']);
+            ->findBy(['student' => $student], ['createdAt' => 'DESC'])
+        ;
 
         // Get recent assessments
         $assessments = $this->entityManager->getRepository(SkillsAssessment::class)
-            ->findBy(['student' => $student], ['createdAt' => 'DESC'], 5);
+            ->findBy(['student' => $student], ['createdAt' => 'DESC'], 5)
+        ;
 
         // Get upcoming meetings
         $upcomingMeetings = $this->entityManager->getRepository(CoordinationMeeting::class)
@@ -55,11 +61,12 @@ class AlternanceController extends AbstractController
             ->where('cm.student = :student')
             ->andWhere('cm.date > :now')
             ->setParameter('student', $student)
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('cm.date', 'ASC')
             ->setMaxResults(5)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Calculate statistics
         $stats = $this->calculateStudentStats($student, $assignments);
@@ -70,12 +77,12 @@ class AlternanceController extends AbstractController
             'assessments' => $assessments,
             'upcoming_meetings' => $upcomingMeetings,
             'stats' => $stats,
-            'page_title' => 'Mon Alternance'
+            'page_title' => 'Mon Alternance',
         ]);
     }
 
     /**
-     * View student's mission assignments
+     * View student's mission assignments.
      */
     #[Route('/missions', name: 'missions', methods: ['GET'])]
     public function missions(Request $request): Response
@@ -91,23 +98,29 @@ class AlternanceController extends AbstractController
             ->createQueryBuilder('ma')
             ->where('ma.student = :student')
             ->setParameter('student', $student)
-            ->orderBy('ma.createdAt', 'DESC');
+            ->orderBy('ma.createdAt', 'DESC')
+        ;
 
         // Apply status filter
         switch ($status) {
             case 'active':
                 $qb->andWhere('ma.status IN (:activeStatuses)')
-                   ->setParameter('activeStatuses', ['planifiee', 'en_cours']);
+                    ->setParameter('activeStatuses', ['planifiee', 'en_cours'])
+                ;
                 break;
+
             case 'completed':
                 $qb->andWhere('ma.status = :completedStatus')
-                   ->setParameter('completedStatus', 'terminee');
+                    ->setParameter('completedStatus', 'terminee')
+                ;
                 break;
+
             case 'overdue':
                 $qb->andWhere('ma.endDate < :now')
-                   ->andWhere('ma.status != :completedStatus')
-                   ->setParameter('now', new \DateTime())
-                   ->setParameter('completedStatus', 'terminee');
+                    ->andWhere('ma.status != :completedStatus')
+                    ->setParameter('now', new DateTime())
+                    ->setParameter('completedStatus', 'terminee')
+                ;
                 break;
         }
 
@@ -116,23 +129,29 @@ class AlternanceController extends AbstractController
             ->createQueryBuilder('ma')
             ->select('COUNT(ma.id)')
             ->where('ma.student = :student')
-            ->setParameter('student', $student);
+            ->setParameter('student', $student)
+        ;
 
         // Apply the same filters to count query
         switch ($status) {
             case 'active':
                 $countQb->andWhere('ma.status IN (:activeStatuses)')
-                        ->setParameter('activeStatuses', ['planifiee', 'en_cours']);
+                    ->setParameter('activeStatuses', ['planifiee', 'en_cours'])
+                ;
                 break;
+
             case 'completed':
                 $countQb->andWhere('ma.status = :completedStatus')
-                        ->setParameter('completedStatus', 'terminee');
+                    ->setParameter('completedStatus', 'terminee')
+                ;
                 break;
+
             case 'overdue':
                 $countQb->andWhere('ma.endDate < :now')
-                        ->andWhere('ma.status != :completedStatus')
-                        ->setParameter('now', new \DateTime())
-                        ->setParameter('completedStatus', 'terminee');
+                    ->andWhere('ma.status != :completedStatus')
+                    ->setParameter('now', new DateTime())
+                    ->setParameter('completedStatus', 'terminee')
+                ;
                 break;
         }
 
@@ -145,7 +164,8 @@ class AlternanceController extends AbstractController
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $filters = ['status' => $status];
 
@@ -155,7 +175,7 @@ class AlternanceController extends AbstractController
                 'filters' => $filters,
                 'current_page' => $page,
                 'total_pages' => $totalPages,
-                'total_count' => $totalCount
+                'total_count' => $totalCount,
             ]);
         }
 
@@ -165,12 +185,12 @@ class AlternanceController extends AbstractController
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total_count' => $totalCount,
-            'page_title' => 'Mes Missions'
+            'page_title' => 'Mes Missions',
         ]);
     }
 
     /**
-     * View specific mission assignment details
+     * View specific mission assignment details.
      */
     #[Route('/missions/{id}', name: 'mission_show', methods: ['GET'])]
     public function showMission(MissionAssignment $assignment): Response
@@ -185,12 +205,12 @@ class AlternanceController extends AbstractController
         return $this->render('student/alternance/mission_show.html.twig', [
             'assignment' => $assignment,
             'mission' => $assignment->getMission(),
-            'page_title' => $assignment->getMission()->getTitle()
+            'page_title' => $assignment->getMission()->getTitle(),
         ]);
     }
 
     /**
-     * Update mission progress (student self-assessment)
+     * Update mission progress (student self-assessment).
      */
     #[Route('/missions/{id}/progress', name: 'mission_update_progress', methods: ['POST'])]
     public function updateMissionProgress(MissionAssignment $assignment, Request $request): Response
@@ -204,6 +224,7 @@ class AlternanceController extends AbstractController
 
         if ($assignment->isCompleted()) {
             $this->addFlash('error', 'Cette mission est déjà terminée.');
+
             return $this->redirectToRoute('student_alternance_mission_show', ['id' => $assignment->getId()]);
         }
 
@@ -214,11 +235,11 @@ class AlternanceController extends AbstractController
             $this->assignmentService->updateProgress(
                 $assignment,
                 (float) $completionRate,
-                ['selfAssessment' => $selfAssessment]
+                ['selfAssessment' => $selfAssessment],
             );
 
             $this->addFlash('success', 'Progression mise à jour avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
         }
 
@@ -226,7 +247,7 @@ class AlternanceController extends AbstractController
     }
 
     /**
-     * View skills assessments
+     * View skills assessments.
      */
     #[Route('/assessments', name: 'assessments', methods: ['GET'])]
     public function assessments(): Response
@@ -235,16 +256,17 @@ class AlternanceController extends AbstractController
         $student = $this->getUser();
 
         $assessments = $this->entityManager->getRepository(SkillsAssessment::class)
-            ->findBy(['student' => $student], ['createdAt' => 'DESC']);
+            ->findBy(['student' => $student], ['createdAt' => 'DESC'])
+        ;
 
         return $this->render('student/alternance/assessments.html.twig', [
             'assessments' => $assessments,
-            'page_title' => 'Mes Évaluations'
+            'page_title' => 'Mes Évaluations',
         ]);
     }
 
     /**
-     * View specific skills assessment
+     * View specific skills assessment.
      */
     #[Route('/assessments/{id}', name: 'assessment_show', methods: ['GET'])]
     public function showAssessment(SkillsAssessment $assessment): Response
@@ -258,12 +280,12 @@ class AlternanceController extends AbstractController
 
         return $this->render('student/alternance/assessment_show.html.twig', [
             'assessment' => $assessment,
-            'page_title' => 'Évaluation - ' . ($assessment->getRelatedMission() ? $assessment->getRelatedMission()->getMission()->getTitle() : 'Évaluation')
+            'page_title' => 'Évaluation - ' . ($assessment->getRelatedMission() ? $assessment->getRelatedMission()->getMission()->getTitle() : 'Évaluation'),
         ]);
     }
 
     /**
-     * View coordination meetings
+     * View coordination meetings.
      */
     #[Route('/meetings', name: 'meetings', methods: ['GET'])]
     public function meetings(): Response
@@ -272,16 +294,17 @@ class AlternanceController extends AbstractController
         $student = $this->getUser();
 
         $meetings = $this->entityManager->getRepository(CoordinationMeeting::class)
-            ->findBy(['student' => $student], ['date' => 'DESC']);
+            ->findBy(['student' => $student], ['date' => 'DESC'])
+        ;
 
         return $this->render('student/alternance/meetings.html.twig', [
             'meetings' => $meetings,
-            'page_title' => 'Réunions de Coordination'
+            'page_title' => 'Réunions de Coordination',
         ]);
     }
 
     /**
-     * View specific coordination meeting
+     * View specific coordination meeting.
      */
     #[Route('/meetings/{id}', name: 'meeting_show', methods: ['GET'])]
     public function showMeeting(CoordinationMeeting $meeting): Response
@@ -295,12 +318,12 @@ class AlternanceController extends AbstractController
 
         return $this->render('student/alternance/meeting_show.html.twig', [
             'meeting' => $meeting,
-            'page_title' => 'Réunion - ' . $meeting->getDate()->format('d/m/Y')
+            'page_title' => 'Réunion - ' . $meeting->getDate()->format('d/m/Y'),
         ]);
     }
 
     /**
-     * AJAX: Get dashboard statistics
+     * AJAX: Get dashboard statistics.
      */
     #[Route('/api/stats', name: 'api_stats', methods: ['GET'])]
     public function getStats(): JsonResponse
@@ -309,7 +332,8 @@ class AlternanceController extends AbstractController
         $student = $this->getUser();
 
         $assignments = $this->entityManager->getRepository(MissionAssignment::class)
-            ->findBy(['student' => $student]);
+            ->findBy(['student' => $student])
+        ;
 
         $stats = $this->calculateStudentStats($student, $assignments);
 
@@ -317,7 +341,7 @@ class AlternanceController extends AbstractController
     }
 
     /**
-     * AJAX: Get recent activities
+     * AJAX: Get recent activities.
      */
     #[Route('/api/activities', name: 'api_activities', methods: ['GET'])]
     public function getRecentActivities(): JsonResponse
@@ -329,7 +353,8 @@ class AlternanceController extends AbstractController
 
         // Recent assignment updates
         $recentAssignments = $this->entityManager->getRepository(MissionAssignment::class)
-            ->findBy(['student' => $student], ['updatedAt' => 'DESC'], 5);
+            ->findBy(['student' => $student], ['updatedAt' => 'DESC'], 5)
+        ;
 
         foreach ($recentAssignments as $assignment) {
             $activities[] = [
@@ -337,43 +362,44 @@ class AlternanceController extends AbstractController
                 'title' => 'Mission mise à jour',
                 'description' => $assignment->getMission()->getTitle(),
                 'date' => $assignment->getUpdatedAt(),
-                'url' => $this->generateUrl('student_alternance_mission_show', ['id' => $assignment->getId()])
+                'url' => $this->generateUrl('student_alternance_mission_show', ['id' => $assignment->getId()]),
             ];
         }
 
         // Recent assessments
         $recentAssessments = $this->entityManager->getRepository(SkillsAssessment::class)
-            ->findBy(['student' => $student], ['createdAt' => 'DESC'], 3);
+            ->findBy(['student' => $student], ['createdAt' => 'DESC'], 3)
+        ;
 
         foreach ($recentAssessments as $assessment) {
-            $missionTitle = $assessment->getRelatedMission() 
-                ? $assessment->getRelatedMission()->getMission()->getTitle() 
+            $missionTitle = $assessment->getRelatedMission()
+                ? $assessment->getRelatedMission()->getMission()->getTitle()
                 : 'Évaluation générale';
-            
+
             $activities[] = [
                 'type' => 'assessment_created',
                 'title' => 'Nouvelle évaluation',
                 'description' => $missionTitle,
                 'date' => $assessment->getCreatedAt(),
-                'url' => $this->generateUrl('student_alternance_assessment_show', ['id' => $assessment->getId()])
+                'url' => $this->generateUrl('student_alternance_assessment_show', ['id' => $assessment->getId()]),
             ];
         }
 
         // Sort by date
-        usort($activities, fn($a, $b) => $b['date'] <=> $a['date']);
+        usort($activities, static fn ($a, $b) => $b['date'] <=> $a['date']);
 
         return $this->json(['activities' => array_slice($activities, 0, 10)]);
     }
 
     /**
-     * Calculate student statistics
+     * Calculate student statistics.
      */
     private function calculateStudentStats(Student $student, array $assignments): array
     {
         $totalAssignments = count($assignments);
-        $completedAssignments = array_filter($assignments, fn($a) => $a->isCompleted());
-        $activeAssignments = array_filter($assignments, fn($a) => !$a->isCompleted());
-        $overdueAssignments = array_filter($assignments, fn($a) => $a->isOverdue());
+        $completedAssignments = array_filter($assignments, static fn ($a) => $a->isCompleted());
+        $activeAssignments = array_filter($assignments, static fn ($a) => !$a->isCompleted());
+        $overdueAssignments = array_filter($assignments, static fn ($a) => $a->isOverdue());
 
         $totalProgress = 0;
         foreach ($assignments as $assignment) {
@@ -388,7 +414,7 @@ class AlternanceController extends AbstractController
             'active_assignments' => count($activeAssignments),
             'overdue_assignments' => count($overdueAssignments),
             'average_progress' => round($averageProgress, 1),
-            'completion_rate' => $totalAssignments > 0 ? round((count($completedAssignments) / $totalAssignments) * 100, 1) : 0
+            'completion_rate' => $totalAssignments > 0 ? round((count($completedAssignments) / $totalAssignments) * 100, 1) : 0,
         ];
     }
 }

@@ -1,19 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\CRM;
 
-use App\Entity\CRM\ProspectNote;
 use App\Entity\CRM\Prospect;
+use App\Entity\CRM\ProspectNote;
 use App\Entity\User\Admin;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for ProspectNote entity
- * 
+ * Repository for ProspectNote entity.
+ *
  * Provides query methods for managing prospect notes and interactions
  * with filtering, statistics, and activity tracking capabilities.
- * 
+ *
  * @extends ServiceEntityRepository<ProspectNote>
  */
 class ProspectNoteRepository extends ServiceEntityRepository
@@ -24,8 +29,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find notes by prospect
-     * 
+     * Find notes by prospect.
+     *
      * @return ProspectNote[]
      */
     public function findByProspect(Prospect $prospect): array
@@ -37,12 +42,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('prospect', $prospect)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find notes by type
-     * 
+     * Find notes by type.
+     *
      * @return ProspectNote[]
      */
     public function findByType(string $type): array
@@ -55,12 +61,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find notes by status
-     * 
+     * Find notes by status.
+     *
      * @return ProspectNote[]
      */
     public function findByStatus(string $status): array
@@ -74,12 +81,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->orderBy('pn.scheduledAt', 'ASC')
             ->addOrderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find pending notes (tasks/reminders)
-     * 
+     * Find pending notes (tasks/reminders).
+     *
      * @return ProspectNote[]
      */
     public function findPendingNotes(): array
@@ -88,14 +96,14 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find overdue notes
-     * 
+     * Find overdue notes.
+     *
      * @return ProspectNote[]
      */
     public function findOverdueNotes(): array
     {
-        $now = new \DateTime();
-        
+        $now = new DateTime();
+
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
             ->leftJoin('pn.createdBy', 'u')
@@ -107,12 +115,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('now', $now)
             ->orderBy('pn.scheduledAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find notes created by a user
-     * 
+     * Find notes created by a user.
+     *
      * @return ProspectNote[]
      */
     public function findByCreatedBy(Admin $admin): array
@@ -124,12 +133,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('user', $admin)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find important notes
-     * 
+     * Find important notes.
+     *
      * @return ProspectNote[]
      */
     public function findImportantNotes(): array
@@ -142,15 +152,16 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('important', true)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find notes within date range
-     * 
+     * Find notes within date range.
+     *
      * @return ProspectNote[]
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
@@ -162,19 +173,20 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find notes scheduled for today
-     * 
+     * Find notes scheduled for today.
+     *
      * @return ProspectNote[]
      */
     public function findScheduledForToday(): array
     {
-        $today = new \DateTime('today');
-        $tomorrow = new \DateTime('tomorrow');
-        
+        $today = new DateTime('today');
+        $tomorrow = new DateTime('tomorrow');
+
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
             ->leftJoin('pn.createdBy', 'u')
@@ -187,18 +199,19 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('status', 'pending')
             ->orderBy('pn.scheduledAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent activity (notes created in last X days)
-     * 
+     * Find recent activity (notes created in last X days).
+     *
      * @return ProspectNote[]
      */
     public function findRecentActivity(int $days = 7, int $limit = 20): array
     {
-        $cutoffDate = new \DateTimeImmutable("-{$days} days");
-        
+        $cutoffDate = new DateTimeImmutable("-{$days} days");
+
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
             ->leftJoin('pn.createdBy', 'u')
@@ -208,18 +221,19 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->orderBy('pn.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search notes by content or title
-     * 
+     * Search notes by content or title.
+     *
      * @return ProspectNote[]
      */
     public function searchNotes(string $query): array
     {
         $searchTerms = '%' . strtolower($query) . '%';
-        
+
         return $this->createQueryBuilder('pn')
             ->leftJoin('pn.prospect', 'p')
             ->leftJoin('pn.createdBy', 'u')
@@ -229,12 +243,13 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('search', $searchTerms)
             ->orderBy('pn.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get notes statistics for a prospect
-     * 
+     * Get notes statistics for a prospect.
+     *
      * @return array<string, mixed>
      */
     public function getProspectNoteStatistics(Prospect $prospect): array
@@ -250,7 +265,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->setParameter('prospect', $prospect)
             ->groupBy('pn.type')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $typeStats = [];
         foreach ($typeResult as $row) {
@@ -264,20 +280,21 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->orderBy('pn.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return [
             'total' => $totalNotes,
             'pending' => $pendingNotes,
             'completed' => $completedNotes,
             'by_type' => $typeStats,
-            'last_note_date' => $lastNote?->getCreatedAt()
+            'last_note_date' => $lastNote?->getCreatedAt(),
         ];
     }
 
     /**
-     * Count notes by type
-     * 
+     * Count notes by type.
+     *
      * @return array<string, int>
      */
     public function countByType(): array
@@ -286,7 +303,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->select('pn.type', 'COUNT(pn.id) as count')
             ->groupBy('pn.type')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -297,8 +315,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count notes by status
-     * 
+     * Count notes by status.
+     *
      * @return array<string, int>
      */
     public function countByStatus(): array
@@ -307,7 +325,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->select('pn.status', 'COUNT(pn.id) as count')
             ->groupBy('pn.status')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -318,8 +337,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get activity statistics for dashboard
-     * 
+     * Get activity statistics for dashboard.
+     *
      * @return array<string, mixed>
      */
     public function getActivityStatistics(): array
@@ -330,32 +349,33 @@ class ProspectNoteRepository extends ServiceEntityRepository
         $todayCount = count($this->findScheduledForToday());
 
         // Notes from last 7 days
-        $weekAgo = new \DateTimeImmutable('-7 days');
+        $weekAgo = new DateTimeImmutable('-7 days');
         $recentNotes = $this->createQueryBuilder('pn')
             ->select('COUNT(pn.id)')
             ->where('pn.createdAt >= :weekAgo')
             ->setParameter('weekAgo', $weekAgo)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total' => $totalNotes,
             'pending_tasks' => $pendingTasks,
             'overdue' => $overdueCount,
             'today' => $todayCount,
-            'recent' => (int) $recentNotes
+            'recent' => (int) $recentNotes,
         ];
     }
 
     /**
-     * Get daily activity for the last 30 days
-     * 
+     * Get daily activity for the last 30 days.
+     *
      * @return array<string, int>
      */
     public function getDailyActivity(int $days = 30): array
     {
-        $startDate = new \DateTimeImmutable("-{$days} days");
-        
+        $startDate = new DateTimeImmutable("-{$days} days");
+
         $result = $this->createQueryBuilder('pn')
             ->select('DATE(pn.createdAt) as date', 'COUNT(pn.id) as count')
             ->where('pn.createdAt >= :startDate')
@@ -363,7 +383,8 @@ class ProspectNoteRepository extends ServiceEntityRepository
             ->groupBy('date')
             ->orderBy('date', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $activity = [];
         foreach ($result as $row) {
@@ -374,7 +395,7 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save a prospect note entity
+     * Save a prospect note entity.
      */
     public function save(ProspectNote $entity, bool $flush = false): void
     {
@@ -386,7 +407,7 @@ class ProspectNoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a prospect note entity
+     * Remove a prospect note entity.
      */
     public function remove(ProspectNote $entity, bool $flush = false): void
     {

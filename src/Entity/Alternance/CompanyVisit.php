@@ -1,19 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
 use App\Repository\Alternance\CompanyVisitRepository;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * CompanyVisit entity for managing company visits by pedagogical supervisors
- * 
+ * CompanyVisit entity for managing company visits by pedagogical supervisors.
+ *
  * Represents visits to companies by training center staff to follow up apprentices,
  * essential for Qualiopi compliance regarding ongoing supervision and support.
  */
@@ -27,6 +31,26 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['follow_up_required'], name: 'idx_visit_follow_up')]
 class CompanyVisit
 {
+    // Visit type constants
+    public const TYPE_FOLLOW_UP = 'follow_up';
+
+    public const TYPE_EVALUATION = 'evaluation';
+
+    public const TYPE_PROBLEM_SOLVING = 'problem_solving';
+
+    public const TYPE_INTEGRATION = 'integration';
+
+    public const TYPE_FINAL_ASSESSMENT = 'final_assessment';
+
+    // Visit type labels
+    public const TYPE_LABELS = [
+        self::TYPE_FOLLOW_UP => 'Visite de suivi',
+        self::TYPE_EVALUATION => 'Visite d\'évaluation',
+        self::TYPE_PROBLEM_SOLVING => 'Résolution de problème',
+        self::TYPE_INTEGRATION => 'Visite d\'intégration',
+        self::TYPE_FINAL_ASSESSMENT => 'Bilan final',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -50,7 +74,7 @@ class CompanyVisit
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull(message: 'La date de visite est obligatoire.')]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $visitDate = null;
+    private ?DateTimeInterface $visitDate = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le type de visite est obligatoire.')]
@@ -60,9 +84,9 @@ class CompanyVisit
             self::TYPE_EVALUATION,
             self::TYPE_PROBLEM_SOLVING,
             self::TYPE_INTEGRATION,
-            self::TYPE_FINAL_ASSESSMENT
+            self::TYPE_FINAL_ASSESSMENT,
         ],
-        message: 'Type de visite invalide.'
+        message: 'Type de visite invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $visitType = self::TYPE_FOLLOW_UP;
@@ -90,7 +114,7 @@ class CompanyVisit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 2000,
-        maxMessage: 'Le retour tuteur ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le retour tuteur ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $mentorFeedback = null;
@@ -98,7 +122,7 @@ class CompanyVisit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 2000,
-        maxMessage: 'Le retour alternant ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le retour alternant ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $studentFeedback = null;
@@ -111,7 +135,7 @@ class CompanyVisit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 5000,
-        maxMessage: 'Le rapport de visite ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le rapport de visite ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $visitReport = null;
@@ -123,16 +147,16 @@ class CompanyVisit
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\GreaterThan(
         propertyPath: 'visitDate',
-        message: 'La prochaine visite doit être postérieure à la visite actuelle.'
+        message: 'La prochaine visite doit être postérieure à la visite actuelle.',
     )]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $nextVisitDate = null;
+    private ?DateTimeInterface $nextVisitDate = null;
 
     #[ORM\Column(nullable: true)]
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'L\'évaluation globale doit être comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'L\'évaluation globale doit être comprise entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $overallRating = null;
@@ -141,7 +165,7 @@ class CompanyVisit
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'L\'évaluation des conditions de travail doit être comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'L\'évaluation des conditions de travail doit être comprise entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $workingConditionsRating = null;
@@ -150,7 +174,7 @@ class CompanyVisit
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'L\'évaluation de l\'encadrement doit être comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'L\'évaluation de l\'encadrement doit être comprise entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $supervisionRating = null;
@@ -159,7 +183,7 @@ class CompanyVisit
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'L\'évaluation de l\'intégration doit être comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'L\'évaluation de l\'intégration doit être comprise entre {{ min }} et {{ max }}.',
     )]
     #[Gedmo\Versioned]
     private ?int $integrationRating = null;
@@ -167,7 +191,7 @@ class CompanyVisit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'Les notes ne peuvent pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Les notes ne peuvent pas dépasser {{ limit }} caractères.',
     )]
     private ?string $notes = null;
 
@@ -177,39 +201,28 @@ class CompanyVisit
     private ?int $duration = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $createdBy = null;
 
-    // Visit type constants
-    public const TYPE_FOLLOW_UP = 'follow_up';
-    public const TYPE_EVALUATION = 'evaluation';
-    public const TYPE_PROBLEM_SOLVING = 'problem_solving';
-    public const TYPE_INTEGRATION = 'integration';
-    public const TYPE_FINAL_ASSESSMENT = 'final_assessment';
-
-    // Visit type labels
-    public const TYPE_LABELS = [
-        self::TYPE_FOLLOW_UP => 'Visite de suivi',
-        self::TYPE_EVALUATION => 'Visite d\'évaluation',
-        self::TYPE_PROBLEM_SOLVING => 'Résolution de problème',
-        self::TYPE_INTEGRATION => 'Visite d\'intégration',
-        self::TYPE_FINAL_ASSESSMENT => 'Bilan final'
-    ];
-
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->objectivesChecked = [];
         $this->observedActivities = [];
         $this->strengths = [];
         $this->improvementAreas = [];
         $this->recommendations = [];
+    }
+
+    public function __toString(): string
+    {
+        return $this->getVisitSummary();
     }
 
     public function getId(): ?int
@@ -225,6 +238,7 @@ class CompanyVisit
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -236,6 +250,7 @@ class CompanyVisit
     public function setVisitor(?Teacher $visitor): static
     {
         $this->visitor = $visitor;
+
         return $this;
     }
 
@@ -247,17 +262,19 @@ class CompanyVisit
     public function setMentor(?Mentor $mentor): static
     {
         $this->mentor = $mentor;
+
         return $this;
     }
 
-    public function getVisitDate(): ?\DateTimeInterface
+    public function getVisitDate(): ?DateTimeInterface
     {
         return $this->visitDate;
     }
 
-    public function setVisitDate(?\DateTimeInterface $visitDate): static
+    public function setVisitDate(?DateTimeInterface $visitDate): static
     {
         $this->visitDate = $visitDate;
+
         return $this;
     }
 
@@ -269,6 +286,7 @@ class CompanyVisit
     public function setVisitType(string $visitType): static
     {
         $this->visitType = $visitType;
+
         return $this;
     }
 
@@ -280,6 +298,7 @@ class CompanyVisit
     public function setObjectivesChecked(array $objectivesChecked): static
     {
         $this->objectivesChecked = $objectivesChecked;
+
         return $this;
     }
 
@@ -291,6 +310,7 @@ class CompanyVisit
     public function setObservedActivities(array $observedActivities): static
     {
         $this->observedActivities = $observedActivities;
+
         return $this;
     }
 
@@ -302,6 +322,7 @@ class CompanyVisit
     public function setStrengths(array $strengths): static
     {
         $this->strengths = $strengths;
+
         return $this;
     }
 
@@ -313,6 +334,7 @@ class CompanyVisit
     public function setImprovementAreas(array $improvementAreas): static
     {
         $this->improvementAreas = $improvementAreas;
+
         return $this;
     }
 
@@ -324,6 +346,7 @@ class CompanyVisit
     public function setMentorFeedback(?string $mentorFeedback): static
     {
         $this->mentorFeedback = $mentorFeedback;
+
         return $this;
     }
 
@@ -335,6 +358,7 @@ class CompanyVisit
     public function setStudentFeedback(?string $studentFeedback): static
     {
         $this->studentFeedback = $studentFeedback;
+
         return $this;
     }
 
@@ -346,6 +370,7 @@ class CompanyVisit
     public function setRecommendations(array $recommendations): static
     {
         $this->recommendations = $recommendations;
+
         return $this;
     }
 
@@ -357,6 +382,7 @@ class CompanyVisit
     public function setVisitReport(?string $visitReport): static
     {
         $this->visitReport = $visitReport;
+
         return $this;
     }
 
@@ -368,17 +394,19 @@ class CompanyVisit
     public function setFollowUpRequired(bool $followUpRequired): static
     {
         $this->followUpRequired = $followUpRequired;
+
         return $this;
     }
 
-    public function getNextVisitDate(): ?\DateTimeInterface
+    public function getNextVisitDate(): ?DateTimeInterface
     {
         return $this->nextVisitDate;
     }
 
-    public function setNextVisitDate(?\DateTimeInterface $nextVisitDate): static
+    public function setNextVisitDate(?DateTimeInterface $nextVisitDate): static
     {
         $this->nextVisitDate = $nextVisitDate;
+
         return $this;
     }
 
@@ -390,6 +418,7 @@ class CompanyVisit
     public function setOverallRating(?int $overallRating): static
     {
         $this->overallRating = $overallRating;
+
         return $this;
     }
 
@@ -401,6 +430,7 @@ class CompanyVisit
     public function setWorkingConditionsRating(?int $workingConditionsRating): static
     {
         $this->workingConditionsRating = $workingConditionsRating;
+
         return $this;
     }
 
@@ -412,6 +442,7 @@ class CompanyVisit
     public function setSupervisionRating(?int $supervisionRating): static
     {
         $this->supervisionRating = $supervisionRating;
+
         return $this;
     }
 
@@ -423,6 +454,7 @@ class CompanyVisit
     public function setIntegrationRating(?int $integrationRating): static
     {
         $this->integrationRating = $integrationRating;
+
         return $this;
     }
 
@@ -434,6 +466,7 @@ class CompanyVisit
     public function setNotes(?string $notes): static
     {
         $this->notes = $notes;
+
         return $this;
     }
 
@@ -445,28 +478,31 @@ class CompanyVisit
     public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -478,11 +514,12 @@ class CompanyVisit
     public function setCreatedBy(?string $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
     /**
-     * Get visit type label for display
+     * Get visit type label for display.
      */
     public function getVisitTypeLabel(): string
     {
@@ -490,52 +527,57 @@ class CompanyVisit
     }
 
     /**
-     * Add objective checked
+     * Add objective checked.
      */
     public function addObjectiveChecked(array $objective): static
     {
         $this->objectivesChecked[] = $objective;
+
         return $this;
     }
 
     /**
-     * Add observed activity
+     * Add observed activity.
      */
     public function addObservedActivity(string $activity): static
     {
         $this->observedActivities[] = $activity;
+
         return $this;
     }
 
     /**
-     * Add strength
+     * Add strength.
      */
     public function addStrength(string $strength): static
     {
         $this->strengths[] = $strength;
+
         return $this;
     }
 
     /**
-     * Add improvement area
+     * Add improvement area.
      */
     public function addImprovementArea(string $area): static
     {
         $this->improvementAreas[] = $area;
+
         return $this;
     }
 
     /**
-     * Add recommendation
+     * Add recommendation.
      */
     public function addRecommendation(array $recommendation): static
     {
         $this->recommendations[] = $recommendation;
+
         return $this;
     }
 
     /**
-     * Get average rating
+     * Get average rating.
      */
     public function getAverageRating(): ?float
     {
@@ -543,7 +585,7 @@ class CompanyVisit
             $this->overallRating,
             $this->workingConditionsRating,
             $this->supervisionRating,
-            $this->integrationRating
+            $this->integrationRating,
         ]);
 
         if (empty($ratings)) {
@@ -554,7 +596,7 @@ class CompanyVisit
     }
 
     /**
-     * Get visit duration in human readable format
+     * Get visit duration in human readable format.
      */
     public function getDurationFormatted(): string
     {
@@ -567,15 +609,16 @@ class CompanyVisit
 
         if ($hours > 0 && $minutes > 0) {
             return $hours . 'h ' . $minutes . 'min';
-        } elseif ($hours > 0) {
-            return $hours . 'h';
-        } else {
-            return $minutes . 'min';
         }
+        if ($hours > 0) {
+            return $hours . 'h';
+        }
+
+        return $minutes . 'min';
     }
 
     /**
-     * Get visit summary for notifications
+     * Get visit summary for notifications.
      */
     public function getVisitSummary(): string
     {
@@ -584,32 +627,34 @@ class CompanyVisit
             $this->getVisitTypeLabel(),
             $this->mentor?->getCompanyName() ?? 'Entreprise',
             $this->student?->getFullName() ?? 'Alternant',
-            $this->visitDate?->format('d/m/Y') ?? 'Date non définie'
+            $this->visitDate?->format('d/m/Y') ?? 'Date non définie',
         );
     }
 
     /**
-     * Check if visit has positive outcome
+     * Check if visit has positive outcome.
      */
     public function hasPositiveOutcome(): bool
     {
         $averageRating = $this->getAverageRating();
+
         return $averageRating !== null && $averageRating >= 7;
     }
 
     /**
-     * Check if visit needs attention
+     * Check if visit needs attention.
      */
     public function needsAttention(): bool
     {
         $averageRating = $this->getAverageRating();
-        return $this->followUpRequired || 
-               ($averageRating !== null && $averageRating < 6) ||
-               count($this->improvementAreas) > 2;
+
+        return $this->followUpRequired
+               || ($averageRating !== null && $averageRating < 6)
+               || count($this->improvementAreas) > 2;
     }
 
     /**
-     * Get rating display with stars
+     * Get rating display with stars.
      */
     public function getRatingDisplay(int $rating): string
     {
@@ -617,27 +662,28 @@ class CompanyVisit
     }
 
     /**
-     * Get badge class based on average rating
+     * Get badge class based on average rating.
      */
     public function getRatingBadgeClass(): string
     {
         $averageRating = $this->getAverageRating();
-        
+
         if ($averageRating === null) {
             return 'bg-secondary';
         }
 
         if ($averageRating >= 8) {
             return 'bg-success';
-        } elseif ($averageRating >= 6) {
-            return 'bg-warning';
-        } else {
-            return 'bg-danger';
         }
+        if ($averageRating >= 6) {
+            return 'bg-warning';
+        }
+
+        return 'bg-danger';
     }
 
     /**
-     * Generate comprehensive visit assessment
+     * Generate comprehensive visit assessment.
      */
     public function getVisitAssessment(): array
     {
@@ -650,21 +696,16 @@ class CompanyVisit
             'next_visit_scheduled' => $this->nextVisitDate !== null,
             'strengths_count' => count($this->strengths),
             'improvement_areas_count' => count($this->improvementAreas),
-            'recommendations_count' => count($this->recommendations)
+            'recommendations_count' => count($this->recommendations),
         ];
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->getVisitSummary();
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

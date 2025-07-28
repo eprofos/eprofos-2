@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Alternance;
 
 use App\Entity\Alternance\AlternanceProgram;
 use App\Repository\Alternance\AlternanceProgramRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Service for managing alternance programs
- * 
+ * Service for managing alternance programs.
+ *
  * Provides business logic for CRUD operations, validation,
  * and program management for alternance pedagogical programs.
  */
@@ -18,16 +21,13 @@ class AlternanceProgramService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AlternanceProgramRepository $programRepository,
-        private ValidatorInterface $validator
-    ) {
-    }
+        private ValidatorInterface $validator,
+    ) {}
 
     /**
-     * Create a new alternance program
+     * Create a new alternance program.
      *
-     * @param array $data
-     * @return AlternanceProgram
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function createProgram(array $data): AlternanceProgram
     {
@@ -36,12 +36,12 @@ class AlternanceProgramService
 
         $errors = $this->validator->validate($program);
         if (count($errors) > 0) {
-            throw new \InvalidArgumentException('Validation failed: ' . (string) $errors);
+            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
         }
 
         // Validate duration consistency
         if (!$program->hasConsistentDurations()) {
-            throw new \InvalidArgumentException('Center duration + company duration must equal total duration.');
+            throw new InvalidArgumentException('Center duration + company duration must equal total duration.');
         }
 
         $this->entityManager->persist($program);
@@ -51,12 +51,9 @@ class AlternanceProgramService
     }
 
     /**
-     * Update an existing alternance program
+     * Update an existing alternance program.
      *
-     * @param AlternanceProgram $program
-     * @param array $data
-     * @return AlternanceProgram
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function updateProgram(AlternanceProgram $program, array $data): AlternanceProgram
     {
@@ -64,12 +61,12 @@ class AlternanceProgramService
 
         $errors = $this->validator->validate($program);
         if (count($errors) > 0) {
-            throw new \InvalidArgumentException('Validation failed: ' . (string) $errors);
+            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
         }
 
         // Validate duration consistency
         if (!$program->hasConsistentDurations()) {
-            throw new \InvalidArgumentException('Center duration + company duration must equal total duration.');
+            throw new InvalidArgumentException('Center duration + company duration must equal total duration.');
         }
 
         $this->entityManager->flush();
@@ -78,10 +75,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Delete an alternance program
-     *
-     * @param AlternanceProgram $program
-     * @return void
+     * Delete an alternance program.
      */
     public function deleteProgram(AlternanceProgram $program): void
     {
@@ -90,10 +84,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Get program by session
-     *
-     * @param int $sessionId
-     * @return AlternanceProgram|null
+     * Get program by session.
      */
     public function getProgramBySession(int $sessionId): ?AlternanceProgram
     {
@@ -101,9 +92,8 @@ class AlternanceProgramService
     }
 
     /**
-     * Search programs with filters
+     * Search programs with filters.
      *
-     * @param array $filters
      * @return AlternanceProgram[]
      */
     public function searchPrograms(array $filters): array
@@ -112,9 +102,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Get program statistics
-     *
-     * @return array
+     * Get program statistics.
      */
     public function getProgramStatistics(): array
     {
@@ -127,11 +115,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Add center module to program
-     *
-     * @param AlternanceProgram $program
-     * @param array $moduleData
-     * @return AlternanceProgram
+     * Add center module to program.
      */
     public function addCenterModule(AlternanceProgram $program, array $moduleData): AlternanceProgram
     {
@@ -145,11 +129,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Add company module to program
-     *
-     * @param AlternanceProgram $program
-     * @param array $moduleData
-     * @return AlternanceProgram
+     * Add company module to program.
      */
     public function addCompanyModule(AlternanceProgram $program, array $moduleData): AlternanceProgram
     {
@@ -163,11 +143,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Add coordination point to program
-     *
-     * @param AlternanceProgram $program
-     * @param array $coordinationData
-     * @return AlternanceProgram
+     * Add coordination point to program.
      */
     public function addCoordinationPoint(AlternanceProgram $program, array $coordinationData): AlternanceProgram
     {
@@ -181,11 +157,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Add assessment period to program
-     *
-     * @param AlternanceProgram $program
-     * @param array $assessmentData
-     * @return AlternanceProgram
+     * Add assessment period to program.
      */
     public function addAssessmentPeriod(AlternanceProgram $program, array $assessmentData): AlternanceProgram
     {
@@ -199,11 +171,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Add learning progression step to program
-     *
-     * @param AlternanceProgram $program
-     * @param array $progressionData
-     * @return AlternanceProgram
+     * Add learning progression step to program.
      */
     public function addLearningProgressionStep(AlternanceProgram $program, array $progressionData): AlternanceProgram
     {
@@ -217,21 +185,20 @@ class AlternanceProgramService
     }
 
     /**
-     * Generate default program structure based on session
+     * Generate default program structure based on session.
      *
      * @param object $session Session entity
-     * @return array
      */
     public function generateDefaultProgramStructure($session): array
     {
         $formation = $session->getFormation();
-        
+
         return [
             'title' => 'Programme d\'alternance - ' . $formation->getTitle(),
             'description' => 'Programme pédagogique d\'alternance pour la formation ' . $formation->getTitle(),
-            'totalDuration' => max(52, intval($formation->getDurationHours() / 35)), // Minimum 52 weeks
-            'centerDuration' => intval($formation->getDurationHours() / 35),
-            'companyDuration' => max(52 - intval($formation->getDurationHours() / 35), 26),
+            'totalDuration' => max(52, (int) ($formation->getDurationHours() / 35)), // Minimum 52 weeks
+            'centerDuration' => (int) ($formation->getDurationHours() / 35),
+            'companyDuration' => max(52 - (int) ($formation->getDurationHours() / 35), 26),
             'rhythm' => '2-2', // 2 weeks center / 2 weeks company
             'centerModules' => $this->generateCenterModulesFromFormation($formation),
             'companyModules' => $this->generateDefaultCompanyModules(),
@@ -242,11 +209,7 @@ class AlternanceProgramService
     }
 
     /**
-     * Populate program from data array
-     *
-     * @param AlternanceProgram $program
-     * @param array $data
-     * @return void
+     * Populate program from data array.
      */
     private function populateProgram(AlternanceProgram $program, array $data): void
     {
@@ -308,19 +271,17 @@ class AlternanceProgramService
     }
 
     /**
-     * Validate module data
+     * Validate module data.
      *
-     * @param array $moduleData
-     * @return array
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateModuleData(array $moduleData): array
     {
         $required = ['title', 'description', 'duration', 'objectives'];
-        
+
         foreach ($required as $field) {
             if (!isset($moduleData[$field]) || empty($moduleData[$field])) {
-                throw new \InvalidArgumentException("Module field '{$field}' is required and cannot be empty.");
+                throw new InvalidArgumentException("Module field '{$field}' is required and cannot be empty.");
             }
         }
 
@@ -336,19 +297,17 @@ class AlternanceProgramService
     }
 
     /**
-     * Validate coordination data
+     * Validate coordination data.
      *
-     * @param array $coordinationData
-     * @return array
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateCoordinationData(array $coordinationData): array
     {
         $required = ['summary', 'frequency', 'participants'];
-        
+
         foreach ($required as $field) {
             if (!isset($coordinationData[$field]) || empty($coordinationData[$field])) {
-                throw new \InvalidArgumentException("Coordination field '{$field}' is required and cannot be empty.");
+                throw new InvalidArgumentException("Coordination field '{$field}' is required and cannot be empty.");
             }
         }
 
@@ -362,19 +321,17 @@ class AlternanceProgramService
     }
 
     /**
-     * Validate assessment data
+     * Validate assessment data.
      *
-     * @param array $assessmentData
-     * @return array
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateAssessmentData(array $assessmentData): array
     {
         $required = ['name', 'type', 'timing', 'criteria'];
-        
+
         foreach ($required as $field) {
             if (!isset($assessmentData[$field]) || empty($assessmentData[$field])) {
-                throw new \InvalidArgumentException("Assessment field '{$field}' is required and cannot be empty.");
+                throw new InvalidArgumentException("Assessment field '{$field}' is required and cannot be empty.");
             }
         }
 
@@ -389,19 +346,17 @@ class AlternanceProgramService
     }
 
     /**
-     * Validate progression data
+     * Validate progression data.
      *
-     * @param array $progressionData
-     * @return array
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateProgressionData(array $progressionData): array
     {
         $required = ['milestone', 'description', 'period', 'competencies'];
-        
+
         foreach ($required as $field) {
             if (!isset($progressionData[$field]) || empty($progressionData[$field])) {
-                throw new \InvalidArgumentException("Progression field '{$field}' is required and cannot be empty.");
+                throw new InvalidArgumentException("Progression field '{$field}' is required and cannot be empty.");
             }
         }
 
@@ -415,15 +370,14 @@ class AlternanceProgramService
     }
 
     /**
-     * Generate center modules from formation
+     * Generate center modules from formation.
      *
      * @param object $formation
-     * @return array
      */
     private function generateCenterModulesFromFormation($formation): array
     {
         $modules = [];
-        
+
         // This would typically iterate through formation modules
         // For now, we'll create a basic structure
         $modules[] = [
@@ -433,16 +387,14 @@ class AlternanceProgramService
             'objectives' => ['Acquérir les bases théoriques', 'Développer les compétences techniques'],
             'methods' => ['Cours magistraux', 'Travaux pratiques', 'Études de cas'],
             'resources' => ['Supports de cours', 'Plateforme e-learning'],
-            'assessment' => 'Évaluations continues et examens'
+            'assessment' => 'Évaluations continues et examens',
         ];
 
         return $modules;
     }
 
     /**
-     * Generate default company modules
-     *
-     * @return array
+     * Generate default company modules.
      */
     private function generateDefaultCompanyModules(): array
     {
@@ -454,7 +406,7 @@ class AlternanceProgramService
                 'objectives' => ['Comprendre l\'organisation', 'S\'intégrer dans l\'équipe'],
                 'methods' => ['Observation', 'Accompagnement', 'Missions progressives'],
                 'resources' => ['Livret d\'accueil', 'Référent entreprise'],
-                'assessment' => 'Rapport d\'intégration'
+                'assessment' => 'Rapport d\'intégration',
             ],
             [
                 'title' => 'Mise en pratique',
@@ -463,15 +415,13 @@ class AlternanceProgramService
                 'objectives' => ['Appliquer les connaissances', 'Développer l\'autonomie'],
                 'methods' => ['Projets réels', 'Missions encadrées'],
                 'resources' => ['Outils métier', 'Documentation technique'],
-                'assessment' => 'Évaluation des compétences en situation'
-            ]
+                'assessment' => 'Évaluation des compétences en situation',
+            ],
         ];
     }
 
     /**
-     * Generate default coordination points
-     *
-     * @return array
+     * Generate default coordination points.
      */
     private function generateDefaultCoordinationPoints(): array
     {
@@ -481,22 +431,20 @@ class AlternanceProgramService
                 'frequency' => 'Mensuelle',
                 'participants' => ['Alternant', 'Tuteur entreprise', 'Référent pédagogique'],
                 'objectives' => ['Faire le point sur les apprentissages', 'Ajuster le parcours'],
-                'methods' => ['Entretien tripartite', 'Bilan de compétences']
+                'methods' => ['Entretien tripartite', 'Bilan de compétences'],
             ],
             [
                 'summary' => 'Visite en entreprise',
                 'frequency' => 'Trimestrielle',
                 'participants' => ['Référent pédagogique', 'Tuteur entreprise'],
                 'objectives' => ['Observer l\'alternant en situation', 'Coordination pédagogique'],
-                'methods' => ['Observation directe', 'Échange avec le tuteur']
-            ]
+                'methods' => ['Observation directe', 'Échange avec le tuteur'],
+            ],
         ];
     }
 
     /**
-     * Generate default assessment periods
-     *
-     * @return array
+     * Generate default assessment periods.
      */
     private function generateDefaultAssessmentPeriods(): array
     {
@@ -507,7 +455,7 @@ class AlternanceProgramService
                 'timing' => 'Milieu de formation',
                 'criteria' => ['Progression des apprentissages', 'Intégration en entreprise'],
                 'methods' => ['Entretien', 'Grille d\'évaluation'],
-                'tools' => ['Livret de suivi', 'Portfolio de compétences']
+                'tools' => ['Livret de suivi', 'Portfolio de compétences'],
             ],
             [
                 'name' => 'Évaluation finale',
@@ -515,15 +463,13 @@ class AlternanceProgramService
                 'timing' => 'Fin de formation',
                 'criteria' => ['Maîtrise des compétences', 'Projet professionnel'],
                 'methods' => ['Soutenance', 'Mise en situation'],
-                'tools' => ['Rapport final', 'Présentation orale']
-            ]
+                'tools' => ['Rapport final', 'Présentation orale'],
+            ],
         ];
     }
 
     /**
-     * Generate default learning progression
-     *
-     * @return array
+     * Generate default learning progression.
      */
     private function generateDefaultLearningProgression(): array
     {
@@ -533,22 +479,22 @@ class AlternanceProgramService
                 'description' => 'Phase de découverte du métier et de l\'environnement professionnel',
                 'period' => 'Premiers 3 mois',
                 'competencies' => ['Connaissance de l\'entreprise', 'Bases du métier'],
-                'evaluation' => ['Observation', 'Questionnaire de découverte']
+                'evaluation' => ['Observation', 'Questionnaire de découverte'],
             ],
             [
                 'milestone' => 'Développement',
                 'description' => 'Développement des compétences techniques et relationnelles',
                 'period' => 'Mois 4 à 9',
                 'competencies' => ['Compétences techniques', 'Autonomie', 'Communication'],
-                'evaluation' => ['Projets encadrés', 'Évaluation continue']
+                'evaluation' => ['Projets encadrés', 'Évaluation continue'],
             ],
             [
                 'milestone' => 'Maîtrise',
                 'description' => 'Maîtrise des compétences et préparation à l\'insertion professionnelle',
                 'period' => 'Derniers 3 mois',
                 'competencies' => ['Expertise métier', 'Management', 'Innovation'],
-                'evaluation' => ['Projet final', 'Évaluation certificative']
-            ]
+                'evaluation' => ['Projet final', 'Évaluation certificative'],
+            ],
         ];
     }
 }

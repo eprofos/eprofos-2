@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Repository\Core\StudentProgressRepository;
 use App\Repository\Core\AttendanceRecordRepository;
+use App\Repository\Core\StudentProgressRepository;
 use App\Service\Core\DropoutPreventionService;
+use DateTime;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,8 +22,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * EngagementDashboardController - Critical for Qualiopi Criterion 12 compliance
- * 
+ * EngagementDashboardController - Critical for Qualiopi Criterion 12 compliance.
+ *
  * Provides admin interface for monitoring student engagement, attendance rates,
  * dropout risks, and generating compliance reports required for Qualiopi certification.
  */
@@ -31,11 +35,11 @@ class EngagementDashboardController extends AbstractController
         private StudentProgressRepository $progressRepository,
         private AttendanceRecordRepository $attendanceRepository,
         private DropoutPreventionService $dropoutService,
-        private Pdf $knpSnappyPdf
+        private Pdf $knpSnappyPdf,
     ) {}
 
     /**
-     * Main engagement dashboard
+     * Main engagement dashboard.
      */
     #[Route('/', name: 'dashboard')]
     public function dashboard(): Response
@@ -55,12 +59,12 @@ class EngagementDashboardController extends AbstractController
             'at_risk_count' => count($atRiskStudents),
             'low_engagement_count' => count($lowEngagement),
             'poor_attendance_count' => count($poorAttendance),
-            'alerts' => $this->generateAlerts($engagementMetrics, $attendanceStats, $retentionStats)
+            'alerts' => $this->generateAlerts($engagementMetrics, $attendanceStats, $retentionStats),
         ]);
     }
 
     /**
-     * Detailed view of at-risk students
+     * Detailed view of at-risk students.
      */
     #[Route('/at-risk', name: 'at_risk')]
     public function atRiskStudents(): Response
@@ -71,12 +75,12 @@ class EngagementDashboardController extends AbstractController
         return $this->render('admin/engagement/at_risk.html.twig', [
             'at_risk_students' => $atRiskStudents,
             'critical_risk_students' => $criticalRisk,
-            'total_count' => count($atRiskStudents)
+            'total_count' => count($atRiskStudents),
         ]);
     }
 
     /**
-     * Attendance monitoring interface
+     * Attendance monitoring interface.
      */
     #[Route('/attendance', name: 'attendance')]
     public function attendance(): Response
@@ -90,44 +94,44 @@ class EngagementDashboardController extends AbstractController
             'attendance_stats' => $attendanceStats,
             'poor_attendance_students' => $poorAttendance,
             'frequent_absentees' => $frequentAbsentees,
-            'recent_absentees' => $recentAbsentees
+            'recent_absentees' => $recentAbsentees,
         ]);
     }
 
     /**
-     * Generate Qualiopi compliance report
+     * Generate Qualiopi compliance report.
      */
     #[Route('/qualiopi-report', name: 'quality_report')]
     public function qualiopiReport(): Response
     {
         $retentionReport = $this->dropoutService->generateRetentionReport();
         $dropoutPatterns = $this->dropoutService->analyzeDropoutPatterns();
-        
+
         return $this->render('admin/engagement/qualiopi_report.html.twig', [
             'report' => $retentionReport,
             'dropout_patterns' => $dropoutPatterns,
-            'compliance_score' => $this->calculateComplianceScore($retentionReport)
+            'compliance_score' => $this->calculateComplianceScore($retentionReport),
         ]);
     }
 
     /**
-     * Export retention data (PDF/Excel/CSV)
+     * Export retention data (PDF/Excel/CSV).
      */
     #[Route('/export/{format}', name: 'export', requirements: ['format' => 'pdf|excel|csv'])]
     public function exportData(string $format): Response
     {
         $data = $this->dropoutService->exportRetentionData($format);
         $filename = 'rapport_engagement_' . date('Y-m-d_H-i-s');
-        
+
         switch ($format) {
             case 'pdf':
                 // Generate PDF using KnpSnappyBundle
                 $html = $this->renderView('admin/engagement/export_pdf.html.twig', [
                     'data' => $data,
-                    'generated_at' => new \DateTime(),
-                    'title' => 'Rapport d\'Engagement et de Rétention - Critère Qualiopi 12'
+                    'generated_at' => new DateTime(),
+                    'title' => 'Rapport d\'Engagement et de Rétention - Critère Qualiopi 12',
                 ]);
-                
+
                 return new PdfResponse(
                     $this->knpSnappyPdf->getOutputFromHtml($html, [
                         'page-size' => 'A4',
@@ -139,21 +143,21 @@ class EngagementDashboardController extends AbstractController
                         'footer-right' => 'Page [page] sur [toPage]',
                         'footer-font-size' => '9',
                         'footer-spacing' => '10',
-                        'header-spacing' => '10'
+                        'header-spacing' => '10',
                     ]),
                     $filename . '.pdf',
                     'application/pdf',
-                    'attachment'
+                    'attachment',
                 );
-                
+
             case 'excel':
                 // Generate Excel using PHPSpreadsheet
                 $spreadsheet = new Spreadsheet();
                 $sheet = $spreadsheet->getActiveSheet();
-                
+
                 // Set title
                 $sheet->setTitle('Rapport Engagement');
-                
+
                 // Headers
                 $headers = [
                     'A1' => 'Nom Étudiant',
@@ -165,19 +169,20 @@ class EngagementDashboardController extends AbstractController
                     'G1' => 'Taux Assiduité (%)',
                     'H1' => 'Dernière Activité',
                     'I1' => 'Signaux Difficulté',
-                    'J1' => 'Recommandations'
+                    'J1' => 'Recommandations',
                 ];
-                
+
                 foreach ($headers as $cell => $value) {
                     $sheet->setCellValue($cell, $value);
                 }
-                
+
                 // Style headers
                 $sheet->getStyle('A1:J1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:J1')->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                    ->getStartColor()->setARGB('FFE6E6FA');
-                
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFE6E6FA')
+                ;
+
                 // Data rows
                 $row = 2;
                 foreach ($data['at_risk_students'] as $student) {
@@ -193,41 +198,41 @@ class EngagementDashboardController extends AbstractController
                     $sheet->setCellValue('J' . $row, $student['recommendations']);
                     $row++;
                 }
-                
+
                 // Auto-size columns
                 foreach (range('A', 'J') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
-                
+
                 // Create response
                 $response = new StreamedResponse();
                 $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                 $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '.xlsx"');
-                
-                $response->setCallback(function() use ($spreadsheet) {
+
+                $response->setCallback(static function () use ($spreadsheet) {
                     $writer = new Xlsx($spreadsheet);
                     $writer->save('php://output');
                 });
-                
+
                 return $response;
-                
+
             case 'csv':
                 // Generate CSV response
                 $response = new Response();
                 $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
                 $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '.csv"');
-                
+
                 $handle = fopen('php://temp', 'w+');
-                
+
                 // Add UTF-8 BOM for Excel compatibility
                 fwrite($handle, "\xEF\xBB\xBF");
-                
+
                 // CSV headers
                 fputcsv($handle, [
                     'Nom Étudiant', 'Email', 'Formation', 'Score Risque', 'Score Engagement',
-                    'Taux Completion (%)', 'Taux Assiduité (%)', 'Dernière Activité', 'Signaux Difficulté', 'Recommandations'
+                    'Taux Completion (%)', 'Taux Assiduité (%)', 'Dernière Activité', 'Signaux Difficulté', 'Recommandations',
                 ]);
-                
+
                 // CSV data
                 foreach ($data['at_risk_students'] as $student) {
                     fputcsv($handle, [
@@ -240,14 +245,14 @@ class EngagementDashboardController extends AbstractController
                         round($student['attendance_rate'], 1),
                         $student['last_activity'],
                         $student['difficulty_signals'],
-                        $student['recommendations']
+                        $student['recommendations'],
                     ]);
                 }
-                
+
                 rewind($handle);
                 $response->setContent(stream_get_contents($handle));
                 fclose($handle);
-                
+
                 return $response;
         }
 
@@ -255,125 +260,125 @@ class EngagementDashboardController extends AbstractController
     }
 
     /**
-     * AJAX endpoint for engagement trends
+     * AJAX endpoint for engagement trends.
      */
     #[Route('/api/trends', name: 'api_trends')]
     public function engagementTrends(Request $request): JsonResponse
     {
         $days = $request->query->getInt('days', 30);
-        
+
         $activityTrends = $this->progressRepository->getActivityTrends($days);
         $attendanceTrends = $this->attendanceRepository->getAttendanceTrends($days);
-        
+
         return new JsonResponse([
             'activity_trends' => $activityTrends,
-            'attendance_trends' => $attendanceTrends
+            'attendance_trends' => $attendanceTrends,
         ]);
     }
 
     /**
-     * AJAX endpoint for student risk assessment
+     * AJAX endpoint for student risk assessment.
      */
     #[Route('/api/student/{id}/risk', name: 'api_student_risk')]
     public function studentRiskAssessment(int $id): JsonResponse
     {
         $student = $this->progressRepository->find($id);
-        
+
         if (!$student) {
             return new JsonResponse(['error' => 'Student not found'], 404);
         }
 
         $recommendations = $this->dropoutService->recommendInterventions($student->getStudent());
-        
+
         return new JsonResponse([
             'student' => [
                 'id' => $student->getStudent()->getId(),
                 'name' => $student->getStudent()->getFullName(),
                 'engagement_score' => $student->getEngagementScore(),
                 'risk_score' => $student->getRiskScore(),
-                'at_risk' => $student->isAtRiskOfDropout()
+                'at_risk' => $student->isAtRiskOfDropout(),
             ],
-            'recommendations' => $recommendations
+            'recommendations' => $recommendations,
         ]);
     }
 
     /**
-     * Trigger risk analysis for all students
+     * Trigger risk analysis for all students.
      */
     #[Route('/api/analyze-risks', name: 'api_analyze_risks', methods: ['POST'])]
     public function analyzeRisks(): JsonResponse
     {
         $atRiskStudents = $this->dropoutService->detectAtRiskStudents();
-        
+
         return new JsonResponse([
             'message' => 'Risk analysis completed',
             'at_risk_count' => count($atRiskStudents),
-            'analyzed_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'analyzed_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ]);
     }
 
     /**
-     * Generate alerts for dashboard
+     * Generate alerts for dashboard.
      */
     private function generateAlerts(array $engagementMetrics, array $attendanceStats, array $retentionStats): array
     {
         $alerts = [];
-        
+
         // Critical alerts (require immediate action)
         if (($retentionStats['dropoutRate'] ?? 0) > 20) {
             $alerts[] = [
                 'level' => 'critical',
-                'message' => "Taux d'abandon critique: " . round($retentionStats['dropoutRate'], 1) . "%",
-                'action' => 'Intervention immédiate requise'
+                'message' => "Taux d'abandon critique: " . round($retentionStats['dropoutRate'], 1) . '%',
+                'action' => 'Intervention immédiate requise',
             ];
         }
-        
+
         if (($attendanceStats['overall_attendance_rate'] ?? 0) < 70) {
             $alerts[] = [
                 'level' => 'critical',
-                'message' => "Taux d'assiduité global insuffisant: " . round($attendanceStats['overall_attendance_rate'], 1) . "%",
-                'action' => 'Revoir la stratégie d\'engagement'
+                'message' => "Taux d'assiduité global insuffisant: " . round($attendanceStats['overall_attendance_rate'], 1) . '%',
+                'action' => 'Revoir la stratégie d\'engagement',
             ];
         }
-        
+
         // Warning alerts
         if (($engagementMetrics['averageEngagement'] ?? 0) < 60) {
             $alerts[] = [
                 'level' => 'warning',
-                'message' => "Engagement moyen faible: " . round($engagementMetrics['averageEngagement'], 1) . "/100",
-                'action' => 'Améliorer le suivi pédagogique'
+                'message' => 'Engagement moyen faible: ' . round($engagementMetrics['averageEngagement'], 1) . '/100',
+                'action' => 'Améliorer le suivi pédagogique',
             ];
         }
-        
+
         if (($engagementMetrics['atRiskCount'] ?? 0) > 5) {
             $alerts[] = [
                 'level' => 'warning',
                 'message' => "Nombre d'étudiants à risque élevé: " . $engagementMetrics['atRiskCount'],
-                'action' => 'Renforcer le suivi individuel'
+                'action' => 'Renforcer le suivi individuel',
             ];
         }
-        
+
         // Info alerts
         if (empty($alerts)) {
             $alerts[] = [
                 'level' => 'info',
                 'message' => 'Tous les indicateurs sont dans les normes Qualiopi',
-                'action' => 'Maintenir la qualité du suivi'
+                'action' => 'Maintenir la qualité du suivi',
             ];
         }
-        
+
         return $alerts;
     }
 
     /**
-     * Calculate Qualiopi compliance score
+     * Calculate Qualiopi compliance score.
      */
     private function calculateComplianceScore(array $report): array
     {
         $score = 0;
         $maxScore = 100;
         $criteria = [];
-        
+
         // Criterion 1: Retention rate (25 points)
         $retentionRate = 100 - $report['risk_rate'];
         if ($retentionRate >= 85) {
@@ -387,7 +392,7 @@ class EngagementDashboardController extends AbstractController
         }
         $score += $retentionPoints;
         $criteria['retention'] = ['score' => $retentionPoints, 'max' => 25, 'rate' => $retentionRate];
-        
+
         // Criterion 2: Attendance rate (25 points)
         $attendanceRate = $report['average_attendance'];
         if ($attendanceRate >= 85) {
@@ -401,7 +406,7 @@ class EngagementDashboardController extends AbstractController
         }
         $score += $attendancePoints;
         $criteria['attendance'] = ['score' => $attendancePoints, 'max' => 25, 'rate' => $attendanceRate];
-        
+
         // Criterion 3: Engagement monitoring (25 points)
         $engagementRate = $report['avg_engagement'];
         if ($engagementRate >= 70) {
@@ -415,7 +420,7 @@ class EngagementDashboardController extends AbstractController
         }
         $score += $engagementPoints;
         $criteria['engagement'] = ['score' => $engagementPoints, 'max' => 25, 'rate' => $engagementRate];
-        
+
         // Criterion 4: Intervention system (25 points)
         $atRiskCount = $report['at_risk_count'];
         $totalStudents = $report['total_students'];
@@ -431,31 +436,33 @@ class EngagementDashboardController extends AbstractController
         }
         $score += $interventionPoints;
         $criteria['intervention'] = ['score' => $interventionPoints, 'max' => 25, 'rate' => $interventionRate];
-        
+
         $percentage = ($score / $maxScore) * 100;
-        
+
         return [
             'total_score' => $score,
             'max_score' => $maxScore,
             'percentage' => $percentage,
             'level' => $this->getComplianceLevel($percentage),
-            'criteria' => $criteria
+            'criteria' => $criteria,
         ];
     }
 
     /**
-     * Get compliance level based on score
+     * Get compliance level based on score.
      */
     private function getComplianceLevel(float $percentage): string
     {
         if ($percentage >= 85) {
             return 'Excellent';
-        } elseif ($percentage >= 75) {
-            return 'Satisfaisant';
-        } elseif ($percentage >= 65) {
-            return 'Acceptable';
-        } else {
-            return 'À améliorer';
         }
+        if ($percentage >= 75) {
+            return 'Satisfaisant';
+        }
+        if ($percentage >= 65) {
+            return 'Acceptable';
+        }
+
+        return 'À améliorer';
     }
 }

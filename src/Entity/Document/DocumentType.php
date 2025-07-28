@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Repository\Document\DocumentTypeRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentType entity - Makes document types configurable instead of hard-coded constants
- * 
+ * DocumentType entity - Makes document types configurable instead of hard-coded constants.
+ *
  * This entity replaces the hard-coded TYPE_* constants in LegalDocument,
  * allowing business users to create new document types via admin interface
  * without requiring developer intervention.
@@ -32,11 +35,11 @@ class DocumentType
         min: 2,
         max: 100,
         minMessage: 'Le code doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le code ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le code ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-z0-9_]+$/',
-        message: 'Le code ne peut contenir que des lettres minuscules, chiffres et underscores.'
+        message: 'Le code ne peut contenir que des lettres minuscules, chiffres et underscores.',
     )]
     private ?string $code = null;
 
@@ -46,7 +49,7 @@ class DocumentType
         min: 2,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $name = null;
 
@@ -87,10 +90,10 @@ class DocumentType
     private int $sortOrder = 0;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'documentType', targetEntity: Document::class)]
     private Collection $documents;
@@ -107,14 +110,19 @@ class DocumentType
         $this->templates = new ArrayCollection();
         $this->uiTemplates = new ArrayCollection();
         $this->allowedStatuses = ['draft', 'published', 'archived'];
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?: 'Type #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -130,6 +138,7 @@ class DocumentType
     public function setCode(string $code): static
     {
         $this->code = $code;
+
         return $this;
     }
 
@@ -141,6 +150,7 @@ class DocumentType
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -152,6 +162,7 @@ class DocumentType
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -163,6 +174,7 @@ class DocumentType
     public function setIcon(?string $icon): static
     {
         $this->icon = $icon;
+
         return $this;
     }
 
@@ -174,6 +186,7 @@ class DocumentType
     public function setColor(?string $color): static
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -185,6 +198,7 @@ class DocumentType
     public function setRequiresApproval(bool $requiresApproval): static
     {
         $this->requiresApproval = $requiresApproval;
+
         return $this;
     }
 
@@ -196,6 +210,7 @@ class DocumentType
     public function setAllowMultiplePublished(bool $allowMultiplePublished): static
     {
         $this->allowMultiplePublished = $allowMultiplePublished;
+
         return $this;
     }
 
@@ -207,6 +222,7 @@ class DocumentType
     public function setHasExpiration(bool $hasExpiration): static
     {
         $this->hasExpiration = $hasExpiration;
+
         return $this;
     }
 
@@ -218,6 +234,7 @@ class DocumentType
     public function setGeneratesPdf(bool $generatesPdf): static
     {
         $this->generatesPdf = $generatesPdf;
+
         return $this;
     }
 
@@ -229,6 +246,7 @@ class DocumentType
     public function setAllowedStatuses(?array $allowedStatuses): static
     {
         $this->allowedStatuses = $allowedStatuses;
+
         return $this;
     }
 
@@ -240,6 +258,7 @@ class DocumentType
     public function setRequiredMetadata(?array $requiredMetadata): static
     {
         $this->requiredMetadata = $requiredMetadata;
+
         return $this;
     }
 
@@ -251,6 +270,7 @@ class DocumentType
     public function setConfiguration(?array $configuration): static
     {
         $this->configuration = $configuration;
+
         return $this;
     }
 
@@ -262,6 +282,7 @@ class DocumentType
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -273,28 +294,31 @@ class DocumentType
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -386,10 +410,5 @@ class DocumentType
         }
 
         return $this;
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?: 'Type #' . $this->id;
     }
 }

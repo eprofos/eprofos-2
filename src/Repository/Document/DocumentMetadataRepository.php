@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentMetadata;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,7 +21,7 @@ class DocumentMetadataRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all metadata for a document
+     * Find all metadata for a document.
      */
     public function findByDocument(Document $document): array
     {
@@ -27,11 +30,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('document', $document)
             ->orderBy('dm.metaKey', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find specific metadata by document and key
+     * Find specific metadata by document and key.
      */
     public function findByDocumentAndKey(Document $document, string $key): ?DocumentMetadata
     {
@@ -41,11 +45,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('document', $document)
             ->setParameter('key', $key)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find metadata by key across all documents
+     * Find metadata by key across all documents.
      */
     public function findByKey(string $key): array
     {
@@ -54,11 +59,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('key', $key)
             ->orderBy('dm.document', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find metadata by data type
+     * Find metadata by data type.
      */
     public function findByDataType(string $dataType): array
     {
@@ -67,11 +73,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('dataType', $dataType)
             ->orderBy('dm.metaKey', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find metadata with specific string value
+     * Find metadata with specific string value.
      */
     public function findByStringValue(string $value): array
     {
@@ -81,11 +88,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('dataType', DocumentMetadata::TYPE_STRING)
             ->setParameter('value', $value)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find metadata with integer value in range
+     * Find metadata with integer value in range.
      */
     public function findByIntegerRange(int $min, int $max): array
     {
@@ -96,13 +104,14 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('min', $min)
             ->setParameter('max', $max)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find metadata with date value in range
+     * Find metadata with date value in range.
      */
-    public function findByDateRange(\DateTime $start, \DateTime $end): array
+    public function findByDateRange(DateTime $start, DateTime $end): array
     {
         return $this->createQueryBuilder('dm')
             ->where('dm.dataType = :dataType')
@@ -111,11 +120,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('start', $start)
             ->setParameter('end', $end)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find metadata with boolean value
+     * Find metadata with boolean value.
      */
     public function findByBooleanValue(bool $value): array
     {
@@ -125,11 +135,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('dataType', DocumentMetadata::TYPE_BOOLEAN)
             ->setParameter('value', $value)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search metadata by key pattern
+     * Search metadata by key pattern.
      */
     public function searchByKey(string $pattern): array
     {
@@ -138,11 +149,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('pattern', '%' . $pattern . '%')
             ->orderBy('dm.metaKey', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get all unique metadata keys
+     * Get all unique metadata keys.
      */
     public function getUniqueKeys(): array
     {
@@ -150,13 +162,14 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->select('DISTINCT dm.metaKey')
             ->orderBy('dm.metaKey', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         return array_column($result, 'metaKey');
     }
 
     /**
-     * Get metadata statistics by data type
+     * Get metadata statistics by data type.
      */
     public function getDataTypeStatistics(): array
     {
@@ -165,7 +178,8 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->groupBy('dm.dataType')
             ->orderBy('count', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $stats = [];
         foreach ($result as $row) {
@@ -176,7 +190,9 @@ class DocumentMetadataRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find documents by metadata criteria
+     * Find documents by metadata criteria.
+     *
+     * @param mixed $value
      */
     public function findDocumentsByMetadata(string $key, $value, string $dataType = DocumentMetadata::TYPE_STRING): array
     {
@@ -186,21 +202,26 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->where('dm.metaKey = :key')
             ->andWhere('dm.dataType = :dataType')
             ->setParameter('key', $key)
-            ->setParameter('dataType', $dataType);
+            ->setParameter('dataType', $dataType)
+        ;
 
         switch ($dataType) {
             case DocumentMetadata::TYPE_STRING:
                 $qb->andWhere('dm.stringValue = :value');
                 break;
+
             case DocumentMetadata::TYPE_INTEGER:
                 $qb->andWhere('dm.integerValue = :value');
                 break;
+
             case DocumentMetadata::TYPE_FLOAT:
                 $qb->andWhere('dm.floatValue = :value');
                 break;
+
             case DocumentMetadata::TYPE_BOOLEAN:
                 $qb->andWhere('dm.booleanValue = :value');
                 break;
+
             case DocumentMetadata::TYPE_DATE:
                 $qb->andWhere('dm.dateValue = :value');
                 break;
@@ -212,12 +233,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get metadata summary for a document
+     * Get metadata summary for a document.
      */
     public function getDocumentMetadataSummary(Document $document): array
     {
         $metadata = $this->findByDocument($document);
-        
+
         $summary = [
             'total' => count($metadata),
             'byType' => [],
@@ -237,7 +258,7 @@ class DocumentMetadataRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find metadata that needs validation
+     * Find metadata that needs validation.
      */
     public function findNeedingValidation(): array
     {
@@ -246,11 +267,12 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->setParameter('isValid', false)
             ->orderBy('dm.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Remove all metadata for a document
+     * Remove all metadata for a document.
      */
     public function removeByDocument(Document $document): int
     {
@@ -259,7 +281,8 @@ class DocumentMetadataRepository extends ServiceEntityRepository
             ->where('dm.document = :document')
             ->setParameter('document', $document)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     public function save(DocumentMetadata $entity, bool $flush = false): void

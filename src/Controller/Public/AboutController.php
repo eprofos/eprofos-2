@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Public;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -7,15 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * About controller for EPROFOS presentation
- * 
+ * About controller for EPROFOS presentation.
+ *
  * Handles the display of information about EPROFOS organization,
  * its mission, values, team, and history.
  */
 class AboutController extends AbstractController
 {
     /**
-     * Display the about page with EPROFOS presentation
+     * Display the about page with EPROFOS presentation.
      */
     #[Route('/a-propos', name: 'app_about', methods: ['GET'])]
     public function index(): Response
@@ -75,7 +77,7 @@ class AboutController extends AbstractController
     }
 
     /**
-     * Display our methodology and approach
+     * Display our methodology and approach.
      */
     #[Route('/notre-approche', name: 'app_about_approach', methods: ['GET'])]
     public function approach(): Response

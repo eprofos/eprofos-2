@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
@@ -8,6 +10,7 @@ use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\AlternanceContractService;
 use App\Service\Alternance\AlternanceValidationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +25,7 @@ class AlternanceContractController extends AbstractController
         private AlternanceContractRepository $contractRepository,
         private AlternanceContractService $contractService,
         private AlternanceValidationService $validationService,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_contract_index', methods: ['GET'])]
@@ -68,6 +71,7 @@ class AlternanceContractController extends AbstractController
                     foreach ($validationErrors as $error) {
                         $this->addFlash('error', $error);
                     }
+
                     return $this->render('admin/alternance/contract/new.html.twig', [
                         'contract' => $contract,
                         'form' => $form,
@@ -77,13 +81,13 @@ class AlternanceContractController extends AbstractController
                 // Persist the contract
                 $this->entityManager->persist($contract);
                 $this->entityManager->flush();
-                
+
                 $this->addFlash('success', 'Contrat d\'alternance créé avec succès.');
 
                 return $this->redirectToRoute('admin_alternance_contract_show', [
-                    'id' => $contract->getId()
+                    'id' => $contract->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la création du contrat : ' . $e->getMessage());
             }
         }
@@ -120,6 +124,7 @@ class AlternanceContractController extends AbstractController
                     foreach ($validationErrors as $error) {
                         $this->addFlash('error', $error);
                     }
+
                     return $this->render('admin/alternance/contract/edit.html.twig', [
                         'contract' => $contract,
                         'form' => $form,
@@ -131,9 +136,9 @@ class AlternanceContractController extends AbstractController
                 $this->addFlash('success', 'Contrat d\'alternance modifié avec succès.');
 
                 return $this->redirectToRoute('admin_alternance_contract_show', [
-                    'id' => $contract->getId()
+                    'id' => $contract->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la modification du contrat : ' . $e->getMessage());
             }
         }
@@ -150,8 +155,9 @@ class AlternanceContractController extends AbstractController
         $newStatus = $request->request->get('status');
         $allowedStatuses = ['draft', 'pending_validation', 'validated', 'active', 'suspended', 'completed', 'terminated'];
 
-        if (!in_array($newStatus, $allowedStatuses)) {
+        if (!in_array($newStatus, $allowedStatuses, true)) {
             $this->addFlash('error', 'Statut invalide.');
+
             return $this->redirectToRoute('admin_alternance_contract_show', ['id' => $contract->getId()]);
         }
 
@@ -159,7 +165,7 @@ class AlternanceContractController extends AbstractController
             $contract->setStatus($newStatus);
             $this->entityManager->flush();
             $this->addFlash('success', 'Statut du contrat modifié avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
         }
 
@@ -169,11 +175,11 @@ class AlternanceContractController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_alternance_contract_delete', methods: ['POST'])]
     public function delete(Request $request, AlternanceContract $contract): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$contract->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $contract->getId(), $request->request->get('_token'))) {
             try {
                 $this->contractService->deleteContract($contract);
                 $this->addFlash('success', 'Contrat d\'alternance supprimé avec succès.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la suppression du contrat : ' . $e->getMessage());
             }
         }
@@ -187,15 +193,16 @@ class AlternanceContractController extends AbstractController
         try {
             // This would generate a PDF contract using KnpSnappyBundle or similar
             // For now, we'll return a simple response
-            $content = "Contract Export for Contract ID: " . $contract->getId();
-            
+            $content = 'Contract Export for Contract ID: ' . $contract->getId();
+
             $response = new Response($content);
             $response->headers->set('Content-Type', 'application/pdf');
-            $response->headers->set('Content-Disposition', 'attachment; filename="contrat_alternance_'.$contract->getId().'.pdf"');
-            
+            $response->headers->set('Content-Disposition', 'attachment; filename="contrat_alternance_' . $contract->getId() . '.pdf"');
+
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'export du contrat : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_contract_show', ['id' => $contract->getId()]);
         }
     }
@@ -205,24 +212,25 @@ class AlternanceContractController extends AbstractController
     {
         $contractIds = $request->request->all('contract_ids');
         $newStatus = $request->request->get('status');
-        
+
         if (empty($contractIds) || !$newStatus) {
             $this->addFlash('error', 'Veuillez sélectionner des contrats et un statut.');
+
             return $this->redirectToRoute('admin_alternance_contract_index');
         }
 
         try {
             $contracts = $this->contractRepository->findBy(['id' => $contractIds]);
             $updated = 0;
-            
+
             foreach ($contracts as $contract) {
                 $contract->setStatus($newStatus);
                 $updated++;
             }
-            
+
             $this->entityManager->flush();
             $this->addFlash('success', sprintf('%d contrat(s) mis à jour avec succès.', $updated));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
         }
 

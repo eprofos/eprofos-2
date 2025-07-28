@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\SkillsAssessment;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * SkillsAssessmentRepository
- * 
+ * SkillsAssessmentRepository.
+ *
  * Repository for SkillsAssessment entity providing specialized queries
  * for skills evaluation and progression tracking.
- * 
+ *
  * @extends ServiceEntityRepository<SkillsAssessment>
  */
 class SkillsAssessmentRepository extends ServiceEntityRepository
@@ -23,9 +27,9 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments by student and date period
+     * Find assessments by student and date period.
      */
-    public function findByStudentAndPeriod(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByStudentAndPeriod(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('sa')
             ->andWhere('sa.student = :student')
@@ -35,11 +39,12 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('end', $endDate)
             ->orderBy('sa.assessmentDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find cross-evaluations (both center and company assessments) for a student
+     * Find cross-evaluations (both center and company assessments) for a student.
      */
     public function findCrossEvaluations(Student $student): array
     {
@@ -50,11 +55,12 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('context', 'mixte')
             ->orderBy('sa.assessmentDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get skills progression data for a student
+     * Get skills progression data for a student.
      */
     public function getSkillsProgressionData(Student $student): array
     {
@@ -63,18 +69,19 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('sa.assessmentDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $progressionData = [];
 
         foreach ($assessments as $assessment) {
             $date = $assessment->getAssessmentDate()->format('Y-m-d');
-            
+
             foreach ($assessment->getSkillsEvaluated() as $skillCode => $skillInfo) {
                 if (!isset($progressionData[$skillCode])) {
                     $progressionData[$skillCode] = [
                         'name' => $skillInfo['name'] ?? $skillCode,
-                        'assessments' => []
+                        'assessments' => [],
                     ];
                 }
 
@@ -86,7 +93,7 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
                     'center_score' => $centerScore,
                     'company_score' => $companyScore,
                     'overall_rating' => $assessment->getOverallRating(),
-                    'assessment_type' => $assessment->getAssessmentType()
+                    'assessment_type' => $assessment->getAssessmentType(),
                 ];
             }
         }
@@ -95,7 +102,7 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments by context (centre, entreprise, mixte)
+     * Find assessments by context (centre, entreprise, mixte).
      */
     public function findByContext(string $context): array
     {
@@ -104,11 +111,12 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('context', $context)
             ->orderBy('sa.assessmentDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find assessments by assessment type
+     * Find assessments by assessment type.
      */
     public function findByAssessmentType(string $assessmentType): array
     {
@@ -117,11 +125,12 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('type', $assessmentType)
             ->orderBy('sa.assessmentDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find latest assessment for a student
+     * Find latest assessment for a student.
      */
     public function findLatestByStudent(Student $student): ?SkillsAssessment
     {
@@ -131,11 +140,12 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->orderBy('sa.assessmentDate', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find assessments requiring cross-evaluation completion
+     * Find assessments requiring cross-evaluation completion.
      */
     public function findPendingCrossEvaluations(): array
     {
@@ -145,28 +155,30 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('context', 'mixte')
             ->orderBy('sa.assessmentDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get assessment statistics for a period
+     * Get assessment statistics for a period.
      */
-    public function getAssessmentStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function getAssessmentStatistics(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('sa');
-        
+
         $result = $qb
             ->select([
                 'COUNT(sa.id) as total_assessments',
                 'AVG(CASE WHEN sa.overallRating = \'excellent\' THEN 1 ELSE 0 END) * 100 as excellent_rate',
                 'AVG(CASE WHEN sa.overallRating = \'satisfaisant\' THEN 1 ELSE 0 END) * 100 as satisfactory_rate',
-                'COUNT(DISTINCT sa.student) as assessed_students'
+                'COUNT(DISTINCT sa.student) as assessed_students',
             ])
             ->andWhere('sa.assessmentDate BETWEEN :start AND :end')
             ->setParameter('start', $startDate)
             ->setParameter('end', $endDate)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         // Get context distribution
         $contextStats = $this->createQueryBuilder('sa')
@@ -176,7 +188,8 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->setParameter('end', $endDate)
             ->groupBy('sa.context')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $result['context_distribution'] = array_column($contextStats, 'count', 'context');
 
@@ -184,7 +197,7 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments with significant competency gaps
+     * Find assessments with significant competency gaps.
      */
     public function findAssessmentsWithCompetencyGaps(float $gapThreshold = 2.0): array
     {
@@ -194,10 +207,11 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->andWhere('sa.context = :context')
             ->setParameter('context', 'mixte')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $assessmentsWithGaps = [];
-        
+
         foreach ($assessments as $assessment) {
             $gaps = $assessment->getCompetencyGaps();
             if (!empty($gaps)) {
@@ -209,14 +223,14 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get skills mastery overview for a student
+     * Get skills mastery overview for a student.
      */
     public function getSkillsMasteryOverview(Student $student): array
     {
         $assessments = $this->findByStudentAndPeriod(
             $student,
-            new \DateTime('-1 year'),
-            new \DateTime()
+            new DateTime('-1 year'),
+            new DateTime(),
         );
 
         $skillsMastery = [];
@@ -229,7 +243,7 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
                         'evaluations' => [],
                         'latest_center_score' => null,
                         'latest_company_score' => null,
-                        'progression_trend' => 'stable'
+                        'progression_trend' => 'stable',
                     ];
                 }
 
@@ -239,7 +253,7 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
                 $skillsMastery[$skillCode]['evaluations'][] = [
                     'date' => $assessment->getAssessmentDate(),
                     'center_score' => $centerScore,
-                    'company_score' => $companyScore
+                    'company_score' => $companyScore,
                 ];
 
                 // Update latest scores
@@ -257,10 +271,10 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             if (count($skillData['evaluations']) >= 2) {
                 $firstEval = reset($skillData['evaluations']);
                 $lastEval = end($skillData['evaluations']);
-                
+
                 $firstScore = $firstEval['center_score'] ?? $firstEval['company_score'] ?? 0;
                 $lastScore = $lastEval['center_score'] ?? $lastEval['company_score'] ?? 0;
-                
+
                 if ($lastScore > $firstScore + 1) {
                     $skillData['progression_trend'] = 'improving';
                 } elseif ($lastScore < $firstScore - 1) {
@@ -273,14 +287,15 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find students requiring skills assessment
+     * Find students requiring skills assessment.
      */
-    public function findStudentsRequiringAssessment(\DateTimeInterface $cutoffDate): array
+    public function findStudentsRequiringAssessment(DateTimeInterface $cutoffDate): array
     {
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->select('IDENTITY(sa2.student)')
             ->from(SkillsAssessment::class, 'sa2')
-            ->andWhere('sa2.assessmentDate > :cutoff');
+            ->andWhere('sa2.assessmentDate > :cutoff')
+        ;
 
         return $this->getEntityManager()->createQueryBuilder()
             ->select('s')
@@ -288,60 +303,70 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
             ->andWhere('s.id NOT IN (' . $subQuery->getDQL() . ')')
             ->setParameter('cutoff', $cutoffDate)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find paginated assessments with filters
+     * Find paginated assessments with filters.
      */
     public function findPaginatedAssessments(array $filters, int $page = 1, int $perPage = 20): array
     {
         $qb = $this->createQueryBuilder('sa')
             ->leftJoin('sa.student', 's')
-            ->orderBy('sa.assessmentDate', 'DESC');
+            ->orderBy('sa.assessmentDate', 'DESC')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status'])) {
             if ($filters['status'] === 'validated') {
                 $qb->andWhere('sa.overallRating IS NOT NULL AND sa.overallRating != :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             } elseif ($filters['status'] === 'pending') {
                 $qb->andWhere('sa.overallRating IS NULL OR sa.overallRating = :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             }
         }
 
         return $qb->setFirstResult(($page - 1) * $perPage)
-                  ->setMaxResults($perPage)
-                  ->getQuery()
-                  ->getResult();
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Count filtered assessments
+     * Count filtered assessments.
      */
     public function countFilteredAssessments(array $filters): int
     {
         $qb = $this->createQueryBuilder('sa')
             ->select('COUNT(sa.id)')
-            ->leftJoin('sa.student', 's');
+            ->leftJoin('sa.student', 's')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status'])) {
             if ($filters['status'] === 'validated') {
                 $qb->andWhere('sa.overallRating IS NOT NULL AND sa.overallRating != :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             } elseif ($filters['status'] === 'pending') {
                 $qb->andWhere('sa.overallRating IS NULL OR sa.overallRating = :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             }
         }
 
@@ -349,27 +374,29 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get statistics for assessments
+     * Get statistics for assessments.
      */
     public function getStatistics(): array
     {
         $total = $this->count([]);
-        
+
         $pendingQuery = $this->createQueryBuilder('sa')
             ->select('COUNT(sa.id)')
             ->where('sa.overallRating IS NULL OR sa.overallRating = :nonEvaluated')
             ->setParameter('nonEvaluated', 'non_evalue')
-            ->getQuery();
+            ->getQuery()
+        ;
         $pending = (int) $pendingQuery->getSingleScalarResult();
 
-        $thisMonth = new \DateTime('first day of this month');
+        $thisMonth = new DateTime('first day of this month');
         $validatedThisMonthQuery = $this->createQueryBuilder('sa')
             ->select('COUNT(sa.id)')
             ->where('sa.overallRating IS NOT NULL AND sa.overallRating != :nonEvaluated')
             ->andWhere('sa.createdAt >= :thisMonth')
             ->setParameter('nonEvaluated', 'non_evalue')
             ->setParameter('thisMonth', $thisMonth)
-            ->getQuery();
+            ->getQuery()
+        ;
         $validatedThisMonth = (int) $validatedThisMonthQuery->getSingleScalarResult();
 
         // Calculate average score using the getOverallAverageScore method
@@ -394,38 +421,42 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments for export
+     * Find assessments for export.
      */
     public function findForExport(array $filters): array
     {
         $qb = $this->createQueryBuilder('sa')
             ->leftJoin('sa.student', 's')
-            ->orderBy('sa.assessmentDate', 'DESC');
+            ->orderBy('sa.assessmentDate', 'DESC')
+        ;
 
         if (!empty($filters['status'])) {
             if ($filters['status'] === 'validated') {
                 $qb->andWhere('sa.overallRating IS NOT NULL AND sa.overallRating != :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             } elseif ($filters['status'] === 'pending') {
                 $qb->andWhere('sa.overallRating IS NULL OR sa.overallRating = :nonEvaluated')
-                   ->setParameter('nonEvaluated', 'non_evalue');
+                    ->setParameter('nonEvaluated', 'non_evalue')
+                ;
             }
         }
 
         if (!empty($filters['period'])) {
             $days = (int) $filters['period'];
-            $startDate = new \DateTime("-{$days} days");
+            $startDate = new DateTime("-{$days} days");
             $qb->andWhere('sa.assessmentDate >= :startDate')
-               ->setParameter('startDate', $startDate);
+                ->setParameter('startDate', $startDate)
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Get skills progression data
+     * Get skills progression data.
      */
-    public function getSkillsProgression(\DateTime $startDate): array
+    public function getSkillsProgression(DateTime $startDate): array
     {
         // Since we need skills progression by skill name for the template,
         // return mock data grouped by skill categories
@@ -434,32 +465,32 @@ class SkillsAssessmentRepository extends ServiceEntityRepository
                 'overall_avg' => 0.72,
                 'center_avg' => 0.75,
                 'company_avg' => 0.69,
-                'assessment_count' => 15
+                'assessment_count' => 15,
             ],
             'Base de données' => [
                 'overall_avg' => 0.68,
                 'center_avg' => 0.71,
                 'company_avg' => 0.65,
-                'assessment_count' => 12
+                'assessment_count' => 12,
             ],
             'Communication' => [
                 'overall_avg' => 0.81,
                 'center_avg' => 0.83,
                 'company_avg' => 0.79,
-                'assessment_count' => 18
+                'assessment_count' => 18,
             ],
             'Gestion de projet' => [
                 'overall_avg' => 0.64,
                 'center_avg' => 0.67,
                 'company_avg' => 0.61,
-                'assessment_count' => 10
+                'assessment_count' => 10,
             ],
             'Analyse et conception' => [
                 'overall_avg' => 0.76,
                 'center_avg' => 0.78,
                 'company_avg' => 0.74,
-                'assessment_count' => 14
-            ]
+                'assessment_count' => 14,
+            ],
         ];
     }
 }

@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Analysis;
 
 use App\Entity\Analysis\CompanyNeedsAnalysis;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for CompanyNeedsAnalysis entity
- * 
+ * Repository for CompanyNeedsAnalysis entity.
+ *
  * Provides custom query methods for company needs analysis
  * including filtering by company characteristics and training needs.
  */
@@ -20,7 +24,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save a company needs analysis
+     * Save a company needs analysis.
      */
     public function save(CompanyNeedsAnalysis $entity, bool $flush = false): void
     {
@@ -32,7 +36,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a company needs analysis
+     * Remove a company needs analysis.
      */
     public function remove(CompanyNeedsAnalysis $entity, bool $flush = false): void
     {
@@ -44,26 +48,29 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses by employee count range
+     * Find analyses by employee count range.
      */
     public function findByEmployeeCountRange(int $minCount, ?int $maxCount = null): array
     {
         $qb = $this->createQueryBuilder('cna')
             ->andWhere('cna.employeeCount >= :minCount')
-            ->setParameter('minCount', $minCount);
+            ->setParameter('minCount', $minCount)
+        ;
 
         if ($maxCount !== null) {
             $qb->andWhere('cna.employeeCount <= :maxCount')
-               ->setParameter('maxCount', $maxCount);
+                ->setParameter('maxCount', $maxCount)
+            ;
         }
 
         return $qb->orderBy('cna.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by NAF code
+     * Find analyses by NAF code.
      */
     public function findByNafCode(string $nafCode): array
     {
@@ -72,11 +79,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('nafCode', $nafCode)
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by SIRET number
+     * Find analyses by SIRET number.
      */
     public function findBySiret(string $siret): array
     {
@@ -85,11 +93,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('siret', $siret)
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by training title
+     * Find analyses by training title.
      */
     public function findByTrainingTitle(string $trainingTitle): array
     {
@@ -98,11 +107,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('trainingTitle', '%' . $trainingTitle . '%')
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by training location preference
+     * Find analyses by training location preference.
      */
     public function findByTrainingLocationPreference(string $locationPreference): array
     {
@@ -111,11 +121,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('locationPreference', $locationPreference)
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by activity sector
+     * Find analyses by activity sector.
      */
     public function findByActivitySector(string $activitySector): array
     {
@@ -124,30 +135,34 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('activitySector', '%' . $activitySector . '%')
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by training duration range
+     * Find analyses by training duration range.
      */
     public function findByTrainingDurationRange(int $minHours, ?int $maxHours = null): array
     {
         $qb = $this->createQueryBuilder('cna')
             ->andWhere('cna.trainingDurationHours >= :minHours')
-            ->setParameter('minHours', $minHours);
+            ->setParameter('minHours', $minHours)
+        ;
 
         if ($maxHours !== null) {
             $qb->andWhere('cna.trainingDurationHours <= :maxHours')
-               ->setParameter('maxHours', $maxHours);
+                ->setParameter('maxHours', $maxHours)
+            ;
         }
 
         return $qb->orderBy('cna.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by OPCO
+     * Find analyses by OPCO.
      */
     public function findByOpco(string $opco): array
     {
@@ -156,11 +171,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('opco', '%' . $opco . '%')
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for company analyses
+     * Get statistics for company analyses.
      */
     public function getCompanyStatistics(): array
     {
@@ -178,7 +194,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('cna.trainingLocationPreference, COUNT(cna.id) as count')
             ->groupBy('cna.trainingLocationPreference')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($locationStats as $stat) {
             $stats['by_location_preference'][$stat['trainingLocationPreference']] = (int) $stat['count'];
@@ -191,7 +208,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->orderBy('count', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($sectorStats as $stat) {
             $stats['by_activity_sector'][$stat['activitySector']] = (int) $stat['count'];
@@ -201,7 +219,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
         $avgEmployees = $this->createQueryBuilder('cna')
             ->select('AVG(cna.employeeCount) as avg')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $stats['average_employees'] = round((float) $avgEmployees, 1);
 
@@ -209,7 +228,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
         $avgDuration = $this->createQueryBuilder('cna')
             ->select('AVG(cna.trainingDurationHours) as avg')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $stats['average_training_duration'] = round((float) $avgDuration, 1);
 
@@ -230,57 +250,67 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses with filters for admin interface
+     * Find analyses with filters for admin interface.
      */
     public function findWithFilters(array $filters = []): array
     {
         $qb = $this->createQueryBuilder('cna')
             ->leftJoin('cna.needsAnalysisRequest', 'nar')
-            ->addSelect('nar');
+            ->addSelect('nar')
+        ;
 
         if (!empty($filters['employee_count_min'])) {
             $qb->andWhere('cna.employeeCount >= :employeeCountMin')
-               ->setParameter('employeeCountMin', $filters['employee_count_min']);
+                ->setParameter('employeeCountMin', $filters['employee_count_min'])
+            ;
         }
 
         if (!empty($filters['employee_count_max'])) {
             $qb->andWhere('cna.employeeCount <= :employeeCountMax')
-               ->setParameter('employeeCountMax', $filters['employee_count_max']);
+                ->setParameter('employeeCountMax', $filters['employee_count_max'])
+            ;
         }
 
         if (!empty($filters['training_location_preference'])) {
             $qb->andWhere('cna.trainingLocationPreference = :trainingLocationPreference')
-               ->setParameter('trainingLocationPreference', $filters['training_location_preference']);
+                ->setParameter('trainingLocationPreference', $filters['training_location_preference'])
+            ;
         }
 
         if (!empty($filters['activity_sector'])) {
             $qb->andWhere('cna.activitySector LIKE :activitySector')
-               ->setParameter('activitySector', '%' . $filters['activity_sector'] . '%');
+                ->setParameter('activitySector', '%' . $filters['activity_sector'] . '%')
+            ;
         }
 
         if (!empty($filters['naf_code'])) {
             $qb->andWhere('cna.nafCode LIKE :nafCode')
-               ->setParameter('nafCode', '%' . $filters['naf_code'] . '%');
+                ->setParameter('nafCode', '%' . $filters['naf_code'] . '%')
+            ;
         }
 
         if (!empty($filters['siret'])) {
             $qb->andWhere('cna.siret LIKE :siret')
-               ->setParameter('siret', '%' . $filters['siret'] . '%');
+                ->setParameter('siret', '%' . $filters['siret'] . '%')
+            ;
         }
 
         if (!empty($filters['training_duration_min'])) {
             $qb->andWhere('cna.trainingDurationHours >= :trainingDurationMin')
-               ->setParameter('trainingDurationMin', $filters['training_duration_min']);
+                ->setParameter('trainingDurationMin', $filters['training_duration_min'])
+            ;
         }
 
         if (!empty($filters['training_duration_max'])) {
             $qb->andWhere('cna.trainingDurationHours <= :trainingDurationMax')
-               ->setParameter('trainingDurationMax', $filters['training_duration_max']);
+                ->setParameter('trainingDurationMax', $filters['training_duration_max'])
+            ;
         }
 
         if (!empty($filters['opco'])) {
             $qb->andWhere('cna.opco LIKE :opco')
-               ->setParameter('opco', '%' . $filters['opco'] . '%');
+                ->setParameter('opco', '%' . $filters['opco'] . '%')
+            ;
         }
 
         if (!empty($filters['search'])) {
@@ -290,17 +320,18 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
                 'cna.contactEmail LIKE :search',
                 'cna.siret LIKE :search',
                 'cna.nafCode LIKE :search',
-                'cna.trainingTitle LIKE :search'
+                'cna.trainingTitle LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         return $qb->orderBy('cna.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find companies with similar training needs
+     * Find companies with similar training needs.
      */
     public function findSimilarTrainingNeeds(CompanyNeedsAnalysis $analysis): array
     {
@@ -314,11 +345,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->orderBy('cna.id', 'DESC')
             ->setMaxResults(5)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by sector (based on NAF code)
+     * Find analyses by sector (based on NAF code).
      */
     public function findBySector(string $sectorPrefix): array
     {
@@ -327,11 +359,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('sectorPrefix', $sectorPrefix . '%')
             ->orderBy('cna.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get most common training titles
+     * Get most common training titles.
      */
     public function getMostCommonTrainingTitles(int $limit = 10): array
     {
@@ -341,11 +374,12 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->orderBy('count', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get employee count distribution
+     * Get employee count distribution.
      */
     public function getEmployeeCountDistribution(): array
     {
@@ -354,7 +388,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             '11-50' => [11, 50],
             '51-250' => [51, 250],
             '251-500' => [251, 500],
-            '500+' => [501, 999999]
+            '500+' => [501, 999999],
         ];
 
         $distribution = [];
@@ -366,7 +400,8 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
                 ->setParameter('min', $range[0])
                 ->setParameter('max', $range[1])
                 ->getQuery()
-                ->getSingleScalarResult();
+                ->getSingleScalarResult()
+            ;
 
             $distribution[$label] = (int) $count;
         }
@@ -375,7 +410,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses with specific training characteristics
+     * Find analyses with specific training characteristics.
      */
     public function findByTrainingCharacteristics(array $characteristics): array
     {
@@ -383,33 +418,38 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
 
         if (isset($characteristics['title'])) {
             $qb->andWhere('cna.trainingTitle LIKE :title')
-               ->setParameter('title', '%' . $characteristics['title'] . '%');
+                ->setParameter('title', '%' . $characteristics['title'] . '%')
+            ;
         }
 
         if (isset($characteristics['location_preference'])) {
             $qb->andWhere('cna.trainingLocationPreference = :locationPreference')
-               ->setParameter('locationPreference', $characteristics['location_preference']);
+                ->setParameter('locationPreference', $characteristics['location_preference'])
+            ;
         }
 
         if (isset($characteristics['min_duration'])) {
             $qb->andWhere('cna.trainingDurationHours >= :minDuration')
-               ->setParameter('minDuration', $characteristics['min_duration']);
+                ->setParameter('minDuration', $characteristics['min_duration'])
+            ;
         }
 
         if (isset($characteristics['max_duration'])) {
             $qb->andWhere('cna.trainingDurationHours <= :maxDuration')
-               ->setParameter('maxDuration', $characteristics['max_duration']);
+                ->setParameter('maxDuration', $characteristics['max_duration'])
+            ;
         }
 
         return $qb->orderBy('cna.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by date range
+     * Find analyses by date range.
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('cna')
             ->andWhere('cna.submittedAt >= :startDate')
@@ -418,16 +458,17 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('cna.submittedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get recent analyses (last 30 days)
+     * Get recent analyses (last 30 days).
      */
     public function findRecentAnalyses(int $days = 30): array
     {
-        $since = new \DateTimeImmutable("-{$days} days");
-        
+        $since = new DateTimeImmutable("-{$days} days");
+
         return $this->createQueryBuilder('cna')
             ->andWhere('cna.submittedAt >= :since')
             ->setParameter('since', $since)
@@ -437,7 +478,7 @@ class CompanyNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses with disability accommodations
+     * Find analyses with disability accommodations.
      */
     public function findWithDisabilityAccommodations(): array
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Training\Chapter;
@@ -23,7 +25,7 @@ class ChapterController extends AbstractController
         private EntityManagerInterface $entityManager,
         private ChapterRepository $chapterRepository,
         private ModuleRepository $moduleRepository,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
     ) {}
 
     #[Route('', name: 'admin_chapters_index', methods: ['GET'])]
@@ -33,27 +35,27 @@ class ChapterController extends AbstractController
         $formationId = $request->query->get('formation');
         $search = $request->query->get('search');
         $active = $request->query->get('active');
-        
+
         $filters = [];
-        
+
         if ($moduleId) {
             $filters['module'] = $moduleId;
         }
-        
+
         if ($formationId) {
             $filters['formation'] = $formationId;
         }
-        
+
         if ($search) {
             $filters['search'] = $search;
         }
-        
+
         if ($active !== null) {
             $filters['active'] = $active === '1';
         }
-        
+
         $chapters = $this->chapterRepository->findWithFilters($filters);
-        
+
         // Get module for context if specified
         $module = null;
         if ($moduleId) {
@@ -62,7 +64,7 @@ class ChapterController extends AbstractController
                 throw $this->createNotFoundException('Module not found');
             }
         }
-        
+
         // Get all modules for filter dropdown
         $modules = $this->moduleRepository->findBy([], ['orderIndex' => 'ASC']);
 
@@ -74,8 +76,8 @@ class ChapterController extends AbstractController
                 'module' => $moduleId,
                 'formation' => $formationId,
                 'search' => $search,
-                'active' => $active
-            ]
+                'active' => $active,
+            ],
         ]);
     }
 
@@ -83,7 +85,7 @@ class ChapterController extends AbstractController
     public function new(Request $request): Response
     {
         $chapter = new Chapter();
-        
+
         // Pre-select module if provided
         $moduleId = $request->query->get('module');
         if ($moduleId) {
@@ -92,7 +94,7 @@ class ChapterController extends AbstractController
                 $chapter->setModule($module);
             }
         }
-        
+
         $form = $this->createForm(ChapterType::class, $chapter);
         $form->handleRequest($request);
 
@@ -100,7 +102,7 @@ class ChapterController extends AbstractController
             // Auto-generate slug if not provided
             if (!$chapter->getSlug()) {
                 $slug = $this->slugger->slug($chapter->getTitle())->lower();
-                $chapter->setSlug($slug);
+                $chapter->setSlug((string)$slug);
             }
 
             // Set order index if not provided
@@ -115,7 +117,7 @@ class ChapterController extends AbstractController
             $this->addFlash('success', 'Chapitre créé avec succès.');
 
             return $this->redirectToRoute('admin_chapters_index', [
-                'module' => $chapter->getModule()->getId()
+                'module' => $chapter->getModule()->getId(),
             ]);
         }
 
@@ -131,7 +133,7 @@ class ChapterController extends AbstractController
         $totalChapters = $this->chapterRepository->count([]);
         $activeChapters = $this->chapterRepository->count(['isActive' => true]);
         $inactiveChapters = $totalChapters - $activeChapters;
-        
+
         // Get chapters by module
         $chaptersByModule = $this->entityManager
             ->createQuery('
@@ -141,19 +143,21 @@ class ChapterController extends AbstractController
                 GROUP BY m.id, m.title
                 ORDER BY chapterCount DESC
             ')
-            ->getResult();
-        
+            ->getResult()
+        ;
+
         // Get average duration
         $avgDuration = $this->entityManager
             ->createQuery('SELECT AVG(c.durationMinutes) FROM App\Entity\Chapter c WHERE c.isActive = true')
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $this->render('admin/chapters/statistics.html.twig', [
             'totalChapters' => $totalChapters,
             'activeChapters' => $activeChapters,
             'inactiveChapters' => $inactiveChapters,
             'chaptersByModule' => $chaptersByModule,
-            'avgDuration' => round($avgDuration ?? 0, 2)
+            'avgDuration' => round($avgDuration ?? 0, 2),
         ]);
     }
 
@@ -177,7 +181,7 @@ class ChapterController extends AbstractController
             $this->addFlash('success', 'Chapitre modifié avec succès.');
 
             return $this->redirectToRoute('admin_chapters_index', [
-                'module' => $chapter->getModule()->getId()
+                'module' => $chapter->getModule()->getId(),
             ]);
         }
 
@@ -199,7 +203,7 @@ class ChapterController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_chapters_index', [
-            'module' => $moduleId ?? null
+            'module' => $moduleId ?? null,
         ]);
     }
 
@@ -215,7 +219,7 @@ class ChapterController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_chapters_index', [
-            'module' => $chapter->getModule()->getId()
+            'module' => $chapter->getModule()->getId(),
         ]);
     }
 
@@ -223,14 +227,14 @@ class ChapterController extends AbstractController
     public function reorder(Request $request): Response
     {
         $chapterIds = $request->request->all('chapters');
-        
+
         if (!empty($chapterIds)) {
             $this->chapterRepository->updateOrderIndexes($chapterIds);
             $this->addFlash('success', 'Ordre des chapitres mis à jour avec succès.');
         }
 
         return $this->redirectToRoute('admin_chapters_index', [
-            'module' => $request->request->get('module_id')
+            'module' => $request->request->get('module_id'),
         ]);
     }
 
@@ -264,11 +268,11 @@ class ChapterController extends AbstractController
             $duplicatedChapter->setDurationMinutes($chapter->getDurationMinutes());
             $duplicatedChapter->setModule($chapter->getModule());
             $duplicatedChapter->setIsActive(false); // Deactivate duplicate by default
-            
+
             // Set new order index
             $nextOrder = $this->chapterRepository->getNextOrderIndex($chapter->getModule()->getId());
             $duplicatedChapter->setOrderIndex($nextOrder);
-            
+
             $this->entityManager->persist($duplicatedChapter);
             $this->entityManager->flush();
 
@@ -276,7 +280,7 @@ class ChapterController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_chapters_index', [
-            'module' => $chapter->getModule()->getId()
+            'module' => $chapter->getModule()->getId(),
         ]);
     }
 }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
-use App\Entity\Training\Course;
 use App\Entity\Training\Chapter;
+use App\Entity\Training\Course;
 use App\Repository\Training\CourseRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
@@ -20,7 +23,7 @@ class CourseController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SluggerInterface $slugger,
-        private Pdf $pdf
+        private Pdf $pdf,
     ) {}
 
     #[Route('/', name: 'admin_course_index', methods: ['GET'])]
@@ -34,7 +37,8 @@ class CourseController extends AbstractController
         $totalCourses = $courseRepository->createQueryBuilder('c')
             ->select('COUNT(c.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Then get the courses with all related data
         $courses = $courseRepository->createQueryBuilder('c')
@@ -46,7 +50,8 @@ class CourseController extends AbstractController
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $totalPages = ceil($totalCourses / $limit);
 
@@ -66,35 +71,35 @@ class CourseController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            
+
             $course->setTitle($data['title']);
-            $course->setSlug($this->slugger->slug($data['title'])->lower());
+            $course->setSlug((string)$this->slugger->slug($data['title'])->lower());
             $course->setDescription($data['description']);
             $course->setType($data['type']);
             $course->setContent($data['content'] ?? null);
             $course->setDurationMinutes((int) $data['duration_minutes']);
             $course->setOrderIndex((int) $data['order_index']);
-            
+
             $chapter = $this->entityManager->getRepository(Chapter::class)->find($data['chapter_id']);
             $course->setChapter($chapter);
-            
+
             // Handle JSON arrays
             if (!empty($data['learning_objectives'])) {
                 $course->setLearningObjectives(array_filter(explode("\n", $data['learning_objectives'])));
             }
-            
+
             if (!empty($data['learning_outcomes'])) {
                 $course->setLearningOutcomes(array_filter(explode("\n", $data['learning_outcomes'])));
             }
-            
+
             if (!empty($data['resources'])) {
                 $course->setResources(array_filter(explode("\n", $data['resources'])));
             }
-            
+
             if (!empty($data['success_criteria'])) {
                 $course->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
             }
-            
+
             $course->setContentOutline($data['content_outline'] ?? null);
             $course->setPrerequisites($data['prerequisites'] ?? null);
             $course->setTeachingMethods($data['teaching_methods'] ?? null);
@@ -105,6 +110,7 @@ class CourseController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Cours créé avec succès.');
+
             return $this->redirectToRoute('admin_course_index');
         }
 
@@ -133,7 +139,7 @@ class CourseController extends AbstractController
         $filename = sprintf(
             'cours-%s-%s.pdf',
             $course->getSlug(),
-            (new \DateTime())->format('Y-m-d')
+            (new DateTime())->format('Y-m-d'),
         );
 
         return new PdfResponse(
@@ -150,7 +156,7 @@ class CourseController extends AbstractController
                 'enable-javascript' => false,
                 'disable-smart-shrinking' => true,
             ]),
-            $filename
+            $filename,
         );
     }
 
@@ -161,35 +167,35 @@ class CourseController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-            
+
             $course->setTitle($data['title']);
-            $course->setSlug($this->slugger->slug($data['title'])->lower());
+            $course->setSlug((string)$this->slugger->slug($data['title'])->lower());
             $course->setDescription($data['description']);
             $course->setType($data['type']);
             $course->setContent($data['content'] ?? null);
             $course->setDurationMinutes((int) $data['duration_minutes']);
             $course->setOrderIndex((int) $data['order_index']);
-            
+
             $chapter = $this->entityManager->getRepository(Chapter::class)->find($data['chapter_id']);
             $course->setChapter($chapter);
-            
+
             // Handle JSON arrays
             if (!empty($data['learning_objectives'])) {
                 $course->setLearningObjectives(array_filter(explode("\n", $data['learning_objectives'])));
             }
-            
+
             if (!empty($data['learning_outcomes'])) {
                 $course->setLearningOutcomes(array_filter(explode("\n", $data['learning_outcomes'])));
             }
-            
+
             if (!empty($data['resources'])) {
                 $course->setResources(array_filter(explode("\n", $data['resources'])));
             }
-            
+
             if (!empty($data['success_criteria'])) {
                 $course->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
             }
-            
+
             $course->setContentOutline($data['content_outline'] ?? null);
             $course->setPrerequisites($data['prerequisites'] ?? null);
             $course->setTeachingMethods($data['teaching_methods'] ?? null);
@@ -199,6 +205,7 @@ class CourseController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', 'Cours modifié avec succès.');
+
             return $this->redirectToRoute('admin_course_index');
         }
 
@@ -212,7 +219,7 @@ class CourseController extends AbstractController
     #[Route('/{id}', name: 'admin_course_delete', methods: ['POST'])]
     public function delete(Request $request, Course $course): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $course->getId(), $request->request->get('_token'))) {
             $this->entityManager->remove($course);
             $this->entityManager->flush();
             $this->addFlash('success', 'Cours supprimé avec succès.');

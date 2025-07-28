@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Assessment;
 
 use App\Repository\Assessment\QuestionRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Question entity for questionnaire system
- * 
+ * Question entity for questionnaire system.
+ *
  * Represents individual questions within a questionnaire with various types:
  * text, textarea, single_choice, multiple_choice, file_upload
  */
@@ -20,12 +23,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Question
 {
     public const TYPE_TEXT = 'text';
+
     public const TYPE_TEXTAREA = 'textarea';
+
     public const TYPE_SINGLE_CHOICE = 'single_choice';
+
     public const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
+
     public const TYPE_FILE_UPLOAD = 'file_upload';
+
     public const TYPE_NUMBER = 'number';
+
     public const TYPE_EMAIL = 'email';
+
     public const TYPE_DATE = 'date';
 
     public const TYPES = [
@@ -36,7 +46,7 @@ class Question
         self::TYPE_FILE_UPLOAD => 'Téléchargement de fichier',
         self::TYPE_NUMBER => 'Nombre',
         self::TYPE_EMAIL => 'Email',
-        self::TYPE_DATE => 'Date'
+        self::TYPE_DATE => 'Date',
     ];
 
     #[ORM\Id]
@@ -50,7 +60,7 @@ class Question
         min: 10,
         max: 1000,
         minMessage: 'La question doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'La question ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'La question ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $questionText = null;
 
@@ -58,7 +68,7 @@ class Question
     #[Assert\NotBlank(message: 'Le type de question est obligatoire.')]
     #[Assert\Choice(
         choices: ['text', 'textarea', 'single_choice', 'multiple_choice', 'file_upload', 'number', 'email', 'date'],
-        message: 'Type de question invalide.'
+        message: 'Type de question invalide.',
     )]
     private ?string $type = self::TYPE_TEXT;
 
@@ -101,10 +111,10 @@ class Question
     private ?int $points = 0;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Questionnaire::class, inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -127,8 +137,13 @@ class Question
     {
         $this->options = new ArrayCollection();
         $this->responses = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->questionText ?? '';
     }
 
     public function getId(): ?int
@@ -144,6 +159,7 @@ class Question
     public function setQuestionText(string $questionText): static
     {
         $this->questionText = $questionText;
+
         return $this;
     }
 
@@ -155,6 +171,7 @@ class Question
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -166,6 +183,7 @@ class Question
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -177,6 +195,7 @@ class Question
     public function setIsRequired(bool $isRequired): static
     {
         $this->isRequired = $isRequired;
+
         return $this;
     }
 
@@ -188,6 +207,7 @@ class Question
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -199,6 +219,7 @@ class Question
     public function setHelpText(?string $helpText): static
     {
         $this->helpText = $helpText;
+
         return $this;
     }
 
@@ -210,6 +231,7 @@ class Question
     public function setPlaceholder(?string $placeholder): static
     {
         $this->placeholder = $placeholder;
+
         return $this;
     }
 
@@ -221,6 +243,7 @@ class Question
     public function setMinLength(?int $minLength): static
     {
         $this->minLength = $minLength;
+
         return $this;
     }
 
@@ -232,6 +255,7 @@ class Question
     public function setMaxLength(?int $maxLength): static
     {
         $this->maxLength = $maxLength;
+
         return $this;
     }
 
@@ -243,6 +267,7 @@ class Question
     public function setValidationRules(?array $validationRules): static
     {
         $this->validationRules = $validationRules;
+
         return $this;
     }
 
@@ -254,6 +279,7 @@ class Question
     public function setAllowedFileTypes(?array $allowedFileTypes): static
     {
         $this->allowedFileTypes = $allowedFileTypes;
+
         return $this;
     }
 
@@ -265,6 +291,7 @@ class Question
     public function setMaxFileSize(?int $maxFileSize): static
     {
         $this->maxFileSize = $maxFileSize;
+
         return $this;
     }
 
@@ -276,28 +303,31 @@ class Question
     public function setPoints(?int $points): static
     {
         $this->points = $points;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -309,6 +339,7 @@ class Question
     public function setQuestionnaire(?Questionnaire $questionnaire): static
     {
         $this->questionnaire = $questionnaire;
+
         return $this;
     }
 
@@ -371,7 +402,7 @@ class Question
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -379,15 +410,15 @@ class Question
     }
 
     /**
-     * Check if question has choices (single or multiple choice)
+     * Check if question has choices (single or multiple choice).
      */
     public function hasChoices(): bool
     {
-        return in_array($this->type, [self::TYPE_SINGLE_CHOICE, self::TYPE_MULTIPLE_CHOICE]);
+        return in_array($this->type, [self::TYPE_SINGLE_CHOICE, self::TYPE_MULTIPLE_CHOICE], true);
     }
 
     /**
-     * Check if question is a file upload
+     * Check if question is a file upload.
      */
     public function isFileUpload(): bool
     {
@@ -395,39 +426,35 @@ class Question
     }
 
     /**
-     * Check if question allows text input
+     * Check if question allows text input.
      */
     public function isTextInput(): bool
     {
-        return in_array($this->type, [self::TYPE_TEXT, self::TYPE_TEXTAREA, self::TYPE_EMAIL]);
+        return in_array($this->type, [self::TYPE_TEXT, self::TYPE_TEXTAREA, self::TYPE_EMAIL], true);
     }
 
     /**
-     * Get active options only
-     * 
+     * Get active options only.
+     *
      * @return Collection<int, QuestionOption>
      */
     public function getActiveOptions(): Collection
     {
-        return $this->options->filter(function (QuestionOption $option) {
-            return $option->isActive();
-        });
+        return $this->options->filter(static fn (QuestionOption $option) => $option->isActive());
     }
 
     /**
-     * Get correct options (for QCM evaluation)
-     * 
+     * Get correct options (for QCM evaluation).
+     *
      * @return Collection<int, QuestionOption>
      */
     public function getCorrectOptions(): Collection
     {
-        return $this->options->filter(function (QuestionOption $option) {
-            return $option->isCorrect();
-        });
+        return $this->options->filter(static fn (QuestionOption $option) => $option->isCorrect());
     }
 
     /**
-     * Check if question has correct answers defined
+     * Check if question has correct answers defined.
      */
     public function hasCorrectAnswers(): bool
     {
@@ -435,7 +462,7 @@ class Question
     }
 
     /**
-     * Get response count for this question
+     * Get response count for this question.
      */
     public function getResponseCount(): int
     {
@@ -443,37 +470,38 @@ class Question
     }
 
     /**
-     * Get formatted file size limit
+     * Get formatted file size limit.
      */
     public function getFormattedMaxFileSize(): string
     {
         if (!$this->maxFileSize) {
             return '';
         }
-        
+
         if ($this->maxFileSize < 1024) {
             return $this->maxFileSize . ' B';
-        } elseif ($this->maxFileSize < 1024 * 1024) {
-            return round($this->maxFileSize / 1024, 1) . ' KB';
-        } else {
-            return round($this->maxFileSize / (1024 * 1024), 1) . ' MB';
         }
+        if ($this->maxFileSize < 1024 * 1024) {
+            return round($this->maxFileSize / 1024, 1) . ' KB';
+        }
+
+        return round($this->maxFileSize / (1024 * 1024), 1) . ' MB';
     }
 
     /**
-     * Get allowed file types as string
+     * Get allowed file types as string.
      */
     public function getAllowedFileTypesString(): string
     {
         if (!$this->allowedFileTypes) {
             return '';
         }
-        
+
         return implode(', ', $this->allowedFileTypes);
     }
 
     /**
-     * Get step number (for multi-step questionnaires)
+     * Get step number (for multi-step questionnaires).
      */
     public function getStepNumber(): int
     {
@@ -483,7 +511,7 @@ class Question
     }
 
     /**
-     * Get max points
+     * Get max points.
      */
     public function getMaxPoints(): ?int
     {
@@ -491,7 +519,7 @@ class Question
     }
 
     /**
-     * Get sort order (alias for orderIndex)
+     * Get sort order (alias for orderIndex).
      */
     public function getSortOrder(): ?int
     {
@@ -499,16 +527,11 @@ class Question
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->questionText ?? '';
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

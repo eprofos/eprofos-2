@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\CRM\Prospect;
 use App\Entity\CRM\ProspectNote;
-use App\Form\ProspectType;
 use App\Form\ProspectNoteType;
-use App\Repository\CRM\ProspectRepository;
+use App\Form\ProspectType;
 use App\Repository\CRM\ProspectNoteRepository;
+use App\Repository\CRM\ProspectRepository;
 use App\Repository\User\AdminRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,8 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin Prospect Controller
- * 
+ * Admin Prospect Controller.
+ *
  * Handles CRUD operations for prospects in the admin interface.
  * Provides comprehensive prospect management capabilities for EPROFOS.
  */
@@ -28,18 +31,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProspectController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * List all prospects with filtering and search
+     * List all prospects with filtering and search.
      */
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, ProspectRepository $prospectRepository, AdminRepository $userRepository): Response
     {
         $this->logger->info('Admin prospects list accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $status = $request->query->get('status');
@@ -53,26 +55,31 @@ class ProspectController extends AbstractController
             ->leftJoin('p.interestedFormations', 'f')
             ->leftJoin('p.interestedServices', 's')
             ->addSelect('u', 'f', 's')
-            ->orderBy('p.updatedAt', 'DESC');
+            ->orderBy('p.updatedAt', 'DESC')
+        ;
 
         if ($status) {
             $queryBuilder->andWhere('p.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
         }
 
         if ($priority) {
             $queryBuilder->andWhere('p.priority = :priority')
-                ->setParameter('priority', $priority);
+                ->setParameter('priority', $priority)
+            ;
         }
 
         if ($source) {
             $queryBuilder->andWhere('p.source = :source')
-                ->setParameter('source', $source);
+                ->setParameter('source', $source)
+            ;
         }
 
         if ($assignedTo) {
             $queryBuilder->andWhere('p.assignedTo = :assignedTo')
-                ->setParameter('assignedTo', $assignedTo);
+                ->setParameter('assignedTo', $assignedTo)
+            ;
         }
 
         if ($search) {
@@ -81,7 +88,7 @@ class ProspectController extends AbstractController
                 'LOWER(p.firstName) LIKE :search OR 
                  LOWER(p.lastName) LIKE :search OR 
                  LOWER(p.email) LIKE :search OR 
-                 LOWER(p.company) LIKE :search'
+                 LOWER(p.company) LIKE :search',
             )->setParameter('search', $searchTerms);
         }
 
@@ -111,20 +118,20 @@ class ProspectController extends AbstractController
             'page_title' => 'Gestion des prospects',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
-                ['label' => 'Prospects', 'url' => null]
-            ]
+                ['label' => 'Prospects', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Show prospect details with notes
+     * Show prospect details with notes.
      */
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Prospect $prospect, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Admin prospect details viewed', [
             'prospect_id' => $prospect->getId(),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $notes = $noteRepository->findByProspect($prospect);
@@ -138,13 +145,13 @@ class ProspectController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Prospects', 'url' => $this->generateUrl('admin_prospect_index')],
-                ['label' => $prospect->getFullName(), 'url' => null]
-            ]
+                ['label' => $prospect->getFullName(), 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Create a new prospect
+     * Create a new prospect.
      */
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -160,7 +167,7 @@ class ProspectController extends AbstractController
             $this->logger->info('New prospect created', [
                 'prospect_id' => $prospect->getId(),
                 'prospect_name' => $prospect->getFullName(),
-                'admin' => $this->getUser()?->getUserIdentifier()
+                'admin' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le prospect a été créé avec succès.');
@@ -175,13 +182,13 @@ class ProspectController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Prospects', 'url' => $this->generateUrl('admin_prospect_index')],
-                ['label' => 'Nouveau', 'url' => null]
-            ]
+                ['label' => 'Nouveau', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Edit an existing prospect
+     * Edit an existing prospect.
      */
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
@@ -195,7 +202,7 @@ class ProspectController extends AbstractController
             $this->logger->info('Prospect updated', [
                 'prospect_id' => $prospect->getId(),
                 'prospect_name' => $prospect->getFullName(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le prospect a été modifié avec succès.');
@@ -211,28 +218,28 @@ class ProspectController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Prospects', 'url' => $this->generateUrl('admin_prospect_index')],
                 ['label' => $prospect->getFullName(), 'url' => $this->generateUrl('admin_prospect_show', ['id' => $prospect->getId()])],
-                ['label' => 'Modifier', 'url' => null]
-            ]
+                ['label' => 'Modifier', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Delete a prospect
+     * Delete a prospect.
      */
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$prospect->getId(), $request->getPayload()->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $prospect->getId(), $request->getPayload()->get('_token'))) {
             $prospectName = $prospect->getFullName();
             $prospectId = $prospect->getId();
-            
+
             $entityManager->remove($prospect);
             $entityManager->flush();
 
             $this->logger->info('Prospect deleted', [
                 'prospect_id' => $prospectId,
                 'prospect_name' => $prospectName,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le prospect a été supprimé avec succès.');
@@ -242,29 +249,29 @@ class ProspectController extends AbstractController
     }
 
     /**
-     * Update prospect status
+     * Update prospect status.
      */
     #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
-        
-        if ($this->isCsrfTokenValid('update_status'.$prospect->getId(), $request->getPayload()->get('_token'))) {
+
+        if ($this->isCsrfTokenValid('update_status' . $prospect->getId(), $request->getPayload()->get('_token'))) {
             $oldStatus = $prospect->getStatus();
             $prospect->setStatus($newStatus);
-            
+
             // Update last contact date if moving to customer or lost
-            if (in_array($newStatus, ['customer', 'lost'])) {
-                $prospect->setLastContactDate(new \DateTime());
+            if (in_array($newStatus, ['customer', 'lost'], true)) {
+                $prospect->setLastContactDate(new DateTime());
             }
-            
+
             $entityManager->flush();
 
             $this->logger->info('Prospect status updated', [
                 'prospect_id' => $prospect->getId(),
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Le statut du prospect a été mis à jour avec succès.');
@@ -274,7 +281,7 @@ class ProspectController extends AbstractController
     }
 
     /**
-     * Add a note to a prospect
+     * Add a note to a prospect.
      */
     #[Route('/{id}/notes/new', name: 'add_note', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function addNote(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
@@ -284,14 +291,14 @@ class ProspectController extends AbstractController
         $note->setCreatedBy($this->getUser());
 
         $form = $this->createForm(ProspectNoteType::class, $note, [
-            'prospect_context' => true
+            'prospect_context' => true,
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Update prospect's last contact date
-            $prospect->setLastContactDate(new \DateTime());
-            
+            $prospect->setLastContactDate(new DateTime());
+
             $entityManager->persist($note);
             $entityManager->flush();
 
@@ -299,7 +306,7 @@ class ProspectController extends AbstractController
                 'prospect_id' => $prospect->getId(),
                 'note_id' => $note->getId(),
                 'note_type' => $note->getType(),
-                'user' => $this->getUser()?->getUserIdentifier()
+                'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'La note a été ajoutée avec succès.');
@@ -315,13 +322,13 @@ class ProspectController extends AbstractController
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Prospects', 'url' => $this->generateUrl('admin_prospect_index')],
                 ['label' => $prospect->getFullName(), 'url' => $this->generateUrl('admin_prospect_show', ['id' => $prospect->getId()])],
-                ['label' => 'Ajouter une note', 'url' => null]
-            ]
+                ['label' => 'Ajouter une note', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Export prospects to CSV
+     * Export prospects to CSV.
      */
     #[Route('/export', name: 'export', methods: ['GET'])]
     public function export(ProspectRepository $prospectRepository): Response
@@ -333,7 +340,7 @@ class ProspectController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="prospects_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://output', 'w');
-        
+
         // CSV headers
         fputcsv($output, [
             'ID',
@@ -351,7 +358,7 @@ class ProspectController extends AbstractController
             'Dernière contact',
             'Prochain suivi',
             'Créé le',
-            'Mis à jour le'
+            'Mis à jour le',
         ]);
 
         // CSV data
@@ -372,7 +379,7 @@ class ProspectController extends AbstractController
                 $prospect->getLastContactDate()?->format('d/m/Y'),
                 $prospect->getNextFollowUpDate()?->format('d/m/Y'),
                 $prospect->getCreatedAt()?->format('d/m/Y H:i'),
-                $prospect->getUpdatedAt()?->format('d/m/Y H:i')
+                $prospect->getUpdatedAt()?->format('d/m/Y H:i'),
             ]);
         }
 
@@ -380,20 +387,20 @@ class ProspectController extends AbstractController
 
         $this->logger->info('Prospects exported', [
             'count' => count($prospects),
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return $response;
     }
 
     /**
-     * Dashboard view for prospects requiring attention
+     * Dashboard view for prospects requiring attention.
      */
     #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
     public function dashboard(ProspectRepository $prospectRepository, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Prospect dashboard accessed', [
-            'user' => $this->getUser()?->getUserIdentifier()
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         $needingFollowUp = $prospectRepository->findNeedingFollowUp();
@@ -421,8 +428,8 @@ class ProspectController extends AbstractController
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],
                 ['label' => 'Prospects', 'url' => $this->generateUrl('admin_prospect_index')],
-                ['label' => 'Tableau de bord', 'url' => null]
-            ]
+                ['label' => 'Tableau de bord', 'url' => null],
+            ],
         ]);
     }
 }

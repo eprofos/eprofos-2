@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\DocumentUIComponent;
@@ -18,7 +20,7 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find components by UI template
+     * Find components by UI template.
      */
     public function findByTemplate(DocumentUITemplate $template): array
     {
@@ -28,11 +30,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->orderBy('duc.sortOrder', 'ASC')
             ->addOrderBy('duc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find all components with their templates
+     * Find all components with their templates.
      */
     public function findAllWithTemplates(): array
     {
@@ -46,11 +49,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->addOrderBy('duc.sortOrder', 'ASC')
             ->addOrderBy('duc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find active components by template
+     * Find active components by template.
      */
     public function findActiveByTemplate(DocumentUITemplate $template): array
     {
@@ -62,11 +66,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->orderBy('duc.sortOrder', 'ASC')
             ->addOrderBy('duc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find components by zone
+     * Find components by zone.
      */
     public function findByZone(DocumentUITemplate $template, string $zone): array
     {
@@ -79,11 +84,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find components by type
+     * Find components by type.
      */
     public function findByType(string $type): array
     {
@@ -94,11 +100,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find required components by template
+     * Find required components by template.
      */
     public function findRequiredByTemplate(DocumentUITemplate $template): array
     {
@@ -111,11 +118,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get next sort order for template
+     * Get next sort order for template.
      */
     public function getNextSortOrder(DocumentUITemplate $template): int
     {
@@ -124,13 +132,14 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->where('duc.uiTemplate = :template')
             ->setParameter('template', $template)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
-        return (int)$result + 1;
+        return (int) $result + 1;
     }
 
     /**
-     * Find components with data binding
+     * Find components with data binding.
      */
     public function findWithDataBinding(DocumentUITemplate $template): array
     {
@@ -142,11 +151,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find components with conditional display
+     * Find components with conditional display.
      */
     public function findWithConditionalDisplay(DocumentUITemplate $template): array
     {
@@ -158,11 +168,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.sortOrder', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search components by criteria
+     * Search components by criteria.
      */
     public function findBySearchCriteria(array $criteria): array
     {
@@ -170,74 +181,83 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
 
         if (!empty($criteria['template'])) {
             $qb->andWhere('duc.uiTemplate = :template')
-              ->setParameter('template', $criteria['template']);
+                ->setParameter('template', $criteria['template'])
+            ;
         }
 
         if (!empty($criteria['search'])) {
             $qb->andWhere('(duc.name LIKE :search OR duc.content LIKE :search)')
-              ->setParameter('search', '%' . $criteria['search'] . '%');
+                ->setParameter('search', '%' . $criteria['search'] . '%')
+            ;
         }
 
         if (!empty($criteria['type'])) {
             $qb->andWhere('duc.type = :type')
-              ->setParameter('type', $criteria['type']);
+                ->setParameter('type', $criteria['type'])
+            ;
         }
 
         if (!empty($criteria['zone'])) {
             $qb->andWhere('duc.zone = :zone')
-              ->setParameter('zone', $criteria['zone']);
+                ->setParameter('zone', $criteria['zone'])
+            ;
         }
 
         if (isset($criteria['active'])) {
             $qb->andWhere('duc.isActive = :active')
-              ->setParameter('active', $criteria['active']);
+                ->setParameter('active', $criteria['active'])
+            ;
         }
 
         if (isset($criteria['required'])) {
             $qb->andWhere('duc.isRequired = :required')
-              ->setParameter('required', $criteria['required']);
+                ->setParameter('required', $criteria['required'])
+            ;
         }
 
         return $qb->orderBy('duc.sortOrder', 'ASC')
-                 ->addOrderBy('duc.name', 'ASC')
-                 ->getQuery()
-                 ->getResult();
+            ->addOrderBy('duc.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Count components by template
+     * Count components by template.
      */
     public function countByTemplate(DocumentUITemplate $template): int
     {
-        return (int)$this->createQueryBuilder('duc')
+        return (int) $this->createQueryBuilder('duc')
             ->select('COUNT(duc.id)')
             ->where('duc.uiTemplate = :template')
             ->setParameter('template', $template)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count active components by template
+     * Count active components by template.
      */
     public function countActiveByTemplate(DocumentUITemplate $template): int
     {
-        return (int)$this->createQueryBuilder('duc')
+        return (int) $this->createQueryBuilder('duc')
             ->select('COUNT(duc.id)')
             ->where('duc.uiTemplate = :template')
             ->andWhere('duc.isActive = :active')
             ->setParameter('template', $template)
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count components by zone
+     * Count components by zone.
      */
     public function countByZone(DocumentUITemplate $template, string $zone): int
     {
-        return (int)$this->createQueryBuilder('duc')
+        return (int) $this->createQueryBuilder('duc')
             ->select('COUNT(duc.id)')
             ->where('duc.uiTemplate = :template')
             ->andWhere('duc.zone = :zone')
@@ -246,11 +266,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('zone', $zone)
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Find components by CSS class
+     * Find components by CSS class.
      */
     public function findByCssClass(string $cssClass): array
     {
@@ -261,11 +282,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('duc.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find components by element ID
+     * Find components by element ID.
      */
     public function findByElementId(string $elementId): array
     {
@@ -273,11 +295,14 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->where('duc.elementId = :elementId')
             ->setParameter('elementId', $elementId)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find components created by user
+     * Find components created by user.
+     *
+     * @param mixed $admin
      */
     public function findByCreatedBy($admin): array
     {
@@ -286,11 +311,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->setParameter('user', $admin)
             ->orderBy('duc.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recently updated components
+     * Find recently updated components.
      */
     public function findRecentlyUpdated(int $limit = 10): array
     {
@@ -300,11 +326,12 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
             ->orderBy('duc.updatedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Update sort orders for template components
+     * Update sort orders for template components.
      */
     public function updateSortOrders(DocumentUITemplate $template, array $componentIds): void
     {
@@ -319,14 +346,15 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
                 ->setParameter('id', $componentId)
                 ->setParameter('template', $template)
                 ->getQuery()
-                ->execute();
-            
+                ->execute()
+            ;
+
             $sortOrder++;
         }
     }
 
     /**
-     * Clone components from one template to another
+     * Clone components from one template to another.
      */
     public function cloneFromTemplate(DocumentUITemplate $sourceTemplate, DocumentUITemplate $targetTemplate): array
     {
@@ -336,13 +364,13 @@ class DocumentUIComponentRepository extends ServiceEntityRepository
         foreach ($sourceComponents as $component) {
             $cloned = $component->cloneComponent();
             $cloned->setUiTemplate($targetTemplate);
-            
+
             $this->getEntityManager()->persist($cloned);
             $clonedComponents[] = $cloned;
         }
 
         $this->getEntityManager()->flush();
-        
+
         return $clonedComponents;
     }
 }

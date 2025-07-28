@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\DocumentTemplate;
 use App\Entity\Document\DocumentType;
 use App\Entity\User\Admin;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,7 +22,7 @@ class DocumentTemplateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active templates
+     * Find all active templates.
      */
     public function findActive(): array
     {
@@ -28,11 +31,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find templates by type
+     * Find templates by type.
      */
     public function findByType(DocumentType $type): array
     {
@@ -43,11 +47,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find template by slug
+     * Find template by slug.
      */
     public function findBySlug(string $slug): ?DocumentTemplate
     {
@@ -57,11 +62,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find templates created by user
+     * Find templates created by user.
      */
     public function findByCreatedBy(Admin $admin): array
     {
@@ -70,11 +76,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('user', $admin)
             ->orderBy('dt.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find most used templates
+     * Find most used templates.
      */
     public function findMostUsed(int $limit = 10): array
     {
@@ -85,11 +92,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->addOrderBy('dt.name', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search templates by name or description
+     * Search templates by name or description.
      */
     public function search(string $query): array
     {
@@ -100,11 +108,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find templates with placeholders
+     * Find templates with placeholders.
      */
     public function findWithPlaceholders(): array
     {
@@ -115,11 +124,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find templates by placeholder key
+     * Find templates by placeholder key.
      */
     public function findByPlaceholder(string $placeholderKey): array
     {
@@ -130,32 +140,36 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('key', $placeholderKey)
             ->orderBy('dt.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get template statistics
+     * Get template statistics.
      */
     public function getTemplateStatistics(): array
     {
         $totalTemplates = $this->createQueryBuilder('dt')
             ->select('COUNT(dt.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $activeTemplates = $this->createQueryBuilder('dt')
             ->select('COUNT(dt.id)')
             ->where('dt.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $totalUsage = $this->createQueryBuilder('dt')
             ->select('SUM(dt.usageCount)')
             ->where('dt.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $withPlaceholders = $this->createQueryBuilder('dt')
             ->select('COUNT(dt.id)')
@@ -164,7 +178,8 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->andWhere('JSON_LENGTH(dt.placeholders) > 0')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total' => $totalTemplates,
@@ -175,7 +190,7 @@ class DocumentTemplateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find templates by document type statistics
+     * Find templates by document type statistics.
      */
     public function getTypeStatistics(): array
     {
@@ -187,7 +202,8 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->groupBy('doc_type.id')
             ->orderBy('count', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $stats = [];
         foreach ($result as $row) {
@@ -198,7 +214,7 @@ class DocumentTemplateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find unused templates
+     * Find unused templates.
      */
     public function findUnused(): array
     {
@@ -208,11 +224,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('dt.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recently created templates
+     * Find recently created templates.
      */
     public function findRecent(int $limit = 10): array
     {
@@ -222,13 +239,14 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->orderBy('dt.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find templates updated since date
+     * Find templates updated since date.
      */
-    public function findUpdatedSince(\DateTime $since): array
+    public function findUpdatedSince(DateTime $since): array
     {
         return $this->createQueryBuilder('dt')
             ->where('dt.isActive = :active')
@@ -237,11 +255,12 @@ class DocumentTemplateRepository extends ServiceEntityRepository
             ->setParameter('since', $since)
             ->orderBy('dt.updatedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get available placeholders across all templates
+     * Get available placeholders across all templates.
      */
     public function getAllPlaceholders(): array
     {

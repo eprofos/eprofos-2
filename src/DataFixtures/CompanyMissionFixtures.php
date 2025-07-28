@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -15,40 +18,41 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create('fr_FR');
-        
+
         // Get mentors
         $mentors = $manager->getRepository(Mentor::class)->findAll();
-        
+
         if (empty($mentors)) {
             echo "⚠️  No mentors found. Please run MentorFixtures first.\n";
+
             return;
         }
 
         // Mission templates by complexity and term
         $missionTemplates = $this->getMissionTemplates();
-        
+
         $missionCount = 0;
-        
+
         foreach ($mentors as $mentor) {
             // Each mentor creates 5-12 missions with proper progression
             $missionsToCreate = $faker->numberBetween(5, 12);
-            
+
             // Ensure proper distribution across terms and complexity
             $termDistribution = ['court' => 40, 'moyen' => 35, 'long' => 25]; // Percentage
             $complexityDistribution = ['debutant' => 50, 'intermediaire' => 35, 'avance' => 15]; // Percentage
-            
+
             $createdMissions = [];
-            
+
             for ($i = 0; $i < $missionsToCreate; $i++) {
                 $mission = new CompanyMission();
-                
+
                 // Determine term and complexity based on distribution
                 $term = $this->selectWeightedRandom($termDistribution);
                 $complexity = $this->selectWeightedRandom($complexityDistribution);
-                
+
                 // Get template for this term/complexity combination
                 $template = $faker->randomElement($missionTemplates[$term][$complexity]);
-                
+
                 // Basic properties
                 $mission->setTitle($template['title']);
                 $mission->setDescription($template['description']);
@@ -58,56 +62,68 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                 $mission->setTerm($term);
                 $mission->setDuration($faker->randomElement($template['durations']));
                 $mission->setDepartment($faker->randomElement(array_keys(CompanyMission::DEPARTMENTS)));
-                
+
                 // Generate objectives (3-6 objectives)
                 $objectives = $template['objectives'];
                 $selectedObjectives = $faker->randomElements($objectives, $faker->numberBetween(3, min(6, count($objectives))));
                 $mission->setObjectives($selectedObjectives);
-                
+
                 // Generate required skills
                 $requiredSkills = $template['required_skills'];
                 $selectedRequiredSkills = $faker->randomElements($requiredSkills, $faker->numberBetween(2, min(5, count($requiredSkills))));
                 $mission->setRequiredSkills($selectedRequiredSkills);
-                
+
                 // Generate skills to acquire
                 $skillsToAcquire = $template['skills_to_acquire'];
                 $selectedSkillsToAcquire = $faker->randomElements($skillsToAcquire, $faker->numberBetween(3, min(7, count($skillsToAcquire))));
                 $mission->setSkillsToAcquire($selectedSkillsToAcquire);
-                
+
                 // Generate prerequisites
                 $prerequisites = $this->generatePrerequisites($faker, $complexity, $term);
                 $mission->setPrerequisites($prerequisites);
-                
+
                 // Generate evaluation criteria
                 $evaluationCriteria = $template['evaluation_criteria'];
                 $selectedCriteria = $faker->randomElements($evaluationCriteria, $faker->numberBetween(3, min(6, count($evaluationCriteria))));
                 $mission->setEvaluationCriteria($selectedCriteria);
-                
+
                 // Set order index
                 $orderIndex = $this->getNextOrderIndex($createdMissions, $term, $complexity);
                 $mission->setOrderIndex($orderIndex);
-                
+
                 // Set random creation date (last 6 months)
-                $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now'));
+                $createdAt = DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now'));
                 $mission->setCreatedAt($createdAt);
                 $mission->setUpdatedAt($createdAt);
-                
+
                 $manager->persist($mission);
                 $createdMissions[] = $mission;
                 $missionCount++;
-                
+
                 // Add mission reference for other fixtures
                 $this->addReference('company-mission-' . $missionCount, $mission);
             }
         }
-        
+
         $manager->flush();
-        
+
         echo "✅ Created {$missionCount} company missions\n";
     }
 
+    public function getDependencies(): array
+    {
+        return [
+            MentorFixtures::class,
+        ];
+    }
+
+    public static function getGroups(): array
+    {
+        return ['alternance', 'missions'];
+    }
+
     /**
-     * Get mission templates organized by term and complexity
+     * Get mission templates organized by term and complexity.
      */
     private function getMissionTemplates(): array
     {
@@ -122,26 +138,26 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Maîtriser les outils de base',
                             'Comprendre l\'organisation de l\'équipe',
                             'Identifier les interlocuteurs clés',
-                            'Respecter les procédures de sécurité'
+                            'Respecter les procédures de sécurité',
                         ],
                         'required_skills' => [
                             'Curiosité et capacité d\'adaptation',
                             'Capacités de communication',
-                            'Sens de l\'observation'
+                            'Sens de l\'observation',
                         ],
                         'skills_to_acquire' => [
                             'Utilisation des outils métier',
                             'Compréhension des processus internes',
                             'Autonomie dans les tâches simples',
-                            'Communication professionnelle'
+                            'Communication professionnelle',
                         ],
                         'evaluation_criteria' => [
                             'Rapidité d\'adaptation',
                             'Qualité des questions posées',
                             'Respect des consignes',
-                            'Initiative dans l\'apprentissage'
+                            'Initiative dans l\'apprentissage',
                         ],
-                        'durations' => ['1-2 semaines', '3-4 semaines']
+                        'durations' => ['1-2 semaines', '3-4 semaines'],
                     ],
                     [
                         'title' => 'Support aux équipes opérationnelles',
@@ -150,27 +166,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Assister les équipes dans leurs tâches',
                             'Apprendre les procédures standards',
                             'Développer l\'esprit d\'équipe',
-                            'Contribuer aux objectifs collectifs'
+                            'Contribuer aux objectifs collectifs',
                         ],
                         'required_skills' => [
                             'Esprit d\'équipe',
                             'Volonté d\'apprendre',
-                            'Ponctualité et assiduité'
+                            'Ponctualité et assiduité',
                         ],
                         'skills_to_acquire' => [
                             'Travail en équipe',
                             'Gestion des priorités simples',
                             'Communication opérationnelle',
-                            'Respect des délais'
+                            'Respect des délais',
                         ],
                         'evaluation_criteria' => [
                             'Intégration dans l\'équipe',
                             'Qualité du travail fourni',
                             'Respect des échéances',
-                            'Proactivité'
+                            'Proactivité',
                         ],
-                        'durations' => ['2-3 semaines', '1 mois']
-                    ]
+                        'durations' => ['2-3 semaines', '1 mois'],
+                    ],
                 ],
                 'intermediaire' => [
                     [
@@ -180,27 +196,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Planifier les étapes du projet',
                             'Coordonner les différents intervenants',
                             'Respecter les délais et le budget',
-                            'Communiquer sur l\'avancement'
+                            'Communiquer sur l\'avancement',
                         ],
                         'required_skills' => [
                             'Bases de la gestion de projet',
                             'Capacité d\'organisation',
-                            'Leadership naissant'
+                            'Leadership naissant',
                         ],
                         'skills_to_acquire' => [
                             'Planification et suivi de projet',
                             'Coordination d\'équipe',
                             'Gestion des risques simples',
-                            'Reporting et communication'
+                            'Reporting et communication',
                         ],
                         'evaluation_criteria' => [
                             'Respect des délais',
                             'Qualité des livrables',
                             'Capacité de coordination',
-                            'Gestion des difficultés'
+                            'Gestion des difficultés',
                         ],
-                        'durations' => ['1 mois', '1-2 mois']
-                    ]
+                        'durations' => ['1 mois', '1-2 mois'],
+                    ],
                 ],
                 'avance' => [
                     [
@@ -210,28 +226,28 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Analyser le processus existant',
                             'Identifier les points d\'amélioration',
                             'Proposer des solutions innovantes',
-                            'Mesurer l\'impact des améliorations'
+                            'Mesurer l\'impact des améliorations',
                         ],
                         'required_skills' => [
                             'Esprit analytique',
                             'Capacité d\'innovation',
-                            'Maîtrise des outils d\'analyse'
+                            'Maîtrise des outils d\'analyse',
                         ],
                         'skills_to_acquire' => [
                             'Analyse de processus',
                             'Proposition d\'améliorations',
                             'Conduite du changement',
-                            'Mesure de performance'
+                            'Mesure de performance',
                         ],
                         'evaluation_criteria' => [
                             'Pertinence de l\'analyse',
                             'Créativité des solutions',
                             'Faisabilité des propositions',
-                            'Impact mesurable'
+                            'Impact mesurable',
                         ],
-                        'durations' => ['1-2 mois', '2-3 mois']
-                    ]
-                ]
+                        'durations' => ['1-2 mois', '2-3 mois'],
+                    ],
+                ],
             ],
             'moyen' => [
                 'debutant' => [
@@ -242,27 +258,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Contribuer activement au projet',
                             'Développer des compétences métier',
                             'Travailler en mode projet',
-                            'Acquérir une vision élargie'
+                            'Acquérir une vision élargie',
                         ],
                         'required_skills' => [
                             'Bases métier solides',
                             'Capacité de travail en équipe projet',
-                            'Adaptabilité'
+                            'Adaptabilité',
                         ],
                         'skills_to_acquire' => [
                             'Gestion de projet avancée',
                             'Compétences métier spécialisées',
                             'Travail collaboratif étendu',
-                            'Vision transversale'
+                            'Vision transversale',
                         ],
                         'evaluation_criteria' => [
                             'Contribution au projet',
                             'Développement des compétences',
                             'Collaboration efficace',
-                            'Appropriation des enjeux'
+                            'Appropriation des enjeux',
                         ],
-                        'durations' => ['2-3 mois', '3-4 mois']
-                    ]
+                        'durations' => ['2-3 mois', '3-4 mois'],
+                    ],
                 ],
                 'intermediaire' => [
                     [
@@ -272,27 +288,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Piloter une équipe projet',
                             'Gérer les ressources allouées',
                             'Assurer le suivi et le reporting',
-                            'Résoudre les conflits et blocages'
+                            'Résoudre les conflits et blocages',
                         ],
                         'required_skills' => [
                             'Leadership confirmé',
                             'Gestion de projet',
-                            'Capacité de négociation'
+                            'Capacité de négociation',
                         ],
                         'skills_to_acquire' => [
                             'Management d\'équipe',
                             'Gestion de conflits',
                             'Pilotage de performance',
-                            'Communication managériale'
+                            'Communication managériale',
                         ],
                         'evaluation_criteria' => [
                             'Efficacité du pilotage',
                             'Atteinte des objectifs',
                             'Qualité du management',
-                            'Gestion des difficultés'
+                            'Gestion des difficultés',
                         ],
-                        'durations' => ['3-4 mois', '6 mois']
-                    ]
+                        'durations' => ['3-4 mois', '6 mois'],
+                    ],
                 ],
                 'avance' => [
                     [
@@ -302,28 +318,28 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Analyser le marché et la concurrence',
                             'Concevoir l\'offre et son positionnement',
                             'Développer le business plan',
-                            'Préparer le lancement commercial'
+                            'Préparer le lancement commercial',
                         ],
                         'required_skills' => [
                             'Vision stratégique',
                             'Connaissance du marché',
-                            'Capacité d\'innovation'
+                            'Capacité d\'innovation',
                         ],
                         'skills_to_acquire' => [
                             'Développement produit/service',
                             'Analyse concurrentielle',
                             'Business planning',
-                            'Stratégie commerciale'
+                            'Stratégie commerciale',
                         ],
                         'evaluation_criteria' => [
                             'Qualité de l\'analyse marché',
                             'Innovation de l\'offre',
                             'Viabilité économique',
-                            'Potentiel commercial'
+                            'Potentiel commercial',
                         ],
-                        'durations' => ['4-6 mois', '6 mois']
-                    ]
-                ]
+                        'durations' => ['4-6 mois', '6 mois'],
+                    ],
+                ],
             ],
             'long' => [
                 'debutant' => [
@@ -334,27 +350,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Assurer la satisfaction client',
                             'Gérer la relation commerciale',
                             'Optimiser la rentabilité',
-                            'Développer le compte client'
+                            'Développer le compte client',
                         ],
                         'required_skills' => [
                             'Relation client',
                             'Compétences commerciales',
-                            'Gestion de contrat'
+                            'Gestion de contrat',
                         ],
                         'skills_to_acquire' => [
                             'Account management',
                             'Négociation commerciale avancée',
                             'Gestion de la rentabilité',
-                            'Développement commercial'
+                            'Développement commercial',
                         ],
                         'evaluation_criteria' => [
                             'Satisfaction client',
                             'Atteinte des objectifs commerciaux',
                             'Rentabilité du contrat',
-                            'Développement du compte'
+                            'Développement du compte',
                         ],
-                        'durations' => ['6 mois', '1 an']
-                    ]
+                        'durations' => ['6 mois', '1 an'],
+                    ],
                 ],
                 'intermediaire' => [
                     [
@@ -364,27 +380,27 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Atteindre les objectifs financiers',
                             'Optimiser les ressources',
                             'Développer l\'activité',
-                            'Manager les équipes'
+                            'Manager les équipes',
                         ],
                         'required_skills' => [
                             'Gestion financière',
                             'Management d\'équipe',
-                            'Vision business'
+                            'Vision business',
                         ],
                         'skills_to_acquire' => [
                             'Pilotage de centre de profit',
                             'Optimisation des ressources',
                             'Développement d\'activité',
-                            'Management opérationnel'
+                            'Management opérationnel',
                         ],
                         'evaluation_criteria' => [
                             'Atteinte des résultats financiers',
                             'Efficacité opérationnelle',
                             'Développement de l\'activité',
-                            'Performance des équipes'
+                            'Performance des équipes',
                         ],
-                        'durations' => ['6 mois', '1 an']
-                    ]
+                        'durations' => ['6 mois', '1 an'],
+                    ],
                 ],
                 'avance' => [
                     [
@@ -394,40 +410,40 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                             'Analyser l\'existant et définir la cible',
                             'Piloter la transformation',
                             'Accompagner le changement',
-                            'Mesurer les bénéfices'
+                            'Mesurer les bénéfices',
                         ],
                         'required_skills' => [
                             'Transformation digitale',
                             'Conduite du changement',
-                            'Gestion de projet complexe'
+                            'Gestion de projet complexe',
                         ],
                         'skills_to_acquire' => [
                             'Stratégie de transformation',
                             'Pilotage de grands projets',
                             'Change management',
-                            'Mesure de la performance'
+                            'Mesure de la performance',
                         ],
                         'evaluation_criteria' => [
                             'Réussite de la transformation',
                             'Adoption par les utilisateurs',
                             'Bénéfices mesurables',
-                            'Respect des délais et budget'
+                            'Respect des délais et budget',
                         ],
-                        'durations' => ['6 mois', '1 an']
-                    ]
-                ]
-            ]
+                        'durations' => ['6 mois', '1 an'],
+                    ],
+                ],
+            ],
         ];
     }
 
     /**
-     * Select a weighted random option
+     * Select a weighted random option.
      */
     private function selectWeightedRandom(array $weights): string
     {
         $totalWeight = array_sum($weights);
         $random = mt_rand(1, $totalWeight);
-        
+
         $currentWeight = 0;
         foreach ($weights as $key => $weight) {
             $currentWeight += $weight;
@@ -435,12 +451,12 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
                 return $key;
             }
         }
-        
+
         return array_key_first($weights);
     }
 
     /**
-     * Generate context based on mentor's company and department
+     * Generate context based on mentor's company and department.
      */
     private function generateContext(object $faker, Mentor $mentor): string
     {
@@ -450,12 +466,12 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
             "En lien avec les projets en cours au sein de {$mentor->getCompanyName()}, cette mission permettra à l'alternant de découvrir les métiers et de développer son expertise.",
             "Cette mission s'intègre dans la politique de formation et d'accompagnement des jeunes talents de {$mentor->getCompanyName()}.",
         ];
-        
+
         return $faker->randomElement($contexts);
     }
 
     /**
-     * Generate prerequisites based on complexity and term
+     * Generate prerequisites based on complexity and term.
      */
     private function generatePrerequisites(object $faker, string $complexity, string $term): array
     {
@@ -463,61 +479,49 @@ class CompanyMissionFixtures extends Fixture implements DependentFixtureInterfac
             'debutant' => [
                 'Motivation et curiosité pour le domaine',
                 'Capacité d\'adaptation',
-                'Sens du travail en équipe'
+                'Sens du travail en équipe',
             ],
             'intermediaire' => [
                 'Expérience préalable dans le domaine',
                 'Autonomie dans les tâches courantes',
                 'Capacité de prise d\'initiative',
-                'Compétences de base validées'
+                'Compétences de base validées',
             ],
             'avance' => [
                 'Expertise technique confirmée',
                 'Expérience de management ou de projet',
                 'Capacité d\'analyse et de synthèse',
-                'Leadership et capacité d\'influence'
-            ]
+                'Leadership et capacité d\'influence',
+            ],
         ];
 
         $termPrerequisites = [
             'court' => ['Disponibilité immédiate'],
             'moyen' => ['Engagement sur la durée', 'Capacité de montée en compétences'],
-            'long' => ['Vision long terme', 'Capacité d\'évolution', 'Engagement fort']
+            'long' => ['Vision long terme', 'Capacité d\'évolution', 'Engagement fort'],
         ];
 
         $prerequisites = array_merge(
             $faker->randomElements($basePrerequisites[$complexity], $faker->numberBetween(2, 3)),
-            $termPrerequisites[$term]
+            $termPrerequisites[$term],
         );
 
         return array_values(array_unique($prerequisites));
     }
 
     /**
-     * Get next order index for given term and complexity
+     * Get next order index for given term and complexity.
      */
     private function getNextOrderIndex(array $createdMissions, string $term, string $complexity): int
     {
         $maxOrder = 0;
-        
+
         foreach ($createdMissions as $mission) {
             if ($mission->getTerm() === $term && $mission->getComplexity() === $complexity) {
                 $maxOrder = max($maxOrder, $mission->getOrderIndex());
             }
         }
-        
+
         return $maxOrder + 1;
-    }
-
-    public function getDependencies(): array
-    {
-        return [
-            MentorFixtures::class,
-        ];
-    }
-
-    public static function getGroups(): array
-    {
-        return ['alternance', 'missions'];
     }
 }

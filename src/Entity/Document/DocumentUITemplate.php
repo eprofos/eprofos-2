@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Document;
 
 use App\Entity\User\Admin;
 use App\Repository\Document\DocumentUITemplateRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -11,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DocumentUITemplate entity - UI Layout Templates for Documents
- * 
+ * DocumentUITemplate entity - UI Layout Templates for Documents.
+ *
  * Manages configurable UI templates for document rendering in PDF/Word format.
  * Provides flexible layout system with CSS, styling options, and component management.
  */
@@ -21,6 +24,44 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class DocumentUITemplate
 {
+    // Template type constants
+    public const TYPE_STANDARD = 'standard';
+
+    public const TYPE_LETTERHEAD = 'letterhead';
+
+    public const TYPE_CERTIFICATE = 'certificate';
+
+    public const TYPE_REPORT = 'report';
+
+    public const TYPE_INVOICE = 'invoice';
+
+    public const TYPE_CONTRACT = 'contract';
+
+    public const TYPES = [
+        self::TYPE_STANDARD => 'Standard',
+        self::TYPE_LETTERHEAD => 'En-tête',
+        self::TYPE_CERTIFICATE => 'Certificat',
+        self::TYPE_REPORT => 'Rapport',
+        self::TYPE_INVOICE => 'Facture',
+        self::TYPE_CONTRACT => 'Contrat',
+    ];
+
+    // Component zones constants
+    public const ZONE_HEADER = 'header';
+
+    public const ZONE_BODY = 'body';
+
+    public const ZONE_FOOTER = 'footer';
+
+    public const ZONE_SIDEBAR = 'sidebar';
+
+    public const ZONES = [
+        self::ZONE_HEADER => 'En-tête',
+        self::ZONE_BODY => 'Corps',
+        self::ZONE_FOOTER => 'Pied de page',
+        self::ZONE_SIDEBAR => 'Barre latérale',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -32,7 +73,7 @@ class DocumentUITemplate
         min: 3,
         max: 255,
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $name = null;
 
@@ -42,11 +83,11 @@ class DocumentUITemplate
         min: 3,
         max: 500,
         minMessage: 'Le slug doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le slug ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Assert\Regex(
         pattern: '/^[a-z0-9\-\/]+$/',
-        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.'
+        message: 'Le slug ne peut contenir que des lettres minuscules, chiffres, tirets et slashes.',
     )]
     private ?string $slug = null;
 
@@ -81,14 +122,14 @@ class DocumentUITemplate
     #[ORM\Column(length: 50)]
     #[Assert\Choice(
         choices: ['portrait', 'landscape'],
-        message: 'Orientation invalide.'
+        message: 'Orientation invalide.',
     )]
     private string $orientation = 'portrait';
 
     #[ORM\Column(length: 50)]
     #[Assert\Choice(
         choices: ['A4', 'A3', 'A5', 'Letter', 'Legal'],
-        message: 'Format de page invalide.'
+        message: 'Format de page invalide.',
     )]
     private string $paperSize = 'A4';
 
@@ -135,10 +176,10 @@ class DocumentUITemplate
     private int $usageCount = 0;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Admin::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -152,46 +193,16 @@ class DocumentUITemplate
     #[ORM\OrderBy(['sortOrder' => 'ASC'])]
     private Collection $components;
 
-    // Template type constants
-    public const TYPE_STANDARD = 'standard';
-    public const TYPE_LETTERHEAD = 'letterhead';
-    public const TYPE_CERTIFICATE = 'certificate';
-    public const TYPE_REPORT = 'report';
-    public const TYPE_INVOICE = 'invoice';
-    public const TYPE_CONTRACT = 'contract';
-
-    public const TYPES = [
-        self::TYPE_STANDARD => 'Standard',
-        self::TYPE_LETTERHEAD => 'En-tête',
-        self::TYPE_CERTIFICATE => 'Certificat',
-        self::TYPE_REPORT => 'Rapport',
-        self::TYPE_INVOICE => 'Facture',
-        self::TYPE_CONTRACT => 'Contrat',
-    ];
-
-    // Component zones constants
-    public const ZONE_HEADER = 'header';
-    public const ZONE_BODY = 'body';
-    public const ZONE_FOOTER = 'footer';
-    public const ZONE_SIDEBAR = 'sidebar';
-
-    public const ZONES = [
-        self::ZONE_HEADER => 'En-tête',
-        self::ZONE_BODY => 'Corps',
-        self::ZONE_FOOTER => 'Pied de page',
-        self::ZONE_SIDEBAR => 'Barre latérale',
-    ];
-
     public function __construct()
     {
         $this->components = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->margins = [
             'top' => '20mm',
             'bottom' => '20mm',
             'left' => '20mm',
-            'right' => '20mm'
+            'right' => '20mm',
         ];
         $this->marginTop = 20.0;
         $this->marginRight = 20.0;
@@ -202,14 +213,19 @@ class DocumentUITemplate
             'numbering' => true,
             'numbering_position' => 'bottom-center',
             'show_date' => true,
-            'show_watermark' => false
+            'show_watermark' => false,
         ];
+    }
+
+    public function __toString(): string
+    {
+        return $this->name ?: 'UI Template #' . $this->id;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->syncMargins(); // Keep margins in sync
     }
 
@@ -238,6 +254,7 @@ class DocumentUITemplate
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -249,6 +266,7 @@ class DocumentUITemplate
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -260,6 +278,7 @@ class DocumentUITemplate
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -271,6 +290,7 @@ class DocumentUITemplate
     public function setDocumentType(?DocumentType $documentType): static
     {
         $this->documentType = $documentType;
+
         return $this;
     }
 
@@ -282,6 +302,7 @@ class DocumentUITemplate
     public function setHtmlTemplate(?string $htmlTemplate): static
     {
         $this->htmlTemplate = $htmlTemplate;
+
         return $this;
     }
 
@@ -293,6 +314,7 @@ class DocumentUITemplate
     public function setCssStyles(?string $cssStyles): static
     {
         $this->cssStyles = $cssStyles;
+
         return $this;
     }
 
@@ -304,6 +326,7 @@ class DocumentUITemplate
     public function setLayoutConfiguration(?array $layoutConfiguration): static
     {
         $this->layoutConfiguration = $layoutConfiguration;
+
         return $this;
     }
 
@@ -315,6 +338,7 @@ class DocumentUITemplate
     public function setPageSettings(?array $pageSettings): static
     {
         $this->pageSettings = $pageSettings;
+
         return $this;
     }
 
@@ -326,6 +350,7 @@ class DocumentUITemplate
     public function setHeaderFooterConfig(?array $headerFooterConfig): static
     {
         $this->headerFooterConfig = $headerFooterConfig;
+
         return $this;
     }
 
@@ -337,6 +362,7 @@ class DocumentUITemplate
     public function setComponentStyles(?array $componentStyles): static
     {
         $this->componentStyles = $componentStyles;
+
         return $this;
     }
 
@@ -348,6 +374,7 @@ class DocumentUITemplate
     public function setVariables(?array $variables): static
     {
         $this->variables = $variables;
+
         return $this;
     }
 
@@ -359,6 +386,7 @@ class DocumentUITemplate
     public function setOrientation(string $orientation): static
     {
         $this->orientation = $orientation;
+
         return $this;
     }
 
@@ -370,6 +398,7 @@ class DocumentUITemplate
     public function setPaperSize(string $paperSize): static
     {
         $this->paperSize = $paperSize;
+
         return $this;
     }
 
@@ -381,6 +410,7 @@ class DocumentUITemplate
     public function setMargins(?array $margins): static
     {
         $this->margins = $margins;
+
         return $this;
     }
 
@@ -392,6 +422,7 @@ class DocumentUITemplate
     public function setMarginTop(?float $marginTop): static
     {
         $this->marginTop = $marginTop;
+
         return $this;
     }
 
@@ -403,6 +434,7 @@ class DocumentUITemplate
     public function setMarginRight(?float $marginRight): static
     {
         $this->marginRight = $marginRight;
+
         return $this;
     }
 
@@ -414,6 +446,7 @@ class DocumentUITemplate
     public function setMarginBottom(?float $marginBottom): static
     {
         $this->marginBottom = $marginBottom;
+
         return $this;
     }
 
@@ -425,6 +458,7 @@ class DocumentUITemplate
     public function setMarginLeft(?float $marginLeft): static
     {
         $this->marginLeft = $marginLeft;
+
         return $this;
     }
 
@@ -436,6 +470,7 @@ class DocumentUITemplate
     public function setShowPageNumbers(bool $showPageNumbers): static
     {
         $this->showPageNumbers = $showPageNumbers;
+
         return $this;
     }
 
@@ -447,11 +482,12 @@ class DocumentUITemplate
     public function setCustomCss(?string $customCss): static
     {
         $this->customCss = $customCss;
+
         return $this;
     }
 
     /**
-     * Synchronize individual margin properties with the margins array
+     * Synchronize individual margin properties with the margins array.
      */
     public function syncMargins(): void
     {
@@ -465,7 +501,7 @@ class DocumentUITemplate
     }
 
     /**
-     * Load individual margin properties from the margins array
+     * Load individual margin properties from the margins array.
      */
     public function loadMarginsFromArray(): void
     {
@@ -485,6 +521,7 @@ class DocumentUITemplate
     public function setIcon(?string $icon): static
     {
         $this->icon = $icon;
+
         return $this;
     }
 
@@ -496,6 +533,7 @@ class DocumentUITemplate
     public function setColor(?string $color): static
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -507,6 +545,7 @@ class DocumentUITemplate
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
@@ -518,6 +557,7 @@ class DocumentUITemplate
     public function setIsDefault(bool $isDefault): static
     {
         $this->isDefault = $isDefault;
+
         return $this;
     }
 
@@ -529,6 +569,7 @@ class DocumentUITemplate
     public function setIsGlobal(bool $isGlobal): static
     {
         $this->isGlobal = $isGlobal;
+
         return $this;
     }
 
@@ -540,6 +581,7 @@ class DocumentUITemplate
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -551,28 +593,31 @@ class DocumentUITemplate
     public function setUsageCount(int $usageCount): static
     {
         $this->usageCount = $usageCount;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -584,6 +629,7 @@ class DocumentUITemplate
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -595,6 +641,7 @@ class DocumentUITemplate
     public function setUpdatedBy(?Admin $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
+
         return $this;
     }
 
@@ -628,35 +675,34 @@ class DocumentUITemplate
     }
 
     /**
-     * Business logic methods
+     * Business logic methods.
      */
 
     /**
-     * Increment usage count
+     * Increment usage count.
      */
     public function incrementUsage(): self
     {
         $this->usageCount++;
+
         return $this;
     }
 
     /**
-     * Get components by zone
+     * Get components by zone.
      */
     public function getComponentsByZone(string $zone): Collection
     {
-        return $this->components->filter(function(DocumentUIComponent $component) use ($zone) {
-            return $component->getZone() === $zone;
-        });
+        return $this->components->filter(static fn (DocumentUIComponent $component) => $component->getZone() === $zone);
     }
 
     /**
-     * Render complete HTML template with data
+     * Render complete HTML template with data.
      */
     public function renderHtml(array $data = []): string
     {
         $html = $this->htmlTemplate ?: $this->generateDefaultTemplate();
-        
+
         // Replace variables from template configuration
         if ($this->variables) {
             foreach ($this->variables as $key => $config) {
@@ -677,18 +723,18 @@ class DocumentUITemplate
         foreach ($standardVars as $key => $value) {
             $html = str_replace('{{' . $key . '}}', $value, $html);
         }
-        
+
         // Replace any remaining variables from data array
         foreach ($data as $key => $value) {
             if (is_string($value) || is_numeric($value)) {
-                $html = str_replace('{{' . $key . '}}', (string)$value, $html);
+                $html = str_replace('{{' . $key . '}}', (string) $value, $html);
             }
         }
-        
+
         // Replace CSS placeholder
         $css = $this->renderCss();
         $html = str_replace('{{css}}', $css, $html);
-        
+
         // Handle empty content fallback
         $allContent = ($data['header_content'] ?? '') . ($data['content'] ?? '') . ($data['footer_content'] ?? '');
         if (empty(trim($allContent))) {
@@ -703,15 +749,15 @@ class DocumentUITemplate
     }
 
     /**
-     * Generate complete CSS with all styles
+     * Generate complete CSS with all styles.
      */
     public function renderCss(): string
     {
         $css = $this->cssStyles ?: '';
-        
+
         // Add page settings
         $css .= $this->generatePageCss();
-        
+
         // Add component styles
         if ($this->componentStyles) {
             foreach ($this->componentStyles as $selector => $styles) {
@@ -727,7 +773,159 @@ class DocumentUITemplate
     }
 
     /**
-     * Generate default HTML template structure
+     * Get page configuration for PDF generation.
+     */
+    public function getPageConfig(): array
+    {
+        return [
+            'format' => $this->paperSize,
+            'orientation' => $this->orientation,
+            'margin' => $this->margins,
+            'displayHeaderFooter' => !empty($this->headerFooterConfig),
+            'headerTemplate' => $this->headerFooterConfig['header'] ?? '',
+            'footerTemplate' => $this->headerFooterConfig['footer'] ?? '',
+            'printBackground' => true,
+        ];
+    }
+
+    /**
+     * Set variable configuration.
+     */
+    public function setVariable(string $name, array $config): self
+    {
+        $variables = $this->variables ?? [];
+        $variables[$name] = $config;
+        $this->variables = $variables;
+
+        return $this;
+    }
+
+    /**
+     * Remove variable.
+     */
+    public function removeVariable(string $name): self
+    {
+        if ($this->variables && isset($this->variables[$name])) {
+            unset($this->variables[$name]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get variable names.
+     */
+    public function getVariableNames(): array
+    {
+        return array_keys($this->variables ?? []);
+    }
+
+    /**
+     * Set component style.
+     */
+    public function setComponentStyle(string $selector, array $styles): self
+    {
+        $componentStyles = $this->componentStyles ?? [];
+        $componentStyles[$selector] = $styles;
+        $this->componentStyles = $componentStyles;
+
+        return $this;
+    }
+
+    /**
+     * Get type label for display.
+     */
+    public function getTypeLabel(): string
+    {
+        return $this->documentType?->getName() ?? 'Global';
+    }
+
+    /**
+     * Check if template can be used for specific document type.
+     */
+    public function canBeUsedFor(?DocumentType $documentType): bool
+    {
+        // Global templates can be used for any type
+        if ($this->isGlobal) {
+            return true;
+        }
+
+        // Type-specific templates
+        return $this->documentType === $documentType;
+    }
+
+    /**
+     * Validate template configuration.
+     */
+    public function validateConfiguration(): array
+    {
+        $errors = [];
+
+        // Check HTML template for undefined variables
+        if ($this->htmlTemplate) {
+            preg_match_all('/\{\{([^}]+)\}\}/', $this->htmlTemplate, $matches);
+            $usedVars = $matches[1];
+            $definedVars = $this->getVariableNames();
+
+            $standardVars = ['date', 'datetime', 'year', 'page_number', 'total_pages', 'title', 'content', 'css'];
+            $allValidVars = array_merge($definedVars, $standardVars);
+
+            foreach ($usedVars as $var) {
+                if (!in_array($var, $allValidVars, true)) {
+                    $errors[] = sprintf('Variable non définie: %s', $var);
+                }
+            }
+        }
+
+        // Check CSS validity (basic check)
+        if ($this->cssStyles) {
+            if (substr_count($this->cssStyles, '{') !== substr_count($this->cssStyles, '}')) {
+                $errors[] = 'CSS invalide: accolades non équilibrées';
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Clone template with new name.
+     */
+    public function cloneTemplate(string $newName, string $newSlug): self
+    {
+        $clone = new self();
+        $clone->setName($newName)
+            ->setSlug($newSlug)
+            ->setDescription($this->description)
+            ->setDocumentType($this->documentType)
+            ->setHtmlTemplate($this->htmlTemplate)
+            ->setCssStyles($this->cssStyles)
+            ->setLayoutConfiguration($this->layoutConfiguration)
+            ->setPageSettings($this->pageSettings)
+            ->setHeaderFooterConfig($this->headerFooterConfig)
+            ->setComponentStyles($this->componentStyles)
+            ->setVariables($this->variables)
+            ->setOrientation($this->orientation)
+            ->setPaperSize($this->paperSize)
+            ->setMargins($this->margins)
+            ->setIcon($this->icon)
+            ->setColor($this->color)
+            ->setIsActive(false) // Start as inactive
+            ->setIsDefault(false)
+            ->setIsGlobal($this->isGlobal)
+            ->setSortOrder($this->sortOrder + 1)
+        ;
+
+        // Clone components
+        foreach ($this->components as $component) {
+            $clonedComponent = $component->cloneComponent();
+            $clone->addComponent($clonedComponent);
+        }
+
+        return $clone;
+    }
+
+    /**
+     * Generate default HTML template structure.
      */
     private function generateDefaultTemplate(): string
     {
@@ -760,19 +958,19 @@ class DocumentUITemplate
     }
 
     /**
-     * Generate CSS for page settings
+     * Generate CSS for page settings.
      */
     private function generatePageCss(): string
     {
         $css = "\n@page {\n";
         $css .= "  size: {$this->paperSize} {$this->orientation};\n";
-        
+
         if ($this->margins) {
             foreach ($this->margins as $side => $value) {
                 $css .= "  margin-{$side}: {$value};\n";
             }
         }
-        
+
         $css .= "}\n";
 
         // Body styles
@@ -783,158 +981,5 @@ class DocumentUITemplate
         $css .= "}\n";
 
         return $css;
-    }
-
-    /**
-     * Get page configuration for PDF generation
-     */
-    public function getPageConfig(): array
-    {
-        return [
-            'format' => $this->paperSize,
-            'orientation' => $this->orientation,
-            'margin' => $this->margins,
-            'displayHeaderFooter' => !empty($this->headerFooterConfig),
-            'headerTemplate' => $this->headerFooterConfig['header'] ?? '',
-            'footerTemplate' => $this->headerFooterConfig['footer'] ?? '',
-            'printBackground' => true,
-        ];
-    }
-
-    /**
-     * Set variable configuration
-     */
-    public function setVariable(string $name, array $config): self
-    {
-        $variables = $this->variables ?? [];
-        $variables[$name] = $config;
-        $this->variables = $variables;
-        return $this;
-    }
-
-    /**
-     * Remove variable
-     */
-    public function removeVariable(string $name): self
-    {
-        if ($this->variables && isset($this->variables[$name])) {
-            unset($this->variables[$name]);
-        }
-        return $this;
-    }
-
-    /**
-     * Get variable names
-     */
-    public function getVariableNames(): array
-    {
-        return array_keys($this->variables ?? []);
-    }
-
-    /**
-     * Set component style
-     */
-    public function setComponentStyle(string $selector, array $styles): self
-    {
-        $componentStyles = $this->componentStyles ?? [];
-        $componentStyles[$selector] = $styles;
-        $this->componentStyles = $componentStyles;
-        return $this;
-    }
-
-    /**
-     * Get type label for display
-     */
-    public function getTypeLabel(): string
-    {
-        return $this->documentType?->getName() ?? 'Global';
-    }
-
-    /**
-     * Check if template can be used for specific document type
-     */
-    public function canBeUsedFor(?DocumentType $documentType): bool
-    {
-        // Global templates can be used for any type
-        if ($this->isGlobal) {
-            return true;
-        }
-        
-        // Type-specific templates
-        return $this->documentType === $documentType;
-    }
-
-    /**
-     * Validate template configuration
-     */
-    public function validateConfiguration(): array
-    {
-        $errors = [];
-
-        // Check HTML template for undefined variables
-        if ($this->htmlTemplate) {
-            preg_match_all('/\{\{([^}]+)\}\}/', $this->htmlTemplate, $matches);
-            $usedVars = $matches[1];
-            $definedVars = $this->getVariableNames();
-            
-            $standardVars = ['date', 'datetime', 'year', 'page_number', 'total_pages', 'title', 'content', 'css'];
-            $allValidVars = array_merge($definedVars, $standardVars);
-
-            foreach ($usedVars as $var) {
-                if (!in_array($var, $allValidVars, true)) {
-                    $errors[] = sprintf('Variable non définie: %s', $var);
-                }
-            }
-        }
-
-        // Check CSS validity (basic check)
-        if ($this->cssStyles) {
-            if (substr_count($this->cssStyles, '{') !== substr_count($this->cssStyles, '}')) {
-                $errors[] = 'CSS invalide: accolades non équilibrées';
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Clone template with new name
-     */
-    public function cloneTemplate(string $newName, string $newSlug): self
-    {
-        $clone = new self();
-        $clone->setName($newName)
-              ->setSlug($newSlug)
-              ->setDescription($this->description)
-              ->setDocumentType($this->documentType)
-              ->setHtmlTemplate($this->htmlTemplate)
-              ->setCssStyles($this->cssStyles)
-              ->setLayoutConfiguration($this->layoutConfiguration)
-              ->setPageSettings($this->pageSettings)
-              ->setHeaderFooterConfig($this->headerFooterConfig)
-              ->setComponentStyles($this->componentStyles)
-              ->setVariables($this->variables)
-              ->setOrientation($this->orientation)
-              ->setPaperSize($this->paperSize)
-              ->setMargins($this->margins)
-              ->setIcon($this->icon)
-              ->setColor($this->color)
-              ->setIsActive(false) // Start as inactive
-              ->setIsDefault(false)
-              ->setIsGlobal($this->isGlobal)
-              ->setSortOrder($this->sortOrder + 1);
-
-        // Clone components
-        foreach ($this->components as $component) {
-            $clonedComponent = $component->cloneComponent();
-            $clone->addComponent($clonedComponent);
-        }
-
-        return $clone;
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?: 'UI Template #' . $this->id;
     }
 }

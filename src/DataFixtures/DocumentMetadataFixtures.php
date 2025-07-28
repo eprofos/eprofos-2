@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
+use App\Entity\Document\Document;
 use App\Entity\Document\DocumentMetadata;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
- * Document Metadata Fixtures - Creates structured metadata for documents
- * 
+ * Document Metadata Fixtures - Creates structured metadata for documents.
+ *
  * Provides comprehensive metadata examples for various document types,
  * demonstrating the flexible metadata system capabilities.
  */
@@ -28,7 +31,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Base légale du document',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'document' => DocumentFixtures::CGVF_DOCUMENT_REFERENCE,
@@ -39,7 +42,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Date d\'application du document',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'document' => DocumentFixtures::CGVF_DOCUMENT_REFERENCE,
@@ -50,7 +53,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Prochaine date de révision du document',
                 'isRequired' => false,
                 'isSearchable' => true,
-                'sortOrder' => 3
+                'sortOrder' => 3,
             ],
             [
                 'document' => DocumentFixtures::CGVF_DOCUMENT_REFERENCE,
@@ -61,8 +64,8 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Qui a approuvé ce document',
                 'isRequired' => true,
                 'isSearchable' => false,
-                'sortOrder' => 4
-            ]
+                'sortOrder' => 4,
+            ],
         ];
 
         // Metadata for Accessibility Policy
@@ -77,9 +80,9 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'isRequired' => true,
                 'isSearchable' => true,
                 'validationRules' => [
-                    'choices' => ['A', 'AA', 'AAA']
+                    'choices' => ['A', 'AA', 'AAA'],
                 ],
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'document' => DocumentFixtures::ACCESSIBILITY_POLICY_REFERENCE,
@@ -90,7 +93,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Standards d\'accessibilité appliqués',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'document' => DocumentFixtures::ACCESSIBILITY_POLICY_REFERENCE,
@@ -101,7 +104,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Dernière évaluation d\'accessibilité',
                 'isRequired' => false,
                 'isSearchable' => true,
-                'sortOrder' => 3
+                'sortOrder' => 3,
             ],
             [
                 'document' => DocumentFixtures::ACCESSIBILITY_POLICY_REFERENCE,
@@ -112,8 +115,8 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Date de la prochaine révision prévue',
                 'isRequired' => false,
                 'isSearchable' => true,
-                'sortOrder' => 4
-            ]
+                'sortOrder' => 4,
+            ],
         ];
 
         // Metadata for Quality Manual
@@ -127,7 +130,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Critères de certification Qualiopi',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'document' => DocumentFixtures::QUALITY_MANUAL_REFERENCE,
@@ -138,7 +141,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Organisme ayant délivré la certification',
                 'isRequired' => true,
                 'isSearchable' => false,
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'document' => DocumentFixtures::QUALITY_MANUAL_REFERENCE,
@@ -149,7 +152,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Date du dernier audit de certification',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 3
+                'sortOrder' => 3,
             ],
             [
                 'document' => DocumentFixtures::QUALITY_MANUAL_REFERENCE,
@@ -160,7 +163,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Personne responsable du système qualité',
                 'isRequired' => true,
                 'isSearchable' => false,
-                'sortOrder' => 4
+                'sortOrder' => 4,
             ],
             [
                 'document' => DocumentFixtures::QUALITY_MANUAL_REFERENCE,
@@ -171,8 +174,8 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'KPI du système qualité',
                 'isRequired' => false,
                 'isSearchable' => false,
-                'sortOrder' => 5
-            ]
+                'sortOrder' => 5,
+            ],
         ];
 
         // Metadata for Student Handbook
@@ -186,7 +189,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Année scolaire de référence',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'document' => DocumentFixtures::STUDENT_HANDBOOK_REFERENCE,
@@ -197,7 +200,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Destinataires du document',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'document' => DocumentFixtures::STUDENT_HANDBOOK_REFERENCE,
@@ -209,9 +212,9 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'isRequired' => true,
                 'isSearchable' => true,
                 'validationRules' => [
-                    'choices' => ['Français', 'English', 'Español']
+                    'choices' => ['Français', 'English', 'Español'],
                 ],
-                'sortOrder' => 3
+                'sortOrder' => 3,
             ],
             [
                 'document' => DocumentFixtures::STUDENT_HANDBOOK_REFERENCE,
@@ -223,10 +226,10 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'isRequired' => false,
                 'isSearchable' => false,
                 'validationRules' => [
-                    'url' => true
+                    'url' => true,
                 ],
-                'sortOrder' => 4
-            ]
+                'sortOrder' => 4,
+            ],
         ];
 
         // Metadata for Privacy Policy
@@ -240,7 +243,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'description' => 'Document conforme au RGPD',
                 'isRequired' => true,
                 'isSearchable' => true,
-                'sortOrder' => 1
+                'sortOrder' => 1,
             ],
             [
                 'document' => DocumentFixtures::PRIVACY_POLICY_REFERENCE,
@@ -252,9 +255,9 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'isRequired' => true,
                 'isSearchable' => false,
                 'validationRules' => [
-                    'email' => true
+                    'email' => true,
                 ],
-                'sortOrder' => 2
+                'sortOrder' => 2,
             ],
             [
                 'document' => DocumentFixtures::PRIVACY_POLICY_REFERENCE,
@@ -267,10 +270,10 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
                 'isSearchable' => true,
                 'validationRules' => [
                     'min' => 1,
-                    'max' => 10
+                    'max' => 10,
                 ],
-                'sortOrder' => 3
-            ]
+                'sortOrder' => 3,
+            ],
         ];
 
         // Combine all metadata
@@ -279,21 +282,22 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
             $accessibilityMetadata,
             $qualityMetadata,
             $handbookMetadata,
-            $privacyMetadata
+            $privacyMetadata,
         );
 
         foreach ($allMetadata as $metaData) {
             $metadata = new DocumentMetadata();
-            $metadata->setDocument($this->getReference($metaData['document'], \App\Entity\Document\Document::class))
-                    ->setMetaKey($metaData['metaKey'])
-                    ->setMetaValue($metaData['metaValue'])
-                    ->setDataType($metaData['dataType'])
-                    ->setDisplayName($metaData['displayName'] ?? null)
-                    ->setDescription($metaData['description'] ?? null)
-                    ->setIsRequired($metaData['isRequired'] ?? false)
-                    ->setIsSearchable($metaData['isSearchable'] ?? true)
-                    ->setIsEditable(true)
-                    ->setSortOrder($metaData['sortOrder'] ?? 0);
+            $metadata->setDocument($this->getReference($metaData['document'], Document::class))
+                ->setMetaKey($metaData['metaKey'])
+                ->setMetaValue($metaData['metaValue'])
+                ->setDataType($metaData['dataType'])
+                ->setDisplayName($metaData['displayName'] ?? null)
+                ->setDescription($metaData['description'] ?? null)
+                ->setIsRequired($metaData['isRequired'] ?? false)
+                ->setIsSearchable($metaData['isSearchable'] ?? true)
+                ->setIsEditable(true)
+                ->setSortOrder($metaData['sortOrder'] ?? 0)
+            ;
 
             if (isset($metaData['validationRules'])) {
                 $metadata->setValidationRules($metaData['validationRules']);

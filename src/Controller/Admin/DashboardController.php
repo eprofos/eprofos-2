@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Psr\Log\LoggerInterface;
 
 /**
- * Admin Dashboard Controller
- * 
+ * Admin Dashboard Controller.
+ *
  * Handles the main admin dashboard interface with Tabler CSS.
  * Provides a simple admin interface for EPROFOS platform management.
  */
@@ -19,13 +21,12 @@ use Psr\Log\LoggerInterface;
 class DashboardController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Admin dashboard homepage
-     * 
+     * Admin dashboard homepage.
+     *
      * Displays the main admin dashboard with basic information
      * and navigation to different admin sections.
      */
@@ -34,7 +35,7 @@ class DashboardController extends AbstractController
     {
         $this->logger->info('Admin dashboard accessed', [
             'user' => $this->getUser()?->getUserIdentifier(),
-            'ip' => $this->getClientIp()
+            'ip' => $this->getClientIp(),
         ]);
 
         // Get current user for display
@@ -44,18 +45,18 @@ class DashboardController extends AbstractController
             'user' => $admin,
             'page_title' => 'Dashboard',
             'breadcrumb' => [
-                ['label' => 'Dashboard', 'url' => null]
-            ]
+                ['label' => 'Dashboard', 'url' => null],
+            ],
         ]);
     }
 
     /**
-     * Get client IP address for logging
+     * Get client IP address for logging.
      */
     private function getClientIp(): ?string
     {
         $request = $this->container->get('request_stack')->getCurrentRequest();
-        
+
         if (!$request) {
             return null;
         }

@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\CompanyVisit;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,9 +22,9 @@ class CompanyVisitRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find visits by student and date range
+     * Find visits by student and date range.
      */
-    public function findByStudentAndDateRange(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByStudentAndDateRange(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('cv')
             ->andWhere('cv.student = :student')
@@ -31,11 +35,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits requiring follow-up
+     * Find visits requiring follow-up.
      */
     public function findVisitsRequiringFollowUp(): array
     {
@@ -44,13 +49,14 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('followUp', true)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get visit statistics for a period
+     * Get visit statistics for a period.
      */
-    public function getVisitStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function getVisitStatistics(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('cv')
             ->select('
@@ -66,7 +72,8 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->andWhere('cv.visitDate >= :startDate')
             ->andWhere('cv.visitDate <= :endDate')
             ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate);
+            ->setParameter('endDate', $endDate)
+        ;
 
         $result = $qb->getQuery()->getSingleResult();
 
@@ -74,18 +81,20 @@ class CompanyVisitRepository extends ServiceEntityRepository
             'total_visits' => (int) $result['total_visits'],
             'follow_up_required' => (int) $result['follow_up_required'],
             'next_visit_scheduled' => (int) $result['next_visit_scheduled'],
-            'follow_up_rate' => $result['total_visits'] > 0 ? 
+            'follow_up_rate' => $result['total_visits'] > 0 ?
                 round(($result['follow_up_required'] / $result['total_visits']) * 100, 2) : 0,
             'avg_overall_rating' => $result['avg_overall_rating'] ? round($result['avg_overall_rating'], 2) : null,
             'avg_working_conditions' => $result['avg_working_conditions'] ? round($result['avg_working_conditions'], 2) : null,
             'avg_supervision' => $result['avg_supervision'] ? round($result['avg_supervision'], 2) : null,
             'avg_integration' => $result['avg_integration'] ? round($result['avg_integration'], 2) : null,
-            'avg_duration' => $result['avg_duration'] ? round($result['avg_duration']) : null
+            'avg_duration' => $result['avg_duration'] ? round($result['avg_duration']) : null,
         ];
     }
 
     /**
-     * Find visits by visitor (teacher)
+     * Find visits by visitor (teacher).
+     *
+     * @param mixed $teacher
      */
     public function findByVisitor($teacher): array
     {
@@ -94,11 +103,14 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('teacher', $teacher)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits by mentor
+     * Find visits by mentor.
+     *
+     * @param mixed $mentor
      */
     public function findByMentor($mentor): array
     {
@@ -107,11 +119,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('mentor', $mentor)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits by type
+     * Find visits by type.
      */
     public function findByType(string $type): array
     {
@@ -120,11 +133,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find recent visits for dashboard
+     * Find recent visits for dashboard.
      */
     public function findRecentVisits(int $limit = 10): array
     {
@@ -132,11 +146,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->orderBy('cv.visitDate', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits with low ratings
+     * Find visits with low ratings.
      */
     public function findVisitsWithLowRatings(float $threshold = 6.0): array
     {
@@ -145,11 +160,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('threshold', $threshold)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits by company (through mentor)
+     * Find visits by company (through mentor).
      */
     public function findByCompany(string $companyName): array
     {
@@ -159,11 +175,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('companyName', '%' . $companyName . '%')
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count visits by type
+     * Count visits by type.
      */
     public function countByType(): array
     {
@@ -171,7 +188,8 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->select('cv.visitType, COUNT(cv.id) as count')
             ->groupBy('cv.visitType')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $counts = [];
         foreach ($result as $row) {
@@ -182,11 +200,11 @@ class CompanyVisitRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find students needing visits
+     * Find students needing visits.
      */
     public function findStudentsNeedingVisits(int $daysSinceLastVisit = 60): array
     {
-        $cutoffDate = new \DateTime('-' . $daysSinceLastVisit . ' days');
+        $cutoffDate = new DateTime('-' . $daysSinceLastVisit . ' days');
 
         return $this->createQueryBuilder('cv')
             ->select('DISTINCT s.id as student_id, s.firstName, s.lastName, MAX(cv.visitDate) as last_visit_date')
@@ -196,11 +214,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->groupBy('s.id, s.firstName, s.lastName')
             ->orderBy('last_visit_date', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find visits with positive outcomes
+     * Find visits with positive outcomes.
      */
     public function findVisitsWithPositiveOutcomes(float $minRating = 7.0): array
     {
@@ -212,11 +231,12 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->setParameter('minRating', $minRating)
             ->orderBy('cv.visitDate', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find overdue follow-up visits
+     * Find overdue follow-up visits.
      */
     public function findOverdueFollowUps(): array
     {
@@ -224,18 +244,19 @@ class CompanyVisitRepository extends ServiceEntityRepository
             ->andWhere('cv.followUpRequired = true')
             ->andWhere('cv.nextVisitDate IS NOT NULL')
             ->andWhere('cv.nextVisitDate < :now')
-            ->setParameter('now', new \DateTime())
+            ->setParameter('now', new DateTime())
             ->orderBy('cv.nextVisitDate', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get monthly visit trends
+     * Get monthly visit trends.
      */
     public function getMonthlyVisitTrends(int $months = 12): array
     {
-        $startDate = new \DateTime('-' . $months . ' months');
+        $startDate = new DateTime('-' . $months . ' months');
 
         return $this->createQueryBuilder('cv')
             ->select('

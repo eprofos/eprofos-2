@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\User;
 
 use App\Entity\User\Teacher;
@@ -14,8 +16,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 
 /**
- * Teacher Service
- * 
+ * Teacher Service.
+ *
  * Handles teacher-related business logic including email notifications,
  * password management, and account operations.
  */
@@ -28,12 +30,11 @@ class TeacherService
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
         private UserPasswordHasherInterface $passwordHasher,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Send password reset email to teacher
+     * Send password reset email to teacher.
      */
     public function sendPasswordResetEmail(Teacher $teacher): bool
     {
@@ -53,16 +54,17 @@ class TeacherService
                         'reset_url' => $this->urlGenerator->generate(
                             'teacher_password_reset_confirm',
                             ['token' => $teacher->getPasswordResetToken()],
-                            UrlGeneratorInterface::ABSOLUTE_URL
-                        )
-                    ])
-                );
+                            UrlGeneratorInterface::ABSOLUTE_URL,
+                        ),
+                    ]),
+                )
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Password reset email sent to teacher', [
                 'teacher_id' => $teacher->getId(),
-                'email' => $teacher->getEmail()
+                'email' => $teacher->getEmail(),
             ]);
 
             return true;
@@ -70,14 +72,15 @@ class TeacherService
             $this->logger->error('Failed to send password reset email to teacher', [
                 'teacher_id' => $teacher->getId(),
                 'email' => $teacher->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Send email verification to teacher
+     * Send email verification to teacher.
      */
     public function sendEmailVerification(Teacher $teacher): bool
     {
@@ -99,16 +102,17 @@ class TeacherService
                         'verification_url' => $this->urlGenerator->generate(
                             'teacher_email_verify',
                             ['token' => $teacher->getEmailVerificationToken()],
-                            UrlGeneratorInterface::ABSOLUTE_URL
-                        )
-                    ])
-                );
+                            UrlGeneratorInterface::ABSOLUTE_URL,
+                        ),
+                    ]),
+                )
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Email verification sent to teacher', [
                 'teacher_id' => $teacher->getId(),
-                'email' => $teacher->getEmail()
+                'email' => $teacher->getEmail(),
             ]);
 
             return true;
@@ -116,14 +120,15 @@ class TeacherService
             $this->logger->error('Failed to send email verification to teacher', [
                 'teacher_id' => $teacher->getId(),
                 'email' => $teacher->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Send welcome email to new teacher
+     * Send welcome email to new teacher.
      */
     public function sendWelcomeEmail(Teacher $teacher, ?string $tempPassword = null): bool
     {
@@ -139,16 +144,17 @@ class TeacherService
                         'login_url' => $this->urlGenerator->generate(
                             'teacher_login',
                             [],
-                            UrlGeneratorInterface::ABSOLUTE_URL
-                        )
-                    ])
-                );
+                            UrlGeneratorInterface::ABSOLUTE_URL,
+                        ),
+                    ]),
+                )
+            ;
 
             $this->mailer->send($email);
 
             $this->logger->info('Welcome email sent to teacher', [
                 'teacher_id' => $teacher->getId(),
-                'email' => $teacher->getEmail()
+                'email' => $teacher->getEmail(),
             ]);
 
             return true;
@@ -156,43 +162,44 @@ class TeacherService
             $this->logger->error('Failed to send welcome email to teacher', [
                 'teacher_id' => $teacher->getId(),
                 'email' => $teacher->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Create teacher account
+     * Create teacher account.
      */
     public function createTeacher(array $data): Teacher
     {
         $teacher = new Teacher();
-        
+
         $teacher->setFirstName($data['firstName']);
         $teacher->setLastName($data['lastName']);
         $teacher->setEmail($data['email']);
-        
+
         if (isset($data['phone'])) {
             $teacher->setPhone($data['phone']);
         }
-        
+
         if (isset($data['specialty'])) {
             $teacher->setSpecialty($data['specialty']);
         }
-        
+
         if (isset($data['title'])) {
             $teacher->setTitle($data['title']);
         }
-        
+
         if (isset($data['yearsOfExperience'])) {
             $teacher->setYearsOfExperience($data['yearsOfExperience']);
         }
-        
+
         if (isset($data['biography'])) {
             $teacher->setBiography($data['biography']);
         }
-        
+
         if (isset($data['qualifications'])) {
             $teacher->setQualifications($data['qualifications']);
         }
@@ -207,45 +214,45 @@ class TeacherService
 
         $this->logger->info('Teacher account created', [
             'teacher_id' => $teacher->getId(),
-            'email' => $teacher->getEmail()
+            'email' => $teacher->getEmail(),
         ]);
 
         return $teacher;
     }
 
     /**
-     * Update teacher profile
+     * Update teacher profile.
      */
     public function updateTeacher(Teacher $teacher, array $data): Teacher
     {
         if (isset($data['firstName'])) {
             $teacher->setFirstName($data['firstName']);
         }
-        
+
         if (isset($data['lastName'])) {
             $teacher->setLastName($data['lastName']);
         }
-        
+
         if (isset($data['phone'])) {
             $teacher->setPhone($data['phone']);
         }
-        
+
         if (isset($data['specialty'])) {
             $teacher->setSpecialty($data['specialty']);
         }
-        
+
         if (isset($data['title'])) {
             $teacher->setTitle($data['title']);
         }
-        
+
         if (isset($data['yearsOfExperience'])) {
             $teacher->setYearsOfExperience($data['yearsOfExperience']);
         }
-        
+
         if (isset($data['biography'])) {
             $teacher->setBiography($data['biography']);
         }
-        
+
         if (isset($data['qualifications'])) {
             $teacher->setQualifications($data['qualifications']);
         }
@@ -259,14 +266,14 @@ class TeacherService
 
         $this->logger->info('Teacher profile updated', [
             'teacher_id' => $teacher->getId(),
-            'email' => $teacher->getEmail()
+            'email' => $teacher->getEmail(),
         ]);
 
         return $teacher;
     }
 
     /**
-     * Deactivate teacher account
+     * Deactivate teacher account.
      */
     public function deactivateTeacher(Teacher $teacher): void
     {
@@ -275,12 +282,12 @@ class TeacherService
 
         $this->logger->info('Teacher account deactivated', [
             'teacher_id' => $teacher->getId(),
-            'email' => $teacher->getEmail()
+            'email' => $teacher->getEmail(),
         ]);
     }
 
     /**
-     * Activate teacher account
+     * Activate teacher account.
      */
     public function activateTeacher(Teacher $teacher): void
     {
@@ -289,12 +296,12 @@ class TeacherService
 
         $this->logger->info('Teacher account activated', [
             'teacher_id' => $teacher->getId(),
-            'email' => $teacher->getEmail()
+            'email' => $teacher->getEmail(),
         ]);
     }
 
     /**
-     * Generate temporary password for teacher
+     * Generate temporary password for teacher.
      */
     public function generateTemporaryPassword(Teacher $teacher): string
     {
@@ -305,14 +312,14 @@ class TeacherService
 
         $this->logger->info('Temporary password generated for teacher', [
             'teacher_id' => $teacher->getId(),
-            'email' => $teacher->getEmail()
+            'email' => $teacher->getEmail(),
         ]);
 
         return $tempPassword;
     }
 
     /**
-     * Get teacher statistics
+     * Get teacher statistics.
      */
     public function getStatistics(): array
     {
@@ -324,7 +331,7 @@ class TeacherService
     }
 
     /**
-     * Find teachers by criteria
+     * Find teachers by criteria.
      */
     public function findTeachersByCriteria(array $criteria): array
     {
@@ -332,7 +339,7 @@ class TeacherService
     }
 
     /**
-     * Get teacher by email
+     * Get teacher by email.
      */
     public function findByEmail(string $email): ?Teacher
     {
@@ -340,7 +347,7 @@ class TeacherService
     }
 
     /**
-     * Check if email exists
+     * Check if email exists.
      */
     public function emailExists(string $email): bool
     {

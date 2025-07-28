@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Assessment;
 
-use App\Entity\Assessment\QuestionResponse;
 use App\Entity\Assessment\Question;
 use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionResponse;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,7 +21,7 @@ class QuestionResponseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find responses by questionnaire response
+     * Find responses by questionnaire response.
      */
     public function findByQuestionnaireResponse(QuestionnaireResponse $questionnaireResponse): array
     {
@@ -30,11 +32,12 @@ class QuestionResponseRepository extends ServiceEntityRepository
             ->setParameter('questionnaireResponse', $questionnaireResponse)
             ->orderBy('q.orderIndex', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find response by question and questionnaire response
+     * Find response by question and questionnaire response.
      */
     public function findByQuestionAndResponse(Question $question, QuestionnaireResponse $questionnaireResponse): ?QuestionResponse
     {
@@ -44,11 +47,12 @@ class QuestionResponseRepository extends ServiceEntityRepository
             ->setParameter('question', $question)
             ->setParameter('questionnaireResponse', $questionnaireResponse)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find responses by question
+     * Find responses by question.
      */
     public function findByQuestion(Question $question): array
     {
@@ -59,11 +63,12 @@ class QuestionResponseRepository extends ServiceEntityRepository
             ->setParameter('question', $question)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get response statistics for a question
+     * Get response statistics for a question.
      */
     public function getQuestionStatistics(Question $question): array
     {
@@ -74,7 +79,7 @@ class QuestionResponseRepository extends ServiceEntityRepository
             'response_rate' => 0,
             'average_score' => null,
             'success_rate' => null,
-            'choice_distribution' => []
+            'choice_distribution' => [],
         ];
 
         // Get total responses for this question
@@ -83,7 +88,8 @@ class QuestionResponseRepository extends ServiceEntityRepository
             ->where('r.question = :question')
             ->setParameter('question', $question)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $stats['total_responses'] = (int) $totalResponses;
 
@@ -95,7 +101,8 @@ class QuestionResponseRepository extends ServiceEntityRepository
                 ->andWhere('r.textResponse IS NOT NULL OR r.choiceResponse IS NOT NULL OR r.fileResponse IS NOT NULL OR r.numberResponse IS NOT NULL OR r.dateResponse IS NOT NULL')
                 ->setParameter('question', $question)
                 ->getQuery()
-                ->getSingleScalarResult();
+                ->getSingleScalarResult()
+            ;
 
             $stats['answered'] = (int) $answeredCount;
             $stats['unanswered'] = $stats['total_responses'] - $stats['answered'];
@@ -117,7 +124,8 @@ class QuestionResponseRepository extends ServiceEntityRepository
                         ->setParameter('question', $question)
                         ->setParameter('maxScore', $question->getPoints())
                         ->getQuery()
-                        ->getSingleScalarResult();
+                        ->getSingleScalarResult()
+                    ;
 
                     if ($stats['answered'] > 0) {
                         $stats['success_rate'] = ((int) $correctCount / $stats['answered']) * 100;
@@ -135,7 +143,61 @@ class QuestionResponseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get choice distribution for a choice question
+     * Get text responses for a text question.
+     */
+    public function getTextResponses(Question $question, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('r')
+            ->select('r.textResponse, qr.firstName, qr.lastName, r.createdAt')
+            ->leftJoin('r.questionnaireResponse', 'qr')
+            ->where('r.question = :question')
+            ->andWhere('r.textResponse IS NOT NULL')
+            ->andWhere('r.textResponse != :empty')
+            ->setParameter('question', $question)
+            ->setParameter('empty', '')
+            ->orderBy('r.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult()
+        ;
+    }
+
+    /**
+     * Get file responses for a file upload question.
+     */
+    public function getFileResponses(Question $question): array
+    {
+        return $this->createQueryBuilder('r')
+            ->select('r.fileResponse, qr.firstName, qr.lastName, r.createdAt')
+            ->leftJoin('r.questionnaireResponse', 'qr')
+            ->where('r.question = :question')
+            ->andWhere('r.fileResponse IS NOT NULL')
+            ->andWhere('r.fileResponse != :empty')
+            ->setParameter('question', $question)
+            ->setParameter('empty', '')
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getArrayResult()
+        ;
+    }
+
+    /**
+     * Get average score for a question.
+     */
+    public function getAverageScore(Question $question): ?float
+    {
+        return $this->createQueryBuilder('r')
+            ->select('AVG(r.scoreEarned)')
+            ->where('r.question = :question')
+            ->andWhere('r.scoreEarned IS NOT NULL')
+            ->setParameter('question', $question)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
+    /**
+     * Get choice distribution for a choice question.
      */
     private function getChoiceDistribution(Question $question): array
     {
@@ -145,16 +207,17 @@ class QuestionResponseRepository extends ServiceEntityRepository
             ->andWhere('r.choiceResponse IS NOT NULL')
             ->setParameter('question', $question)
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult()
+        ;
 
         $distribution = [];
-        
+
         // Initialize distribution for all options
         foreach ($question->getOptions() as $option) {
             $distribution[$option->getId()] = [
                 'option_text' => $option->getOptionText(),
                 'count' => 0,
-                'is_correct' => $option->isCorrect()
+                'is_correct' => $option->isCorrect(),
             ];
         }
 
@@ -171,56 +234,5 @@ class QuestionResponseRepository extends ServiceEntityRepository
         }
 
         return $distribution;
-    }
-
-    /**
-     * Get text responses for a text question
-     */
-    public function getTextResponses(Question $question, int $limit = 50): array
-    {
-        return $this->createQueryBuilder('r')
-            ->select('r.textResponse, qr.firstName, qr.lastName, r.createdAt')
-            ->leftJoin('r.questionnaireResponse', 'qr')
-            ->where('r.question = :question')
-            ->andWhere('r.textResponse IS NOT NULL')
-            ->andWhere('r.textResponse != :empty')
-            ->setParameter('question', $question)
-            ->setParameter('empty', '')
-            ->orderBy('r.createdAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getArrayResult();
-    }
-
-    /**
-     * Get file responses for a file upload question
-     */
-    public function getFileResponses(Question $question): array
-    {
-        return $this->createQueryBuilder('r')
-            ->select('r.fileResponse, qr.firstName, qr.lastName, r.createdAt')
-            ->leftJoin('r.questionnaireResponse', 'qr')
-            ->where('r.question = :question')
-            ->andWhere('r.fileResponse IS NOT NULL')
-            ->andWhere('r.fileResponse != :empty')
-            ->setParameter('question', $question)
-            ->setParameter('empty', '')
-            ->orderBy('r.createdAt', 'DESC')
-            ->getQuery()
-            ->getArrayResult();
-    }
-
-    /**
-     * Get average score for a question
-     */
-    public function getAverageScore(Question $question): ?float
-    {
-        return $this->createQueryBuilder('r')
-            ->select('AVG(r.scoreEarned)')
-            ->where('r.question = :question')
-            ->andWhere('r.scoreEarned IS NOT NULL')
-            ->setParameter('question', $question)
-            ->getQuery()
-            ->getSingleScalarResult();
     }
 }

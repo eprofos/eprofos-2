@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
+use LogicException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Psr\Log\LoggerInterface;
 
 /**
- * Admin Security Controller
- * 
+ * Admin Security Controller.
+ *
  * Handles authentication for the admin interface.
  * Provides login and logout functionality for admin admins.
  */
@@ -18,63 +21,62 @@ use Psr\Log\LoggerInterface;
 class SecurityController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
-     * Admin login page
-     * 
-    * Displays the login form for admin admins using Tabler CSS.
+     * Admin login page.
+     *
+     * Displays the login form for admin admins using Tabler CSS.
      */
     #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-    // If admin is already authenticated, redirect to dashboard
-    $admin = $this->getUser();
-    if ($admin) {
+        // If admin is already authenticated, redirect to dashboard
+        $admin = $this->getUser();
+        if ($admin) {
             return $this->redirectToRoute('admin_dashboard');
         }
 
         // Get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        
-    // Last username entered by the admin
-    $lastAdminUsername = $authenticationUtils->getLastUsername();
+
+        // Last username entered by the admin
+        $lastAdminUsername = $authenticationUtils->getLastUsername();
 
         if ($error) {
             $this->logger->warning('Admin login failed', [
                 'adminname' => $lastAdminUsername,
                 'error' => $error->getMessage(),
-                'ip' => $this->getClientIp()
+                'ip' => $this->getClientIp(),
             ]);
         }
 
         return $this->render('admin/security/login.html.twig', [
             'last_username' => $lastAdminUsername,
             'error' => $error,
-            'page_title' => 'Connexion Admin'
+            'page_title' => 'Connexion Admin',
         ]);
     }
 
     /**
-     * Admin logout
-     * 
+     * Admin logout.
+     *
      * This method can be blank - it will be intercepted by the logout key on your firewall.
      */
     #[Route('/logout', name: 'logout', methods: ['GET'])]
     public function logout(): void
     {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+        throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
     /**
-     * Get client IP address for logging
+     * Get client IP address for logging.
      */
     private function getClientIp(): ?string
     {
         $request = $this->container->get('request_stack')->getCurrentRequest();
-        
+
         if (!$request) {
             return null;
         }

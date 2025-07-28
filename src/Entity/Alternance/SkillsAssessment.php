@@ -1,19 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
+use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Entity\User\Teacher;
-use App\Entity\User\Mentor;
 use App\Repository\Alternance\SkillsAssessmentRepository;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * SkillsAssessment entity for evaluating student competencies in alternance programs
- * 
+ * SkillsAssessment entity for evaluating student competencies in alternance programs.
+ *
  * This entity implements cross-evaluation between training center and company,
  * essential for Qualiopi compliance and demonstrating progressive skills acquisition.
  */
@@ -26,6 +31,73 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[Gedmo\Loggable]
 class SkillsAssessment
 {
+    /**
+     * Available assessment types.
+     */
+    public const ASSESSMENT_TYPES = [
+        'formative' => 'Formative',
+        'sommative' => 'Sommative',
+        'certification' => 'Certification',
+        'intermediate' => 'Intermédiaire',
+        'final' => 'Finale',
+    ];
+
+    /**
+     * Available assessment contexts.
+     */
+    public const CONTEXTS = [
+        'centre' => 'Centre de formation',
+        'entreprise' => 'Entreprise',
+        'mixte' => 'Mixte (centre + entreprise)',
+    ];
+
+    /**
+     * Available overall ratings.
+     */
+    public const OVERALL_RATINGS = [
+        'excellent' => 'Excellent',
+        'satisfaisant' => 'Satisfaisant',
+        'moyen' => 'Moyen',
+        'insuffisant' => 'Insuffisant',
+        'non_evalue' => 'Non évalué',
+    ];
+
+    /**
+     * Standard skills framework.
+     */
+    public const STANDARD_SKILLS = [
+        'technical' => [
+            'name' => 'Compétences techniques',
+            'subcategories' => [
+                'programming' => 'Programmation',
+                'database' => 'Bases de données',
+                'networks' => 'Réseaux',
+                'security' => 'Sécurité',
+                'tools' => 'Outils et technologies',
+            ],
+        ],
+        'transversal' => [
+            'name' => 'Compétences transversales',
+            'subcategories' => [
+                'communication' => 'Communication',
+                'teamwork' => 'Travail en équipe',
+                'autonomy' => 'Autonomie',
+                'problem_solving' => 'Résolution de problèmes',
+                'time_management' => 'Gestion du temps',
+            ],
+        ],
+        'professional' => [
+            'name' => 'Compétences professionnelles',
+            'subcategories' => [
+                'project_management' => 'Gestion de projet',
+                'client_relation' => 'Relation client',
+                'quality' => 'Qualité',
+                'innovation' => 'Innovation',
+                'leadership' => 'Leadership',
+            ],
+        ],
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,7 +112,7 @@ class SkillsAssessment
     #[Assert\NotBlank(message: 'Le type d\'évaluation est obligatoire.')]
     #[Assert\Choice(
         choices: self::ASSESSMENT_TYPES,
-        message: 'Type d\'évaluation invalide.'
+        message: 'Type d\'évaluation invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $assessmentType = null;
@@ -49,7 +121,7 @@ class SkillsAssessment
     #[Assert\NotBlank(message: 'Le contexte d\'évaluation est obligatoire.')]
     #[Assert\Choice(
         choices: self::CONTEXTS,
-        message: 'Contexte d\'évaluation invalide.'
+        message: 'Contexte d\'évaluation invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $context = null;
@@ -65,7 +137,7 @@ class SkillsAssessment
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotNull(message: 'La date d\'évaluation est obligatoire.')]
     #[Gedmo\Versioned]
-    private ?\DateTimeInterface $assessmentDate = null;
+    private ?DateTimeInterface $assessmentDate = null;
 
     #[ORM\Column(type: Types::JSON)]
     #[Assert\NotNull(message: 'Les compétences évaluées sont obligatoires.')]
@@ -104,7 +176,7 @@ class SkillsAssessment
     #[Assert\NotBlank(message: 'L\'évaluation globale est obligatoire.')]
     #[Assert\Choice(
         choices: self::OVERALL_RATINGS,
-        message: 'Évaluation globale invalide.'
+        message: 'Évaluation globale invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $overallRating = null;
@@ -115,89 +187,33 @@ class SkillsAssessment
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'create')]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    /**
-     * Available assessment types
-     */
-    public const ASSESSMENT_TYPES = [
-        'formative' => 'Formative',
-        'sommative' => 'Sommative',
-        'certification' => 'Certification',
-        'intermediate' => 'Intermédiaire',
-        'final' => 'Finale'
-    ];
-
-    /**
-     * Available assessment contexts
-     */
-    public const CONTEXTS = [
-        'centre' => 'Centre de formation',
-        'entreprise' => 'Entreprise',
-        'mixte' => 'Mixte (centre + entreprise)'
-    ];
-
-    /**
-     * Available overall ratings
-     */
-    public const OVERALL_RATINGS = [
-        'excellent' => 'Excellent',
-        'satisfaisant' => 'Satisfaisant',
-        'moyen' => 'Moyen',
-        'insuffisant' => 'Insuffisant',
-        'non_evalue' => 'Non évalué'
-    ];
-
-    /**
-     * Standard skills framework
-     */
-    public const STANDARD_SKILLS = [
-        'technical' => [
-            'name' => 'Compétences techniques',
-            'subcategories' => [
-                'programming' => 'Programmation',
-                'database' => 'Bases de données',
-                'networks' => 'Réseaux',
-                'security' => 'Sécurité',
-                'tools' => 'Outils et technologies'
-            ]
-        ],
-        'transversal' => [
-            'name' => 'Compétences transversales',
-            'subcategories' => [
-                'communication' => 'Communication',
-                'teamwork' => 'Travail en équipe',
-                'autonomy' => 'Autonomie',
-                'problem_solving' => 'Résolution de problèmes',
-                'time_management' => 'Gestion du temps'
-            ]
-        ],
-        'professional' => [
-            'name' => 'Compétences professionnelles',
-            'subcategories' => [
-                'project_management' => 'Gestion de projet',
-                'client_relation' => 'Relation client',
-                'quality' => 'Qualité',
-                'innovation' => 'Innovation',
-                'leadership' => 'Leadership'
-            ]
-        ]
-    ];
+    private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->assessmentDate = new \DateTime();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+        $this->assessmentDate = new DateTime();
         $this->skillsEvaluated = [];
         $this->centerScores = [];
         $this->companyScores = [];
         $this->globalCompetencies = [];
         $this->developmentPlan = [];
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s - %s (%s) - %s',
+            $this->student?->getFullName() ?? 'Alternant inconnu',
+            $this->getAssessmentTypeLabel(),
+            $this->getContextLabel(),
+            $this->assessmentDate?->format('d/m/Y') ?? '',
+        );
     }
 
     public function getId(): ?int
@@ -213,6 +229,7 @@ class SkillsAssessment
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
         return $this;
     }
 
@@ -224,6 +241,7 @@ class SkillsAssessment
     public function setAssessmentType(string $assessmentType): static
     {
         $this->assessmentType = $assessmentType;
+
         return $this;
     }
 
@@ -235,6 +253,7 @@ class SkillsAssessment
     public function setContext(string $context): static
     {
         $this->context = $context;
+
         return $this;
     }
 
@@ -246,6 +265,7 @@ class SkillsAssessment
     public function setCenterEvaluator(?Teacher $centerEvaluator): static
     {
         $this->centerEvaluator = $centerEvaluator;
+
         return $this;
     }
 
@@ -257,17 +277,19 @@ class SkillsAssessment
     public function setMentorEvaluator(?Mentor $mentorEvaluator): static
     {
         $this->mentorEvaluator = $mentorEvaluator;
+
         return $this;
     }
 
-    public function getAssessmentDate(): ?\DateTimeInterface
+    public function getAssessmentDate(): ?DateTimeInterface
     {
         return $this->assessmentDate;
     }
 
-    public function setAssessmentDate(\DateTimeInterface $assessmentDate): static
+    public function setAssessmentDate(DateTimeInterface $assessmentDate): static
     {
         $this->assessmentDate = $assessmentDate;
+
         return $this;
     }
 
@@ -279,6 +301,7 @@ class SkillsAssessment
     public function setSkillsEvaluated(array $skillsEvaluated): static
     {
         $this->skillsEvaluated = $skillsEvaluated;
+
         return $this;
     }
 
@@ -290,6 +313,7 @@ class SkillsAssessment
     public function setCenterScores(array $centerScores): static
     {
         $this->centerScores = $centerScores;
+
         return $this;
     }
 
@@ -301,6 +325,7 @@ class SkillsAssessment
     public function setCompanyScores(array $companyScores): static
     {
         $this->companyScores = $companyScores;
+
         return $this;
     }
 
@@ -312,6 +337,7 @@ class SkillsAssessment
     public function setGlobalCompetencies(array $globalCompetencies): static
     {
         $this->globalCompetencies = $globalCompetencies;
+
         return $this;
     }
 
@@ -323,6 +349,7 @@ class SkillsAssessment
     public function setCenterComments(?string $centerComments): static
     {
         $this->centerComments = $centerComments;
+
         return $this;
     }
 
@@ -334,6 +361,7 @@ class SkillsAssessment
     public function setMentorComments(?string $mentorComments): static
     {
         $this->mentorComments = $mentorComments;
+
         return $this;
     }
 
@@ -345,6 +373,7 @@ class SkillsAssessment
     public function setDevelopmentPlan(array $developmentPlan): static
     {
         $this->developmentPlan = $developmentPlan;
+
         return $this;
     }
 
@@ -356,6 +385,7 @@ class SkillsAssessment
     public function setOverallRating(string $overallRating): static
     {
         $this->overallRating = $overallRating;
+
         return $this;
     }
 
@@ -367,33 +397,36 @@ class SkillsAssessment
     public function setRelatedMission(?MissionAssignment $relatedMission): static
     {
         $this->relatedMission = $relatedMission;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
     /**
-     * Get assessment type label
+     * Get assessment type label.
      */
     public function getAssessmentTypeLabel(): string
     {
@@ -401,7 +434,7 @@ class SkillsAssessment
     }
 
     /**
-     * Get context label
+     * Get context label.
      */
     public function getContextLabel(): string
     {
@@ -409,7 +442,7 @@ class SkillsAssessment
     }
 
     /**
-     * Get overall rating label
+     * Get overall rating label.
      */
     public function getOverallRatingLabel(): string
     {
@@ -417,7 +450,7 @@ class SkillsAssessment
     }
 
     /**
-     * Get overall rating badge class
+     * Get overall rating badge class.
      */
     public function getOverallRatingBadgeClass(): string
     {
@@ -432,19 +465,19 @@ class SkillsAssessment
     }
 
     /**
-     * Get evaluation status based on completion
+     * Get evaluation status based on completion.
      */
     public function getStatus(): string
     {
         if ($this->overallRating === null || $this->overallRating === 'non_evalue') {
             return 'pending';
         }
-        
+
         return 'validated';
     }
 
     /**
-     * Get overall score as decimal for compatibility with controller
+     * Get overall score as decimal for compatibility with controller.
      */
     public function getOverallScore(): ?float
     {
@@ -452,7 +485,7 @@ class SkillsAssessment
     }
 
     /**
-     * Get mentor for compatibility with controller  
+     * Get mentor for compatibility with controller.
      */
     public function getMentor()
     {
@@ -460,7 +493,7 @@ class SkillsAssessment
     }
 
     /**
-     * Get skills assessed as array for template compatibility
+     * Get skills assessed as array for template compatibility.
      */
     public function getSkillsAssessed(): array
     {
@@ -468,20 +501,21 @@ class SkillsAssessment
         foreach ($this->skillsEvaluated as $skillCode => $skillInfo) {
             $skills[] = (object) [
                 'name' => $skillInfo['name'] ?? $skillCode,
-                'code' => $skillCode
+                'code' => $skillCode,
             ];
         }
+
         return $skills;
     }
 
     /**
-     * Get skill level based on overall rating
+     * Get skill level based on overall rating.
      */
     public function getSkillLevel(): ?string
     {
         return match ($this->overallRating) {
             'excellent' => 'expert',
-            'satisfaisant' => 'advanced', 
+            'satisfaisant' => 'advanced',
             'moyen' => 'intermediate',
             'insuffisant' => 'beginner',
             default => null
@@ -489,59 +523,59 @@ class SkillsAssessment
     }
 
     /**
-     * Get strengths based on high-scoring skills
+     * Get strengths based on high-scoring skills.
      */
     public function getSkillsStrengths(): array
     {
         $strengths = [];
-        
+
         foreach ($this->centerScores as $skill => $score) {
             if (isset($score['value']) && $score['value'] >= 16) { // 16/20 = 80%
                 $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
                 $strengths[] = $skillName;
             }
         }
-        
+
         foreach ($this->companyScores as $skill => $score) {
             if (isset($score['value']) && $score['value'] >= 16) {
                 $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
-                if (!in_array($skillName, $strengths)) {
+                if (!in_array($skillName, $strengths, true)) {
                     $strengths[] = $skillName;
                 }
             }
         }
-        
+
         return $strengths;
     }
 
     /**
-     * Get weaknesses based on low-scoring skills
+     * Get weaknesses based on low-scoring skills.
      */
     public function getSkillsWeaknesses(): array
     {
         $weaknesses = [];
-        
+
         foreach ($this->centerScores as $skill => $score) {
             if (isset($score['value']) && $score['value'] < 12) { // 12/20 = 60%
                 $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
                 $weaknesses[] = $skillName;
             }
         }
-        
+
         foreach ($this->companyScores as $skill => $score) {
             if (isset($score['value']) && $score['value'] < 12) {
                 $skillName = $this->skillsEvaluated[$skill]['name'] ?? $skill;
-                if (!in_array($skillName, $weaknesses)) {
+                if (!in_array($skillName, $weaknesses, true)) {
                     $weaknesses[] = $skillName;
                 }
             }
         }
-        
+
         return $weaknesses;
     }
 
     /**
-     * Get entity type for template compatibility
+     * Get entity type for template compatibility.
      */
     public function getEntityType(): string
     {
@@ -549,7 +583,7 @@ class SkillsAssessment
     }
 
     /**
-     * Calculate average center score
+     * Calculate average center score.
      */
     public function getAverageCenterScore(): float
     {
@@ -571,7 +605,7 @@ class SkillsAssessment
     }
 
     /**
-     * Calculate average company score
+     * Calculate average company score.
      */
     public function getAverageCompanyScore(): float
     {
@@ -593,7 +627,7 @@ class SkillsAssessment
     }
 
     /**
-     * Calculate overall average score
+     * Calculate overall average score.
      */
     public function getOverallAverageScore(): float
     {
@@ -602,9 +636,11 @@ class SkillsAssessment
 
         if ($centerAvg > 0 && $companyAvg > 0) {
             return ($centerAvg + $companyAvg) / 2;
-        } elseif ($centerAvg > 0) {
+        }
+        if ($centerAvg > 0) {
             return $centerAvg;
-        } elseif ($companyAvg > 0) {
+        }
+        if ($companyAvg > 0) {
             return $companyAvg;
         }
 
@@ -612,7 +648,7 @@ class SkillsAssessment
     }
 
     /**
-     * Check if assessment has cross-evaluation (both center and company scores)
+     * Check if assessment has cross-evaluation (both center and company scores).
      */
     public function hasCrossEvaluation(): bool
     {
@@ -620,12 +656,12 @@ class SkillsAssessment
     }
 
     /**
-     * Check if assessment is complete
+     * Check if assessment is complete.
      */
     public function isComplete(): bool
     {
         $hasScores = false;
-        
+
         if ($this->context === 'centre') {
             $hasScores = !empty($this->centerScores);
         } elseif ($this->context === 'entreprise') {
@@ -638,12 +674,12 @@ class SkillsAssessment
     }
 
     /**
-     * Get competency gap analysis
+     * Get competency gap analysis.
      */
     public function getCompetencyGaps(): array
     {
         $gaps = [];
-        
+
         if (!$this->hasCrossEvaluation()) {
             return $gaps;
         }
@@ -653,13 +689,13 @@ class SkillsAssessment
                 $centerValue = (float) ($centerScore['value'] ?? 0);
                 $companyValue = (float) ($this->companyScores[$skill]['value'] ?? 0);
                 $gap = abs($centerValue - $companyValue);
-                
+
                 if ($gap > 2.0) { // Significant gap threshold
                     $gaps[$skill] = [
                         'center_score' => $centerValue,
                         'company_score' => $companyValue,
                         'gap' => $gap,
-                        'needs_attention' => true
+                        'needs_attention' => true,
                     ];
                 }
             }
@@ -669,7 +705,7 @@ class SkillsAssessment
     }
 
     /**
-     * Add skill evaluation
+     * Add skill evaluation.
      */
     public function addSkillEvaluation(string $skillCode, string $skillName, ?float $centerScore = null, ?float $companyScore = null): static
     {
@@ -677,7 +713,7 @@ class SkillsAssessment
         $this->skillsEvaluated[$skillCode] = [
             'name' => $skillName,
             'code' => $skillCode,
-            'evaluated_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'evaluated_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ];
 
         // Add center score if provided
@@ -685,7 +721,7 @@ class SkillsAssessment
             $this->centerScores[$skillCode] = [
                 'value' => $centerScore,
                 'max_value' => 20,
-                'evaluated_at' => (new \DateTime())->format('Y-m-d H:i:s')
+                'evaluated_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ];
         }
 
@@ -694,7 +730,7 @@ class SkillsAssessment
             $this->companyScores[$skillCode] = [
                 'value' => $companyScore,
                 'max_value' => 20,
-                'evaluated_at' => (new \DateTime())->format('Y-m-d H:i:s')
+                'evaluated_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ];
         }
 
@@ -702,7 +738,7 @@ class SkillsAssessment
     }
 
     /**
-     * Add development plan item
+     * Add development plan item.
      */
     public function addDevelopmentPlanItem(string $skill, string $objective, string $actions, ?string $deadline = null): static
     {
@@ -712,14 +748,14 @@ class SkillsAssessment
             'actions' => $actions,
             'deadline' => $deadline,
             'status' => 'planned',
-            'created_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
         ];
 
         return $this;
     }
 
     /**
-     * Get development plan summary
+     * Get development plan summary.
      */
     public function getDevelopmentPlanSummary(): array
     {
@@ -727,7 +763,7 @@ class SkillsAssessment
             'total_items' => count($this->developmentPlan),
             'planned' => 0,
             'in_progress' => 0,
-            'completed' => 0
+            'completed' => 0,
         ];
 
         foreach ($this->developmentPlan as $item) {
@@ -741,22 +777,11 @@ class SkillsAssessment
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return sprintf(
-            '%s - %s (%s) - %s',
-            $this->student?->getFullName() ?? 'Alternant inconnu',
-            $this->getAssessmentTypeLabel(),
-            $this->getContextLabel(),
-            $this->assessmentDate?->format('d/m/Y') ?? ''
-        );
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

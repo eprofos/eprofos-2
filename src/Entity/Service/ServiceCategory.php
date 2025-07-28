@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Service;
 
 use App\Repository\Service\ServiceCategoryRepository;
@@ -9,8 +11,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ServiceCategory entity for organizing EPROFOS services
- * 
+ * ServiceCategory entity for organizing EPROFOS services.
+ *
  * Represents categories of services like "Conseil", "Formation", etc.
  */
 #[ORM\Entity(repositoryClass: ServiceCategoryRepository::class)]
@@ -41,6 +43,11 @@ class ServiceCategory
         $this->services = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+        return $this->name ?? '';
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,6 +61,7 @@ class ServiceCategory
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -65,6 +73,7 @@ class ServiceCategory
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 
@@ -76,6 +85,7 @@ class ServiceCategory
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -110,17 +120,12 @@ class ServiceCategory
     }
 
     /**
-     * Get active services for this category
-     * 
+     * Get active services for this category.
+     *
      * @return Collection<int, Service>
      */
     public function getActiveServices(): Collection
     {
-        return $this->services->filter(fn(Service $service) => $service->isActive());
-    }
-
-    public function __toString(): string
-    {
-        return $this->name ?? '';
+        return $this->services->filter(static fn (Service $service) => $service->isActive());
     }
 }

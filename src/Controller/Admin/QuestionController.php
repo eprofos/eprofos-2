@@ -1,35 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Assessment\Question;
-use App\Entity\Assessment\QuestionOption;
 use App\Entity\Assessment\Questionnaire;
+use App\Entity\Assessment\QuestionOption;
 use App\Repository\Assessment\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * Admin controller for managing questionnaire questions
+ * Admin controller for managing questionnaire questions.
  */
 #[Route('/admin/questionnaires/{questionnaireId}/questions', name: 'admin_question_')]
 class QuestionController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private QuestionRepository $questionRepository
-    ) {
-    }
+        private QuestionRepository $questionRepository,
+    ) {}
 
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(int $questionnaireId): Response
     {
         $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
-        
+
         if (!$questionnaire) {
             throw $this->createNotFoundException('Questionnaire not found');
         }
@@ -39,7 +41,7 @@ class QuestionController extends AbstractController
         return $this->render('admin/question/index.html.twig', [
             'questionnaire' => $questionnaire,
             'questions' => $questions,
-            'question_types' => Question::TYPES
+            'question_types' => Question::TYPES,
         ]);
     }
 
@@ -47,7 +49,7 @@ class QuestionController extends AbstractController
     public function new(Request $request, int $questionnaireId): Response
     {
         $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
-        
+
         if (!$questionnaire) {
             throw $this->createNotFoundException('Questionnaire not found');
         }
@@ -58,18 +60,19 @@ class QuestionController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $this->handleQuestionForm($request, $question);
-            
+
             $this->entityManager->persist($question);
             $this->entityManager->flush();
 
             $this->addFlash('success', 'La question a été créée avec succès.');
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
 
         return $this->render('admin/question/new.html.twig', [
             'questionnaire' => $questionnaire,
             'question' => $question,
-            'question_types' => Question::TYPES
+            'question_types' => Question::TYPES,
         ]);
     }
 
@@ -77,24 +80,25 @@ class QuestionController extends AbstractController
     public function edit(Request $request, int $questionnaireId, Question $question): Response
     {
         $questionnaire = $question->getQuestionnaire();
-        
+
         if ($questionnaire->getId() !== $questionnaireId) {
             throw $this->createNotFoundException('Question not found in this questionnaire');
         }
 
         if ($request->isMethod('POST')) {
             $this->handleQuestionForm($request, $question);
-            
+
             $this->entityManager->flush();
 
             $this->addFlash('success', 'La question a été modifiée avec succès.');
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
 
         return $this->render('admin/question/edit.html.twig', [
             'questionnaire' => $questionnaire,
             'question' => $question,
-            'question_types' => Question::TYPES
+            'question_types' => Question::TYPES,
         ]);
     }
 
@@ -103,6 +107,7 @@ class QuestionController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('delete' . $question->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
 
@@ -110,6 +115,7 @@ class QuestionController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'La question a été supprimée avec succès.');
+
         return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
     }
 
@@ -118,6 +124,7 @@ class QuestionController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('duplicate' . $question->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
 
@@ -135,7 +142,8 @@ class QuestionController extends AbstractController
             ->setValidationRules($question->getValidationRules())
             ->setAllowedFileTypes($question->getAllowedFileTypes())
             ->setMaxFileSize($question->getMaxFileSize())
-            ->setPoints($question->getPoints());
+            ->setPoints($question->getPoints())
+        ;
 
         $this->entityManager->persist($newQuestion);
 
@@ -148,7 +156,8 @@ class QuestionController extends AbstractController
                 ->setIsCorrect($option->isCorrect())
                 ->setIsActive($option->isActive())
                 ->setPoints($option->getPoints())
-                ->setExplanation($option->getExplanation());
+                ->setExplanation($option->getExplanation())
+            ;
 
             $this->entityManager->persist($newOption);
         }
@@ -156,6 +165,7 @@ class QuestionController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'La question a été dupliquée avec succès.');
+
         return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
     }
 
@@ -163,21 +173,22 @@ class QuestionController extends AbstractController
     public function reorder(Request $request, int $questionnaireId): JsonResponse
     {
         $questionIds = $request->request->get('questionIds', []);
-        
+
         if (!is_array($questionIds)) {
             return new JsonResponse(['success' => false, 'message' => 'Invalid data']);
         }
 
         $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
-        
+
         if (!$questionnaire) {
             return new JsonResponse(['success' => false, 'message' => 'Questionnaire not found']);
         }
 
         try {
             $this->questionRepository->reorderQuestions($questionnaire, $questionIds);
+
             return new JsonResponse(['success' => true]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
         }
     }
@@ -194,7 +205,7 @@ class QuestionController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'isActive' => $question->isActive()
+            'isActive' => $question->isActive(),
         ]);
     }
 
@@ -211,7 +222,8 @@ class QuestionController extends AbstractController
             ->setMinLength(($data['minLength'] ?? null) ? (int) $data['minLength'] : null)
             ->setMaxLength(($data['maxLength'] ?? null) ? (int) $data['maxLength'] : null)
             ->setMaxFileSize(($data['maxFileSize'] ?? null) ? (int) $data['maxFileSize'] : null)
-            ->setPoints(($data['maxPoints'] ?? null) ? (int) $data['maxPoints'] : 0);
+            ->setPoints(($data['maxPoints'] ?? null) ? (int) $data['maxPoints'] : 0)
+        ;
 
         // Handle allowed file types
         if (!empty($data['allowedFileTypes'])) {
@@ -232,7 +244,7 @@ class QuestionController extends AbstractController
         $question->setValidationRules($validationRules ?: null);
 
         // Handle options for choice questions
-        if (in_array($question->getType(), [Question::TYPE_SINGLE_CHOICE, Question::TYPE_MULTIPLE_CHOICE])) {
+        if (in_array($question->getType(), [Question::TYPE_SINGLE_CHOICE, Question::TYPE_MULTIPLE_CHOICE], true)) {
             $this->handleQuestionOptions($data, $question);
         } else {
             // Remove existing options if question type changed
@@ -246,21 +258,21 @@ class QuestionController extends AbstractController
     {
         // Get existing options
         $existingOptions = $question->getOptions()->toArray();
-        $existingOptionIds = array_map(fn($option) => $option->getId(), $existingOptions);
+        $existingOptionIds = array_map(static fn ($option) => $option->getId(), $existingOptions);
 
         $submittedOptionIds = [];
-        
+
         // Process submitted options
         if (isset($data['options']) && is_array($data['options'])) {
             foreach ($data['options'] as $index => $optionData) {
                 $optionId = $optionData['id'] ?? null;
                 $optionText = trim($optionData['text'] ?? '');
-                
+
                 if (empty($optionText)) {
                     continue;
                 }
 
-                if ($optionId && in_array($optionId, $existingOptionIds)) {
+                if ($optionId && in_array($optionId, $existingOptionIds, true)) {
                     // Update existing option
                     $option = $this->entityManager->getRepository(QuestionOption::class)->find($optionId);
                     $submittedOptionIds[] = $optionId;
@@ -276,13 +288,14 @@ class QuestionController extends AbstractController
                     ->setIsCorrect(isset($optionData['isCorrect']))
                     ->setIsActive($optionData['isActive'] ?? true)
                     ->setPoints(($optionData['points'] ?? null) ? (int) $optionData['points'] : 0)
-                    ->setExplanation($optionData['explanation'] ?? null);
+                    ->setExplanation($optionData['explanation'] ?? null)
+                ;
             }
         }
 
         // Remove options that were not submitted
         foreach ($existingOptions as $option) {
-            if ($option->getId() && !in_array($option->getId(), $submittedOptionIds)) {
+            if ($option->getId() && !in_array($option->getId(), $submittedOptionIds, true)) {
                 $this->entityManager->remove($option);
             }
         }

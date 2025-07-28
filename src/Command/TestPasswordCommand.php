@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Entity\User\Admin;
@@ -18,7 +20,7 @@ class TestPasswordCommand extends Command
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
         parent::__construct();
     }
@@ -30,6 +32,7 @@ class TestPasswordCommand extends Command
 
         if (!$adminUser) {
             $output->writeln('<error>Admin user not found!</error>');
+
             return Command::FAILURE;
         }
 

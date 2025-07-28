@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Alternance;
 
 use App\Entity\User\Mentor;
 use App\Repository\Alternance\CompanyMissionRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -12,9 +15,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * CompanyMission entity representing a mission/project for apprentices in companies
- * 
- * Defines structured missions with learning objectives, required skills, 
+ * CompanyMission entity representing a mission/project for apprentices in companies.
+ *
+ * Defines structured missions with learning objectives, required skills,
  * complexity levels, and progression logic for Qualiopi compliance.
  */
 #[ORM\Entity(repositoryClass: CompanyMissionRepository::class)]
@@ -23,6 +26,56 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Gedmo\Loggable]
 class CompanyMission
 {
+    /**
+     * Available complexity levels for missions.
+     */
+    public const COMPLEXITY_LEVELS = [
+        'debutant' => 'Débutant',
+        'intermediaire' => 'Intermédiaire',
+        'avance' => 'Avancé',
+    ];
+
+    /**
+     * Available terms for missions.
+     */
+    public const TERMS = [
+        'court' => 'Court terme (1-4 semaines)',
+        'moyen' => 'Moyen terme (1-3 mois)',
+        'long' => 'Long terme (3+ mois)',
+    ];
+
+    /**
+     * Common mission departments/services.
+     */
+    public const DEPARTMENTS = [
+        'informatique' => 'Informatique & Systèmes',
+        'commercial' => 'Commercial & Vente',
+        'marketing' => 'Marketing & Communication',
+        'rh' => 'Ressources Humaines',
+        'finance' => 'Finance & Comptabilité',
+        'production' => 'Production & Qualité',
+        'logistique' => 'Logistique & Supply Chain',
+        'juridique' => 'Juridique & Compliance',
+        'direction' => 'Direction & Management',
+        'rd' => 'Recherche & Développement',
+        'formation' => 'Formation & Développement',
+        'autre' => 'Autre département',
+    ];
+
+    /**
+     * Typical duration options for missions.
+     */
+    public const DURATION_OPTIONS = [
+        '1-2 semaines',
+        '3-4 semaines',
+        '1-2 mois',
+        '3-4 mois',
+        '6 mois',
+        '1 an',
+        'Récurrente',
+        'À définir',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -34,7 +87,7 @@ class CompanyMission
         min: 5,
         max: 255,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $title = null;
@@ -43,7 +96,7 @@ class CompanyMission
     #[Assert\NotBlank(message: 'La description de la mission est obligatoire.')]
     #[Assert\Length(
         min: 20,
-        minMessage: 'La description doit contenir au moins {{ limit }} caractères.'
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $description = null;
@@ -52,7 +105,7 @@ class CompanyMission
     #[Assert\NotBlank(message: 'Le contexte de la mission est obligatoire.')]
     #[Assert\Length(
         min: 10,
-        minMessage: 'Le contexte doit contenir au moins {{ limit }} caractères.'
+        minMessage: 'Le contexte doit contenir au moins {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $context = null;
@@ -61,7 +114,7 @@ class CompanyMission
     #[Assert\NotNull(message: 'Les objectifs de la mission sont obligatoires.')]
     #[Assert\Count(
         min: 1,
-        minMessage: 'Au moins un objectif doit être défini.'
+        minMessage: 'Au moins un objectif doit être défini.',
     )]
     #[Gedmo\Versioned]
     private array $objectives = [];
@@ -70,7 +123,7 @@ class CompanyMission
     #[Assert\NotNull(message: 'Les compétences requises sont obligatoires.')]
     #[Assert\Count(
         min: 1,
-        minMessage: 'Au moins une compétence requise doit être définie.'
+        minMessage: 'Au moins une compétence requise doit être définie.',
     )]
     #[Gedmo\Versioned]
     private array $requiredSkills = [];
@@ -79,7 +132,7 @@ class CompanyMission
     #[Assert\NotNull(message: 'Les compétences à acquérir sont obligatoires.')]
     #[Assert\Count(
         min: 1,
-        minMessage: 'Au moins une compétence à acquérir doit être définie.'
+        minMessage: 'Au moins une compétence à acquérir doit être définie.',
     )]
     #[Gedmo\Versioned]
     private array $skillsToAcquire = [];
@@ -88,7 +141,7 @@ class CompanyMission
     #[Assert\NotBlank(message: 'La durée estimée est obligatoire.')]
     #[Assert\Length(
         max: 100,
-        maxMessage: 'La durée ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'La durée ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $duration = null;
@@ -97,7 +150,7 @@ class CompanyMission
     #[Assert\NotBlank(message: 'Le niveau de complexité est obligatoire.')]
     #[Assert\Choice(
         choices: ['debutant', 'intermediaire', 'avance'],
-        message: 'Niveau de complexité invalide.'
+        message: 'Niveau de complexité invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $complexity = null;
@@ -106,7 +159,7 @@ class CompanyMission
     #[Assert\NotBlank(message: 'Le terme de la mission est obligatoire.')]
     #[Assert\Choice(
         choices: ['court', 'moyen', 'long'],
-        message: 'Terme de mission invalide.'
+        message: 'Terme de mission invalide.',
     )]
     #[Gedmo\Versioned]
     private ?string $term = null;
@@ -123,7 +176,7 @@ class CompanyMission
         min: 2,
         max: 150,
         minMessage: 'Le département doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le département ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le département ne peut pas dépasser {{ limit }} caractères.',
     )]
     #[Gedmo\Versioned]
     private ?string $department = null;
@@ -142,7 +195,7 @@ class CompanyMission
     #[Assert\NotNull(message: 'Les critères d\'évaluation sont obligatoires.')]
     #[Assert\Count(
         min: 1,
-        minMessage: 'Au moins un critère d\'évaluation doit être défini.'
+        minMessage: 'Au moins un critère d\'évaluation doit être défini.',
     )]
     #[Gedmo\Versioned]
     private array $evaluationCriteria = [];
@@ -152,75 +205,30 @@ class CompanyMission
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'create')]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     /**
-     * Collection of mission assignments for this mission
-     * 
+     * Collection of mission assignments for this mission.
+     *
      * @var Collection<int, MissionAssignment>
      */
     #[ORM\OneToMany(mappedBy: 'mission', targetEntity: MissionAssignment::class, cascade: ['persist', 'remove'])]
     private Collection $assignments;
 
-    /**
-     * Available complexity levels for missions
-     */
-    public const COMPLEXITY_LEVELS = [
-        'debutant' => 'Débutant',
-        'intermediaire' => 'Intermédiaire',
-        'avance' => 'Avancé'
-    ];
-
-    /**
-     * Available terms for missions
-     */
-    public const TERMS = [
-        'court' => 'Court terme (1-4 semaines)',
-        'moyen' => 'Moyen terme (1-3 mois)',
-        'long' => 'Long terme (3+ mois)'
-    ];
-
-    /**
-     * Common mission departments/services
-     */
-    public const DEPARTMENTS = [
-        'informatique' => 'Informatique & Systèmes',
-        'commercial' => 'Commercial & Vente',
-        'marketing' => 'Marketing & Communication',
-        'rh' => 'Ressources Humaines',
-        'finance' => 'Finance & Comptabilité',
-        'production' => 'Production & Qualité',
-        'logistique' => 'Logistique & Supply Chain',
-        'juridique' => 'Juridique & Compliance',
-        'direction' => 'Direction & Management',
-        'rd' => 'Recherche & Développement',
-        'formation' => 'Formation & Développement',
-        'autre' => 'Autre département'
-    ];
-
-    /**
-     * Typical duration options for missions
-     */
-    public const DURATION_OPTIONS = [
-        '1-2 semaines',
-        '3-4 semaines',
-        '1-2 mois',
-        '3-4 mois',
-        '6 mois',
-        '1 an',
-        'Récurrente',
-        'À définir'
-    ];
-
     public function __construct()
     {
         $this->assignments = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?: 'Mission #' . $this->id;
     }
 
     public function getId(): ?int
@@ -236,6 +244,7 @@ class CompanyMission
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -247,6 +256,7 @@ class CompanyMission
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -258,6 +268,7 @@ class CompanyMission
     public function setContext(string $context): static
     {
         $this->context = $context;
+
         return $this;
     }
 
@@ -269,6 +280,7 @@ class CompanyMission
     public function setObjectives(array $objectives): static
     {
         $this->objectives = $objectives;
+
         return $this;
     }
 
@@ -280,6 +292,7 @@ class CompanyMission
     public function setRequiredSkills(array $requiredSkills): static
     {
         $this->requiredSkills = $requiredSkills;
+
         return $this;
     }
 
@@ -291,6 +304,7 @@ class CompanyMission
     public function setSkillsToAcquire(array $skillsToAcquire): static
     {
         $this->skillsToAcquire = $skillsToAcquire;
+
         return $this;
     }
 
@@ -302,6 +316,7 @@ class CompanyMission
     public function setDuration(string $duration): static
     {
         $this->duration = $duration;
+
         return $this;
     }
 
@@ -313,6 +328,7 @@ class CompanyMission
     public function setComplexity(string $complexity): static
     {
         $this->complexity = $complexity;
+
         return $this;
     }
 
@@ -324,6 +340,7 @@ class CompanyMission
     public function setTerm(string $term): static
     {
         $this->term = $term;
+
         return $this;
     }
 
@@ -335,6 +352,7 @@ class CompanyMission
     public function setOrderIndex(int $orderIndex): static
     {
         $this->orderIndex = $orderIndex;
+
         return $this;
     }
 
@@ -346,6 +364,7 @@ class CompanyMission
     public function setDepartment(string $department): static
     {
         $this->department = $department;
+
         return $this;
     }
 
@@ -357,6 +376,7 @@ class CompanyMission
     public function setSupervisor(?Mentor $supervisor): static
     {
         $this->supervisor = $supervisor;
+
         return $this;
     }
 
@@ -368,6 +388,7 @@ class CompanyMission
     public function setPrerequisites(array $prerequisites): static
     {
         $this->prerequisites = $prerequisites;
+
         return $this;
     }
 
@@ -379,6 +400,7 @@ class CompanyMission
     public function setEvaluationCriteria(array $evaluationCriteria): static
     {
         $this->evaluationCriteria = $evaluationCriteria;
+
         return $this;
     }
 
@@ -390,28 +412,31 @@ class CompanyMission
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -446,7 +471,7 @@ class CompanyMission
     }
 
     /**
-     * Get the complexity level as human-readable label
+     * Get the complexity level as human-readable label.
      */
     public function getComplexityLabel(): string
     {
@@ -454,7 +479,7 @@ class CompanyMission
     }
 
     /**
-     * Get the term as human-readable label
+     * Get the term as human-readable label.
      */
     public function getTermLabel(): string
     {
@@ -462,7 +487,7 @@ class CompanyMission
     }
 
     /**
-     * Get the department as human-readable label
+     * Get the department as human-readable label.
      */
     public function getDepartmentLabel(): string
     {
@@ -470,7 +495,7 @@ class CompanyMission
     }
 
     /**
-     * Get the estimated duration in weeks (for calculation purposes)
+     * Get the estimated duration in weeks (for calculation purposes).
      */
     public function getEstimatedWeeks(): int
     {
@@ -483,39 +508,35 @@ class CompanyMission
     }
 
     /**
-     * Check if this mission is suitable for a given complexity level
+     * Check if this mission is suitable for a given complexity level.
      */
     public function isSuitableForComplexity(string $complexity): bool
     {
         $complexityOrder = ['debutant' => 1, 'intermediaire' => 2, 'avance' => 3];
         $missionLevel = $complexityOrder[$this->complexity] ?? 1;
         $targetLevel = $complexityOrder[$complexity] ?? 1;
-        
+
         return $missionLevel <= $targetLevel;
     }
 
     /**
-     * Get the number of active assignments for this mission
+     * Get the number of active assignments for this mission.
      */
     public function getActiveAssignmentsCount(): int
     {
-        return $this->assignments->filter(function (MissionAssignment $assignment) {
-            return in_array($assignment->getStatus(), ['planifiee', 'en_cours']);
-        })->count();
+        return $this->assignments->filter(static fn (MissionAssignment $assignment) => in_array($assignment->getStatus(), ['planifiee', 'en_cours'], true))->count();
     }
 
     /**
-     * Get the number of completed assignments for this mission
+     * Get the number of completed assignments for this mission.
      */
     public function getCompletedAssignmentsCount(): int
     {
-        return $this->assignments->filter(function (MissionAssignment $assignment) {
-            return $assignment->getStatus() === 'terminee';
-        })->count();
+        return $this->assignments->filter(static fn (MissionAssignment $assignment) => $assignment->getStatus() === 'terminee')->count();
     }
 
     /**
-     * Check if mission has prerequisite skills
+     * Check if mission has prerequisite skills.
      */
     public function hasPrerequisites(): bool
     {
@@ -523,7 +544,7 @@ class CompanyMission
     }
 
     /**
-     * Get a summary of the mission objectives (first 2 objectives)
+     * Get a summary of the mission objectives (first 2 objectives).
      */
     public function getObjectivesSummary(): string
     {
@@ -533,16 +554,16 @@ class CompanyMission
 
         $summary = array_slice($this->objectives, 0, 2);
         $text = implode(' • ', $summary);
-        
+
         if (count($this->objectives) > 2) {
             $text .= ' • +' . (count($this->objectives) - 2) . ' autre(s)';
         }
-        
+
         return $text;
     }
 
     /**
-     * Get a summary of skills to acquire (first 3 skills)
+     * Get a summary of skills to acquire (first 3 skills).
      */
     public function getSkillsSummary(): string
     {
@@ -552,16 +573,16 @@ class CompanyMission
 
         $summary = array_slice($this->skillsToAcquire, 0, 3);
         $text = implode(', ', $summary);
-        
+
         if (count($this->skillsToAcquire) > 3) {
             $text .= ', +' . (count($this->skillsToAcquire) - 3) . ' autre(s)';
         }
-        
+
         return $text;
     }
 
     /**
-     * Calculate mission progress score based on assignments
+     * Calculate mission progress score based on assignments.
      */
     public function getProgressScore(): float
     {
@@ -583,20 +604,20 @@ class CompanyMission
     }
 
     /**
-     * Get the CSS class for the complexity badge
+     * Get the CSS class for the complexity badge.
      */
     public function getComplexityBadgeClass(): string
     {
         return match ($this->complexity) {
             'debutant' => 'badge-success',
-            'intermediaire' => 'badge-warning', 
+            'intermediaire' => 'badge-warning',
             'avance' => 'badge-danger',
             default => 'badge-secondary'
         };
     }
 
     /**
-     * Get the CSS class for the term badge
+     * Get the CSS class for the term badge.
      */
     public function getTermBadgeClass(): string
     {
@@ -609,16 +630,11 @@ class CompanyMission
     }
 
     /**
-     * Lifecycle callback to update the updatedAt timestamp
+     * Lifecycle callback to update the updatedAt timestamp.
      */
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function __toString(): string
-    {
-        return $this->title ?: 'Mission #' . $this->id;
+        $this->updatedAt = new DateTimeImmutable();
     }
 }

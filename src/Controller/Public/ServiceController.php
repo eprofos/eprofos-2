@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Public;
 
-use App\Repository\Service\ServiceRepository;
 use App\Repository\Service\ServiceCategoryRepository;
+use App\Repository\Service\ServiceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Service controller for displaying EPROFOS services
- * 
+ * Service controller for displaying EPROFOS services.
+ *
  * Handles the presentation of services offered by EPROFOS
  * including consultation, audit, custom training, and certifications.
  */
@@ -19,22 +21,21 @@ class ServiceController extends AbstractController
 {
     public function __construct(
         private ServiceRepository $serviceRepository,
-        private ServiceCategoryRepository $serviceCategoryRepository
-    ) {
-    }
+        private ServiceCategoryRepository $serviceCategoryRepository,
+    ) {}
 
     /**
-     * Display all services grouped by category
+     * Display all services grouped by category.
      */
     #[Route('', name: 'app_services_index', methods: ['GET'])]
     public function index(): Response
     {
         // Get services grouped by category for organized display
         $servicesGrouped = $this->serviceRepository->findServicesGroupedByCategory();
-        
+
         // Get categories with their service counts
         $categoriesWithCount = $this->serviceCategoryRepository->findWithServiceCount();
-        
+
         // Get all active services for general listing
         $allServices = $this->serviceRepository->findActiveServices();
 
@@ -49,13 +50,13 @@ class ServiceController extends AbstractController
     }
 
     /**
-     * Display services by category
+     * Display services by category.
      */
     #[Route('/categorie/{slug}', name: 'app_services_by_category', methods: ['GET'])]
     public function byCategory(string $slug): Response
     {
         $category = $this->serviceCategoryRepository->findBySlugWithActiveServices($slug);
-        
+
         if (!$category) {
             throw $this->createNotFoundException('Catégorie de service non trouvée');
         }
@@ -71,13 +72,13 @@ class ServiceController extends AbstractController
     }
 
     /**
-     * Display detailed view of a specific service
+     * Display detailed view of a specific service.
      */
     #[Route('/{slug}', name: 'app_service_show', methods: ['GET'])]
     public function show(string $slug): Response
     {
         $service = $this->serviceRepository->findBySlugWithCategory($slug);
-        
+
         if (!$service) {
             throw $this->createNotFoundException('Service non trouvé');
         }
@@ -88,8 +89,8 @@ class ServiceController extends AbstractController
             $relatedServices = $this->serviceRepository->findByCategory($service->getServiceCategory());
             // Remove current service from related services
             $relatedServices = array_filter(
-                $relatedServices, 
-                fn($relatedService) => $relatedService->getId() !== $service->getId()
+                $relatedServices,
+                static fn ($relatedService) => $relatedService->getId() !== $service->getId(),
             );
         }
 

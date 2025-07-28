@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Training;
 
 use App\Entity\Training\Category;
@@ -7,11 +9,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for Category entity
- * 
+ * Repository for Category entity.
+ *
  * Provides custom query methods for retrieving categories
  * with specific criteria and optimizations.
- * 
+ *
  * @extends ServiceEntityRepository<Category>
  */
 class CategoryRepository extends ServiceEntityRepository
@@ -22,8 +24,8 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active categories ordered by name
-     * 
+     * Find all active categories ordered by name.
+     *
      * @return Category[]
      */
     public function findActiveCategories(): array
@@ -33,12 +35,13 @@ class CategoryRepository extends ServiceEntityRepository
             ->setParameter('active', true)
             ->orderBy('c.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find active categories with their active formations count
-     * 
+     * Find active categories with their active formations count.
+     *
      * @return array<array{category: Category, formationCount: int}>
      */
     public function findActiveCategoriesWithFormationCount(): array
@@ -51,11 +54,12 @@ class CategoryRepository extends ServiceEntityRepository
             ->groupBy('c.id')
             ->orderBy('c.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find category by slug with active formations
+     * Find category by slug with active formations.
      */
     public function findBySlugWithActiveFormations(string $slug): ?Category
     {
@@ -67,12 +71,13 @@ class CategoryRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->setParameter('active', true)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find categories that have at least one active formation
-     * 
+     * Find categories that have at least one active formation.
+     *
      * @return Category[]
      */
     public function findCategoriesWithActiveFormations(): array
@@ -86,11 +91,12 @@ class CategoryRepository extends ServiceEntityRepository
             ->groupBy('c.id')
             ->orderBy('c.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Save a category entity
+     * Save a category entity.
      */
     public function save(Category $entity, bool $flush = false): void
     {
@@ -102,7 +108,7 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove a category entity
+     * Remove a category entity.
      */
     public function remove(Category $entity, bool $flush = false): void
     {

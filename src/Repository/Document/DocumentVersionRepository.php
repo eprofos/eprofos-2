@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Document;
 
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentVersion;
 use App\Entity\User\Admin;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,7 +22,7 @@ class DocumentVersionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all versions for a document ordered by version number
+     * Find all versions for a document ordered by version number.
      */
     public function findByDocument(Document $document): array
     {
@@ -28,11 +31,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('document', $document)
             ->orderBy('dv.version', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find the latest version for a document
+     * Find the latest version for a document.
      */
     public function findLatestByDocument(Document $document): ?DocumentVersion
     {
@@ -42,11 +46,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->orderBy('dv.version', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find specific version by document and version number
+     * Find specific version by document and version number.
      */
     public function findByDocumentAndVersion(Document $document, string $versionNumber): ?DocumentVersion
     {
@@ -56,11 +61,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('document', $document)
             ->setParameter('versionNumber', $versionNumber)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find versions created by a specific user
+     * Find versions created by a specific user.
      */
     public function findByCreatedBy(Admin $admin): array
     {
@@ -69,13 +75,14 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('user', $admin)
             ->orderBy('dv.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find versions within date range
+     * Find versions within date range.
      */
-    public function findByDateRange(\DateTime $from, \DateTime $to): array
+    public function findByDateRange(DateTime $from, DateTime $to): array
     {
         return $this->createQueryBuilder('dv')
             ->where('dv.createdAt BETWEEN :from AND :to')
@@ -83,11 +90,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('to', $to)
             ->orderBy('dv.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find versions with changelog containing specific text
+     * Find versions with changelog containing specific text.
      */
     public function searchByChangelog(string $search): array
     {
@@ -96,11 +104,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('search', '%' . $search . '%')
             ->orderBy('dv.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get version statistics for a document
+     * Get version statistics for a document.
      */
     public function getDocumentVersionStats(Document $document): array
     {
@@ -109,7 +118,8 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->where('dv.document = :document')
             ->setParameter('document', $document)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $firstVersion = $this->createQueryBuilder('dv')
             ->where('dv.document = :document')
@@ -117,7 +127,8 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->orderBy('dv.createdAt', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         $latestVersion = $this->createQueryBuilder('dv')
             ->where('dv.document = :document')
@@ -125,7 +136,8 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->orderBy('dv.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return [
             'totalVersions' => $totalVersions,
@@ -137,7 +149,7 @@ class DocumentVersionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find versions that need integrity verification
+     * Find versions that need integrity verification.
      */
     public function findNeedingIntegrityCheck(): array
     {
@@ -147,11 +159,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->setParameter('empty', '')
             ->orderBy('dv.createdAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get recent versions across all documents
+     * Get recent versions across all documents.
      */
     public function findRecent(int $limit = 20): array
     {
@@ -160,30 +173,34 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->orderBy('dv.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get version history for audit purposes
+     * Get version history for audit purposes.
      */
-    public function getAuditHistory(Document $document, ?\DateTime $since = null): array
+    public function getAuditHistory(Document $document, ?DateTime $since = null): array
     {
         $qb = $this->createQueryBuilder('dv')
             ->where('dv.document = :document')
-            ->setParameter('document', $document);
+            ->setParameter('document', $document)
+        ;
 
         if ($since) {
             $qb->andWhere('dv.createdAt >= :since')
-               ->setParameter('since', $since);
+                ->setParameter('since', $since)
+            ;
         }
 
         return $qb->orderBy('dv.createdAt', 'ASC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find versions with specific file checksum (duplicate detection)
+     * Find versions with specific file checksum (duplicate detection).
      */
     public function findByChecksum(string $checksum): array
     {
@@ -191,16 +208,17 @@ class DocumentVersionRepository extends ServiceEntityRepository
             ->where('dv.checksum = :checksum')
             ->setParameter('checksum', $checksum)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get next version number for a document
+     * Get next version number for a document.
      */
     public function getNextVersionNumber(Document $document): string
     {
         $latestVersion = $this->findLatestByDocument($document);
-        
+
         if (!$latestVersion) {
             return '1.0';
         }
@@ -216,12 +234,12 @@ class DocumentVersionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get major version number for breaking changes
+     * Get major version number for breaking changes.
      */
     public function getNextMajorVersionNumber(Document $document): string
     {
         $latestVersion = $this->findLatestByDocument($document);
-        
+
         if (!$latestVersion) {
             return '1.0';
         }

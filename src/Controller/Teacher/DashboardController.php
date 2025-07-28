@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Teacher;
 
 use App\Entity\User\Teacher;
@@ -9,8 +11,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Teacher Dashboard Controller
- * 
+ * Teacher Dashboard Controller.
+ *
  * Main dashboard for authenticated teachers to access their teaching resources,
  * course management, student progress, and account information.
  */
@@ -19,8 +21,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class DashboardController extends AbstractController
 {
     /**
-     * Teacher dashboard homepage
-     * 
+     * Teacher dashboard homepage.
+     *
      * Displays an overview of the teacher's courses, students, upcoming sessions,
      * recent activities, and quick access to teaching resources.
      */
@@ -49,8 +51,8 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * Teacher profile page
-     * 
+     * Teacher profile page.
+     *
      * Displays and allows editing of teacher personal information and professional details.
      */
     #[Route('/profile', name: 'profile', methods: ['GET'])]
@@ -61,13 +63,13 @@ class DashboardController extends AbstractController
 
         return $this->render('teacher/dashboard/profile.html.twig', [
             'teacher' => $teacher,
-            'page_title' => 'Mon Profil'
+            'page_title' => 'Mon Profil',
         ]);
     }
 
     /**
-     * Teacher courses page
-     * 
+     * Teacher courses page.
+     *
      * Displays assigned courses, course materials, and course management tools.
      */
     #[Route('/courses', name: 'courses', methods: ['GET'])]
@@ -82,15 +84,15 @@ class DashboardController extends AbstractController
             'assigned_courses' => [], // TODO: Get assigned courses
             'available_courses' => [], // TODO: Get available courses for assignment
             'course_materials' => [], // TODO: Get course materials and resources
-            'page_title' => 'Mes Formations'
+            'page_title' => 'Mes Formations',
         ];
 
         return $this->render('teacher/dashboard/courses.html.twig', $coursesData);
     }
 
     /**
-     * Teacher students page
-     * 
+     * Teacher students page.
+     *
      * Displays students enrolled in teacher's courses, progress tracking, and assessment tools.
      */
     #[Route('/students', name: 'students', methods: ['GET'])]
@@ -105,15 +107,15 @@ class DashboardController extends AbstractController
             'active_students' => [], // TODO: Get active students in teacher's courses
             'student_progress' => [], // TODO: Get student progress data
             'pending_assessments' => [], // TODO: Get pending assessments/grading
-            'page_title' => 'Mes Étudiants'
+            'page_title' => 'Mes Étudiants',
         ];
 
         return $this->render('teacher/dashboard/students.html.twig', $studentsData);
     }
 
     /**
-     * Teacher sessions page
-     * 
+     * Teacher sessions page.
+     *
      * Displays teaching sessions, schedule management, and session planning tools.
      */
     #[Route('/sessions', name: 'sessions', methods: ['GET'])]
@@ -128,15 +130,15 @@ class DashboardController extends AbstractController
             'upcoming_sessions' => [], // TODO: Get upcoming sessions
             'completed_sessions' => [], // TODO: Get completed sessions
             'session_materials' => [], // TODO: Get session materials and resources
-            'page_title' => 'Mes Sessions'
+            'page_title' => 'Mes Sessions',
         ];
 
         return $this->render('teacher/dashboard/sessions.html.twig', $sessionsData);
     }
 
     /**
-     * Teacher resources page
-     * 
+     * Teacher resources page.
+     *
      * Displays teaching resources, materials library, and content management tools.
      */
     #[Route('/resources', name: 'resources', methods: ['GET'])]
@@ -151,15 +153,15 @@ class DashboardController extends AbstractController
             'course_materials' => [], // TODO: Get course materials
             'shared_resources' => [], // TODO: Get shared teaching resources
             'my_uploads' => [], // TODO: Get teacher's uploaded resources
-            'page_title' => 'Mes Ressources'
+            'page_title' => 'Mes Ressources',
         ];
 
         return $this->render('teacher/dashboard/resources.html.twig', $resourcesData);
     }
 
     /**
-     * Teacher analytics page
-     * 
+     * Teacher analytics page.
+     *
      * Displays teaching analytics, student performance data, and progress reports.
      */
     #[Route('/analytics', name: 'analytics', methods: ['GET'])]
@@ -175,15 +177,15 @@ class DashboardController extends AbstractController
             'student_performance' => [], // TODO: Get student performance analytics
             'course_completion_rates' => [], // TODO: Get course completion rates
             'engagement_metrics' => [], // TODO: Get student engagement metrics
-            'page_title' => 'Statistiques'
+            'page_title' => 'Statistiques',
         ];
 
         return $this->render('teacher/dashboard/analytics.html.twig', $analyticsData);
     }
 
     /**
-     * Teacher notifications page
-     * 
+     * Teacher notifications page.
+     *
      * Displays system notifications, student messages, and administrative updates.
      */
     #[Route('/notifications', name: 'notifications', methods: ['GET'])]
@@ -198,15 +200,15 @@ class DashboardController extends AbstractController
             'unread_notifications' => [], // TODO: Get unread notifications
             'all_notifications' => [], // TODO: Get all notifications
             'student_messages' => [], // TODO: Get messages from students
-            'page_title' => 'Notifications'
+            'page_title' => 'Notifications',
         ];
 
         return $this->render('teacher/dashboard/notifications.html.twig', $notificationsData);
     }
 
     /**
-     * Teacher settings page
-     * 
+     * Teacher settings page.
+     *
      * Allows teachers to modify account settings, teaching preferences, and privacy options.
      */
     #[Route('/settings', name: 'settings', methods: ['GET'])]
@@ -217,7 +219,7 @@ class DashboardController extends AbstractController
 
         return $this->render('teacher/dashboard/settings.html.twig', [
             'teacher' => $teacher,
-            'page_title' => 'Paramètres'
+            'page_title' => 'Paramètres',
         ]);
     }
 }

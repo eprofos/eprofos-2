@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
 use App\Entity\User\Teacher;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -10,12 +13,13 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * TeacherRepository
- * 
+ * TeacherRepository.
+ *
  * Repository for Teacher entity with security integration.
  * Provides methods for teacher authentication and user management.
- * 
+ *
  * @extends ServiceEntityRepository<Teacher>
+ *
  * @implements PasswordUpgraderInterface<Teacher>
  */
 class TeacherRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -40,7 +44,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
-     * Find teacher by email
+     * Find teacher by email.
      */
     public function findByEmail(string $email): ?Teacher
     {
@@ -48,11 +52,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('t.email = :email')
             ->setParameter('email', $email)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find teacher by email verification token
+     * Find teacher by email verification token.
      */
     public function findByEmailVerificationToken(string $token): ?Teacher
     {
@@ -60,11 +65,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('t.emailVerificationToken = :token')
             ->setParameter('token', $token)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find teacher by password reset token
+     * Find teacher by password reset token.
      */
     public function findByPasswordResetToken(string $token): ?Teacher
     {
@@ -72,13 +78,14 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('t.passwordResetToken = :token')
             ->andWhere('t.passwordResetTokenExpiresAt > :now')
             ->setParameter('token', $token)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find active teachers
+     * Find active teachers.
      */
     public function findActive(): array
     {
@@ -88,11 +95,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('t.lastName', 'ASC')
             ->addOrderBy('t.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find teachers with verified emails
+     * Find teachers with verified emails.
      */
     public function findVerified(): array
     {
@@ -102,11 +110,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('t.lastName', 'ASC')
             ->addOrderBy('t.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find teachers by specialty
+     * Find teachers by specialty.
      */
     public function findBySpecialty(string $specialty): array
     {
@@ -116,11 +125,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('t.lastName', 'ASC')
             ->addOrderBy('t.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find teachers with minimum years of experience
+     * Find teachers with minimum years of experience.
      */
     public function findByMinimumExperience(int $years): array
     {
@@ -130,11 +140,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('t.yearsOfExperience', 'DESC')
             ->addOrderBy('t.lastName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Search teachers by name, email, or specialty
+     * Search teachers by name, email, or specialty.
      */
     public function searchByNameOrSpecialty(string $query): array
     {
@@ -144,22 +155,24 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orderBy('t.lastName', 'ASC')
             ->addOrderBy('t.firstName', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Count total teachers
+     * Count total teachers.
      */
     public function countTotal(): int
     {
         return $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count active teachers
+     * Count active teachers.
      */
     public function countActive(): int
     {
@@ -168,11 +181,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('t.isActive = :active')
             ->setParameter('active', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Count verified teachers
+     * Count verified teachers.
      */
     public function countVerified(): int
     {
@@ -181,11 +195,12 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->andWhere('t.emailVerified = :verified')
             ->setParameter('verified', true)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
-     * Get statistics for dashboard
+     * Get statistics for dashboard.
      */
     public function getStatistics(): array
     {
@@ -197,7 +212,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
-     * Get distinct specialties for filter dropdown
+     * Get distinct specialties for filter dropdown.
      */
     public function getDistinctSpecialties(): array
     {
@@ -208,13 +223,14 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setParameter('empty', '')
             ->orderBy('t.specialty', 'ASC')
             ->getQuery()
-            ->getArrayResult();
-            
+            ->getArrayResult()
+        ;
+
         return $result ?: [];
     }
 
     /**
-     * Find teachers with advanced filters
+     * Find teachers with advanced filters.
      */
     public function findWithFilters(array $filters, ?int $page = null, ?int $limit = null): array
     {
@@ -223,37 +239,44 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         // Apply filters
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('t.firstName LIKE :search OR t.lastName LIKE :search OR t.email LIKE :search OR t.specialty LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('t.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('t.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('t.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('t.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['specialty']) && $filters['specialty'] !== '') {
             $qb->andWhere('t.specialty = :specialty')
-               ->setParameter('specialty', $filters['specialty']);
+                ->setParameter('specialty', $filters['specialty'])
+            ;
         }
 
         if (!empty($filters['min_experience']) && $filters['min_experience'] !== '') {
             $qb->andWhere('t.yearsOfExperience >= :minExp')
-               ->setParameter('minExp', (int) $filters['min_experience']);
+                ->setParameter('minExp', (int) $filters['min_experience'])
+            ;
         }
 
         // Default ordering
@@ -263,54 +286,63 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         if ($page !== null && $limit !== null) {
             $offset = ($page - 1) * $limit;
             $qb->setFirstResult($offset)
-               ->setMaxResults($limit);
+                ->setMaxResults($limit)
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Count teachers with filters
+     * Count teachers with filters.
      */
     public function countWithFilters(array $filters): int
     {
         $qb = $this->createQueryBuilder('t')
-                   ->select('COUNT(t.id)');
+            ->select('COUNT(t.id)')
+        ;
 
         // Apply same filters as findWithFilters but without pagination
         if (!empty($filters['search']) && $filters['search'] !== '') {
             $qb->andWhere('t.firstName LIKE :search OR t.lastName LIKE :search OR t.email LIKE :search OR t.specialty LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status']) && $filters['status'] !== '') {
             if ($filters['status'] === 'active') {
                 $qb->andWhere('t.isActive = :active')
-                   ->setParameter('active', true);
+                    ->setParameter('active', true)
+                ;
             } elseif ($filters['status'] === 'inactive') {
                 $qb->andWhere('t.isActive = :active')
-                   ->setParameter('active', false);
+                    ->setParameter('active', false)
+                ;
             }
         }
 
         if (!empty($filters['email_verified']) && $filters['email_verified'] !== '') {
             if ($filters['email_verified'] === 'verified') {
                 $qb->andWhere('t.emailVerified = :verified')
-                   ->setParameter('verified', true);
+                    ->setParameter('verified', true)
+                ;
             } elseif ($filters['email_verified'] === 'unverified') {
                 $qb->andWhere('t.emailVerified = :verified')
-                   ->setParameter('verified', false);
+                    ->setParameter('verified', false)
+                ;
             }
         }
 
         if (!empty($filters['specialty']) && $filters['specialty'] !== '') {
             $qb->andWhere('t.specialty = :specialty')
-               ->setParameter('specialty', $filters['specialty']);
+                ->setParameter('specialty', $filters['specialty'])
+            ;
         }
 
         if (!empty($filters['min_experience']) && $filters['min_experience'] !== '') {
             $qb->andWhere('t.yearsOfExperience >= :minExp')
-               ->setParameter('minExp', (int) $filters['min_experience']);
+                ->setParameter('minExp', (int) $filters['min_experience'])
+            ;
         }
 
         return $qb->getQuery()->getSingleScalarResult();

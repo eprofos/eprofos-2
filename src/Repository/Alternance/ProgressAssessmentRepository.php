@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Alternance;
 
 use App\Entity\Alternance\ProgressAssessment;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * ProgressAssessmentRepository
- * 
+ * ProgressAssessmentRepository.
+ *
  * Repository for ProgressAssessment entity providing specialized queries
  * for progress tracking and risk assessment.
- * 
+ *
  * @extends ServiceEntityRepository<ProgressAssessment>
  */
 class ProgressAssessmentRepository extends ServiceEntityRepository
@@ -23,7 +27,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find latest assessment by student
+     * Find latest assessment by student.
      */
     public function findLatestByStudent(Student $student): ?ProgressAssessment
     {
@@ -33,11 +37,12 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->orderBy('pa.period', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
-     * Find students at risk (with risk level >= threshold)
+     * Find students at risk (with risk level >= threshold).
      */
     public function findStudentsAtRisk(int $riskThreshold = 3): array
     {
@@ -47,16 +52,17 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->orderBy('pa.riskLevel', 'DESC')
             ->addOrderBy('pa.period', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Generate progression report for a period
+     * Generate progression report for a period.
      */
-    public function generateProgressionReport(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function generateProgressionReport(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('pa');
-        
+
         $result = $qb
             ->select([
                 'COUNT(pa.id) as total_assessments',
@@ -64,13 +70,14 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 'AVG(pa.overallProgression) as average_progression',
                 'AVG(pa.centerProgression) as average_center_progression',
                 'AVG(pa.companyProgression) as average_company_progression',
-                'AVG(pa.riskLevel) as average_risk_level'
+                'AVG(pa.riskLevel) as average_risk_level',
             ])
             ->andWhere('pa.period BETWEEN :start AND :end')
             ->setParameter('start', $startDate)
             ->setParameter('end', $endDate)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         // Get risk level distribution
         $riskDistribution = $this->createQueryBuilder('pa')
@@ -81,7 +88,8 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->groupBy('pa.riskLevel')
             ->orderBy('pa.riskLevel')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $result['risk_distribution'] = array_column($riskDistribution, 'count', 'riskLevel');
 
@@ -92,13 +100,14 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 'COUNT(CASE WHEN pa.overallProgression >= 75 AND pa.overallProgression < 90 THEN 1 END) as satisfactory',
                 'COUNT(CASE WHEN pa.overallProgression >= 50 AND pa.overallProgression < 75 THEN 1 END) as average',
                 'COUNT(CASE WHEN pa.overallProgression >= 25 AND pa.overallProgression < 50 THEN 1 END) as needs_improvement',
-                'COUNT(CASE WHEN pa.overallProgression < 25 THEN 1 END) as critical'
+                'COUNT(CASE WHEN pa.overallProgression < 25 THEN 1 END) as critical',
             ])
             ->andWhere('pa.period BETWEEN :start AND :end')
             ->setParameter('start', $startDate)
             ->setParameter('end', $endDate)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         $result['progression_status_distribution'] = $progressionStats;
 
@@ -106,9 +115,9 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments by student and date range
+     * Find assessments by student and date range.
      */
-    public function findByStudentAndDateRange(Student $student, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByStudentAndDateRange(Student $student, DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('pa')
             ->andWhere('pa.student = :student')
@@ -118,16 +127,17 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->setParameter('end', $endDate)
             ->orderBy('pa.period', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get student progression trend
+     * Get student progression trend.
      */
     public function getStudentProgressionTrend(Student $student, int $monthsBack = 6): array
     {
-        $startDate = new \DateTime("-{$monthsBack} months");
-        $endDate = new \DateTime();
+        $startDate = new DateTime("-{$monthsBack} months");
+        $endDate = new DateTime();
 
         $assessments = $this->findByStudentAndDateRange($student, $startDate, $endDate);
 
@@ -136,7 +146,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             'center_progression' => [],
             'company_progression' => [],
             'overall_progression' => [],
-            'risk_levels' => []
+            'risk_levels' => [],
         ];
 
         foreach ($assessments as $assessment) {
@@ -152,14 +162,15 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find students requiring assessment update
+     * Find students requiring assessment update.
      */
-    public function findStudentsRequiringUpdate(\DateTimeInterface $cutoffDate): array
+    public function findStudentsRequiringUpdate(DateTimeInterface $cutoffDate): array
     {
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->select('IDENTITY(pa2.student)')
             ->from(ProgressAssessment::class, 'pa2')
-            ->andWhere('pa2.period > :cutoff');
+            ->andWhere('pa2.period > :cutoff')
+        ;
 
         return $this->getEntityManager()->createQueryBuilder()
             ->select('s')
@@ -167,11 +178,12 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->andWhere('s.id NOT IN (' . $subQuery->getDQL() . ')')
             ->setParameter('cutoff', $cutoffDate)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get top performing students
+     * Get top performing students.
      */
     public function getTopPerformingStudents(int $limit = 10): array
     {
@@ -180,31 +192,34 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->addOrderBy('pa.period', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get students with declining progression
+     * Get students with declining progression.
      */
     public function getStudentsWithDecliningProgression(): array
     {
         // This requires a more complex query to compare progression over time
         // For now, we'll use a simplified approach
-        $recentDate = new \DateTime('-1 month');
-        $olderDate = new \DateTime('-3 months');
+        $recentDate = new DateTime('-1 month');
+        $olderDate = new DateTime('-3 months');
 
         $recentAssessments = $this->createQueryBuilder('pa')
             ->andWhere('pa.period >= :recent')
             ->setParameter('recent', $recentDate)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $olderAssessments = $this->createQueryBuilder('pa')
             ->andWhere('pa.period BETWEEN :older AND :recent')
             ->setParameter('older', $olderDate)
             ->setParameter('recent', $recentDate)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Group by student and compare
         $decliningStudents = [];
@@ -213,16 +228,16 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
 
         foreach ($recentAssessments as $assessment) {
             $studentId = $assessment->getStudent()->getId();
-            if (!isset($recentByStudent[$studentId]) || 
-                $assessment->getPeriod() > $recentByStudent[$studentId]->getPeriod()) {
+            if (!isset($recentByStudent[$studentId])
+                || $assessment->getPeriod() > $recentByStudent[$studentId]->getPeriod()) {
                 $recentByStudent[$studentId] = $assessment;
             }
         }
 
         foreach ($olderAssessments as $assessment) {
             $studentId = $assessment->getStudent()->getId();
-            if (!isset($olderByStudent[$studentId]) || 
-                $assessment->getPeriod() > $olderByStudent[$studentId]->getPeriod()) {
+            if (!isset($olderByStudent[$studentId])
+                || $assessment->getPeriod() > $olderByStudent[$studentId]->getPeriod()) {
                 $olderByStudent[$studentId] = $assessment;
             }
         }
@@ -232,7 +247,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 $olderAssessment = $olderByStudent[$studentId];
                 $recentProgression = (float) $recentAssessment->getOverallProgression();
                 $olderProgression = (float) $olderAssessment->getOverallProgression();
-                
+
                 if ($recentProgression < $olderProgression - 5) { // 5% decline threshold
                     $decliningStudents[] = $recentAssessment;
                 }
@@ -243,9 +258,9 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get average progression by period
+     * Get average progression by period.
      */
-    public function getAverageProgressionByPeriod(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function getAverageProgressionByPeriod(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         $result = $this->createQueryBuilder('pa')
             ->select([
@@ -254,7 +269,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 'AVG(pa.overallProgression) as avg_progression',
                 'AVG(pa.centerProgression) as avg_center_progression',
                 'AVG(pa.companyProgression) as avg_company_progression',
-                'COUNT(pa.id) as assessment_count'
+                'COUNT(pa.id) as assessment_count',
             ])
             ->andWhere('pa.period BETWEEN :start AND :end')
             ->setParameter('start', $startDate)
@@ -262,7 +277,8 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->groupBy('year, month')
             ->orderBy('year, month')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         // Format the result
         $formattedResult = [];
@@ -272,7 +288,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 'avg_progression' => round((float) $row['avg_progression'], 2),
                 'avg_center_progression' => round((float) $row['avg_center_progression'], 2),
                 'avg_company_progression' => round((float) $row['avg_company_progression'], 2),
-                'assessment_count' => (int) $row['assessment_count']
+                'assessment_count' => (int) $row['assessment_count'],
             ];
         }
 
@@ -280,15 +296,15 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get detailed risk analysis
+     * Get detailed risk analysis.
      */
     public function getDetailedRiskAnalysis(): array
     {
         $highRiskStudents = $this->findStudentsAtRisk(4);
         $moderateRiskStudents = $this->findStudentsAtRisk(3);
-        
+
         $riskFactors = [];
-        
+
         foreach ($highRiskStudents as $assessment) {
             $factors = $assessment->getRiskFactorsAnalysis();
             foreach ($factors as $factor) {
@@ -296,7 +312,7 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 if (!isset($riskFactors[$factorName])) {
                     $riskFactors[$factorName] = [
                         'count' => 0,
-                        'severity' => $factor['severity']
+                        'severity' => $factor['severity'],
                     ];
                 }
                 $riskFactors[$factorName]['count']++;
@@ -307,12 +323,12 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             'high_risk_count' => count($highRiskStudents),
             'moderate_risk_count' => count($moderateRiskStudents) - count($highRiskStudents),
             'total_at_risk' => count($moderateRiskStudents),
-            'risk_factors' => $riskFactors
+            'risk_factors' => $riskFactors,
         ];
     }
 
     /**
-     * Find assessments by risk level
+     * Find assessments by risk level.
      */
     public function findByRiskLevel(int $riskLevel): array
     {
@@ -321,11 +337,12 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->setParameter('riskLevel', $riskLevel)
             ->orderBy('pa.period', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get skills matrix evolution for a student
+     * Get skills matrix evolution for a student.
      */
     public function getSkillsMatrixEvolution(Student $student): array
     {
@@ -334,24 +351,25 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('pa.period', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $evolution = [];
-        
+
         foreach ($assessments as $assessment) {
             $period = $assessment->getPeriod()->format('Y-m');
             $skillsMatrix = $assessment->getSkillsMatrix();
-            
+
             foreach ($skillsMatrix as $skillCode => $skillData) {
                 if (!isset($evolution[$skillCode])) {
                     $evolution[$skillCode] = [
                         'name' => $skillData['name'],
                         'periods' => [],
                         'levels' => [],
-                        'trends' => []
+                        'trends' => [],
                     ];
                 }
-                
+
                 $evolution[$skillCode]['periods'][] = $period;
                 $evolution[$skillCode]['levels'][] = $skillData['level'];
                 $evolution[$skillCode]['trends'][] = $skillData['progression_trend'] ?? 'stable';
@@ -362,17 +380,19 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find paginated assessments with filters
+     * Find paginated assessments with filters.
      */
     public function findPaginatedAssessments(array $filters, int $page = 1, int $perPage = 20): array
     {
         $qb = $this->createQueryBuilder('pa')
             ->leftJoin('pa.student', 's')
-            ->orderBy('pa.period', 'DESC');
+            ->orderBy('pa.period', 'DESC')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status'])) {
@@ -386,23 +406,26 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
         }
 
         return $qb->setFirstResult(($page - 1) * $perPage)
-                  ->setMaxResults($perPage)
-                  ->getQuery()
-                  ->getResult();
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Count filtered assessments
+     * Count filtered assessments.
      */
     public function countFilteredAssessments(array $filters): int
     {
         $qb = $this->createQueryBuilder('pa')
             ->select('COUNT(pa.id)')
-            ->leftJoin('pa.student', 's');
+            ->leftJoin('pa.student', 's')
+        ;
 
         if (!empty($filters['search'])) {
             $qb->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR s.email LIKE :search')
-               ->setParameter('search', '%' . $filters['search'] . '%');
+                ->setParameter('search', '%' . $filters['search'] . '%')
+            ;
         }
 
         if (!empty($filters['status'])) {
@@ -417,29 +440,32 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get statistics for assessments
+     * Get statistics for assessments.
      */
     public function getStatistics(): array
     {
         $total = $this->count([]);
-        
+
         $pendingQuery = $this->createQueryBuilder('pa')
             ->select('COUNT(pa.id)')
             ->where('pa.riskLevel >= 3')
-            ->getQuery();
+            ->getQuery()
+        ;
         $pending = (int) $pendingQuery->getSingleScalarResult();
 
-        $thisMonth = new \DateTime('first day of this month');
+        $thisMonth = new DateTime('first day of this month');
         $validatedThisMonthQuery = $this->createQueryBuilder('pa')
             ->select('COUNT(pa.id)')
             ->where('pa.createdAt >= :thisMonth')
             ->setParameter('thisMonth', $thisMonth)
-            ->getQuery();
+            ->getQuery()
+        ;
         $validatedThisMonth = (int) $validatedThisMonthQuery->getSingleScalarResult();
 
         $averageScoreQuery = $this->createQueryBuilder('pa')
             ->select('AVG(pa.overallProgression)')
-            ->getQuery();
+            ->getQuery()
+        ;
         $averageScore = (float) $averageScoreQuery->getSingleScalarResult();
 
         return [
@@ -451,13 +477,14 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find assessments for export
+     * Find assessments for export.
      */
     public function findForExport(array $filters): array
     {
         $qb = $this->createQueryBuilder('pa')
             ->leftJoin('pa.student', 's')
-            ->orderBy('pa.period', 'DESC');
+            ->orderBy('pa.period', 'DESC')
+        ;
 
         if (!empty($filters['status'])) {
             if ($filters['status'] === 'at_risk') {
@@ -469,18 +496,19 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
 
         if (!empty($filters['period'])) {
             $days = (int) $filters['period'];
-            $startDate = new \DateTime("-{$days} days");
+            $startDate = new DateTime("-{$days} days");
             $qb->andWhere('pa.period >= :startDate')
-               ->setParameter('startDate', $startDate);
+                ->setParameter('startDate', $startDate)
+            ;
         }
 
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Get evaluation trends
+     * Get evaluation trends.
      */
-    public function getEvaluationTrends(\DateTime $startDate): array
+    public function getEvaluationTrends(DateTime $startDate): array
     {
         // Return summary statistics instead of date trends for the analytics dashboard
         return [
@@ -489,14 +517,14 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
             'completed_this_week' => 18, // Completed evaluations this week
             'in_progress' => 8, // Evaluations in progress
             'average_score_trend' => '+2.3%', // Trend indicator
-            'completion_rate' => 78.5 // Completion rate percentage
+            'completion_rate' => 78.5, // Completion rate percentage
         ];
     }
 
     /**
-     * Get score distribution
+     * Get score distribution.
      */
-    public function getScoreDistribution(\DateTime $startDate): array
+    public function getScoreDistribution(DateTime $startDate): array
     {
         $qb = $this->createQueryBuilder('pa')
             ->select('
@@ -506,15 +534,16 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 SUM(CASE WHEN pa.overallProgression < 40 THEN 1 ELSE 0 END) as poor
             ')
             ->where('pa.period >= :startDate')
-            ->setParameter('startDate', $startDate);
+            ->setParameter('startDate', $startDate)
+        ;
 
         return $qb->getQuery()->getSingleResult();
     }
 
     /**
-     * Get completion rates
+     * Get completion rates.
      */
-    public function getCompletionRates(\DateTime $startDate): array
+    public function getCompletionRates(DateTime $startDate): array
     {
         // This would be more complex in reality, calculating based on objectives completion
         return [
@@ -526,9 +555,9 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get mentor performance metrics
+     * Get mentor performance metrics.
      */
-    public function getMentorPerformanceMetrics(\DateTime $startDate): array
+    public function getMentorPerformanceMetrics(DateTime $startDate): array
     {
         // Return an array of mentor performance data
         // Since we don't have actual mentor assignments yet, return mock data
@@ -537,26 +566,26 @@ class ProgressAssessmentRepository extends ServiceEntityRepository
                 'name' => 'Marie Dupont',
                 'students_count' => 12,
                 'average_score' => 0.735,
-                'evaluations_count' => 48
+                'evaluations_count' => 48,
             ],
             [
                 'name' => 'Jean Martin',
                 'students_count' => 8,
                 'average_score' => 0.82,
-                'evaluations_count' => 32
+                'evaluations_count' => 32,
             ],
             [
                 'name' => 'Sophie Laurent',
                 'students_count' => 15,
                 'average_score' => 0.68,
-                'evaluations_count' => 60
+                'evaluations_count' => 60,
             ],
             [
                 'name' => 'Pierre Dubois',
                 'students_count' => 10,
                 'average_score' => 0.75,
-                'evaluations_count' => 40
-            ]
+                'evaluations_count' => 40,
+            ],
         ];
     }
 }

@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\CRM;
 
 use App\Entity\User\Admin;
 use App\Repository\CRM\ProspectNoteRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * ProspectNote Entity
- * 
+ * ProspectNote Entity.
+ *
  * Represents a note or interaction log for a prospect in the EPROFOS CRM system.
  * Tracks communications, meetings, and other interactions with prospects.
  */
@@ -30,7 +34,7 @@ class ProspectNote
         min: 5,
         max: 200,
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $title = null;
 
@@ -40,7 +44,7 @@ class ProspectNote
         min: 10,
         max: 5000,
         minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères.'
+        maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères.',
     )]
     private ?string $content = null;
 
@@ -48,7 +52,7 @@ class ProspectNote
     #[Assert\NotBlank(message: 'Le type est obligatoire.')]
     #[Assert\Choice(
         choices: ['call', 'email', 'meeting', 'demo', 'proposal', 'follow_up', 'general', 'task', 'reminder'],
-        message: 'Type de note invalide.'
+        message: 'Type de note invalide.',
     )]
     private string $type = 'general';
 
@@ -56,21 +60,21 @@ class ProspectNote
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Choice(
         choices: ['pending', 'completed', 'cancelled'],
-        message: 'Statut invalide.'
+        message: 'Statut invalide.',
     )]
     private string $status = 'completed';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $scheduledAt = null;
+    private ?DateTimeInterface $scheduledAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $completedAt = null;
+    private ?DateTimeInterface $completedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Prospect::class, inversedBy: 'notes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -90,44 +94,44 @@ class ProspectNote
     private bool $isPrivate = false;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
     }
 
     /**
-     * Lifecycle callback executed before persisting the entity
+     * Lifecycle callback executed before persisting the entity.
      */
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
-        
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
+
         if ($this->status === 'completed' && !$this->completedAt) {
-            $this->completedAt = new \DateTime();
+            $this->completedAt = new DateTime();
         }
     }
 
     /**
-     * Lifecycle callback executed before updating the entity
+     * Lifecycle callback executed before updating the entity.
      */
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        $this->updatedAt = new \DateTime();
-        
+        $this->updatedAt = new DateTime();
+
         if ($this->status === 'completed' && !$this->completedAt) {
-            $this->completedAt = new \DateTime();
+            $this->completedAt = new DateTime();
         } elseif ($this->status !== 'completed') {
             $this->completedAt = null;
         }
     }
 
     /**
-     * Get the type label for display
+     * Get the type label for display.
      */
     public function getTypeLabel(): string
     {
@@ -146,7 +150,7 @@ class ProspectNote
     }
 
     /**
-     * Get the type icon for display
+     * Get the type icon for display.
      */
     public function getTypeIcon(): string
     {
@@ -165,7 +169,7 @@ class ProspectNote
     }
 
     /**
-     * Get the status label for display
+     * Get the status label for display.
      */
     public function getStatusLabel(): string
     {
@@ -178,7 +182,7 @@ class ProspectNote
     }
 
     /**
-     * Get the status badge class for display
+     * Get the status badge class for display.
      */
     public function getStatusBadgeClass(): string
     {
@@ -191,7 +195,7 @@ class ProspectNote
     }
 
     /**
-     * Get the type badge class for display
+     * Get the type badge class for display.
      */
     public function getTypeBadgeClass(): string
     {
@@ -210,7 +214,7 @@ class ProspectNote
     }
 
     /**
-     * Check if the note is pending
+     * Check if the note is pending.
      */
     public function isPending(): bool
     {
@@ -218,7 +222,7 @@ class ProspectNote
     }
 
     /**
-     * Check if the note is completed
+     * Check if the note is completed.
      */
     public function isCompleted(): bool
     {
@@ -226,7 +230,7 @@ class ProspectNote
     }
 
     /**
-     * Check if the note is cancelled
+     * Check if the note is cancelled.
      */
     public function isCancelled(): bool
     {
@@ -234,7 +238,7 @@ class ProspectNote
     }
 
     /**
-     * Check if the note is overdue (for pending tasks/reminders)
+     * Check if the note is overdue (for pending tasks/reminders).
      */
     public function isOverdue(): bool
     {
@@ -242,31 +246,33 @@ class ProspectNote
             return false;
         }
 
-        return $this->scheduledAt < new \DateTime();
+        return $this->scheduledAt < new DateTime();
     }
 
     /**
-     * Mark the note as completed
+     * Mark the note as completed.
      */
     public function markAsCompleted(): static
     {
         $this->status = 'completed';
-        $this->completedAt = new \DateTime();
+        $this->completedAt = new DateTime();
+
         return $this;
     }
 
     /**
-     * Mark the note as cancelled
+     * Mark the note as cancelled.
      */
     public function markAsCancelled(): static
     {
         $this->status = 'cancelled';
         $this->completedAt = null;
+
         return $this;
     }
 
     /**
-     * Get a short excerpt of the content
+     * Get a short excerpt of the content.
      */
     public function getExcerpt(int $length = 100): string
     {
@@ -278,7 +284,7 @@ class ProspectNote
     }
 
     /**
-     * Get formatted creation date
+     * Get formatted creation date.
      */
     public function getFormattedCreatedAt(): string
     {
@@ -290,7 +296,7 @@ class ProspectNote
     }
 
     /**
-     * Get formatted scheduled date
+     * Get formatted scheduled date.
      */
     public function getFormattedScheduledAt(): ?string
     {
@@ -316,6 +322,7 @@ class ProspectNote
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -327,6 +334,7 @@ class ProspectNote
     public function setContent(string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -338,6 +346,7 @@ class ProspectNote
     public function setType(string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -349,50 +358,55 @@ class ProspectNote
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
-    public function getScheduledAt(): ?\DateTimeInterface
+    public function getScheduledAt(): ?DateTimeInterface
     {
         return $this->scheduledAt;
     }
 
-    public function setScheduledAt(?\DateTimeInterface $scheduledAt): static
+    public function setScheduledAt(?DateTimeInterface $scheduledAt): static
     {
         $this->scheduledAt = $scheduledAt;
+
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeInterface
+    public function getCompletedAt(): ?DateTimeInterface
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    public function setCompletedAt(?DateTimeInterface $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
@@ -404,6 +418,7 @@ class ProspectNote
     public function setProspect(?Prospect $prospect): static
     {
         $this->prospect = $prospect;
+
         return $this;
     }
 
@@ -415,6 +430,7 @@ class ProspectNote
     public function setCreatedBy(?Admin $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -426,6 +442,7 @@ class ProspectNote
     public function setMetadata(?array $metadata): static
     {
         $this->metadata = $metadata;
+
         return $this;
     }
 
@@ -437,6 +454,7 @@ class ProspectNote
     public function setIsImportant(bool $isImportant): static
     {
         $this->isImportant = $isImportant;
+
         return $this;
     }
 
@@ -448,6 +466,7 @@ class ProspectNote
     public function setIsPrivate(bool $isPrivate): static
     {
         $this->isPrivate = $isPrivate;
+
         return $this;
     }
 }

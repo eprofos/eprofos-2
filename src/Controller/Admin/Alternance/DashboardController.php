@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Repository\Alternance\AlternanceContractRepository;
 use App\Service\Alternance\AlternanceValidationService;
 use App\Service\Training\QualiopiValidationService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +24,7 @@ class DashboardController extends AbstractController
         private AlternanceContractRepository $contractRepository,
         private AlternanceValidationService $validationService,
         private QualiopiValidationService $qualiopiService,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Route('', name: 'admin_alternance_dashboard', methods: ['GET'])]
@@ -46,9 +49,9 @@ class DashboardController extends AbstractController
     {
         $period = $request->query->get('period', '30'); // Default: last 30 days
         $formation = $request->query->get('formation');
-        
+
         $metrics = $this->getDetailedMetrics($period, $formation);
-        
+
         if ($request->isXmlHttpRequest()) {
             return $this->json($metrics);
         }
@@ -73,7 +76,7 @@ class DashboardController extends AbstractController
     private function getAlternanceMetrics(): array
     {
         $stats = $this->contractRepository->getContractStatistics();
-        
+
         return [
             'total_contracts' => $stats['total'],
             'active_contracts' => $stats['active'],
@@ -91,7 +94,7 @@ class DashboardController extends AbstractController
     private function getAlerts(): array
     {
         $alerts = [];
-        
+
         // Contracts ending soon
         $endingSoonContracts = $this->contractRepository->findContractsEndingSoon(30);
         if (!empty($endingSoonContracts)) {
@@ -101,7 +104,7 @@ class DashboardController extends AbstractController
                 'message' => count($endingSoonContracts) . ' contrat(s) se termine(nt) dans les 30 prochains jours',
                 'count' => count($endingSoonContracts),
                 'route' => 'admin_alternance_contract_index',
-                'params' => ['status' => 'active', 'ending_soon' => '1']
+                'params' => ['status' => 'active', 'ending_soon' => '1'],
             ];
         }
 
@@ -114,7 +117,7 @@ class DashboardController extends AbstractController
                 'message' => count($inactiveContracts) . ' contrat(s) sans activité depuis 15 jours',
                 'count' => count($inactiveContracts),
                 'route' => 'admin_alternance_contract_index',
-                'params' => ['status' => 'active', 'inactive' => '1']
+                'params' => ['status' => 'active', 'inactive' => '1'],
             ];
         }
 
@@ -127,7 +130,7 @@ class DashboardController extends AbstractController
                 'message' => $validationIssues . ' contrat(s) avec des problèmes de conformité Qualiopi',
                 'count' => $validationIssues,
                 'route' => 'admin_alternance_qualiopi',
-                'params' => []
+                'params' => [],
             ];
         }
 
@@ -138,17 +141,17 @@ class DashboardController extends AbstractController
     {
         $rawActivity = $this->contractRepository->findRecentActivity(10);
         $formattedActivity = [];
-        
+
         foreach ($rawActivity as $activity) {
             $studentName = trim(($activity['studentFirstName'] ?? '') . ' ' . ($activity['studentLastName'] ?? ''));
             $companyName = $activity['companyName'] ?? '';
             $status = $activity['status'] ?? '';
-            $updatedAt = $activity['updatedAt'] ?? new \DateTime();
-            
+            $updatedAt = $activity['updatedAt'] ?? new DateTime();
+
             // Convert status to readable title and description
             $title = $this->getActivityTitle($status);
             $description = $this->getActivityDescription($status, $studentName, $companyName);
-            
+
             $formattedActivity[] = [
                 'title' => $title,
                 'description' => $description,
@@ -157,13 +160,13 @@ class DashboardController extends AbstractController
                 'contract_id' => $activity['id'] ?? null,
             ];
         }
-        
+
         return $formattedActivity;
     }
-    
+
     private function getActivityTitle(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             'validated' => 'Contrat validé',
             'active' => 'Contrat activé',
             'completed' => 'Contrat terminé',
@@ -174,13 +177,13 @@ class DashboardController extends AbstractController
             default => 'Mise à jour du contrat'
         };
     }
-    
+
     private function getActivityDescription(string $status, string $studentName, string $companyName): string
     {
         $baseInfo = $studentName ? "pour {$studentName}" : '';
         $companyInfo = $companyName ? " chez {$companyName}" : '';
-        
-        return match($status) {
+
+        return match ($status) {
             'validated' => "Contrat d'alternance validé {$baseInfo}{$companyInfo}",
             'active' => "Contrat d'alternance activé {$baseInfo}{$companyInfo}",
             'completed' => "Formation terminée avec succès {$baseInfo}{$companyInfo}",
@@ -206,8 +209,8 @@ class DashboardController extends AbstractController
     private function getDetailedMetrics(string $period, ?string $formation): array
     {
         $days = (int) $period;
-        $startDate = new \DateTime("-{$days} days");
-        
+        $startDate = new DateTime("-{$days} days");
+
         return [
             'contracts_created' => $this->contractRepository->countContractsCreatedSince($startDate, $formation),
             'contracts_completed' => $this->contractRepository->countContractsCompletedSince($startDate, $formation),
@@ -231,7 +234,7 @@ class DashboardController extends AbstractController
     {
         $completed = $this->contractRepository->countByStatus('completed');
         $total = $this->contractRepository->countCompletedOrTerminated();
-        
+
         return $total > 0 ? round(($completed / $total) * 100, 1) : 0;
     }
 
@@ -239,7 +242,7 @@ class DashboardController extends AbstractController
     {
         $active = $this->contractRepository->countByStatus('active');
         $total = $this->contractRepository->countActiveOrCompleted();
-        
+
         return $total > 0 ? round(($active / $total) * 100, 1) : 0;
     }
 
@@ -266,21 +269,21 @@ class DashboardController extends AbstractController
     {
         $distribution = $this->contractRepository->getContractTypeDistribution();
         $result = [];
-        
+
         foreach ($distribution as $item) {
             $type = $item['contractType'];
             $count = (int) $item['count'];
-            
+
             // Convert internal values to display labels
-            $label = match($type) {
+            $label = match ($type) {
                 'apprentissage' => 'Contrat d\'apprentissage',
                 'professionnalisation' => 'Contrat de professionnalisation',
                 default => ucfirst($type)
             };
-            
+
             $result[$label] = $count;
         }
-        
+
         return $result;
     }
 
@@ -288,13 +291,13 @@ class DashboardController extends AbstractController
     {
         $distribution = $this->contractRepository->getStatusDistribution();
         $result = [];
-        
+
         foreach ($distribution as $item) {
             $status = $item['status'];
             $count = (int) $item['count'];
-            
+
             // Convert internal status values to display labels
-            $label = match($status) {
+            $label = match ($status) {
                 'active' => 'Actif',
                 'completed' => 'Terminé',
                 'pending_validation' => 'En attente',
@@ -304,22 +307,22 @@ class DashboardController extends AbstractController
                 'validated' => 'Validé',
                 default => ucfirst($status)
             };
-            
+
             $result[$label] = $count;
         }
-        
+
         return $result;
     }
 
     private function getMonthlyTrends(): array
     {
         $trends = $this->contractRepository->getMonthlyTrends(12);
-        
+
         // Initialize arrays with French month names
         $months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
         $newContracts = array_fill(0, 12, 0);
         $completedContracts = array_fill(0, 12, 0);
-        
+
         // Fill with actual data
         foreach ($trends as $trend) {
             $monthIndex = (int) $trend['month'] - 1;
@@ -327,13 +330,13 @@ class DashboardController extends AbstractController
                 $newContracts[$monthIndex] = (int) $trend['count'];
             }
         }
-        
+
         // For completed contracts, we'd need a separate query
         // For now, simulate some data based on new contracts with a delay
         for ($i = 0; $i < 12; $i++) {
             $completedContracts[$i] = $i > 0 ? max(0, $newContracts[$i - 1] - mt_rand(0, 3)) : 0;
         }
-        
+
         return [
             'labels' => $months,
             'new_contracts' => $newContracts,
@@ -345,14 +348,14 @@ class DashboardController extends AbstractController
     {
         $activeContracts = $this->contractRepository->findActiveContracts();
         $issuesCount = 0;
-        
+
         foreach ($activeContracts as $contract) {
             $validation = $this->validationService->validateContract($contract);
             if (!empty($validation['errors'])) {
                 $issuesCount++;
             }
         }
-        
+
         return $issuesCount;
     }
 
@@ -386,30 +389,32 @@ class DashboardController extends AbstractController
         return 88.7; // Placeholder
     }
 
-    private function getRiskAnalysis(\DateTime $startDate): array
+    private function getRiskAnalysis(DateTime $startDate): array
     {
         $activeContracts = $this->contractRepository->findActiveContracts();
-        
+
         $highRisk = 0;
         $mediumRisk = 0;
         $lowRisk = 0;
-        
+
         foreach ($activeContracts as $contract) {
             $riskLevel = $this->calculateContractRiskLevel($contract);
-            
+
             switch ($riskLevel) {
                 case 'high':
                     $highRisk++;
                     break;
+
                 case 'medium':
                     $mediumRisk++;
                     break;
+
                 case 'low':
                     $lowRisk++;
                     break;
             }
         }
-        
+
         return [
             'high_risk_contracts' => $highRisk,
             'medium_risk_contracts' => $mediumRisk,
@@ -420,141 +425,144 @@ class DashboardController extends AbstractController
     private function calculateContractRiskLevel(AlternanceContract $contract): string
     {
         $riskFactors = 0;
-        
+
         // Check validation issues
         $validation = $this->validationService->validateContract($contract);
         if (!empty($validation['errors'])) {
             $riskFactors += 3; // High impact
         }
         if (!empty($validation['warnings'])) {
-            $riskFactors += 1; // Medium impact
+            $riskFactors++; // Medium impact
         }
-        
+
         // Check activity
-        $daysSinceUpdate = $contract->getUpdatedAt() ? 
-            (new \DateTime())->diff($contract->getUpdatedAt())->days : 0;
+        $daysSinceUpdate = $contract->getUpdatedAt() ?
+            (new DateTime())->diff($contract->getUpdatedAt())->days : 0;
         if ($daysSinceUpdate > 30) {
             $riskFactors += 2;
         } elseif ($daysSinceUpdate > 15) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
-        
+
         // Check if ending soon
         $remainingDays = $contract->getRemainingDays();
         if ($remainingDays <= 30 && $remainingDays > 0) {
-            $riskFactors += 1;
+            $riskFactors++;
         }
-        
+
         // Check duration vs. progress
         $progressPercentage = $contract->getProgressPercentage();
         if ($progressPercentage > 80 && $remainingDays > 90) {
-            $riskFactors += 1; // Progressing too slowly
+            $riskFactors++; // Progressing too slowly
         }
-        
+
         // Determine risk level
         if ($riskFactors >= 3) {
             return 'high';
-        } elseif ($riskFactors >= 1) {
+        }
+        if ($riskFactors >= 1) {
             return 'medium';
         }
-        
+
         return 'low';
     }
 
     private function getCriticalAlerts(): array
     {
         $alerts = [];
-        
+
         // Find contracts without evaluations for too long
         $activeContracts = $this->contractRepository->findActiveContracts(20);
         foreach ($activeContracts as $contract) {
-            $daysSinceUpdate = $contract->getUpdatedAt() ? 
-                (new \DateTime())->diff($contract->getUpdatedAt())->days : 0;
-                
+            $daysSinceUpdate = $contract->getUpdatedAt() ?
+                (new DateTime())->diff($contract->getUpdatedAt())->days : 0;
+
             if ($daysSinceUpdate > 60) {
                 $alerts[] = [
                     'title' => 'Contrat sans évaluation depuis ' . $daysSinceUpdate . ' jours',
-                    'message' => sprintf('Le contrat #%d (%s) n\'a pas été mis à jour depuis %d jours', 
-                        $contract->getId(), 
-                        $contract->getStudentFullName(), 
-                        $daysSinceUpdate
+                    'message' => sprintf(
+                        'Le contrat #%d (%s) n\'a pas été mis à jour depuis %d jours',
+                        $contract->getId(),
+                        $contract->getStudentFullName(),
+                        $daysSinceUpdate,
                     ),
-                    'created_at' => new \DateTime('-' . $daysSinceUpdate . ' days'),
+                    'created_at' => new DateTime('-' . $daysSinceUpdate . ' days'),
                     'contract_id' => $contract->getId(),
                 ];
             }
         }
-        
+
         // Find contracts with validation errors
         foreach ($activeContracts as $contract) {
             $validation = $this->validationService->validateContract($contract);
             if (!empty($validation['errors'])) {
                 $alerts[] = [
                     'title' => 'Problème de conformité Qualiopi',
-                    'message' => sprintf('Le contrat #%d (%s) a %d erreur(s) de conformité',
+                    'message' => sprintf(
+                        'Le contrat #%d (%s) a %d erreur(s) de conformité',
                         $contract->getId(),
                         $contract->getStudentFullName(),
-                        count($validation['errors'])
+                        count($validation['errors']),
                     ),
-                    'created_at' => new \DateTime('-1 hour'),
+                    'created_at' => new DateTime('-1 hour'),
                     'contract_id' => $contract->getId(),
                 ];
             }
         }
-        
+
         return array_slice($alerts, 0, 5); // Limit to 5 most critical
     }
 
     private function getWarningAlerts(): array
     {
         $alerts = [];
-        
+
         // Contracts ending soon
         $endingSoon = $this->contractRepository->findContractsEndingSoon(30);
         if (!empty($endingSoon)) {
             $alerts[] = [
                 'title' => 'Contrats se terminant bientôt',
                 'message' => count($endingSoon) . ' contrat(s) se termine(nt) dans les 30 prochains jours',
-                'created_at' => new \DateTime('-1 hour'),
+                'created_at' => new DateTime('-1 hour'),
             ];
         }
-        
+
         // Contracts without recent activity
         $inactive = $this->contractRepository->findContractsWithoutRecentActivity(15);
         if (!empty($inactive)) {
             $alerts[] = [
                 'title' => 'Contrats sans activité récente',
                 'message' => count($inactive) . ' contrat(s) sans activité depuis 15 jours',
-                'created_at' => new \DateTime('-2 hours'),
+                'created_at' => new DateTime('-2 hours'),
             ];
         }
-        
+
         // Find contracts with validation warnings
         $activeContracts = $this->contractRepository->findActiveContracts(10);
         $warningCount = 0;
-        
+
         foreach ($activeContracts as $contract) {
             $validation = $this->validationService->validateContract($contract);
             if (!empty($validation['warnings'])) {
                 $warningCount++;
             }
         }
-        
+
         if ($warningCount > 0) {
             $alerts[] = [
                 'title' => 'Avertissements de conformité',
                 'message' => $warningCount . ' contrat(s) avec des avertissements de conformité',
-                'created_at' => new \DateTime('-3 hours'),
+                'created_at' => new DateTime('-3 hours'),
             ];
         }
-        
+
         return $alerts;
     }
 
     private function getInfoAlerts(): array
     {
         $alerts = [];
-        
+
         // Recent contract validations
         $recentActivityRaw = $this->contractRepository->findRecentActivity(5);
         foreach ($recentActivityRaw as $activity) {
@@ -562,37 +570,38 @@ class DashboardController extends AbstractController
                 $studentName = trim(($activity['studentFirstName'] ?? '') . ' ' . ($activity['studentLastName'] ?? ''));
                 $alerts[] = [
                     'title' => 'Nouveau contrat validé',
-                    'message' => sprintf('Le contrat #%d (%s) a été validé avec succès',
+                    'message' => sprintf(
+                        'Le contrat #%d (%s) a été validé avec succès',
                         $activity['id'],
-                        $studentName
+                        $studentName,
                     ),
-                    'created_at' => $activity['updatedAt'] ?? new \DateTime('-1 hour'),
+                    'created_at' => $activity['updatedAt'] ?? new DateTime('-1 hour'),
                     'contract_id' => $activity['id'],
                 ];
             }
         }
-        
+
         // Monthly report availability
-        $now = new \DateTime();
+        $now = new DateTime();
         if ($now->format('d') <= 5) { // First 5 days of the month
             $lastMonth = $now->modify('-1 month')->format('F Y');
             $alerts[] = [
                 'title' => 'Rapport mensuel disponible',
                 'message' => "Le rapport de performance de {$lastMonth} est maintenant disponible",
-                'created_at' => new \DateTime('-2 hours'),
+                'created_at' => new DateTime('-2 hours'),
             ];
         }
-        
+
         // Statistics update
         $stats = $this->contractRepository->getContractStatistics();
         if ($stats['total'] > 0) {
             $alerts[] = [
                 'title' => 'Mise à jour des statistiques',
                 'message' => sprintf('Tableau de bord mis à jour avec %d contrat(s) au total', $stats['total']),
-                'created_at' => new \DateTime('-30 minutes'),
+                'created_at' => new DateTime('-30 minutes'),
             ];
         }
-        
+
         return array_slice($alerts, 0, 3); // Limit to 3 most recent
     }
 }

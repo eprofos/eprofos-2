@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Analysis;
 
 use App\Entity\Analysis\IndividualNeedsAnalysis;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository for IndividualNeedsAnalysis entity
- * 
+ * Repository for IndividualNeedsAnalysis entity.
+ *
  * Provides custom query methods for individual needs analysis
  * including filtering by professional status, funding type, and personal characteristics.
  */
@@ -20,7 +24,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Save an individual needs analysis
+     * Save an individual needs analysis.
      */
     public function save(IndividualNeedsAnalysis $entity, bool $flush = false): void
     {
@@ -32,7 +36,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Remove an individual needs analysis
+     * Remove an individual needs analysis.
      */
     public function remove(IndividualNeedsAnalysis $entity, bool $flush = false): void
     {
@@ -44,7 +48,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses by professional status
+     * Find analyses by professional status.
      */
     public function findByProfessionalStatus(string $status): array
     {
@@ -53,11 +57,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('status', $status)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by funding type
+     * Find analyses by funding type.
      */
     public function findByFundingType(string $fundingType): array
     {
@@ -66,11 +71,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('fundingType', $fundingType)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by education level
+     * Find analyses by education level.
      */
     public function findByEducationLevel(string $educationLevel): array
     {
@@ -79,30 +85,34 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('educationLevel', $educationLevel)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by age range
+     * Find analyses by age range.
      */
     public function findByAgeRange(int $minAge, ?int $maxAge = null): array
     {
         $qb = $this->createQueryBuilder('ina')
             ->andWhere('ina.age >= :minAge')
-            ->setParameter('minAge', $minAge);
+            ->setParameter('minAge', $minAge)
+        ;
 
         if ($maxAge !== null) {
             $qb->andWhere('ina.age <= :maxAge')
-               ->setParameter('maxAge', $maxAge);
+                ->setParameter('maxAge', $maxAge)
+            ;
         }
 
         return $qb->orderBy('ina.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by training objective
+     * Find analyses by training objective.
      */
     public function findByTrainingObjective(string $objective): array
     {
@@ -111,11 +121,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('objective', $objective)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by training format preference
+     * Find analyses by training format preference.
      */
     public function findByTrainingFormatPreference(string $formatPreference): array
     {
@@ -124,11 +135,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('formatPreference', $formatPreference)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses with specific availability
+     * Find analyses with specific availability.
      */
     public function findByAvailability(string $availability): array
     {
@@ -137,11 +149,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('availability', $availability)
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses with disability accommodations
+     * Find analyses with disability accommodations.
      */
     public function findWithDisabilityAccommodations(): array
     {
@@ -151,11 +164,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('empty', '')
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find unemployed individuals
+     * Find unemployed individuals.
      */
     public function findUnemployed(): array
     {
@@ -164,11 +178,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('unemployedStatuses', ['unemployed', 'job_seeker'])
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find employed individuals seeking career change
+     * Find employed individuals seeking career change.
      */
     public function findCareerChangeSeekers(): array
     {
@@ -179,11 +194,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('careerChange', 'career_change')
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get statistics for individual analyses
+     * Get statistics for individual analyses.
      */
     public function getIndividualStatistics(): array
     {
@@ -204,7 +220,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.professionalStatus, COUNT(ina.id) as count')
             ->groupBy('ina.professionalStatus')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($statusStats as $stat) {
             $stats['by_professional_status'][$stat['professionalStatus']] = (int) $stat['count'];
@@ -215,7 +232,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.fundingType, COUNT(ina.id) as count')
             ->groupBy('ina.fundingType')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($fundingStats as $stat) {
             $stats['by_funding_type'][$stat['fundingType']] = (int) $stat['count'];
@@ -226,7 +244,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.educationLevel, COUNT(ina.id) as count')
             ->groupBy('ina.educationLevel')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($educationStats as $stat) {
             $stats['by_education_level'][$stat['educationLevel']] = (int) $stat['count'];
@@ -237,7 +256,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.trainingObjective, COUNT(ina.id) as count')
             ->groupBy('ina.trainingObjective')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($objectiveStats as $stat) {
             $stats['by_training_objective'][$stat['trainingObjective']] = (int) $stat['count'];
@@ -248,7 +268,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.trainingFormatPreference, COUNT(ina.id) as count')
             ->groupBy('ina.trainingFormatPreference')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($formatStats as $stat) {
             $stats['by_training_format_preference'][$stat['trainingFormatPreference']] = (int) $stat['count'];
@@ -259,7 +280,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->select('ina.availability, COUNT(ina.id) as count')
             ->groupBy('ina.availability')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($availabilityStats as $stat) {
             $stats['by_availability'][$stat['availability']] = (int) $stat['count'];
@@ -269,7 +291,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
         $avgAge = $this->createQueryBuilder('ina')
             ->select('AVG(ina.age) as avg')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         $stats['average_age'] = round((float) $avgAge, 1);
 
@@ -279,7 +302,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             '26-35' => [26, 35],
             '36-45' => [36, 45],
             '46-55' => [46, 55],
-            '56+' => [56, 100]
+            '56+' => [56, 100],
         ];
 
         foreach ($ageRanges as $label => $range) {
@@ -290,7 +313,8 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
                 ->setParameter('min', $range[0])
                 ->setParameter('max', $range[1])
                 ->getQuery()
-                ->getSingleScalarResult();
+                ->getSingleScalarResult()
+            ;
 
             $stats['age_distribution'][$label] = (int) $count;
         }
@@ -299,58 +323,68 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find analyses with filters for admin interface
+     * Find analyses with filters for admin interface.
      */
     public function findWithFilters(array $filters = []): array
     {
         $qb = $this->createQueryBuilder('ina')
             ->leftJoin('ina.needsAnalysisRequest', 'nar')
-            ->addSelect('nar');
+            ->addSelect('nar')
+        ;
 
         if (!empty($filters['professional_status'])) {
             $qb->andWhere('ina.professionalStatus = :professionalStatus')
-               ->setParameter('professionalStatus', $filters['professional_status']);
+                ->setParameter('professionalStatus', $filters['professional_status'])
+            ;
         }
 
         if (!empty($filters['funding_type'])) {
             $qb->andWhere('ina.fundingType = :fundingType')
-               ->setParameter('fundingType', $filters['funding_type']);
+                ->setParameter('fundingType', $filters['funding_type'])
+            ;
         }
 
         if (!empty($filters['education_level'])) {
             $qb->andWhere('ina.educationLevel = :educationLevel')
-               ->setParameter('educationLevel', $filters['education_level']);
+                ->setParameter('educationLevel', $filters['education_level'])
+            ;
         }
 
         if (!empty($filters['training_objective'])) {
             $qb->andWhere('ina.trainingObjective = :trainingObjective')
-               ->setParameter('trainingObjective', $filters['training_objective']);
+                ->setParameter('trainingObjective', $filters['training_objective'])
+            ;
         }
 
         if (!empty($filters['training_format_preference'])) {
             $qb->andWhere('ina.trainingFormatPreference = :trainingFormatPreference')
-               ->setParameter('trainingFormatPreference', $filters['training_format_preference']);
+                ->setParameter('trainingFormatPreference', $filters['training_format_preference'])
+            ;
         }
 
         if (!empty($filters['availability'])) {
             $qb->andWhere('ina.availability = :availability')
-               ->setParameter('availability', $filters['availability']);
+                ->setParameter('availability', $filters['availability'])
+            ;
         }
 
         if (!empty($filters['age_min'])) {
             $qb->andWhere('ina.age >= :ageMin')
-               ->setParameter('ageMin', $filters['age_min']);
+                ->setParameter('ageMin', $filters['age_min'])
+            ;
         }
 
         if (!empty($filters['age_max'])) {
             $qb->andWhere('ina.age <= :ageMax')
-               ->setParameter('ageMax', $filters['age_max']);
+                ->setParameter('ageMax', $filters['age_max'])
+            ;
         }
 
         if (!empty($filters['has_disability_accommodations'])) {
             $qb->andWhere('ina.disabilityAccommodations IS NOT NULL')
-               ->andWhere('ina.disabilityAccommodations != :empty')
-               ->setParameter('empty', '');
+                ->andWhere('ina.disabilityAccommodations != :empty')
+                ->setParameter('empty', '')
+            ;
         }
 
         if (!empty($filters['search'])) {
@@ -359,17 +393,18 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
                 'ina.lastName LIKE :search',
                 'ina.email LIKE :search',
                 'ina.currentPosition LIKE :search',
-                'ina.currentCompany LIKE :search'
+                'ina.currentCompany LIKE :search',
             ))->setParameter('search', '%' . $filters['search'] . '%');
         }
 
         return $qb->orderBy('ina.id', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
-     * Find individuals with similar profiles
+     * Find individuals with similar profiles.
      */
     public function findSimilarProfiles(IndividualNeedsAnalysis $analysis): array
     {
@@ -385,13 +420,14 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->orderBy('ina.id', 'DESC')
             ->setMaxResults(5)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by date range
+     * Find analyses by date range.
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('ina')
             ->andWhere('ina.submittedAt >= :startDate')
@@ -400,26 +436,28 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->orderBy('ina.submittedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get recent analyses (last 30 days)
+     * Get recent analyses (last 30 days).
      */
     public function findRecentAnalyses(int $days = 30): array
     {
-        $since = new \DateTimeImmutable("-{$days} days");
-        
+        $since = new DateTimeImmutable("-{$days} days");
+
         return $this->createQueryBuilder('ina')
             ->andWhere('ina.submittedAt >= :since')
             ->setParameter('since', $since)
             ->orderBy('ina.submittedAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by funding eligibility
+     * Find analyses by funding eligibility.
      */
     public function findByFundingEligibility(): array
     {
@@ -428,33 +466,35 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->setParameter('eligibleFunding', ['cpf', 'pole_emploi', 'region', 'opco'])
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses requiring specific accommodations
+     * Find analyses requiring specific accommodations.
      */
     public function findRequiringAccommodations(): array
     {
         $qb = $this->createQueryBuilder('ina');
-        
+
         return $qb->andWhere($qb->expr()->orX(
-                'ina.disabilityAccommodations IS NOT NULL AND ina.disabilityAccommodations != :empty',
-                'ina.specificConstraints IS NOT NULL AND ina.specificConstraints != :empty'
-            ))
+            'ina.disabilityAccommodations IS NOT NULL AND ina.disabilityAccommodations != :empty',
+            'ina.specificConstraints IS NOT NULL AND ina.specificConstraints != :empty',
+        ))
             ->setParameter('empty', '')
             ->orderBy('ina.id', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Get completion statistics by month
+     * Get completion statistics by month.
      */
     public function getCompletionStatsByMonth(int $months = 12): array
     {
-        $since = new \DateTimeImmutable("-{$months} months");
-        
+        $since = new DateTimeImmutable("-{$months} months");
+
         return $this->createQueryBuilder('ina')
             ->select('YEAR(ina.submittedAt) as year, MONTH(ina.submittedAt) as month, COUNT(ina.id) as count')
             ->andWhere('ina.submittedAt >= :since')
@@ -462,11 +502,12 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
             ->groupBy('year, month')
             ->orderBy('year, month')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
-     * Find analyses by experience level
+     * Find analyses by experience level.
      */
     public function findByExperienceLevel(string $experienceLevel): array
     {
@@ -479,7 +520,7 @@ class IndividualNeedsAnalysisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count analyses by funding type and professional status
+     * Count analyses by funding type and professional status.
      */
     public function countByFundingAndStatus(): array
     {

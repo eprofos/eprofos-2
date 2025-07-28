@@ -1,23 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\CRM\ContactRequest;
-use App\Entity\Training\Formation;
 use App\Entity\Service\Service;
+use App\Entity\Training\Formation;
 use App\Service\CRM\ProspectManagementService;
+use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
- * ContactRequest fixtures for EPROFOS platform
- * 
+ * ContactRequest fixtures for EPROFOS platform.
+ *
  * Creates sample contact requests for testing purposes including
  * different types of requests (quote, advice, information, quick_registration)
  * with various statuses and realistic data.
- * 
+ *
  * Each contact request will automatically create a prospect through the
  * ProspectManagementService to test the unified prospect system.
  */
@@ -25,11 +29,11 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
 {
     public function __construct(
         private ProspectManagementService $prospectService,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {}
 
     /**
-     * Load contact request fixtures
+     * Load contact request fixtures.
      */
     public function load(ObjectManager $manager): void
     {
@@ -157,7 +161,7 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
             $contactRequest->setStatus($requestData['status']);
 
             // Set creation date in the past
-            $createdAt = new \DateTime();
+            $createdAt = new DateTime();
             $createdAt->modify('-' . $requestData['createdDaysAgo'] . ' days');
             $contactRequest->setCreatedAt($createdAt);
 
@@ -177,7 +181,7 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
             }
 
             // Set processed date for completed/cancelled requests
-            if (in_array($requestData['status'], ['completed', 'cancelled', 'in_progress'])) {
+            if (in_array($requestData['status'], ['completed', 'cancelled', 'in_progress'], true)) {
                 $processedAt = clone $createdAt;
                 $processedAt->modify('+1 day');
                 $contactRequest->setProcessedAt($processedAt);
@@ -196,41 +200,42 @@ class ContactRequestFixtures extends Fixture implements DependentFixtureInterfac
         }
 
         $manager->flush();
-        
+
         // Create prospects from contact requests using the ProspectManagementService
         echo "Creating prospects from contact requests...\n";
         $createdProspects = 0;
-        
+
         foreach ($contactRequests as $requestData) {
             $contactRequest = $manager->getRepository(ContactRequest::class)
-                ->findOneBy(['email' => $requestData['email']]);
-                
+                ->findOneBy(['email' => $requestData['email']])
+            ;
+
             if ($contactRequest) {
                 try {
                     $prospect = $this->prospectService->createProspectFromContactRequest($contactRequest);
                     $createdProspects++;
-                    
+
                     $this->logger->info('Prospect created from contact request fixture', [
                         'prospect_id' => $prospect->getId(),
                         'contact_request_id' => $contactRequest->getId(),
-                        'email' => $contactRequest->getEmail()
+                        'email' => $contactRequest->getEmail(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to create prospect from contact request fixture', [
                         'contact_request_id' => $contactRequest->getId(),
                         'email' => $contactRequest->getEmail(),
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
         }
-        
-        echo "✅ Contact Requests: Created " . count($contactRequests) . " contact requests\n";
+
+        echo '✅ Contact Requests: Created ' . count($contactRequests) . " contact requests\n";
         echo "✅ Prospects: Created {$createdProspects} prospects from contact requests\n";
     }
 
     /**
-     * Define fixture dependencies
+     * Define fixture dependencies.
      */
     public function getDependencies(): array
     {
