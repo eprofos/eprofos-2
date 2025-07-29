@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *
  * Handles session registration management in the admin interface.
  */
-#[Route('/admin/session-registrations', name: 'admin_session_registration_')]
+#[Route('/admin/session-registrations')]
 #[IsGranted('ROLE_ADMIN')]
 class SessionRegistrationController extends AbstractController
 {
@@ -32,7 +32,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * List all session registrations with filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_session_registration_index', methods: ['GET'])]
     public function index(Request $request, SessionRegistrationRepository $registrationRepository): Response
     {
         // Get filter parameters
@@ -79,7 +79,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Show registration details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_session_registration_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(SessionRegistration $registration): Response
     {
         return $this->render('admin/session_registration/show.html.twig', [
@@ -90,7 +90,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Confirm a registration.
      */
-    #[Route('/{id}/confirm', name: 'confirm', methods: ['POST'])]
+    #[Route('/{id}/confirm', name: 'admin_session_registration_confirm', methods: ['POST'])]
     public function confirm(Request $request, SessionRegistration $registration): Response
     {
         if ($this->isCsrfTokenValid('confirm' . $registration->getId(), $request->request->get('_token'))) {
@@ -124,7 +124,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Cancel a registration.
      */
-    #[Route('/{id}/cancel', name: 'cancel', methods: ['POST'])]
+    #[Route('/{id}/cancel', name: 'admin_session_registration_cancel', methods: ['POST'])]
     public function cancel(Request $request, SessionRegistration $registration): Response
     {
         if ($this->isCsrfTokenValid('cancel' . $registration->getId(), $request->request->get('_token'))) {
@@ -158,7 +158,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Update registration status.
      */
-    #[Route('/{id}/update-status', name: 'update_status', methods: ['POST'])]
+    #[Route('/{id}/update-status', name: 'admin_session_registration_update_status', methods: ['POST'])]
     public function updateStatus(Request $request, SessionRegistration $registration): Response
     {
         if ($this->isCsrfTokenValid('update_status' . $registration->getId(), $request->request->get('_token'))) {
@@ -197,7 +197,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Delete a registration.
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_session_registration_delete', methods: ['POST'])]
     public function delete(Request $request, SessionRegistration $registration): Response
     {
         if ($this->isCsrfTokenValid('delete' . $registration->getId(), $request->request->get('_token'))) {
@@ -232,7 +232,7 @@ class SessionRegistrationController extends AbstractController
     /**
      * Export all registrations to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_session_registration_export', methods: ['GET'])]
     public function export(Request $request, SessionRegistrationRepository $registrationRepository): Response
     {
         // Get filter parameters

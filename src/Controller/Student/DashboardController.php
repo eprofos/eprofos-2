@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Main dashboard for authenticated students to access their learning resources,
  * training progress, and account information.
  */
-#[Route('/student', name: 'student_')]
+#[Route('/student')]
 #[IsGranted('ROLE_STUDENT')]
 class DashboardController extends AbstractController
 {
@@ -26,7 +26,7 @@ class DashboardController extends AbstractController
      * Displays an overview of the student's training progress, upcoming sessions,
      * recent activities, and quick access to learning resources.
      */
-    #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
+    #[Route('/dashboard', name: 'student_dashboard', methods: ['GET'])]
     public function index(): Response
     {
         /** @var Student $student */
@@ -55,7 +55,7 @@ class DashboardController extends AbstractController
      *
      * Displays and allows editing of student personal information and preferences.
      */
-    #[Route('/profile', name: 'profile', methods: ['GET'])]
+    #[Route('/profile', name: 'student_profile', methods: ['GET'])]
     public function profile(): Response
     {
         /** @var Student $student */
@@ -72,7 +72,7 @@ class DashboardController extends AbstractController
      *
      * Displays enrolled courses, available courses, and course history.
      */
-    #[Route('/courses', name: 'courses', methods: ['GET'])]
+    #[Route('/courses', name: 'student_courses', methods: ['GET'])]
     public function courses(): Response
     {
         /** @var Student $student */
@@ -95,7 +95,7 @@ class DashboardController extends AbstractController
      *
      * Displays detailed training progress, learning analytics, and achievements.
      */
-    #[Route('/progress', name: 'progress', methods: ['GET'])]
+    #[Route('/progress', name: 'student_progress', methods: ['GET'])]
     public function progress(): Response
     {
         /** @var Student $student */
@@ -119,7 +119,7 @@ class DashboardController extends AbstractController
      *
      * Displays earned certificates and available certifications.
      */
-    #[Route('/certificates', name: 'certificates', methods: ['GET'])]
+    #[Route('/certificates', name: 'student_certificates', methods: ['GET'])]
     public function certificates(): Response
     {
         /** @var Student $student */
@@ -141,7 +141,7 @@ class DashboardController extends AbstractController
      *
      * Displays system notifications, course updates, and messages.
      */
-    #[Route('/notifications', name: 'notifications', methods: ['GET'])]
+    #[Route('/notifications', name: 'student_notifications', methods: ['GET'])]
     public function notifications(): Response
     {
         /** @var Student $student */
@@ -163,7 +163,7 @@ class DashboardController extends AbstractController
      *
      * Allows students to modify account settings, preferences, and privacy options.
      */
-    #[Route('/settings', name: 'settings', methods: ['GET'])]
+    #[Route('/settings', name: 'student_settings', methods: ['GET'])]
     public function settings(): Response
     {
         /** @var Student $student */

@@ -26,7 +26,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Provides comprehensive student management capabilities including password reset,
  * email verification management, and detailed filtering options.
  */
-#[Route('/admin/students', name: 'admin_student_')]
+#[Route('/admin/students')]
 #[IsGranted('ROLE_ADMIN')]
 class StudentController extends AbstractController
 {
@@ -39,7 +39,7 @@ class StudentController extends AbstractController
     /**
      * List all students with advanced filtering and pagination.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_student_index', methods: ['GET'])]
     public function index(Request $request, StudentRepository $studentRepository): Response
     {
         $this->logger->info('Admin students list accessed', [
@@ -91,7 +91,7 @@ class StudentController extends AbstractController
     /**
      * Show detailed student information.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_student_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Student $student): Response
     {
         $this->logger->info('Student details viewed', [
@@ -107,7 +107,7 @@ class StudentController extends AbstractController
     /**
      * Create new student.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_student_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $student = new Student();
@@ -162,7 +162,7 @@ class StudentController extends AbstractController
     /**
      * Edit existing student.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_student_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Student $student, EntityManagerInterface $entityManager): Response
     {
         $originalPassword = $student->getPassword();
@@ -216,7 +216,7 @@ class StudentController extends AbstractController
     /**
      * Delete student (soft delete - deactivate).
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'admin_student_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Student $student, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $student->getId(), $request->request->get('_token'))) {
@@ -248,7 +248,7 @@ class StudentController extends AbstractController
     /**
      * Activate/deactivate student.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_student_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Student $student, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_status' . $student->getId(), $request->request->get('_token'))) {
@@ -281,7 +281,7 @@ class StudentController extends AbstractController
     /**
      * Send password reset link to student.
      */
-    #[Route('/{id}/send-password-reset', name: 'send_password_reset', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/send-password-reset', name: 'admin_student_send_password_reset', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sendPasswordReset(Request $request, Student $student): JsonResponse
     {
         if (!$this->isCsrfTokenValid('send_password_reset' . $student->getId(), $request->request->get('_token'))) {
@@ -324,7 +324,7 @@ class StudentController extends AbstractController
     /**
      * Send email verification link to student.
      */
-    #[Route('/{id}/send-email-verification', name: 'send_email_verification', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/send-email-verification', name: 'admin_student_send_email_verification', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sendEmailVerification(Request $request, Student $student): JsonResponse
     {
         if (!$this->isCsrfTokenValid('send_email_verification' . $student->getId(), $request->request->get('_token'))) {
@@ -367,7 +367,7 @@ class StudentController extends AbstractController
     /**
      * Manually verify student email.
      */
-    #[Route('/{id}/verify-email', name: 'verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/verify-email', name: 'admin_student_verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function verifyEmail(Request $request, Student $student, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('verify_email' . $student->getId(), $request->request->get('_token'))) {
@@ -398,7 +398,7 @@ class StudentController extends AbstractController
     /**
      * Generate new password for student.
      */
-    #[Route('/{id}/generate-password', name: 'generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/generate-password', name: 'admin_student_generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function generatePassword(Request $request, Student $student, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->isCsrfTokenValid('generate_password' . $student->getId(), $request->request->get('_token'))) {
@@ -448,7 +448,7 @@ class StudentController extends AbstractController
     /**
      * Export students data to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_student_export', methods: ['GET'])]
     public function export(Request $request, StudentRepository $studentRepository): Response
     {
         $this->logger->info('Students data export requested', [
@@ -489,7 +489,7 @@ class StudentController extends AbstractController
     /**
      * Bulk actions on students.
      */
-    #[Route('/bulk-action', name: 'bulk_action', methods: ['POST'])]
+    #[Route('/bulk-action', name: 'admin_student_bulk_action', methods: ['POST'])]
     public function bulkAction(Request $request, StudentRepository $studentRepository, EntityManagerInterface $entityManager): Response
     {
         $action = $request->request->get('bulk_action');

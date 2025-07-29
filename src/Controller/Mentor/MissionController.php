@@ -22,7 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *
  * Handles CRUD operations for company missions created by mentors
  */
-#[Route('/mentor/missions', name: 'mentor_missions_')]
+#[Route('/mentor/missions')]
 #[IsGranted('ROLE_MENTOR')]
 class MissionController extends AbstractController
 {
@@ -35,7 +35,7 @@ class MissionController extends AbstractController
     /**
      * List all missions created by the mentor.
      */
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'mentor_missions_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         /** @var Mentor $mentor */
@@ -110,7 +110,7 @@ class MissionController extends AbstractController
     /**
      * Show mission details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'mentor_missions_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(CompanyMission $mission): Response
     {
         /** @var Mentor $mentor */
@@ -141,7 +141,7 @@ class MissionController extends AbstractController
     /**
      * Create a new mission.
      */
-    #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
+    #[Route('/create', name: 'mentor_missions_create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
     {
         /** @var Mentor $mentor */
@@ -191,7 +191,7 @@ class MissionController extends AbstractController
     /**
      * Edit an existing mission.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'mentor_missions_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, CompanyMission $mission): Response
     {
         /** @var Mentor $mentor */
@@ -250,7 +250,7 @@ class MissionController extends AbstractController
     /**
      * Toggle mission active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'mentor_missions_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(CompanyMission $mission): Response
     {
         /** @var Mentor $mentor */
@@ -278,7 +278,7 @@ class MissionController extends AbstractController
     /**
      * Delete a mission (soft delete by deactivating).
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'mentor_missions_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(CompanyMission $mission): Response
     {
         /** @var Mentor $mentor */
@@ -314,7 +314,7 @@ class MissionController extends AbstractController
     /**
      * Get recommended next missions for progression.
      */
-    #[Route('/recommendations', name: 'recommendations', methods: ['GET'])]
+    #[Route('/recommendations', name: 'mentor_missions_recommendations', methods: ['GET'])]
     public function recommendations(): Response
     {
         /** @var Mentor $mentor */

@@ -26,7 +26,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Provides comprehensive teacher management capabilities including password reset,
  * email verification management, and detailed filtering options.
  */
-#[Route('/admin/teachers', name: 'admin_teacher_')]
+#[Route('/admin/teachers')]
 #[IsGranted('ROLE_ADMIN')]
 class TeacherController extends AbstractController
 {
@@ -39,7 +39,7 @@ class TeacherController extends AbstractController
     /**
      * List all teachers with advanced filtering and pagination.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_teacher_index', methods: ['GET'])]
     public function index(Request $request, TeacherRepository $teacherRepository): Response
     {
         $this->logger->info('Admin teachers list accessed', [
@@ -87,7 +87,7 @@ class TeacherController extends AbstractController
     /**
      * Show detailed teacher information.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_teacher_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Teacher $teacher): Response
     {
         $this->logger->info('Admin teacher details viewed', [
@@ -103,7 +103,7 @@ class TeacherController extends AbstractController
     /**
      * Create a new teacher.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_teacher_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $teacher = new Teacher();
@@ -147,7 +147,7 @@ class TeacherController extends AbstractController
     /**
      * Edit a teacher.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_teacher_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(TeacherType::class, $teacher);
@@ -182,7 +182,7 @@ class TeacherController extends AbstractController
     /**
      * Delete a teacher.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_teacher_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $teacher->getId(), $request->request->get('_token'))) {
@@ -207,7 +207,7 @@ class TeacherController extends AbstractController
     /**
      * Send password reset email to teacher.
      */
-    #[Route('/{id}/reset-password', name: 'reset_password', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/reset-password', name: 'admin_teacher_reset_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function resetPassword(Teacher $teacher): JsonResponse
     {
         try {
@@ -246,7 +246,7 @@ class TeacherController extends AbstractController
     /**
      * Send email verification to teacher.
      */
-    #[Route('/{id}/verify-email', name: 'verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/verify-email', name: 'admin_teacher_verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function verifyEmail(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
     {
         try {
@@ -286,7 +286,7 @@ class TeacherController extends AbstractController
     /**
      * Generate temporary password for teacher.
      */
-    #[Route('/{id}/generate-password', name: 'generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/generate-password', name: 'admin_teacher_generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function generatePassword(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
     {
         try {
@@ -322,7 +322,7 @@ class TeacherController extends AbstractController
     /**
      * Toggle teacher active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_teacher_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
     {
         try {
@@ -359,7 +359,7 @@ class TeacherController extends AbstractController
     /**
      * Export teachers to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_teacher_export', methods: ['GET'])]
     public function export(TeacherRepository $teacherRepository): Response
     {
         $teachers = $teacherRepository->findAll();
@@ -425,7 +425,7 @@ class TeacherController extends AbstractController
     /**
      * Bulk actions on teachers.
      */
-    #[Route('/bulk-action', name: 'bulk_action', methods: ['POST'])]
+    #[Route('/bulk-action', name: 'admin_teacher_bulk_action', methods: ['POST'])]
     public function bulkAction(Request $request, TeacherRepository $teacherRepository, EntityManagerInterface $entityManager): Response
     {
         $action = $request->request->get('action');

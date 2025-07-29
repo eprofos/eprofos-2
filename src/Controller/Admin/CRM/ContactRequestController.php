@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for contact requests in the admin interface.
  * Provides full management capabilities for EPROFOS contact requests.
  */
-#[Route('/admin/contact-requests', name: 'admin_contact_request_')]
+#[Route('/admin/contact-requests')]
 #[IsGranted('ROLE_ADMIN')]
 class ContactRequestController extends AbstractController
 {
@@ -32,7 +32,7 @@ class ContactRequestController extends AbstractController
     /**
      * List all contact requests with filtering and pagination.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_contact_request_index', methods: ['GET'])]
     public function index(Request $request, ContactRequestRepository $contactRequestRepository): Response
     {
         $this->logger->info('Admin contact requests list accessed', [
@@ -86,7 +86,7 @@ class ContactRequestController extends AbstractController
     /**
      * Show contact request details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_contact_request_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ContactRequest $contactRequest): Response
     {
         $this->logger->info('Admin contact request details viewed', [
@@ -108,7 +108,7 @@ class ContactRequestController extends AbstractController
     /**
      * Edit an existing contact request (status and admin notes).
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_contact_request_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ContactRequestType::class, $contactRequest);
@@ -149,7 +149,7 @@ class ContactRequestController extends AbstractController
     /**
      * Update contact request status.
      */
-    #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/status', name: 'admin_contact_request_update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
@@ -181,7 +181,7 @@ class ContactRequestController extends AbstractController
     /**
      * Delete a contact request.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_contact_request_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ContactRequest $contactRequest, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $contactRequest->getId(), $request->getPayload()->get('_token'))) {
@@ -203,7 +203,7 @@ class ContactRequestController extends AbstractController
     /**
      * Export contact requests to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_contact_request_export', methods: ['GET'])]
     public function export(ContactRequestRepository $contactRequestRepository): Response
     {
         $contactRequests = $contactRequestRepository->findAll();

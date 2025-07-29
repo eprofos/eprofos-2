@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for prospect notes in the admin interface.
  * Manages interactions, tasks, and follow-ups for prospects.
  */
-#[Route('/admin/prospect-notes', name: 'admin_prospect_note_')]
+#[Route('/admin/prospect-notes')]
 #[IsGranted('ROLE_ADMIN')]
 class ProspectNoteController extends AbstractController
 {
@@ -34,7 +34,7 @@ class ProspectNoteController extends AbstractController
     /**
      * List all prospect notes with filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_prospect_note_index', methods: ['GET'])]
     public function index(Request $request, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Admin prospect notes list accessed', [
@@ -109,7 +109,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Show note details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_prospect_note_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ProspectNote $note): Response
     {
         $this->logger->info('Admin prospect note details viewed', [
@@ -132,7 +132,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Create a new note.
      */
-    #[Route('/new', name: 'new_standalone', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_prospect_note_new_standalone', methods: ['GET', 'POST'])]
     public function newStandalone(Request $request, EntityManagerInterface $entityManager): Response
     {
         return $this->new($request, $entityManager, null);
@@ -141,7 +141,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Create a new note for a specific prospect.
      */
-    #[Route('/new/{prospect}', name: 'new', methods: ['GET', 'POST'], requirements: ['prospect' => '\d+'])]
+    #[Route('/new/{prospect}', name: 'admin_prospect_note_new', methods: ['GET', 'POST'], requirements: ['prospect' => '\d+'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ?Prospect $prospect = null): Response
     {
         $note = new ProspectNote();
@@ -209,7 +209,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Edit an existing note.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_prospect_note_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ProspectNoteType::class, $note, [
@@ -253,7 +253,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Delete a note.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_prospect_note_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $note->getId(), $request->getPayload()->get('_token'))) {
@@ -278,7 +278,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Update note status.
      */
-    #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/status', name: 'admin_prospect_note_update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
@@ -310,7 +310,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Mark note as important.
      */
-    #[Route('/{id}/toggle-important', name: 'toggle_important', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-important', name: 'admin_prospect_note_toggle_important', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleImportant(Request $request, ProspectNote $note, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_important' . $note->getId(), $request->getPayload()->get('_token'))) {
@@ -336,7 +336,7 @@ class ProspectNoteController extends AbstractController
     /**
      * List pending tasks.
      */
-    #[Route('/tasks/pending', name: 'pending_tasks', methods: ['GET'])]
+    #[Route('/tasks/pending', name: 'admin_prospect_note_pending_tasks', methods: ['GET'])]
     public function pendingTasks(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Pending prospect tasks accessed', [
@@ -363,7 +363,7 @@ class ProspectNoteController extends AbstractController
     /**
      * List important notes.
      */
-    #[Route('/important', name: 'important', methods: ['GET'])]
+    #[Route('/important', name: 'admin_prospect_note_important', methods: ['GET'])]
     public function important(ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Important prospect notes accessed', [
@@ -386,7 +386,7 @@ class ProspectNoteController extends AbstractController
     /**
      * Export notes to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_prospect_note_export', methods: ['GET'])]
     public function export(ProspectNoteRepository $noteRepository): Response
     {
         $notes = $noteRepository->findAll();

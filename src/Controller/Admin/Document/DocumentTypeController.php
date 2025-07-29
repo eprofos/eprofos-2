@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for document types in the admin interface.
  * Provides management for the flexible document type system.
  */
-#[Route('/admin/document-types', name: 'admin_document_type_')]
+#[Route('/admin/document-types')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentTypeController extends AbstractController
 {
@@ -33,7 +33,7 @@ class DocumentTypeController extends AbstractController
     /**
      * List all document types with statistics.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_type_index', methods: ['GET'])]
     public function index(DocumentTypeRepository $documentTypeRepository): Response
     {
         $this->logger->info('Admin document types list accessed', [
@@ -56,7 +56,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Show document type details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_type_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentType $documentType): Response
     {
         $this->logger->info('Admin document type details viewed', [
@@ -87,7 +87,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Create a new document type.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_type_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $documentType = new DocumentType();
@@ -126,7 +126,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Edit an existing document type.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_type_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentType $documentType): Response
     {
         $form = $this->createForm(DocumentTypeType::class, $documentType);
@@ -159,7 +159,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Delete a document type.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_type_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentType $documentType): Response
     {
         if ($this->isCsrfTokenValid('delete' . $documentType->getId(), $request->getPayload()->get('_token'))) {
@@ -178,7 +178,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Toggle document type active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_document_type_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, DocumentType $documentType): Response
     {
         if ($this->isCsrfTokenValid('toggle' . $documentType->getId(), $request->getPayload()->get('_token'))) {
@@ -197,7 +197,7 @@ class DocumentTypeController extends AbstractController
     /**
      * Duplicate a document type.
      */
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/duplicate', name: 'admin_document_type_duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, DocumentType $documentType): Response
     {
         if ($this->isCsrfTokenValid('duplicate' . $documentType->getId(), $request->getPayload()->get('_token'))) {

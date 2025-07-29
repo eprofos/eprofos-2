@@ -22,7 +22,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  * Handles CRUD operations for services in the admin interface.
  * Provides full management capabilities for EPROFOS services.
  */
-#[Route('/admin/services', name: 'admin_service_')]
+#[Route('/admin/services')]
 #[IsGranted('ROLE_ADMIN')]
 class ServiceController extends AbstractController
 {
@@ -34,7 +34,7 @@ class ServiceController extends AbstractController
     /**
      * List all services with pagination and filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_service_index', methods: ['GET'])]
     public function index(ServiceRepository $serviceRepository): Response
     {
         $this->logger->info('Admin services list accessed', [
@@ -62,7 +62,7 @@ class ServiceController extends AbstractController
     /**
      * Show service details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_service_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Service $service): Response
     {
         $this->logger->info('Admin service details viewed', [
@@ -84,7 +84,7 @@ class ServiceController extends AbstractController
     /**
      * Create a new service.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_service_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $service = new Service();
@@ -125,7 +125,7 @@ class ServiceController extends AbstractController
     /**
      * Edit an existing service.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_service_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ServiceType::class, $service);
@@ -165,7 +165,7 @@ class ServiceController extends AbstractController
     /**
      * Delete a service.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_service_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $service->getId(), $request->getPayload()->get('_token'))) {
@@ -188,7 +188,7 @@ class ServiceController extends AbstractController
     /**
      * Toggle service active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_service_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_status' . $service->getId(), $request->getPayload()->get('_token'))) {

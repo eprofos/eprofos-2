@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Main dashboard for authenticated teachers to access their teaching resources,
  * course management, student progress, and account information.
  */
-#[Route('/teacher', name: 'teacher_')]
+#[Route('/teacher')]
 #[IsGranted('ROLE_TEACHER')]
 class DashboardController extends AbstractController
 {
@@ -26,7 +26,7 @@ class DashboardController extends AbstractController
      * Displays an overview of the teacher's courses, students, upcoming sessions,
      * recent activities, and quick access to teaching resources.
      */
-    #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
+    #[Route('/dashboard', name: 'teacher_dashboard', methods: ['GET'])]
     public function index(): Response
     {
         /** @var Teacher $teacher */
@@ -55,7 +55,7 @@ class DashboardController extends AbstractController
      *
      * Displays and allows editing of teacher personal information and professional details.
      */
-    #[Route('/profile', name: 'profile', methods: ['GET'])]
+    #[Route('/profile', name: 'teacher_profile', methods: ['GET'])]
     public function profile(): Response
     {
         /** @var Teacher $teacher */
@@ -72,7 +72,7 @@ class DashboardController extends AbstractController
      *
      * Displays assigned courses, course materials, and course management tools.
      */
-    #[Route('/courses', name: 'courses', methods: ['GET'])]
+    #[Route('/courses', name: 'teacher_courses', methods: ['GET'])]
     public function courses(): Response
     {
         /** @var Teacher $teacher */
@@ -95,7 +95,7 @@ class DashboardController extends AbstractController
      *
      * Displays students enrolled in teacher's courses, progress tracking, and assessment tools.
      */
-    #[Route('/students', name: 'students', methods: ['GET'])]
+    #[Route('/students', name: 'teacher_students', methods: ['GET'])]
     public function students(): Response
     {
         /** @var Teacher $teacher */
@@ -118,7 +118,7 @@ class DashboardController extends AbstractController
      *
      * Displays teaching sessions, schedule management, and session planning tools.
      */
-    #[Route('/sessions', name: 'sessions', methods: ['GET'])]
+    #[Route('/sessions', name: 'teacher_sessions', methods: ['GET'])]
     public function sessions(): Response
     {
         /** @var Teacher $teacher */
@@ -141,7 +141,7 @@ class DashboardController extends AbstractController
      *
      * Displays teaching resources, materials library, and content management tools.
      */
-    #[Route('/resources', name: 'resources', methods: ['GET'])]
+    #[Route('/resources', name: 'teacher_resources', methods: ['GET'])]
     public function resources(): Response
     {
         /** @var Teacher $teacher */
@@ -164,7 +164,7 @@ class DashboardController extends AbstractController
      *
      * Displays teaching analytics, student performance data, and progress reports.
      */
-    #[Route('/analytics', name: 'analytics', methods: ['GET'])]
+    #[Route('/analytics', name: 'teacher_analytics', methods: ['GET'])]
     public function analytics(): Response
     {
         /** @var Teacher $teacher */
@@ -188,7 +188,7 @@ class DashboardController extends AbstractController
      *
      * Displays system notifications, student messages, and administrative updates.
      */
-    #[Route('/notifications', name: 'notifications', methods: ['GET'])]
+    #[Route('/notifications', name: 'teacher_notifications', methods: ['GET'])]
     public function notifications(): Response
     {
         /** @var Teacher $teacher */
@@ -211,7 +211,7 @@ class DashboardController extends AbstractController
      *
      * Allows teachers to modify account settings, teaching preferences, and privacy options.
      */
-    #[Route('/settings', name: 'settings', methods: ['GET'])]
+    #[Route('/settings', name: 'teacher_settings', methods: ['GET'])]
     public function settings(): Response
     {
         /** @var Teacher $teacher */

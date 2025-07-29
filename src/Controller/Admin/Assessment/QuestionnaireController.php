@@ -22,7 +22,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 /**
  * Admin controller for managing questionnaires (Qualiopi criteria 2.8).
  */
-#[Route('/admin/questionnaires', name: 'admin_questionnaire_')]
+#[Route('/admin/questionnaires')]
 class QuestionnaireController extends AbstractController
 {
     public function __construct(
@@ -33,7 +33,7 @@ class QuestionnaireController extends AbstractController
         private QuestionnaireEmailService $emailService,
     ) {}
 
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'admin_questionnaire_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $search = $request->query->get('search', '');
@@ -85,7 +85,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_questionnaire_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $questionnaire = new Questionnaire();
@@ -110,7 +110,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_questionnaire_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Questionnaire $questionnaire): Response
     {
         $statistics = [
@@ -127,7 +127,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'admin_questionnaire_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Questionnaire $questionnaire): Response
     {
         if ($request->isMethod('POST')) {
@@ -149,7 +149,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_questionnaire_delete', methods: ['POST'])]
     public function delete(Request $request, Questionnaire $questionnaire): Response
     {
         if ($this->isCsrfTokenValid('delete' . $questionnaire->getId(), $request->request->get('_token'))) {
@@ -164,7 +164,7 @@ class QuestionnaireController extends AbstractController
         return $this->redirectToRoute('admin_questionnaire_index');
     }
 
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'])]
+    #[Route('/{id}/duplicate', name: 'admin_questionnaire_duplicate', methods: ['POST'])]
     public function duplicate(Request $request, Questionnaire $questionnaire): Response
     {
         if (!$this->isCsrfTokenValid('duplicate' . $questionnaire->getId(), $request->request->get('_token'))) {
@@ -239,7 +239,7 @@ class QuestionnaireController extends AbstractController
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $newQuestionnaire->getId()]);
     }
 
-    #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
+    #[Route('/{id}/activate', name: 'admin_questionnaire_activate', methods: ['POST'])]
     public function activate(Request $request, Questionnaire $questionnaire): Response
     {
         if (!$this->isCsrfTokenValid('activate' . $questionnaire->getId(), $request->request->get('_token'))) {
@@ -262,7 +262,7 @@ class QuestionnaireController extends AbstractController
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
     }
 
-    #[Route('/{id}/archive', name: 'archive', methods: ['POST'])]
+    #[Route('/{id}/archive', name: 'admin_questionnaire_archive', methods: ['POST'])]
     public function archive(Request $request, Questionnaire $questionnaire): Response
     {
         if (!$this->isCsrfTokenValid('archive' . $questionnaire->getId(), $request->request->get('_token'))) {
@@ -279,7 +279,7 @@ class QuestionnaireController extends AbstractController
         return $this->redirectToRoute('admin_questionnaire_show', ['id' => $questionnaire->getId()]);
     }
 
-    #[Route('/send', name: 'send', methods: ['GET', 'POST'])]
+    #[Route('/send', name: 'admin_questionnaire_send', methods: ['GET', 'POST'])]
     public function send(Request $request): Response
     {
         $questionnaires = $this->questionnaireRepository->findActive();

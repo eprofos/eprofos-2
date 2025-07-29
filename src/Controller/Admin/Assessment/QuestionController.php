@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Admin controller for managing questionnaire questions.
  */
-#[Route('/admin/questionnaires/{questionnaireId}/questions', name: 'admin_question_')]
+#[Route('/admin/questionnaires/{questionnaireId}/questions')]
 class QuestionController extends AbstractController
 {
     public function __construct(
@@ -27,7 +27,7 @@ class QuestionController extends AbstractController
         private QuestionRepository $questionRepository,
     ) {}
 
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'admin_question_index', methods: ['GET'])]
     public function index(int $questionnaireId): Response
     {
         $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
@@ -45,7 +45,7 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_question_new', methods: ['GET', 'POST'])]
     public function new(Request $request, int $questionnaireId): Response
     {
         $questionnaire = $this->entityManager->getRepository(Questionnaire::class)->find($questionnaireId);
@@ -76,7 +76,7 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'admin_question_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, int $questionnaireId, Question $question): Response
     {
         $questionnaire = $question->getQuestionnaire();
@@ -102,7 +102,7 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_question_delete', methods: ['POST'])]
     public function delete(Request $request, int $questionnaireId, Question $question): Response
     {
         if (!$this->isCsrfTokenValid('delete' . $question->getId(), $request->request->get('_token'))) {
@@ -119,7 +119,7 @@ class QuestionController extends AbstractController
         return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
     }
 
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'])]
+    #[Route('/{id}/duplicate', name: 'admin_question_duplicate', methods: ['POST'])]
     public function duplicate(Request $request, int $questionnaireId, Question $question): Response
     {
         if (!$this->isCsrfTokenValid('duplicate' . $question->getId(), $request->request->get('_token'))) {
@@ -169,7 +169,7 @@ class QuestionController extends AbstractController
         return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
     }
 
-    #[Route('/reorder', name: 'reorder', methods: ['POST'])]
+    #[Route('/reorder', name: 'admin_question_reorder', methods: ['POST'])]
     public function reorder(Request $request, int $questionnaireId): JsonResponse
     {
         $questionIds = $request->request->get('questionIds', []);
@@ -193,7 +193,7 @@ class QuestionController extends AbstractController
         }
     }
 
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'])]
+    #[Route('/{id}/toggle-status', name: 'admin_question_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, int $questionnaireId, Question $question): JsonResponse
     {
         if (!$this->isCsrfTokenValid('toggle_status' . $question->getId(), $request->request->get('_token'))) {

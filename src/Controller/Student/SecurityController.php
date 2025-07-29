@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  * Handles authentication, registration, and password management for students.
  * Provides login, registration, and password reset functionality.
  */
-#[Route('/student', name: 'student_')]
+#[Route('/student')]
 class SecurityController extends AbstractController
 {
     public function __construct(
@@ -37,7 +37,7 @@ class SecurityController extends AbstractController
      *
      * Displays the login form for student users.
      */
-    #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
+    #[Route('/login', name: 'student_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         // If user is already authenticated, redirect to dashboard
@@ -71,7 +71,7 @@ class SecurityController extends AbstractController
      *
      * Allows new students to create an account.
      */
-    #[Route('/register', name: 'register', methods: ['GET', 'POST'])]
+    #[Route('/register', name: 'student_register', methods: ['GET', 'POST'])]
     public function register(Request $request, StudentRepository $studentRepository): Response
     {
         // If user is already authenticated, redirect to dashboard
@@ -121,7 +121,7 @@ class SecurityController extends AbstractController
      *
      * This method can be blank - it will be intercepted by the logout key on your firewall.
      */
-    #[Route('/logout', name: 'logout', methods: ['GET'])]
+    #[Route('/logout', name: 'student_logout', methods: ['GET'])]
     public function logout(): void
     {
         throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
@@ -132,7 +132,7 @@ class SecurityController extends AbstractController
      *
      * Verifies student email address using the verification token.
      */
-    #[Route('/verify-email/{token}', name: 'verify_email', methods: ['GET'])]
+    #[Route('/verify-email/{token}', name: 'student_verify_email', methods: ['GET'])]
     public function verifyEmail(string $token, StudentRepository $studentRepository): Response
     {
         $student = $studentRepository->findByEmailVerificationToken($token);
@@ -161,7 +161,7 @@ class SecurityController extends AbstractController
      *
      * Allows students to request a password reset email.
      */
-    #[Route('/forgot-password', name: 'forgot_password', methods: ['GET', 'POST'])]
+    #[Route('/forgot-password', name: 'student_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(Request $request, StudentRepository $studentRepository): Response
     {
         if ($request->isMethod('POST')) {
@@ -197,7 +197,7 @@ class SecurityController extends AbstractController
      *
      * Allows students to reset their password using a reset token.
      */
-    #[Route('/reset-password/{token}', name: 'reset_password', methods: ['GET', 'POST'])]
+    #[Route('/reset-password/{token}', name: 'student_reset_password', methods: ['GET', 'POST'])]
     public function resetPassword(string $token, Request $request, StudentRepository $studentRepository): Response
     {
         $student = $studentRepository->findByPasswordResetToken($token);

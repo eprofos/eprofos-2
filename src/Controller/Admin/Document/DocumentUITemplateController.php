@@ -25,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for document UI templates in the admin interface.
  * Provides management for configurable UI layouts and PDF generation templates.
  */
-#[Route('/admin/document-ui-templates', name: 'admin_document_ui_template_')]
+#[Route('/admin/document-ui-templates')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentUITemplateController extends AbstractController
 {
@@ -37,7 +37,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * List all document UI templates with statistics.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_ui_template_index', methods: ['GET'])]
     public function index(DocumentUITemplateRepository $uiTemplateRepository): Response
     {
         $this->logger->info('Admin document UI templates list accessed', [
@@ -61,7 +61,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * List all UI components across all templates.
      */
-    #[Route('/components', name: 'all_components', methods: ['GET'])]
+    #[Route('/components', name: 'admin_document_ui_template_all_components', methods: ['GET'])]
     public function allComponents(DocumentUIComponentRepository $componentRepository): Response
     {
         $this->logger->info('Admin all document UI components list accessed', [
@@ -105,7 +105,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Show UI template details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_ui_template_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentUITemplate $uiTemplate): Response
     {
         $this->logger->info('Admin document UI template details viewed', [
@@ -145,7 +145,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Create a new UI template.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_ui_template_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $uiTemplate = new DocumentUITemplate();
@@ -194,7 +194,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Edit an existing UI template.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_ui_template_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentUITemplate $uiTemplate): Response
     {
         $form = $this->createForm(DocumentUITemplateType::class, $uiTemplate);
@@ -228,7 +228,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Delete a UI template.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_ui_template_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentUITemplate $uiTemplate): Response
     {
         if ($this->isCsrfTokenValid('delete' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -247,7 +247,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Toggle UI template active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_document_ui_template_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, DocumentUITemplate $uiTemplate): Response
     {
         if ($this->isCsrfTokenValid('toggle' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -266,7 +266,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Duplicate a UI template.
      */
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/duplicate', name: 'admin_document_ui_template_duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, DocumentUITemplate $uiTemplate): Response
     {
         if ($this->isCsrfTokenValid('duplicate' . $uiTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -286,7 +286,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Preview UI template.
      */
-    #[Route('/{id}/preview', name: 'preview', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/preview', name: 'admin_document_ui_template_preview', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function preview(Request $request, DocumentUITemplate $uiTemplate): Response
     {
         // Get preview data from request or use defaults
@@ -333,7 +333,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Export UI template configuration.
      */
-    #[Route('/{id}/export', name: 'export', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/export', name: 'admin_document_ui_template_export', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function export(DocumentUITemplate $uiTemplate): Response
     {
         $config = $this->uiTemplateService->exportTemplate($uiTemplate);
@@ -348,7 +348,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Import UI template configuration.
      */
-    #[Route('/import', name: 'import', methods: ['GET', 'POST'])]
+    #[Route('/import', name: 'admin_document_ui_template_import', methods: ['GET', 'POST'])]
     public function import(Request $request): Response
     {
         if ($request->isMethod('POST')) {
@@ -400,7 +400,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Manage UI template components.
      */
-    #[Route('/{id}/components', name: 'components', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/components', name: 'admin_document_ui_template_components', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function components(DocumentUITemplate $uiTemplate): Response
     {
         $components = $uiTemplate->getComponents();
@@ -429,7 +429,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Update component sort orders via AJAX.
      */
-    #[Route('/{id}/components/sort', name: 'sort_components', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/components/sort', name: 'admin_document_ui_template_sort_components', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function sortComponents(Request $request, DocumentUITemplate $uiTemplate): JsonResponse
     {
         $componentIds = $request->request->get('component_ids');
@@ -446,7 +446,7 @@ class DocumentUITemplateController extends AbstractController
     /**
      * Generate PDF preview.
      */
-    #[Route('/{id}/pdf-preview', name: 'pdf_preview', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/pdf-preview', name: 'admin_document_ui_template_pdf_preview', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function pdfPreview(DocumentUITemplate $uiTemplate): Response
     {
         // This would integrate with a PDF generation service

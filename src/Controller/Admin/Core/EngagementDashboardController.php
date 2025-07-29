@@ -27,7 +27,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Provides admin interface for monitoring student engagement, attendance rates,
  * dropout risks, and generating compliance reports required for Qualiopi certification.
  */
-#[Route('/admin/engagement', name: 'admin_engagement_')]
+#[Route('/admin/engagement')]
 #[IsGranted('ROLE_ADMIN')]
 class EngagementDashboardController extends AbstractController
 {
@@ -41,7 +41,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Main engagement dashboard.
      */
-    #[Route('/', name: 'dashboard')]
+    #[Route('/', name: 'admin_engagement_dashboard')]
     public function dashboard(): Response
     {
         // Get key metrics for dashboard
@@ -66,7 +66,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Detailed view of at-risk students.
      */
-    #[Route('/at-risk', name: 'at_risk')]
+    #[Route('/at-risk', name: 'admin_engagement_at_risk')]
     public function atRiskStudents(): Response
     {
         $atRiskStudents = $this->dropoutService->detectAtRiskStudents();
@@ -82,7 +82,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Attendance monitoring interface.
      */
-    #[Route('/attendance', name: 'attendance')]
+    #[Route('/attendance', name: 'admin_engagement_attendance')]
     public function attendance(): Response
     {
         $attendanceStats = $this->attendanceRepository->getAttendanceStats();
@@ -101,7 +101,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Generate Qualiopi compliance report.
      */
-    #[Route('/qualiopi-report', name: 'quality_report')]
+    #[Route('/qualiopi-report', name: 'admin_engagement_quality_report')]
     public function qualiopiReport(): Response
     {
         $retentionReport = $this->dropoutService->generateRetentionReport();
@@ -117,7 +117,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Export retention data (PDF/Excel/CSV).
      */
-    #[Route('/export/{format}', name: 'export', requirements: ['format' => 'pdf|excel|csv'])]
+    #[Route('/export/{format}', name: 'admin_engagement_export', requirements: ['format' => 'pdf|excel|csv'])]
     public function exportData(string $format): Response
     {
         $data = $this->dropoutService->exportRetentionData($format);
@@ -262,7 +262,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * AJAX endpoint for engagement trends.
      */
-    #[Route('/api/trends', name: 'api_trends')]
+    #[Route('/api/trends', name: 'admin_engagement_api_trends')]
     public function engagementTrends(Request $request): JsonResponse
     {
         $days = $request->query->getInt('days', 30);
@@ -279,7 +279,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * AJAX endpoint for student risk assessment.
      */
-    #[Route('/api/student/{id}/risk', name: 'api_student_risk')]
+    #[Route('/api/student/{id}/risk', name: 'admin_engagement_api_student_risk')]
     public function studentRiskAssessment(int $id): JsonResponse
     {
         $student = $this->progressRepository->find($id);
@@ -305,7 +305,7 @@ class EngagementDashboardController extends AbstractController
     /**
      * Trigger risk analysis for all students.
      */
-    #[Route('/api/analyze-risks', name: 'api_analyze_risks', methods: ['POST'])]
+    #[Route('/api/analyze-risks', name: 'admin_engagement_api_analyze_risks', methods: ['POST'])]
     public function analyzeRisks(): JsonResponse
     {
         $atRiskStudents = $this->dropoutService->detectAtRiskStudents();

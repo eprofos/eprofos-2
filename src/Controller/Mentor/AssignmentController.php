@@ -24,7 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *
  * Handles mission assignments management for mentors
  */
-#[Route('/mentor/assignments', name: 'mentor_assignments_')]
+#[Route('/mentor/assignments')]
 #[IsGranted('ROLE_MENTOR')]
 class AssignmentController extends AbstractController
 {
@@ -38,7 +38,7 @@ class AssignmentController extends AbstractController
     /**
      * List all assignments managed by the mentor.
      */
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'mentor_assignments_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         /** @var Mentor $mentor */
@@ -140,7 +140,7 @@ class AssignmentController extends AbstractController
     /**
      * Show assignment details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'mentor_assignments_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(MissionAssignment $assignment): Response
     {
         /** @var Mentor $mentor */
@@ -161,7 +161,7 @@ class AssignmentController extends AbstractController
     /**
      * Create a new assignment.
      */
-    #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
+    #[Route('/create', name: 'mentor_assignments_create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
     {
         /** @var Mentor $mentor */
@@ -213,7 +213,7 @@ class AssignmentController extends AbstractController
     /**
      * Edit an assignment.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'mentor_assignments_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, MissionAssignment $assignment): Response
     {
         /** @var Mentor $mentor */
@@ -266,7 +266,7 @@ class AssignmentController extends AbstractController
     /**
      * Update assignment progress.
      */
-    #[Route('/{id}/progress', name: 'progress', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/progress', name: 'mentor_assignments_progress', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateProgress(Request $request, MissionAssignment $assignment): Response
     {
         /** @var Mentor $mentor */
@@ -295,7 +295,7 @@ class AssignmentController extends AbstractController
     /**
      * Complete an assignment.
      */
-    #[Route('/{id}/complete', name: 'complete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/complete', name: 'mentor_assignments_complete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function complete(MissionAssignment $assignment): Response
     {
         /** @var Mentor $mentor */

@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for document categories in the admin interface.
  * Provides hierarchical organization management for documents.
  */
-#[Route('/admin/document-categories', name: 'admin_document_category_')]
+#[Route('/admin/document-categories')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentCategoryController extends AbstractController
 {
@@ -33,7 +33,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * List all document categories with hierarchical tree view.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_category_index', methods: ['GET'])]
     public function index(DocumentCategoryRepository $documentCategoryRepository): Response
     {
         $this->logger->info('Admin document categories list accessed', [
@@ -56,7 +56,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Show document category details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_category_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentCategory $documentCategory): Response
     {
         $this->logger->info('Admin document category details viewed', [
@@ -87,7 +87,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Create a new document category.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_category_new', methods: ['GET', 'POST'])]
     public function new(Request $request, DocumentCategoryRepository $categoryRepository): Response
     {
         $documentCategory = new DocumentCategory();
@@ -133,7 +133,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Edit an existing document category.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_category_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentCategory $documentCategory): Response
     {
         $form = $this->createForm(DocumentCategoryType::class, $documentCategory);
@@ -166,7 +166,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Delete a document category.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_category_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentCategory $documentCategory): Response
     {
         if ($this->isCsrfTokenValid('delete' . $documentCategory->getId(), $request->getPayload()->get('_token'))) {
@@ -185,7 +185,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Toggle document category active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_document_category_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, DocumentCategory $documentCategory): Response
     {
         if ($this->isCsrfTokenValid('toggle' . $documentCategory->getId(), $request->getPayload()->get('_token'))) {
@@ -204,7 +204,7 @@ class DocumentCategoryController extends AbstractController
     /**
      * Move category to new parent (AJAX endpoint).
      */
-    #[Route('/{id}/move', name: 'move', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/move', name: 'admin_document_category_move', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function move(Request $request, DocumentCategory $documentCategory, DocumentCategoryRepository $categoryRepository): Response
     {
         if (!$this->isCsrfTokenValid('move' . $documentCategory->getId(), $request->getPayload()->get('_token'))) {

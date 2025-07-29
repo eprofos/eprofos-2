@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * Handles public access to needs analysis forms via secure tokens.
  * Provides form display and submission for both company and individual analyses.
  */
-#[Route('/needs-analysis', name: 'needs_analysis_public_')]
+#[Route('/needs-analysis')]
 class NeedsAnalysisPublicController extends AbstractController
 {
     public function __construct(
@@ -32,7 +32,7 @@ class NeedsAnalysisPublicController extends AbstractController
     /**
      * Display the needs analysis form for a given token.
      */
-    #[Route('/form/{token}', name: 'form', methods: ['GET', 'POST'])]
+    #[Route('/form/{token}', name: 'needs_analysis_public_form', methods: ['GET', 'POST'])]
     public function form(string $token, Request $request): Response
     {
         // Find the request by token
@@ -75,7 +75,7 @@ class NeedsAnalysisPublicController extends AbstractController
     /**
      * Display information about the analysis request (before form).
      */
-    #[Route('/info/{token}', name: 'info', methods: ['GET'])]
+    #[Route('/info/{token}', name: 'needs_analysis_public_info', methods: ['GET'])]
     public function info(string $token): Response
     {
         $needsAnalysisRequest = $this->needsAnalysisService->findRequestByToken($token);
@@ -98,7 +98,7 @@ class NeedsAnalysisPublicController extends AbstractController
     /**
      * Display success page after form submission.
      */
-    #[Route('/success/{token}', name: 'success', methods: ['GET'])]
+    #[Route('/success/{token}', name: 'needs_analysis_public_success', methods: ['GET'])]
     public function success(string $token): Response
     {
         $needsAnalysisRequest = $this->needsAnalysisService->findRequestByToken($token);

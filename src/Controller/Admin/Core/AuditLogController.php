@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles viewing change history for loggable entities.
  * Provides comprehensive audit trail functionality for EPROFOS entities.
  */
-#[Route('/admin/audit', name: 'admin_audit_')]
+#[Route('/admin/audit')]
 #[IsGranted('ROLE_ADMIN')]
 class AuditLogController extends AbstractController
 {
@@ -33,7 +33,7 @@ class AuditLogController extends AbstractController
     /**
      * Display change history for a specific entity.
      */
-    #[Route('/entity/{entityClass}/{entityId}', name: 'entity_history', methods: ['GET'])]
+    #[Route('/entity/{entityClass}/{entityId}', name: 'admin_audit_entity_history', methods: ['GET'])]
     public function entityHistory(
         Request $request,
         string $entityClass,
@@ -122,7 +122,7 @@ class AuditLogController extends AbstractController
     /**
      * Display all loggable entities overview.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_audit_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->logger->info('Admin audit overview accessed', [

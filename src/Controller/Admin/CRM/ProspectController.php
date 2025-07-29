@@ -26,7 +26,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for prospects in the admin interface.
  * Provides comprehensive prospect management capabilities for EPROFOS.
  */
-#[Route('/admin/prospects', name: 'admin_prospect_')]
+#[Route('/admin/prospects')]
 #[IsGranted('ROLE_ADMIN')]
 class ProspectController extends AbstractController
 {
@@ -37,7 +37,7 @@ class ProspectController extends AbstractController
     /**
      * List all prospects with filtering and search.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_prospect_index', methods: ['GET'])]
     public function index(Request $request, ProspectRepository $prospectRepository, AdminRepository $userRepository): Response
     {
         $this->logger->info('Admin prospects list accessed', [
@@ -126,7 +126,7 @@ class ProspectController extends AbstractController
     /**
      * Show prospect details with notes.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_prospect_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Prospect $prospect, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Admin prospect details viewed', [
@@ -153,7 +153,7 @@ class ProspectController extends AbstractController
     /**
      * Create a new prospect.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_prospect_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $prospect = new Prospect();
@@ -190,7 +190,7 @@ class ProspectController extends AbstractController
     /**
      * Edit an existing prospect.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_prospect_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ProspectType::class, $prospect);
@@ -226,7 +226,7 @@ class ProspectController extends AbstractController
     /**
      * Delete a prospect.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_prospect_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $prospect->getId(), $request->getPayload()->get('_token'))) {
@@ -251,7 +251,7 @@ class ProspectController extends AbstractController
     /**
      * Update prospect status.
      */
-    #[Route('/{id}/status', name: 'update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/status', name: 'admin_prospect_update_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function updateStatus(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
         $newStatus = $request->getPayload()->get('status');
@@ -283,7 +283,7 @@ class ProspectController extends AbstractController
     /**
      * Add a note to a prospect.
      */
-    #[Route('/{id}/notes/new', name: 'add_note', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/notes/new', name: 'admin_prospect_add_note', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function addNote(Request $request, Prospect $prospect, EntityManagerInterface $entityManager): Response
     {
         $note = new ProspectNote();
@@ -330,7 +330,7 @@ class ProspectController extends AbstractController
     /**
      * Export prospects to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET'])]
+    #[Route('/export', name: 'admin_prospect_export', methods: ['GET'])]
     public function export(ProspectRepository $prospectRepository): Response
     {
         $prospects = $prospectRepository->findAll();
@@ -396,7 +396,7 @@ class ProspectController extends AbstractController
     /**
      * Dashboard view for prospects requiring attention.
      */
-    #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
+    #[Route('/dashboard', name: 'admin_prospect_dashboard', methods: ['GET'])]
     public function dashboard(ProspectRepository $prospectRepository, ProspectNoteRepository $noteRepository): Response
     {
         $this->logger->info('Prospect dashboard accessed', [

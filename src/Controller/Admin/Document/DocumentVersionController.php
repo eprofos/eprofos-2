@@ -25,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles version management operations for documents in the admin interface.
  * Provides version history, comparison, rollback, and detailed version operations.
  */
-#[Route('/admin/document-versions', name: 'admin_document_version_')]
+#[Route('/admin/document-versions')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentVersionController extends AbstractController
 {
@@ -37,7 +37,7 @@ class DocumentVersionController extends AbstractController
     /**
      * List all versions for a specific document.
      */
-    #[Route('/document/{id}', name: 'index', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/document/{id}', name: 'admin_document_version_index', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function index(Document $document, DocumentVersionRepository $versionRepository): Response
     {
         $versions = $versionRepository->findByDocument($document);
@@ -58,7 +58,7 @@ class DocumentVersionController extends AbstractController
     /**
      * Show details of a specific version.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_version_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentVersion $version): Response
     {
         return $this->render('admin/document_version/show.html.twig', [
@@ -78,7 +78,7 @@ class DocumentVersionController extends AbstractController
     /**
      * Compare two versions of a document.
      */
-    #[Route('/compare/{id1}/{id2}', name: 'compare', methods: ['GET'], requirements: ['id1' => '\d+', 'id2' => '\d+'])]
+    #[Route('/compare/{id1}/{id2}', name: 'admin_document_version_compare', methods: ['GET'], requirements: ['id1' => '\d+', 'id2' => '\d+'])]
     public function compare(int $id1, int $id2, DocumentVersionRepository $versionRepository): Response
     {
         // Find both versions
@@ -128,7 +128,7 @@ class DocumentVersionController extends AbstractController
     /**
      * Rollback document to a specific version.
      */
-    #[Route('/{id}/rollback', name: 'rollback', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/rollback', name: 'admin_document_version_rollback', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function rollback(Request $request, DocumentVersion $version, EntityManagerInterface $entityManager): Response
     {
         if (!$this->isCsrfTokenValid('rollback' . $version->getId(), $request->request->get('_token'))) {
@@ -185,7 +185,7 @@ class DocumentVersionController extends AbstractController
     /**
      * Delete a version (only if not current).
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'admin_document_version_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentVersion $version, EntityManagerInterface $entityManager): Response
     {
         if (!$this->isCsrfTokenValid('delete' . $version->getId(), $request->request->get('_token'))) {
@@ -233,7 +233,7 @@ class DocumentVersionController extends AbstractController
     /**
      * Export version history as JSON.
      */
-    #[Route('/document/{id}/export', name: 'export', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/document/{id}/export', name: 'admin_document_version_export', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function export(Document $document, DocumentVersionRepository $versionRepository): Response
     {
         $versions = $versionRepository->findByDocument($document);

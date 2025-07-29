@@ -25,7 +25,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Public controller for questionnaire completion.
  */
-#[Route('/questionnaire', name: 'questionnaire_')]
+#[Route('/questionnaire')]
 class QuestionnaireController extends AbstractController
 {
     public function __construct(
@@ -35,7 +35,7 @@ class QuestionnaireController extends AbstractController
         private FormationRepository $formationRepository,
     ) {}
 
-    #[Route('/complete/{token}', name: 'complete', methods: ['GET'])]
+    #[Route('/complete/{token}', name: 'questionnaire_complete', methods: ['GET'])]
     public function complete(string $token): Response
     {
         $response = $this->responseRepository->findByToken($token);
@@ -72,7 +72,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/step/{token}/{step}', name: 'step', methods: ['GET', 'POST'], requirements: ['step' => '\d+'])]
+    #[Route('/step/{token}/{step}', name: 'questionnaire_step', methods: ['GET', 'POST'], requirements: ['step' => '\d+'])]
     public function step(Request $request, string $token, int $step): Response
     {
         $response = $this->responseRepository->findByToken($token);
@@ -145,7 +145,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/completed/{token}', name: 'completed', methods: ['GET'])]
+    #[Route('/completed/{token}', name: 'questionnaire_completed', methods: ['GET'])]
     public function completed(string $token): Response
     {
         $response = $this->responseRepository->findByToken($token);
@@ -163,7 +163,7 @@ class QuestionnaireController extends AbstractController
         ]);
     }
 
-    #[Route('/upload-file', name: 'upload_file', methods: ['POST'])]
+    #[Route('/upload-file', name: 'questionnaire_upload_file', methods: ['POST'])]
     public function uploadFile(Request $request): JsonResponse
     {
         $file = $request->files->get('file');

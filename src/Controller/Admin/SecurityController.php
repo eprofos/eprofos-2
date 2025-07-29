@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  * Handles authentication for the admin interface.
  * Provides login and logout functionality for admin admins.
  */
-#[Route('/admin', name: 'admin_')]
+#[Route('/admin')]
 class SecurityController extends AbstractController
 {
     public function __construct(
@@ -29,7 +29,7 @@ class SecurityController extends AbstractController
      *
      * Displays the login form for admin admins using Tabler CSS.
      */
-    #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
+    #[Route('/login', name: 'admin_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         // If admin is already authenticated, redirect to dashboard
@@ -64,7 +64,7 @@ class SecurityController extends AbstractController
      *
      * This method can be blank - it will be intercepted by the logout key on your firewall.
      */
-    #[Route('/logout', name: 'logout', methods: ['GET'])]
+    #[Route('/logout', name: 'admin_logout', methods: ['GET'])]
     public function logout(): void
     {
         throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');

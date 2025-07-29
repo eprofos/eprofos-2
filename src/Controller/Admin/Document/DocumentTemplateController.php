@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for document templates in the admin interface.
  * Provides management for reusable document templates with placeholders.
  */
-#[Route('/admin/document-templates', name: 'admin_document_template_')]
+#[Route('/admin/document-templates')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentTemplateController extends AbstractController
 {
@@ -33,7 +33,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * List all document templates with statistics.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_template_index', methods: ['GET'])]
     public function index(DocumentTemplateRepository $documentTemplateRepository): Response
     {
         $this->logger->info('Admin document templates list accessed', [
@@ -57,7 +57,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Show document template details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_template_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentTemplate $documentTemplate): Response
     {
         $this->logger->info('Admin document template details viewed', [
@@ -89,7 +89,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Create a new document template.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_template_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $documentTemplate = new DocumentTemplate();
@@ -138,7 +138,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Edit an existing document template.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_template_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentTemplate $documentTemplate): Response
     {
         $form = $this->createForm(DocumentTemplateType::class, $documentTemplate);
@@ -172,7 +172,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Delete a document template.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_template_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentTemplate $documentTemplate): Response
     {
         if ($this->isCsrfTokenValid('delete' . $documentTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -191,7 +191,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Toggle document template active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_document_template_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, DocumentTemplate $documentTemplate): Response
     {
         if ($this->isCsrfTokenValid('toggle' . $documentTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -210,7 +210,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Duplicate a document template.
      */
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/duplicate', name: 'admin_document_template_duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, DocumentTemplate $documentTemplate): Response
     {
         if ($this->isCsrfTokenValid('duplicate' . $documentTemplate->getId(), $request->getPayload()->get('_token'))) {
@@ -230,7 +230,7 @@ class DocumentTemplateController extends AbstractController
     /**
      * Create document from template.
      */
-    #[Route('/{id}/create-document', name: 'create_document', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/create-document', name: 'admin_document_template_create_document', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function createDocument(Request $request, DocumentTemplate $documentTemplate): Response
     {
         $result = $this->documentTemplateService->createDocumentFromTemplate($documentTemplate, $request->request->all());

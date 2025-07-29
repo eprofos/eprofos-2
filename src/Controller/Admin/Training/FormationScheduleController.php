@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles schedule calculation and display for formations in the admin interface.
  * Provides detailed daily schedule breakdown (morning/afternoon) with durations.
  */
-#[Route('/admin/formations/{id}/schedule', name: 'admin_formation_schedule_', requirements: ['id' => '\d+'])]
+#[Route('/admin/formations/{id}/schedule', requirements: ['id' => '\d+'])]
 #[IsGranted('ROLE_ADMIN')]
 class FormationScheduleController extends AbstractController
 {
@@ -31,7 +31,7 @@ class FormationScheduleController extends AbstractController
     /**
      * Display the daily schedule for a formation.
      */
-    #[Route('', name: 'show', methods: ['GET'])]
+    #[Route('', name: 'admin_formation_schedule_show', methods: ['GET'])]
     public function show(Formation $formation): Response
     {
         // Calculate the complete schedule
@@ -54,7 +54,7 @@ class FormationScheduleController extends AbstractController
     /**
      * Download the daily schedule as PDF.
      */
-    #[Route('/pdf', name: 'pdf', methods: ['GET'])]
+    #[Route('/pdf', name: 'admin_formation_schedule_pdf', methods: ['GET'])]
     public function downloadPdf(Formation $formation): Response
     {
         // Calculate the complete schedule

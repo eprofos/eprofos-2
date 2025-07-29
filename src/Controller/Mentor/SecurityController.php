@@ -27,7 +27,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  * Handles authentication, registration, and password management for mentors.
  * Provides login, registration, and password reset functionality.
  */
-#[Route('/mentor', name: 'mentor_')]
+#[Route('/mentor')]
 class SecurityController extends AbstractController
 {
     public function __construct(
@@ -43,7 +43,7 @@ class SecurityController extends AbstractController
      *
      * Displays the login form for mentor users.
      */
-    #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
+    #[Route('/login', name: 'mentor_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         // If user is already authenticated, redirect to dashboard
@@ -77,7 +77,7 @@ class SecurityController extends AbstractController
      *
      * Allows new mentors to create an account.
      */
-    #[Route('/register', name: 'register', methods: ['GET', 'POST'])]
+    #[Route('/register', name: 'mentor_register', methods: ['GET', 'POST'])]
     public function register(Request $request, MentorRepository $mentorRepository): Response
     {
         // If user is already authenticated, redirect to dashboard
@@ -145,7 +145,7 @@ class SecurityController extends AbstractController
      *
      * This method can be blank - it will be intercepted by the logout key on your firewall.
      */
-    #[Route('/logout', name: 'logout', methods: ['GET'])]
+    #[Route('/logout', name: 'mentor_logout', methods: ['GET'])]
     public function logout(): void
     {
         throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
@@ -156,7 +156,7 @@ class SecurityController extends AbstractController
      *
      * Verifies mentor email address using the verification token.
      */
-    #[Route('/verify-email/{token}', name: 'verify_email', methods: ['GET'])]
+    #[Route('/verify-email/{token}', name: 'mentor_verify_email', methods: ['GET'])]
     public function verifyEmail(string $token): Response
     {
         $mentor = $this->mentorAuthService->verifyEmail($token);
@@ -182,7 +182,7 @@ class SecurityController extends AbstractController
      *
      * Allows mentors to request a password reset email.
      */
-    #[Route('/forgot-password', name: 'forgot_password', methods: ['GET', 'POST'])]
+    #[Route('/forgot-password', name: 'mentor_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(Request $request): Response
     {
         if ($request->isMethod('POST')) {
@@ -221,7 +221,7 @@ class SecurityController extends AbstractController
      *
      * Allows mentors to reset their password using a reset token.
      */
-    #[Route('/reset-password/{token}', name: 'reset_password', methods: ['GET', 'POST'])]
+    #[Route('/reset-password/{token}', name: 'mentor_reset_password', methods: ['GET', 'POST'])]
     public function resetPassword(string $token, Request $request): Response
     {
         if ($request->isMethod('POST')) {
@@ -284,7 +284,7 @@ class SecurityController extends AbstractController
      *
      * Resends email verification link to mentor.
      */
-    #[Route('/resend-verification', name: 'resend_verification', methods: ['POST'])]
+    #[Route('/resend-verification', name: 'mentor_resend_verification', methods: ['POST'])]
     public function resendVerification(Request $request): Response
     {
         $email = $request->request->get('email');
@@ -320,7 +320,7 @@ class SecurityController extends AbstractController
      *
      * Checks if mentor account setup is complete and redirects accordingly.
      */
-    #[Route('/setup-check', name: 'setup_check', methods: ['GET'])]
+    #[Route('/setup-check', name: 'mentor_setup_check', methods: ['GET'])]
     public function setupCheck(): Response
     {
         /** @var Mentor|null $mentor */
@@ -344,7 +344,7 @@ class SecurityController extends AbstractController
      *
      * Guides mentor through completing their account setup.
      */
-    #[Route('/complete-setup', name: 'complete_setup', methods: ['GET', 'POST'])]
+    #[Route('/complete-setup', name: 'mentor_complete_setup', methods: ['GET', 'POST'])]
     public function completeSetup(Request $request): Response
     {
         /** @var Mentor|null $mentor */

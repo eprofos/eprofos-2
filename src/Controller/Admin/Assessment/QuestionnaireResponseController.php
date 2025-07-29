@@ -21,7 +21,7 @@ use ZipArchive;
 /**
  * Admin controller for managing questionnaire responses and evaluation.
  */
-#[Route('/admin/questionnaire-responses', name: 'admin_questionnaire_response_')]
+#[Route('/admin/questionnaire-responses')]
 class QuestionnaireResponseController extends AbstractController
 {
     public function __construct(
@@ -30,7 +30,7 @@ class QuestionnaireResponseController extends AbstractController
         private QuestionResponseRepository $questionResponseRepository,
     ) {}
 
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'admin_questionnaire_response_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $questionnaire = null;
@@ -94,7 +94,7 @@ class QuestionnaireResponseController extends AbstractController
         ]);
     }
 
-    #[Route('/pending-evaluation', name: 'pending_evaluation', methods: ['GET'])]
+    #[Route('/pending-evaluation', name: 'admin_questionnaire_response_pending_evaluation', methods: ['GET'])]
     public function pendingEvaluation(): Response
     {
         $responses = $this->responseRepository->findPendingEvaluation();
@@ -104,7 +104,7 @@ class QuestionnaireResponseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id}', name: 'admin_questionnaire_response_show', methods: ['GET'])]
     public function show(QuestionnaireResponse $response): Response
     {
         $questionResponses = $this->questionResponseRepository->findByQuestionnaireResponse($response);
@@ -115,7 +115,7 @@ class QuestionnaireResponseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/evaluate', name: 'evaluate', methods: ['GET', 'POST'])]
+    #[Route('/{id}/evaluate', name: 'admin_questionnaire_response_evaluate', methods: ['GET', 'POST'])]
     public function evaluate(Request $request, QuestionnaireResponse $response): Response
     {
         if (!$response->isCompleted()) {
@@ -165,7 +165,7 @@ class QuestionnaireResponseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/start-evaluation', name: 'start_evaluation', methods: ['POST'])]
+    #[Route('/{id}/start-evaluation', name: 'admin_questionnaire_response_start_evaluation', methods: ['POST'])]
     public function startEvaluation(Request $request, QuestionnaireResponse $response): JsonResponse
     {
         if (!$this->isCsrfTokenValid('start_evaluation' . $response->getId(), $request->request->get('_token'))) {
@@ -182,7 +182,7 @@ class QuestionnaireResponseController extends AbstractController
         return new JsonResponse(['success' => true]);
     }
 
-    #[Route('/{id}/download-files', name: 'download_files', methods: ['GET'])]
+    #[Route('/{id}/download-files', name: 'admin_questionnaire_response_download_files', methods: ['GET'])]
     public function downloadFiles(QuestionnaireResponse $response): Response
     {
         $questionResponses = $this->questionResponseRepository->findByQuestionnaireResponse($response);
@@ -237,7 +237,7 @@ class QuestionnaireResponseController extends AbstractController
         return $binaryResponse;
     }
 
-    #[Route('/statistics/{id}', name: 'statistics', methods: ['GET'])]
+    #[Route('/statistics/{id}', name: 'admin_questionnaire_response_statistics', methods: ['GET'])]
     public function statistics(Questionnaire $questionnaire): Response
     {
         $completionStats = $this->responseRepository->getCompletionStatistics($questionnaire);
@@ -264,7 +264,7 @@ class QuestionnaireResponseController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_questionnaire_response_delete', methods: ['POST'])]
     public function delete(Request $request, QuestionnaireResponse $response): Response
     {
         if (!$this->isCsrfTokenValid('delete' . $response->getId(), $request->request->get('_token'))) {

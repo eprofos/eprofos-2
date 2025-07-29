@@ -24,7 +24,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  * Provides comprehensive management capabilities for EPROFOS formations
  * with Qualiopi compliance and image upload support.
  */
-#[Route('/admin/formations', name: 'admin_formation_')]
+#[Route('/admin/formations')]
 #[IsGranted('ROLE_ADMIN')]
 class FormationController extends AbstractController
 {
@@ -36,7 +36,7 @@ class FormationController extends AbstractController
     /**
      * List all formations with pagination and filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_formation_index', methods: ['GET'])]
     public function index(Request $request, FormationRepository $formationRepository): Response
     {
         $this->logger->info('Admin formations list accessed', [
@@ -161,7 +161,7 @@ class FormationController extends AbstractController
     /**
      * Show formation details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_formation_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Formation $formation): Response
     {
         $this->logger->info('Admin formation details viewed', [
@@ -183,7 +183,7 @@ class FormationController extends AbstractController
     /**
      * Create a new formation.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_formation_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $formation = new Formation();
@@ -242,7 +242,7 @@ class FormationController extends AbstractController
     /**
      * Edit an existing formation.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_formation_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(FormationType::class, $formation);
@@ -308,7 +308,7 @@ class FormationController extends AbstractController
     /**
      * Delete a formation.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_formation_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $formation->getId(), $request->getPayload()->get('_token'))) {
@@ -346,7 +346,7 @@ class FormationController extends AbstractController
     /**
      * Toggle formation active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_formation_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_status' . $formation->getId(), $request->getPayload()->get('_token'))) {
@@ -370,7 +370,7 @@ class FormationController extends AbstractController
     /**
      * Toggle formation featured status.
      */
-    #[Route('/{id}/toggle-featured', name: 'toggle_featured', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-featured', name: 'admin_formation_toggle_featured', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleFeatured(Request $request, Formation $formation, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_featured' . $formation->getId(), $request->getPayload()->get('_token'))) {

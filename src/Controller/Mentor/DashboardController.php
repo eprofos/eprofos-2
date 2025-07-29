@@ -18,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Main dashboard for authenticated mentors to manage their apprentices,
  * create missions, and access company training resources.
  */
-#[Route('/mentor', name: 'mentor_')]
+#[Route('/mentor')]
 #[IsGranted('ROLE_MENTOR')]
 class DashboardController extends AbstractController
 {
@@ -33,7 +33,7 @@ class DashboardController extends AbstractController
      * Displays an overview of supervised apprentices, active missions,
      * recent activities, and quick access to mentor tools.
      */
-    #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
+    #[Route('/dashboard', name: 'mentor_dashboard', methods: ['GET'])]
     public function index(): Response
     {
         /** @var Mentor $mentor */
@@ -72,7 +72,7 @@ class DashboardController extends AbstractController
      *
      * Displays and allows editing of mentor professional information and expertise.
      */
-    #[Route('/profile', name: 'profile', methods: ['GET'])]
+    #[Route('/profile', name: 'mentor_profile', methods: ['GET'])]
     public function profile(): Response
     {
         /** @var Mentor $mentor */
@@ -94,7 +94,7 @@ class DashboardController extends AbstractController
      *
      * Redirects to the assignments page since this is where alternance management happens.
      */
-    #[Route('/apprentices', name: 'apprentices', methods: ['GET'])]
+    #[Route('/apprentices', name: 'mentor_apprentices', methods: ['GET'])]
     public function apprentices(): Response
     {
         // Redirect to assignments since that's where we manage alternance students
@@ -106,7 +106,7 @@ class DashboardController extends AbstractController
      *
      * Displays apprentice evaluations, progress reports, and assessment tools.
      */
-    #[Route('/evaluations', name: 'evaluations', methods: ['GET'])]
+    #[Route('/evaluations', name: 'mentor_evaluations', methods: ['GET'])]
     public function evaluations(): Response
     {
         /** @var Mentor $mentor */
@@ -130,7 +130,7 @@ class DashboardController extends AbstractController
      *
      * Displays system notifications, apprentice updates, and important announcements.
      */
-    #[Route('/notifications', name: 'notifications', methods: ['GET'])]
+    #[Route('/notifications', name: 'mentor_notifications', methods: ['GET'])]
     public function notifications(): Response
     {
         /** @var Mentor $mentor */
@@ -154,7 +154,7 @@ class DashboardController extends AbstractController
      *
      * Allows mentors to modify account settings, notification preferences, and privacy options.
      */
-    #[Route('/settings', name: 'settings', methods: ['GET'])]
+    #[Route('/settings', name: 'mentor_settings', methods: ['GET'])]
     public function settings(): Response
     {
         /** @var Mentor $mentor */
@@ -174,7 +174,7 @@ class DashboardController extends AbstractController
      *
      * Displays help documentation, FAQs, and support contact information.
      */
-    #[Route('/help', name: 'help', methods: ['GET'])]
+    #[Route('/help', name: 'mentor_help', methods: ['GET'])]
     public function help(): Response
     {
         /** @var Mentor $mentor */
@@ -193,7 +193,7 @@ class DashboardController extends AbstractController
      *
      * Displays upcoming meetings, meeting history, and scheduling tools.
      */
-    #[Route('/meetings', name: 'meetings', methods: ['GET'])]
+    #[Route('/meetings', name: 'mentor_meetings', methods: ['GET'])]
     public function meetings(): Response
     {
         /** @var Mentor $mentor */
@@ -217,7 +217,7 @@ class DashboardController extends AbstractController
      *
      * Displays performance reports, progress reports, and analytics.
      */
-    #[Route('/reports', name: 'reports', methods: ['GET'])]
+    #[Route('/reports', name: 'mentor_reports', methods: ['GET'])]
     public function reports(): Response
     {
         /** @var Mentor $mentor */

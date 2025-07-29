@@ -6,7 +6,7 @@ namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\DocumentUIComponent;
 use App\Entity\Document\DocumentUITemplate;
-use App\Form\DocumentUIComponentType;
+use App\Form\Document\DocumentUIComponentType;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Service\Document\DocumentUITemplateService;
 use DateTimeImmutable;
@@ -25,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *
  * Handles CRUD operations for document UI components within templates.
  */
-#[Route('/admin/document-ui-templates/{templateId}/components', name: 'admin_document_ui_component_')]
+#[Route('/admin/document-ui-templates/{templateId}/components')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentUIComponentController extends AbstractController
 {
@@ -38,7 +38,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * List components for a template.
      */
-    #[Route('/', name: 'index', methods: ['GET'], requirements: ['templateId' => '\d+'])]
+    #[Route('/', name: 'admin_document_ui_component_index', methods: ['GET'], requirements: ['templateId' => '\d+'])]
     public function index(int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
@@ -74,7 +74,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Show component details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_ui_component_show', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function show(int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -100,7 +100,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Create new component.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+'])]
+    #[Route('/new', name: 'admin_document_ui_component_new', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+'])]
     public function new(Request $request, int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
@@ -156,7 +156,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Edit component.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_ui_component_edit', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function edit(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -209,7 +209,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Delete component.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_ui_component_delete', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function delete(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -240,7 +240,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Toggle component active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_document_ui_component_toggle_status', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function toggleStatus(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -273,7 +273,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Duplicate component.
      */
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/duplicate', name: 'admin_document_ui_component_duplicate', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function duplicate(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -311,7 +311,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Preview component.
      */
-    #[Route('/{id}/preview', name: 'preview', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/preview', name: 'admin_document_ui_component_preview', methods: ['GET', 'POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function preview(Request $request, int $templateId, DocumentUIComponent $component): Response
     {
         $template = $component->getUiTemplate();
@@ -354,7 +354,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Update component sort order via AJAX.
      */
-    #[Route('/sort', name: 'sort', methods: ['POST'], requirements: ['templateId' => '\d+'])]
+    #[Route('/sort', name: 'admin_document_ui_component_sort', methods: ['POST'], requirements: ['templateId' => '\d+'])]
     public function sort(Request $request, int $templateId): JsonResponse
     {
         $template = $this->entityManager->find(DocumentUITemplate::class, $templateId);
@@ -377,7 +377,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Get component configuration via AJAX.
      */
-    #[Route('/{id}/config', name: 'config', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/config', name: 'admin_document_ui_component_config', methods: ['GET'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function getConfig(int $templateId, DocumentUIComponent $component): JsonResponse
     {
         $template = $component->getUiTemplate();
@@ -397,7 +397,7 @@ class DocumentUIComponentController extends AbstractController
     /**
      * Update component configuration via AJAX.
      */
-    #[Route('/{id}/config', name: 'update_config', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
+    #[Route('/{id}/config', name: 'admin_document_ui_component_update_config', methods: ['POST'], requirements: ['templateId' => '\d+', 'id' => '\d+'])]
     public function updateConfig(Request $request, int $templateId, DocumentUIComponent $component): JsonResponse
     {
         $template = $component->getUiTemplate();

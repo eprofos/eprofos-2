@@ -22,7 +22,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  * Handles CRUD operations for categories in the admin interface.
  * Provides full management capabilities for formation categories.
  */
-#[Route('/admin/categories', name: 'admin_category_')]
+#[Route('/admin/categories')]
 #[IsGranted('ROLE_ADMIN')]
 class CategoryController extends AbstractController
 {
@@ -34,7 +34,7 @@ class CategoryController extends AbstractController
     /**
      * List all categories with pagination and filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_category_index', methods: ['GET'])]
     public function index(CategoryRepository $categoryRepository): Response
     {
         $this->logger->info('Admin categories list accessed', [
@@ -56,7 +56,7 @@ class CategoryController extends AbstractController
     /**
      * Show category details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_category_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Category $category): Response
     {
         $this->logger->info('Admin category details viewed', [
@@ -78,7 +78,7 @@ class CategoryController extends AbstractController
     /**
      * Create a new category.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_category_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $category = new Category();
@@ -119,7 +119,7 @@ class CategoryController extends AbstractController
     /**
      * Edit an existing category.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_category_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(CategoryType::class, $category);
@@ -159,7 +159,7 @@ class CategoryController extends AbstractController
     /**
      * Delete a category.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_category_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $category->getId(), $request->getPayload()->get('_token'))) {
@@ -189,7 +189,7 @@ class CategoryController extends AbstractController
     /**
      * Toggle category active status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/toggle-status', name: 'admin_category_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle' . $category->getId(), $request->getPayload()->get('_token'))) {

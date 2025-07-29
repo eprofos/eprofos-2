@@ -22,7 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for documents in the admin interface.
  * Provides complete document management with type-specific features.
  */
-#[Route('/admin/documents', name: 'admin_document_')]
+#[Route('/admin/documents')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentController extends AbstractController
 {
@@ -34,7 +34,7 @@ class DocumentController extends AbstractController
     /**
      * List all documents with filtering and pagination.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_index', methods: ['GET'])]
     public function index(Request $request, DocumentRepository $documentRepository): Response
     {
         // Get filter parameters
@@ -83,7 +83,7 @@ class DocumentController extends AbstractController
     /**
      * Show a specific document.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Document $document): Response
     {
         return $this->render('admin/document/show.html.twig', [
@@ -94,7 +94,7 @@ class DocumentController extends AbstractController
     /**
      * Create a new document.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $document = new Document();
@@ -141,7 +141,7 @@ class DocumentController extends AbstractController
     /**
      * Edit an existing document.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Document $document): Response
     {
         $form = $this->createForm(DocumentFormType::class, $document);
@@ -202,7 +202,7 @@ class DocumentController extends AbstractController
     /**
      * Delete a document.
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'admin_document_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Document $document): Response
     {
         // CSRF protection
@@ -241,7 +241,7 @@ class DocumentController extends AbstractController
     /**
      * Publish a document.
      */
-    #[Route('/{id}/publish', name: 'publish', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/publish', name: 'admin_document_publish', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function publish(Request $request, Document $document): Response
     {
         if ($this->isCsrfTokenValid('publish' . $document->getId(), $request->request->get('_token'))) {
@@ -273,7 +273,7 @@ class DocumentController extends AbstractController
     /**
      * Archive a document.
      */
-    #[Route('/{id}/archive', name: 'archive', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/archive', name: 'admin_document_archive', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function archive(Request $request, Document $document): Response
     {
         if ($this->isCsrfTokenValid('archive' . $document->getId(), $request->request->get('_token'))) {
@@ -305,7 +305,7 @@ class DocumentController extends AbstractController
     /**
      * Duplicate a document.
      */
-    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/duplicate', name: 'admin_document_duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, Document $document): Response
     {
         if ($this->isCsrfTokenValid('duplicate' . $document->getId(), $request->request->get('_token'))) {

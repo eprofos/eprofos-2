@@ -26,7 +26,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles alternance-specific features for students including
  * mission assignments, skills assessments, and coordination meetings.
  */
-#[Route('/student/alternance', name: 'student_alternance_')]
+#[Route('/student/alternance')]
 #[IsGranted('ROLE_STUDENT')]
 class AlternanceController extends AbstractController
 {
@@ -39,7 +39,7 @@ class AlternanceController extends AbstractController
     /**
      * Alternance dashboard for students.
      */
-    #[Route('/', name: 'dashboard', methods: ['GET'])]
+    #[Route('/', name: 'student_alternance_dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
         /** @var Student $student */
@@ -84,7 +84,7 @@ class AlternanceController extends AbstractController
     /**
      * View student's mission assignments.
      */
-    #[Route('/missions', name: 'missions', methods: ['GET'])]
+    #[Route('/missions', name: 'student_alternance_missions', methods: ['GET'])]
     public function missions(Request $request): Response
     {
         /** @var Student $student */
@@ -192,7 +192,7 @@ class AlternanceController extends AbstractController
     /**
      * View specific mission assignment details.
      */
-    #[Route('/missions/{id}', name: 'mission_show', methods: ['GET'])]
+    #[Route('/missions/{id}', name: 'student_alternance_mission_show', methods: ['GET'])]
     public function showMission(MissionAssignment $assignment): Response
     {
         /** @var Student $student */
@@ -212,7 +212,7 @@ class AlternanceController extends AbstractController
     /**
      * Update mission progress (student self-assessment).
      */
-    #[Route('/missions/{id}/progress', name: 'mission_update_progress', methods: ['POST'])]
+    #[Route('/missions/{id}/progress', name: 'student_alternance_mission_update_progress', methods: ['POST'])]
     public function updateMissionProgress(MissionAssignment $assignment, Request $request): Response
     {
         /** @var Student $student */
@@ -249,7 +249,7 @@ class AlternanceController extends AbstractController
     /**
      * View skills assessments.
      */
-    #[Route('/assessments', name: 'assessments', methods: ['GET'])]
+    #[Route('/assessments', name: 'student_alternance_assessments', methods: ['GET'])]
     public function assessments(): Response
     {
         /** @var Student $student */
@@ -268,7 +268,7 @@ class AlternanceController extends AbstractController
     /**
      * View specific skills assessment.
      */
-    #[Route('/assessments/{id}', name: 'assessment_show', methods: ['GET'])]
+    #[Route('/assessments/{id}', name: 'student_alternance_assessment_show', methods: ['GET'])]
     public function showAssessment(SkillsAssessment $assessment): Response
     {
         /** @var Student $student */
@@ -287,7 +287,7 @@ class AlternanceController extends AbstractController
     /**
      * View coordination meetings.
      */
-    #[Route('/meetings', name: 'meetings', methods: ['GET'])]
+    #[Route('/meetings', name: 'student_alternance_meetings', methods: ['GET'])]
     public function meetings(): Response
     {
         /** @var Student $student */
@@ -306,7 +306,7 @@ class AlternanceController extends AbstractController
     /**
      * View specific coordination meeting.
      */
-    #[Route('/meetings/{id}', name: 'meeting_show', methods: ['GET'])]
+    #[Route('/meetings/{id}', name: 'student_alternance_meeting_show', methods: ['GET'])]
     public function showMeeting(CoordinationMeeting $meeting): Response
     {
         /** @var Student $student */
@@ -325,7 +325,7 @@ class AlternanceController extends AbstractController
     /**
      * AJAX: Get dashboard statistics.
      */
-    #[Route('/api/stats', name: 'api_stats', methods: ['GET'])]
+    #[Route('/api/stats', name: 'student_alternance_api_stats', methods: ['GET'])]
     public function getStats(): JsonResponse
     {
         /** @var Student $student */
@@ -343,7 +343,7 @@ class AlternanceController extends AbstractController
     /**
      * AJAX: Get recent activities.
      */
-    #[Route('/api/activities', name: 'api_activities', methods: ['GET'])]
+    #[Route('/api/activities', name: 'student_alternance_api_activities', methods: ['GET'])]
     public function getRecentActivities(): JsonResponse
     {
         /** @var Student $student */

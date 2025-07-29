@@ -24,7 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for sessions in the admin interface.
  * Provides comprehensive session management with registration tracking.
  */
-#[Route('/admin/sessions', name: 'admin_session_')]
+#[Route('/admin/sessions')]
 #[IsGranted('ROLE_ADMIN')]
 class SessionController extends AbstractController
 {
@@ -36,7 +36,7 @@ class SessionController extends AbstractController
     /**
      * List all sessions with pagination and filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_session_index', methods: ['GET'])]
     public function index(Request $request, SessionRepository $sessionRepository): Response
     {
         $this->logger->info('Admin sessions list accessed', [
@@ -91,7 +91,7 @@ class SessionController extends AbstractController
     /**
      * Show session details with registrations.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_session_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Session $session): Response
     {
         $this->logger->info('Admin session details viewed', [
@@ -107,7 +107,7 @@ class SessionController extends AbstractController
     /**
      * Create a new session.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_session_new', methods: ['GET', 'POST'])]
     public function new(Request $request, FormationRepository $formationRepository): Response
     {
         $session = new Session();
@@ -157,7 +157,7 @@ class SessionController extends AbstractController
     /**
      * Edit an existing session.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'admin_session_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Session $session): Response
     {
         $form = $this->createForm(SessionType::class, $session);
@@ -194,7 +194,7 @@ class SessionController extends AbstractController
     /**
      * Delete a session.
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_session_delete', methods: ['POST'])]
     public function delete(Request $request, Session $session): Response
     {
         if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
@@ -227,7 +227,7 @@ class SessionController extends AbstractController
     /**
      * Toggle session status.
      */
-    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'])]
+    #[Route('/{id}/toggle-status', name: 'admin_session_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, Session $session): Response
     {
         if ($this->isCsrfTokenValid('toggle_status' . $session->getId(), $request->request->get('_token'))) {
@@ -261,7 +261,7 @@ class SessionController extends AbstractController
     /**
      * Export session registrations to CSV.
      */
-    #[Route('/{id}/export', name: 'export', methods: ['GET'])]
+    #[Route('/{id}/export', name: 'admin_session_export', methods: ['GET'])]
     public function export(Session $session): Response
     {
         $registrations = $session->getRegistrations();

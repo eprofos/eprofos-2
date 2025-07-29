@@ -26,7 +26,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Provides functionality for creating, viewing, editing, and managing the lifecycle
  * of needs analysis requests including sending invitations and tracking responses.
  */
-#[Route('/admin/needs-analysis', name: 'admin_needs_analysis_')]
+#[Route('/admin/needs-analysis')]
 #[IsGranted('ROLE_ADMIN')]
 class NeedsAnalysisController extends AbstractController
 {
@@ -40,7 +40,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Display the list of all needs analysis requests with filtering and pagination.
      */
-    #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'admin_needs_analysis_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $status = $request->query->get('status');
@@ -93,7 +93,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Display details of a specific needs analysis request.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_needs_analysis_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(NeedsAnalysisRequest $request): Response
     {
         return $this->render('admin/needs_analysis/show.html.twig', [
@@ -104,7 +104,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Create a new needs analysis request.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_needs_analysis_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $needsAnalysisRequest = new NeedsAnalysisRequest();
@@ -154,7 +154,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Edit an existing needs analysis request.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_needs_analysis_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         // Only allow editing if request is in pending status
@@ -201,7 +201,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Send the needs analysis request to the beneficiary.
      */
-    #[Route('/{id}/send', name: 'send', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/send', name: 'admin_needs_analysis_send', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function send(NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         if ($needsAnalysisRequest->getStatus() !== 'pending') {
@@ -236,7 +236,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Cancel a needs analysis request.
      */
-    #[Route('/{id}/cancel', name: 'cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/cancel', name: 'admin_needs_analysis_cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function cancel(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         if (!in_array($needsAnalysisRequest->getStatus(), ['pending', 'sent'], true)) {
@@ -273,7 +273,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Delete a needs analysis request (only if pending).
      */
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/delete', name: 'admin_needs_analysis_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         if ($needsAnalysisRequest->getStatus() !== 'pending') {
@@ -311,7 +311,7 @@ class NeedsAnalysisController extends AbstractController
     /**
      * Add admin notes to a needs analysis request.
      */
-    #[Route('/{id}/notes', name: 'add_notes', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/notes', name: 'admin_needs_analysis_add_notes', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function addNotes(Request $request, NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         $newNote = trim($request->request->get('note', ''));

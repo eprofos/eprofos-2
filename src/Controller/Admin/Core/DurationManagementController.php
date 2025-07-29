@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/duration', name: 'admin_duration_')]
+#[Route('/admin/duration')]
 #[IsGranted('ROLE_ADMIN')]
 class DurationManagementController extends AbstractController
 {
@@ -27,13 +27,13 @@ class DurationManagementController extends AbstractController
         private DurationCalculationService $durationService,
     ) {}
 
-    #[Route('/', name: 'index')]
+    #[Route('/', name: 'admin_duration_index')]
     public function index(): Response
     {
         return $this->render('admin/duration/index.html.twig');
     }
 
-    #[Route('/statistics', name: 'statistics')]
+    #[Route('/statistics', name: 'admin_duration_statistics')]
     public function statistics(): Response
     {
         $stats = [
@@ -48,7 +48,7 @@ class DurationManagementController extends AbstractController
         ]);
     }
 
-    #[Route('/analyze/{entityType}', name: 'analyze')]
+    #[Route('/analyze/{entityType}', name: 'admin_duration_analyze')]
     public function analyze(string $entityType): Response
     {
         $entityClass = match ($entityType) {
@@ -74,7 +74,7 @@ class DurationManagementController extends AbstractController
         ]);
     }
 
-    #[Route('/update/{entityType}/{entityId}', name: 'update', methods: ['POST'])]
+    #[Route('/update/{entityType}/{entityId}', name: 'admin_duration_update', methods: ['POST'])]
     public function updateDuration(string $entityType, int $entityId): JsonResponse
     {
         $entityClass = match ($entityType) {
@@ -109,7 +109,7 @@ class DurationManagementController extends AbstractController
         }
     }
 
-    #[Route('/sync-all', name: 'sync_all', methods: ['POST'])]
+    #[Route('/sync-all', name: 'admin_duration_sync_all', methods: ['POST'])]
     public function syncAll(Request $request): JsonResponse
     {
         $entityType = $request->request->get('entity_type', 'all');
@@ -147,7 +147,7 @@ class DurationManagementController extends AbstractController
         }
     }
 
-    #[Route('/clear-cache', name: 'clear_cache', methods: ['POST'])]
+    #[Route('/clear-cache', name: 'admin_duration_clear_cache', methods: ['POST'])]
     public function clearCache(): JsonResponse
     {
         try {

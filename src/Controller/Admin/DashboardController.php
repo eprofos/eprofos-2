@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles the main admin dashboard interface with Tabler CSS.
  * Provides a simple admin interface for EPROFOS platform management.
  */
-#[Route('/admin', name: 'admin_')]
+#[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
 class DashboardController extends AbstractController
 {
@@ -30,7 +30,7 @@ class DashboardController extends AbstractController
      * Displays the main admin dashboard with basic information
      * and navigation to different admin sections.
      */
-    #[Route('/', name: 'dashboard', methods: ['GET'])]
+    #[Route('/', name: 'admin_dashboard', methods: ['GET'])]
     public function index(): Response
     {
         $this->logger->info('Admin dashboard accessed', [

@@ -22,7 +22,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  * Handles CRUD operations for service categories in the admin interface.
  * Provides full management capabilities for service categories.
  */
-#[Route('/admin/service-categories', name: 'admin_service_category_')]
+#[Route('/admin/service-categories')]
 #[IsGranted('ROLE_ADMIN')]
 class ServiceCategoryController extends AbstractController
 {
@@ -34,7 +34,7 @@ class ServiceCategoryController extends AbstractController
     /**
      * List all service categories with pagination and filtering.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_service_category_index', methods: ['GET'])]
     public function index(ServiceCategoryRepository $serviceCategoryRepository): Response
     {
         $this->logger->info('Admin service categories list accessed', [
@@ -56,7 +56,7 @@ class ServiceCategoryController extends AbstractController
     /**
      * Show service category details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_service_category_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(ServiceCategory $serviceCategory): Response
     {
         $this->logger->info('Admin service category details viewed', [
@@ -78,7 +78,7 @@ class ServiceCategoryController extends AbstractController
     /**
      * Create a new service category.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_service_category_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $serviceCategory = new ServiceCategory();
@@ -119,7 +119,7 @@ class ServiceCategoryController extends AbstractController
     /**
      * Edit an existing service category.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_service_category_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, ServiceCategory $serviceCategory, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ServiceCategoryType::class, $serviceCategory);
@@ -159,7 +159,7 @@ class ServiceCategoryController extends AbstractController
     /**
      * Delete a service category.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_service_category_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, ServiceCategory $serviceCategory, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $serviceCategory->getId(), $request->getPayload()->get('_token'))) {

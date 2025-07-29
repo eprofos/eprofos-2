@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Handles CRUD operations for document metadata in the admin interface.
  * Provides management for structured metadata fields and values.
  */
-#[Route('/admin/document-metadata', name: 'admin_document_metadata_')]
+#[Route('/admin/document-metadata')]
 #[IsGranted('ROLE_ADMIN')]
 class DocumentMetadataController extends AbstractController
 {
@@ -33,7 +33,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * List all document metadata with statistics.
      */
-    #[Route('/', name: 'index', methods: ['GET'])]
+    #[Route('/', name: 'admin_document_metadata_index', methods: ['GET'])]
     public function index(Request $request, DocumentMetadataRepository $documentMetadataRepository): Response
     {
         $this->logger->info('Admin document metadata list accessed', [
@@ -69,7 +69,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Show document metadata details.
      */
-    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_metadata_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(DocumentMetadata $documentMetadata): Response
     {
         $this->logger->info('Admin document metadata details viewed', [
@@ -92,7 +92,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Create a new document metadata.
      */
-    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_document_metadata_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $documentMetadata = new DocumentMetadata();
@@ -136,7 +136,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Edit an existing document metadata.
      */
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'admin_document_metadata_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, DocumentMetadata $documentMetadata): Response
     {
         $form = $this->createForm(DocumentMetadataType::class, $documentMetadata);
@@ -170,7 +170,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Delete a document metadata.
      */
-    #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'admin_document_metadata_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, DocumentMetadata $documentMetadata): Response
     {
         if ($this->isCsrfTokenValid('delete' . $documentMetadata->getId(), $request->getPayload()->get('_token'))) {
@@ -189,7 +189,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Bulk delete selected metadata.
      */
-    #[Route('/bulk-delete', name: 'bulk_delete', methods: ['POST'])]
+    #[Route('/bulk-delete', name: 'admin_document_metadata_bulk_delete', methods: ['POST'])]
     public function bulkDelete(Request $request): Response
     {
         $ids = $request->request->all('selected_metadata');
@@ -219,7 +219,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Export metadata to CSV.
      */
-    #[Route('/export', name: 'export', methods: ['GET', 'POST'])]
+    #[Route('/export', name: 'admin_document_metadata_export', methods: ['GET', 'POST'])]
     public function export(Request $request): Response
     {
         $filters = [
@@ -242,7 +242,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Get metadata statistics by key (AJAX).
      */
-    #[Route('/statistics/{key}', name: 'statistics', methods: ['GET'], requirements: ['key' => '.+'])]
+    #[Route('/statistics/{key}', name: 'admin_document_metadata_statistics', methods: ['GET'], requirements: ['key' => '.+'])]
     public function getStatistics(string $key, Request $request): Response
     {
         if (!$request->isXmlHttpRequest()) {
@@ -257,7 +257,7 @@ class DocumentMetadataController extends AbstractController
     /**
      * Get available metadata keys (AJAX).
      */
-    #[Route('/keys', name: 'keys', methods: ['GET'])]
+    #[Route('/keys', name: 'admin_document_metadata_keys', methods: ['GET'])]
     public function getAvailableKeys(Request $request): Response
     {
         if (!$request->isXmlHttpRequest()) {
