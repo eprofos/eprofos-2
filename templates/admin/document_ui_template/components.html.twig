@@ -1,0 +1,310 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Composants: ' ~ ui_template.name %}
+{% set breadcrumb = [
+    {'label': 'Documents', 'url': path('admin_document_index')},
+    {'label': 'Modèles UI', 'url': path('admin_document_ui_template_index')},
+    {'label': ui_template.name, 'url': path('admin_document_ui_template_show', {id: ui_template.id})},
+    {'label': 'Composants'}
+] %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-puzzle-piece me-2"></i>
+                        {{ page_title }}
+                        {% set total_components = 0 %}
+                        {% for zone_components in components_by_zone %}
+                            {% set total_components = total_components + zone_components|length %}
+                        {% endfor %}
+                        <span class="badge bg-blue ms-2">{{ total_components }} composant{{ total_components > 1 ? 's' : '' }}</span>
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Nouveau composant
+                        </a>
+                        <a href="{{ path('admin_document_ui_template_preview', {id: ui_template.id}) }}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </a>
+                        <a href="{{ path('admin_document_ui_template_show', {id: ui_template.id}) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Retour au modèle
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Template Info -->
+                    <div class="alert alert-info d-flex align-items-center mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>
+                            <strong>Modèle :</strong> {{ ui_template.name }}<br>
+                            <strong>Type :</strong> {{ ui_template.isGlobal ? 'Global' : (ui_template.documentType ? ui_template.documentType.name : 'Non défini') }}<br>
+                            <strong>Format :</strong> {{ ui_template.paperSize }} {{ ui_template.orientation == 'landscape' ? 'Paysage' : 'Portrait' }}
+                        </div>
+                    </div>
+
+                    {% if components_by_zone is empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun composant configuré</h5>
+                            <p class="text-muted">Les composants permettent de personnaliser la mise en page de vos documents.</p>
+                            <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id}) }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Créer le premier composant
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Zone Information -->
+                        <div class="row mb-4">
+                            {% for zone_key, zone_label in zones %}
+                                {% set zone_components = components_by_zone[zone_key] ?? [] %}
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="card bg-{{ zone_components|length > 0 ? 'primary' : 'light' }} text-{{ zone_components|length > 0 ? 'white' : 'muted' }}">
+                                        <div class="card-body text-center">
+                                            <div class="h3 mb-1">{{ zone_components|length }}</div>
+                                            <div class="text-{{ zone_components|length > 0 ? 'white-50' : 'muted' }}">
+                                                {{ zone_label }}
+                                            </div>
+                                            {% if zone_components|length == 0 %}
+                                                <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id, zone: zone_key}) }}" 
+                                                   class="btn btn-sm btn-outline-primary mt-2">
+                                                    <i class="fas fa-plus me-1"></i>
+                                                    Ajouter
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Components by Zone -->
+                        {% for zone_key, zone_label in zones %}
+                            {% if components_by_zone[zone_key] is defined and components_by_zone[zone_key]|length > 0 %}
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h5 class="card-title mb-0">
+                                                    <i class="fas fa-th-large me-2"></i>
+                                                    {{ zone_label }}
+                                                    <span class="badge bg-secondary ms-2">{{ components_by_zone[zone_key]|length }}</span>
+                                                </h5>
+                                                <div class="text-muted small mt-1">
+                                                    Composants dans la zone {{ zone_label|lower }}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <a href="{{ path('admin_document_ui_component_new', {templateId: ui_template.id, zone: zone_key}) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-plus me-1"></i>
+                                                    Ajouter un composant
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <div class="row" data-sortable-zone="{{ zone_key }}">
+                                            {% for component in components_by_zone[zone_key] %}
+                                                <div class="col-lg-4 col-md-6 mb-3" data-component-id="{{ component.id }}">
+                                                    <div class="card border component-card">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start">
+                                                                <div class="me-2">
+                                                                    {% set type_icons = {
+                                                                        'text': 'fas fa-font',
+                                                                        'image': 'fas fa-image',
+                                                                        'logo': 'fas fa-certificate',
+                                                                        'table': 'fas fa-table',
+                                                                        'list': 'fas fa-list',
+                                                                        'signature': 'fas fa-signature',
+                                                                        'date': 'fas fa-calendar',
+                                                                        'page_number': 'fas fa-hashtag',
+                                                                        'barcode': 'fas fa-barcode',
+                                                                        'qr_code': 'fas fa-qrcode',
+                                                                        'divider': 'fas fa-minus',
+                                                                        'spacer': 'fas fa-arrows-alt-v',
+                                                                        'custom_html': 'fas fa-code'
+                                                                    } %}
+                                                                    <i class="{{ type_icons[component.type]|default('fas fa-puzzle-piece') }} text-{{ component.isActive ? 'primary' : 'muted' }}"></i>
+                                                                </div>
+                                                                <div class="flex-fill">
+                                                                    <div class="fw-bold small">{{ component.name }}</div>
+                                                                    <div class="text-muted small">{{ component.typeLabel }}</div>
+                                                                    <div class="mt-1">
+                                                                        {% if component.isRequired %}
+                                                                            <span class="badge bg-danger small">Requis</span>
+                                                                        {% endif %}
+                                                                        {% if not component.isActive %}
+                                                                            <span class="badge bg-secondary small">Inactif</span>
+                                                                        {% endif %}
+                                                                        <span class="badge bg-light text-dark small">Ordre: {{ component.sortOrder }}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ms-2">
+                                                                    <div class="btn-group btn-group-sm">
+                                                                        <a href="{{ path('admin_document_ui_component_show', {templateId: ui_template.id, id: component.id}) }}" 
+                                                                           class="btn btn-sm btn-outline-primary" title="Voir">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                        <a href="{{ path('admin_document_ui_component_edit', {templateId: ui_template.id, id: component.id}) }}" 
+                                                                           class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <div class="btn-group">
+                                                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                                                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                <span class="visually-hidden">Plus d'actions</span>
+                                                                            </button>
+                                                                            <ul class="dropdown-menu">
+                                                                                <li>
+                                                                                    <form method="post" action="{{ path('admin_document_ui_component_toggle_status', {templateId: ui_template.id, id: component.id}) }}" class="d-inline">
+                                                                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ component.id) }}">
+                                                                                        <button type="submit" class="dropdown-item">
+                                                                                            <i class="fas fa-{{ component.isActive ? 'pause' : 'play' }} me-1"></i>
+                                                                                            {{ component.isActive ? 'Désactiver' : 'Activer' }}
+                                                                                        </button>
+                                                                                    </form>
+                                                                                </li>
+                                                                                <li>
+                                                                                    <form method="post" action="{{ path('admin_document_ui_component_duplicate', {templateId: ui_template.id, id: component.id}) }}" class="d-inline">
+                                                                                        <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ component.id) }}">
+                                                                                        <button type="submit" class="dropdown-item">
+                                                                                            <i class="fas fa-copy me-1"></i>
+                                                                                            Dupliquer
+                                                                                        </button>
+                                                                                    </form>
+                                                                                </li>
+                                                                                <li><hr class="dropdown-divider"></li>
+                                                                                <li>
+                                                                                    <form method="post" action="{{ path('admin_document_ui_component_delete', {templateId: ui_template.id, id: component.id}) }}" 
+                                                                                          class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce composant ?')">
+                                                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ component.id) }}">
+                                                                                        <button type="submit" class="dropdown-item text-danger">
+                                                                                            <i class="fas fa-trash me-1"></i>
+                                                                                            Supprimer
+                                                                                        </button>
+                                                                                    </form>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Component Preview -->
+                                                            {% if component.content and component.content|length < 100 %}
+                                                                <div class="mt-2 p-2 bg-light rounded small text-muted">
+                                                                    {{ component.content|slice(0, 80) }}{% if component.content|length > 80 %}...{% endif %}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.component-card {
+    transition: all 0.2s ease;
+    cursor: grab;
+}
+
+.component-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.component-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.component-card .card-body {
+    font-size: 0.9rem;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+}
+
+.sortable-chosen {
+    transform: scale(1.02);
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sortable for each zone
+            const sortableZones = document.querySelectorAll('[data-sortable-zone]');
+            
+            sortableZones.forEach(function(zone) {
+                const zoneName = zone.dataset.sortableZone;
+                
+                new Sortable(zone, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    onEnd: function(evt) {
+                        // Get the new order of component IDs
+                        const componentIds = Array.from(zone.children).map(function(item) {
+                            return item.dataset.componentId;
+                        });
+                        
+                        // Send AJAX request to update sort order
+                        fetch('{{ path('admin_document_ui_template_sort_components', {id: ui_template.id}) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: 'component_ids=' + encodeURIComponent(JSON.stringify(componentIds))
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Show success message (optional)
+                                console.log('Ordre des composants mis à jour');
+                            } else {
+                                console.error('Erreur lors de la mise à jour:', data.error);
+                                // Optionally reload the page or show an error message
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur réseau:', error);
+                        });
+                    }
+                });
+            });
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,404 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configuration de votre compte mentor{% endblock %}
+
+{% block body %}
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <!-- Progress Steps -->
+            <div class="steps steps-counter steps-blue d-none d-sm-flex mb-4">
+                <span class="step-item {% if currentStep >= 1 %}active{% endif %}">
+                    <span class="step-counter">1</span>
+                    <span class="step-title">Informations personnelles</span>
+                </span>
+                <span class="step-item {% if currentStep >= 2 %}active{% endif %}">
+                    <span class="step-counter">2</span>
+                    <span class="step-title">Entreprise</span>
+                </span>
+                <span class="step-item {% if currentStep >= 3 %}active{% endif %}">
+                    <span class="step-counter">3</span>
+                    <span class="step-title">Expertise</span>
+                </span>
+                <span class="step-item {% if currentStep >= 4 %}active{% endif %}">
+                    <span class="step-counter">4</span>
+                    <span class="step-title">Finalisation</span>
+                </span>
+            </div>
+
+            <div class="card card-md">
+                <div class="card-body">
+                    <h2 class="h2 text-center mb-4">
+                        {% if currentStep == 1 %}
+                            Vos informations personnelles
+                        {% elseif currentStep == 2 %}
+                            Informations sur votre entreprise
+                        {% elseif currentStep == 3 %}
+                            Votre expertise
+                        {% else %}
+                            Finalisation de votre profil
+                        {% endif %}
+                    </h2>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (currentStep / 4) * 100 }}%" aria-valuenow="{{ currentStep }}" aria-valuemin="0" aria-valuemax="4"></div>
+                    </div>
+
+                    {{ form_start(form, {attr: {class: 'needs-validation', novalidate: true}}) }}
+
+                    {% if currentStep == 1 %}
+                        <!-- Step 1: Personal Information -->
+                        <div class="mb-3">
+                            <label class="form-label">Photo de profil</label>
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-xl" style="background-image: url('{{ mentor.profilePicture ? asset('uploads/mentors/' ~ mentor.profilePicture) : asset('images/default-avatar.png') }}')"></span>
+                                </div>
+                                <div class="col">
+                                    {{ form_widget(form.profilePicture, {attr: {class: 'form-control', accept: 'image/*'}}) }}
+                                    {{ form_errors(form.profilePicture) }}
+                                    <small class="form-hint">JPG, PNG ou GIF. Taille maximale : 2MB</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.firstName, 'Prénom', {label_attr: {class: 'form-label required'}}) }}
+                                    {{ form_widget(form.firstName, {attr: {class: 'form-control', placeholder: 'Votre prénom'}}) }}
+                                    {{ form_errors(form.firstName) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.lastName, 'Nom', {label_attr: {class: 'form-label required'}}) }}
+                                    {{ form_widget(form.lastName, {attr: {class: 'form-control', placeholder: 'Votre nom'}}) }}
+                                    {{ form_errors(form.lastName) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.phone, 'Téléphone', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.phone, {attr: {class: 'form-control', placeholder: '06 12 34 56 78'}}) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.bio, 'Présentation personnelle', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.bio, {attr: {class: 'form-control', rows: 4, placeholder: 'Présentez-vous en quelques mots...'}}) }}
+                            {{ form_errors(form.bio) }}
+                            <small class="form-hint">Cette présentation sera visible par les apprentis</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.linkedinProfile, 'Profil LinkedIn', {label_attr: {class: 'form-label'}}) }}
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                        <line x1="8" y1="11" x2="8" y2="16"/>
+                                        <line x1="8" y1="8" x2="8" y2="8.01"/>
+                                        <line x1="12" y1="16" x2="12" y2="11"/>
+                                        <path d="m16 16v-3a2 2 0 0 0 -4 0"/>
+                                    </svg>
+                                </span>
+                                {{ form_widget(form.linkedinProfile, {attr: {class: 'form-control', placeholder: 'https://linkedin.com/in/votre-profil'}}) }}
+                            </div>
+                            {{ form_errors(form.linkedinProfile) }}
+                        </div>
+
+                    {% elseif currentStep == 2 %}
+                        <!-- Step 2: Company Information -->
+                        <div class="mb-3">
+                            {{ form_label(form.companyName, 'Nom de l\'entreprise', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.companyName, {attr: {class: 'form-control', placeholder: 'Nom de votre entreprise'}}) }}
+                            {{ form_errors(form.companyName) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.companyWebsite, 'Site web de l\'entreprise', {label_attr: {class: 'form-label'}}) }}
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <line x1="3.6" y1="9" x2="20.4" y2="9"/>
+                                        <line x1="3.6" y1="15" x2="20.4" y2="15"/>
+                                        <path d="m11.5 3a17 17 0 0 0 0 18"/>
+                                        <path d="m12.5 3a17 17 0 0 1 0 18"/>
+                                    </svg>
+                                </span>
+                                {{ form_widget(form.companyWebsite, {attr: {class: 'form-control', placeholder: 'https://www.entreprise.com'}}) }}
+                            </div>
+                            {{ form_errors(form.companyWebsite) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.companySize, 'Taille de l\'entreprise', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.companySize, {attr: {class: 'form-select'}}) }}
+                            {{ form_errors(form.companySize) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.companySector, 'Secteur d\'activité', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.companySector, {attr: {class: 'form-control', placeholder: 'Ex: Technologies, Santé, Finance...'}}) }}
+                            {{ form_errors(form.companySector) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.jobTitle, 'Votre fonction dans l\'entreprise', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.jobTitle, {attr: {class: 'form-control', placeholder: 'Ex: Responsable RH, Directeur Technique...'}}) }}
+                            {{ form_errors(form.jobTitle) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.yearsOfExperience, 'Années d\'expérience', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.yearsOfExperience, {attr: {class: 'form-select'}}) }}
+                            {{ form_errors(form.yearsOfExperience) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.companyDescription, 'Description de l\'entreprise', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.companyDescription, {attr: {class: 'form-control', rows: 3, placeholder: 'Décrivez brièvement votre entreprise et son activité...'}}) }}
+                            {{ form_errors(form.companyDescription) }}
+                            <small class="form-hint">Cette description aidera les apprentis à mieux comprendre votre environnement</small>
+                        </div>
+
+                    {% elseif currentStep == 3 %}
+                        <!-- Step 3: Expertise -->
+                        <div class="mb-3">
+                            {{ form_label(form.expertiseDomains, 'Domaines d\'expertise', {label_attr: {class: 'form-label required'}}) }}
+                            {{ form_widget(form.expertiseDomains, {attr: {class: 'form-control', rows: 3, placeholder: 'Ex: Développement web, Gestion de projet, Marketing digital...'}}) }}
+                            {{ form_errors(form.expertiseDomains) }}
+                            <small class="form-hint">Listez vos domaines d'expertise séparés par des virgules</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.mentorshipExperience, 'Expérience en mentorat', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.mentorshipExperience, {attr: {class: 'form-control', rows: 4, placeholder: 'Décrivez votre expérience en encadrement d\'apprentis ou de stagiaires...'}}) }}
+                            {{ form_errors(form.mentorshipExperience) }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Disponibilité pour l'encadrement</label>
+                            <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                <label class="form-selectgroup-item flex-fill">
+                                    <input type="radio" name="availability" value="low" class="form-selectgroup-input">
+                                    <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                        <div class="me-3">
+                                            <span class="form-selectgroup-check"></span>
+                                        </div>
+                                        <div>
+                                            <strong>Faible disponibilité</strong>
+                                            <div class="text-muted">1-2h par semaine</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="form-selectgroup-item flex-fill">
+                                    <input type="radio" name="availability" value="medium" class="form-selectgroup-input">
+                                    <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                        <div class="me-3">
+                                            <span class="form-selectgroup-check"></span>
+                                        </div>
+                                        <div>
+                                            <strong>Disponibilité modérée</strong>
+                                            <div class="text-muted">3-5h par semaine</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="form-selectgroup-item flex-fill">
+                                    <input type="radio" name="availability" value="high" class="form-selectgroup-input">
+                                    <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                        <div class="me-3">
+                                            <span class="form-selectgroup-check"></span>
+                                        </div>
+                                        <div>
+                                            <strong>Forte disponibilité</strong>
+                                            <div class="text-muted">Plus de 5h par semaine</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Préférences de communication</label>
+                            <div class="form-selectgroup form-selectgroup-pills">
+                                <label class="form-selectgroup-item">
+                                    <input type="checkbox" name="communication_preferences[]" value="email" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">Email</span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="checkbox" name="communication_preferences[]" value="phone" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">Téléphone</span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="checkbox" name="communication_preferences[]" value="video" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">Visioconférence</span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="checkbox" name="communication_preferences[]" value="chat" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">Chat/Messagerie</span>
+                                </label>
+                                <label class="form-selectgroup-item">
+                                    <input type="checkbox" name="communication_preferences[]" value="in_person" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">En personne</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <!-- Step 4: Finalization -->
+                        <div class="text-center mb-4">
+                            <div class="avatar avatar-xl mb-3" style="background-image: url('{{ mentor.profilePicture ? asset('uploads/mentors/' ~ mentor.profilePicture) : asset('images/default-avatar.png') }}')"></div>
+                            <h3>{{ mentor.firstName }} {{ mentor.lastName }}</h3>
+                            <p class="text-muted">{{ mentor.jobTitle }} chez {{ mentor.companyName }}</p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h4 class="alert-title">Récapitulatif de votre profil</h4>
+                            <div class="text-muted">
+                                Vérifiez vos informations avant de finaliser votre inscription en tant que mentor.
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="datagrid">
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Nom complet</div>
+                                        <div class="datagrid-content">{{ mentor.firstName }} {{ mentor.lastName }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Email</div>
+                                        <div class="datagrid-content">{{ mentor.email }}</div>
+                                    </div>
+                                    {% if mentor.phone %}
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Téléphone</div>
+                                        <div class="datagrid-content">{{ mentor.phone }}</div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Entreprise</div>
+                                        <div class="datagrid-content">{{ mentor.companyName }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Fonction</div>
+                                        <div class="datagrid-content">{{ mentor.jobTitle }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Secteur</div>
+                                        <div class="datagrid-content">{{ mentor.companySector }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Expérience</div>
+                                        <div class="datagrid-content">{{ mentor.yearsOfExperienceLabel }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Domaines d'expertise</div>
+                                        <div class="datagrid-content">{{ mentor.expertiseDomains }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" required>
+                            <label class="form-check-label" for="terms_accepted">
+                                J'accepte les <a href="{{ path('terms_mentors') }}" target="_blank">conditions d'utilisation pour mentors</a> et la <a href="{{ path('privacy_policy') }}" target="_blank">politique de confidentialité</a>
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                Je souhaite recevoir la newsletter et les informations importantes par email
+                            </label>
+                        </div>
+                    {% endif %}
+
+                    <!-- Navigation buttons -->
+                    <div class="form-footer">
+                        <div class="d-flex justify-content-between">
+                            {% if currentStep > 1 %}
+                                <button type="submit" name="action" value="previous" class="btn btn-outline-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l14 0"/>
+                                        <path d="M5 12l6 6"/>
+                                        <path d="M5 12l6 -6"/>
+                                    </svg>
+                                    Étape précédente
+                                </button>
+                            {% else %}
+                                <div></div>
+                            {% endif %}
+
+                            {% if currentStep < 4 %}
+                                <button type="submit" name="action" value="next" class="btn btn-primary">
+                                    Étape suivante
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l14 0"/>
+                                        <path d="M13 18l6 -6"/>
+                                        <path d="M13 6l6 6"/>
+                                    </svg>
+                                </button>
+                            {% else %}
+                                <button type="submit" name="action" value="complete" class="btn btn-success">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Finaliser mon inscription
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="text-center text-muted mt-3">
+                Besoin d'aide ? <a href="mailto:support@eprofos.fr">Contactez notre équipe support</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // File upload preview
+        document.querySelector('input[type="file"]')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('.avatar').style.backgroundImage = `url(${e.target.result})`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+{% endblock %}

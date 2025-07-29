@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérifiez votre adresse email - EPROFOS Mentor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #28a745;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #28a745;
+            color: white !important;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #218838;
+            text-decoration: none;
+            color: white !important;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .verification-box {
+            background-color: #f8f9fa;
+            border: 2px dashed #28a745;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            margin: 25px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .url-box {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">EPROFOS</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Espace Mentor - Vérification Email</p>
+        </div>
+        
+        <h2 style="color: #495057; margin-top: 0;">Vérification de votre adresse email</h2>
+        
+        <p>Bonjour <strong>{{ mentor.fullName }}</strong>,</p>
+        
+        <p>
+            Bienvenue sur EPROFOS ! Pour finaliser la création de votre compte mentor et accéder à toutes les fonctionnalités 
+            de supervision d'alternants, nous devons vérifier votre adresse email.
+        </p>
+        
+        <div class="verification-box">
+            <h3 style="margin-top: 0; color: #28a745;">🔐 Vérification requise</h3>
+            <p>Cliquez sur le bouton ci-dessous pour confirmer votre adresse email :</p>
+            
+            <a href="{{ verification_url }}" class="btn">
+                ✅ Vérifier mon email
+            </a>
+        </div>
+        
+        <div class="alert alert-info">
+            <h4 style="margin-top: 0;">🛡️ Pourquoi vérifier votre email ?</h4>
+            <p>La vérification de votre email nous permet de :</p>
+            <ul style="margin: 10px 0;">
+                <li>Sécuriser votre compte mentor</li>
+                <li>Vous envoyer des notifications importantes sur vos alternants</li>
+                <li>Faciliter la récupération de votre mot de passe si nécessaire</li>
+                <li>Assurer la communication avec l'équipe pédagogique</li>
+                <li>Vous tenir informé des nouvelles fonctionnalités</li>
+            </ul>
+        </div>
+        
+        <div style="background-color: #e9ecef; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #495057;">👤 Récapitulatif de votre profil</h4>
+            <ul style="margin: 0; list-style: none; padding: 0;">
+                <li style="margin-bottom: 8px;"><strong>Email :</strong> {{ mentor.email }}</li>
+                <li style="margin-bottom: 8px;"><strong>Entreprise :</strong> {{ mentor.companyName }}</li>
+                <li style="margin-bottom: 8px;"><strong>Poste :</strong> {{ mentor.position }}</li>
+                {% if mentor.expertiseDomainsLabels|length > 0 %}
+                    <li style="margin-bottom: 8px;"><strong>Expertise :</strong> {{ mentor.expertiseDomainsLabels|join(', ') }}</li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <div class="alert alert-warning">
+            <h4 style="margin-top: 0;">⏰ Lien temporaire</h4>
+            <p>Ce lien de vérification est valide pendant <strong>24 heures</strong>. Si le lien expire, vous pourrez demander un nouveau lien depuis votre espace de connexion.</p>
+        </div>
+        
+        <h4>🔧 Le bouton ne fonctionne pas ?</h4>
+        <p>Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :</p>
+        <div class="url-box">{{ verification_url }}</div>
+        
+        <p style="margin-top: 30px;">
+            Si vous n'avez pas créé de compte mentor sur EPROFOS, vous pouvez ignorer cet email en toute sécurité.
+        </p>
+        
+        <p>
+            Pour toute question ou assistance, notre équipe support est disponible :
+        </p>
+        
+        <ul style="font-size: 14px;">
+            <li>📧 Email : <a href="mailto:support@eprofos.fr">support@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+            <li>🕒 Horaires : Lundi-Vendredi 9h-18h</li>
+        </ul>
+        
+        <p>
+            Merci de votre confiance,<br>
+            <strong>L'équipe EPROFOS</strong>
+        </p>
+        
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>EPROFOS - École Professionnelle de Formation Spécialisée<br>
+            Pour toute question, contactez-nous : support@eprofos.fr</p>
+        </div>
+    </div>
+</body>
+</html>

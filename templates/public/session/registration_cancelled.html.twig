@@ -1,0 +1,254 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Inscription annulée - {{ registration.session.formation.title }}{% endblock %}
+
+{% block meta_description %}Votre inscription à la session {{ registration.session.name }} a été annulée avec succès.{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .cancellation-hero {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 25px;
+        }
+        .action-card {
+            border-radius: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}">{{ registration.session.formation.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_session_show', {id: registration.session.id}) }}">{{ registration.session.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Inscription annulée</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Cancellation Confirmation Hero -->
+            <div class="cancellation-hero p-5 mb-5 text-center">
+                <div class="mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                    </div>
+                </div>
+                <h1 class="display-5 fw-bold mb-3">Inscription annulée</h1>
+                <p class="lead mb-0">
+                    Votre inscription à la session "<strong>{{ registration.session.name }}</strong>" 
+                    a été annulée avec succès.
+                </p>
+            </div>
+
+            <!-- Registration Details -->
+            <div class="card border-0 shadow-sm mb-5" style="border-radius: 20px;">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Détails de l'inscription annulée
+                    </h3>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-graduation-cap text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Formation</div>
+                                    <div class="text-muted">{{ registration.session.formation.title }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Session</div>
+                                    <div class="text-muted">{{ registration.session.name }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Email d'inscription</div>
+                                    <div class="text-muted">{{ registration.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-danger bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Date d'annulation</div>
+                                    <div class="text-muted">{{ registration.cancelledAt|date('d/m/Y à H:i') }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if registration.cancelReason %}
+                        <div class="col-12">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3 mt-1">
+                                    <i class="fas fa-comment text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold mb-2">Raison d'annulation</div>
+                                    <div class="text-muted">{{ registration.cancelReason }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- What's Next Section -->
+            <div class="card border-0 shadow-sm mb-5" style="border-radius: 20px;">
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-4">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Et maintenant ?
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Nous sommes désolés que vous ne puissiez pas participer à cette session. 
+                        Voici quelques options pour continuer votre parcours de formation :
+                    </p>
+
+                    <div class="row g-4">
+                        <!-- Browse Other Sessions -->
+                        <div class="col-md-6">
+                            <div class="action-card card border-0 h-100" style="background: linear-gradient(45deg, #e3f2fd, #f3e5f5);">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-calendar-plus fa-lg"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">Autres sessions</h5>
+                                    <p class="text-muted mb-3">
+                                        Trouvez d'autres sessions disponibles pour cette formation.
+                                    </p>
+                                    <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                                       class="btn btn-primary" style="border-radius: 15px;">
+                                        <i class="fas fa-search me-2"></i>Voir les sessions
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Browse All Formations -->
+                        <div class="col-md-6">
+                            <div class="action-card card border-0 h-100" style="background: linear-gradient(45deg, #fff3e0, #f1f8e9);">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-graduation-cap fa-lg"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">Toutes nos formations</h5>
+                                    <p class="text-muted mb-3">
+                                        Découvrez notre catalogue complet de formations.
+                                    </p>
+                                    <a href="{{ path('app_formations_index') }}" 
+                                       class="btn btn-success" style="border-radius: 15px;">
+                                        <i class="fas fa-eye me-2"></i>Parcourir le catalogue
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Support -->
+                        <div class="col-md-6">
+                            <div class="action-card card border-0 h-100" style="background: linear-gradient(45deg, #fce4ec, #e8f5e8);">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-headset fa-lg"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">Nous contacter</h5>
+                                    <p class="text-muted mb-3">
+                                        Notre équipe peut vous aider à trouver une solution.
+                                    </p>
+                                    <a href="{{ path('app_contact_index') }}?subject=Inscription annulée&formation={{ registration.session.formation.id }}" 
+                                       class="btn btn-info" style="border-radius: 15px;">
+                                        <i class="fas fa-envelope me-2"></i>Demander de l'aide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Training -->
+                        <div class="col-md-6">
+                            <div class="action-card card border-0 h-100" style="background: linear-gradient(45deg, #fff8e1, #f3e5f5);">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-tools fa-lg"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">Formation sur mesure</h5>
+                                    <p class="text-muted mb-3">
+                                        Créons une formation adaptée à vos besoins spécifiques.
+                                    </p>
+                                    <a href="{{ path('app_contact_quote') }}?formation={{ registration.session.formation.id }}" 
+                                       class="btn btn-warning" style="border-radius: 15px;">
+                                        <i class="fas fa-calculator me-2"></i>Demander un devis
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Information -->
+            <div class="alert alert-info d-flex align-items-start" style="border-radius: 15px; border: none; background: linear-gradient(45deg, #e3f2fd, #f3e5f5);">
+                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3 mt-1" style="width: 40px; height: 40px; flex-shrink: 0;">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div>
+                    <h5 class="alert-heading fw-bold mb-2">Information importante</h5>
+                    <p class="mb-2">
+                        <strong>Email de confirmation :</strong> Vous devriez recevoir un email confirmant l'annulation de votre inscription sous peu.
+                    </p>
+                    <p class="mb-2">
+                        <strong>Remboursement :</strong> Si vous aviez effectué un paiement, notre équipe vous contactera pour organiser le remboursement.
+                    </p>
+                    <p class="mb-0">
+                        <strong>Questions :</strong> Pour toute question concernant cette annulation, n'hésitez pas à nous contacter en utilisant les informations fournies dans l'email de confirmation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-redirect to formation page after 30 seconds (optional)
+        setTimeout(function() {
+            const redirect = confirm('Souhaitez-vous être redirigé vers la page de la formation ?');
+            if (redirect) {
+                window.location.href = '{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}';
+            }
+        }, 30000);
+    </script>
+{% endblock %}

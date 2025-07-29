@@ -1,0 +1,533 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ page_title }} - EPROFOS Admin{% endblock %}
+
+{% block page_header %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <div class="page-pretitle">
+                        Administration CRM
+                    </div>
+                    <h2 class="page-title">
+                        {{ page_title }}
+                    </h2>
+                </div>
+                <!-- Page title actions -->
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('admin_prospect_new') }}" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouveau prospect
+                        </a>
+                        <a href="{{ path('admin_prospect_index') }}" class="btn btn-outline-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                            </svg>
+                            Tous les prospects
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="container-xl">
+        <!-- Statistics Overview -->
+        <div class="row mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Total prospects</div>
+                            <div class="ms-auto">
+                                <span class="badge bg-primary text-white">{{ statistics.total }}</span>
+                            </div>
+                        </div>
+                        <div class="h1 mb-2">{{ statistics.total }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="text-muted">Actifs : {{ statistics.active }}</div>
+                            <div class="ms-auto text-success">Convertis : {{ statistics.converted }}</div>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" style="width: {{ statistics.active > 0 ? (statistics.active / statistics.total * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Prospects chauds</div>
+                            <div class="ms-auto">
+                                <span class="badge bg-red text-white">{{ statistics.hot }}</span>
+                            </div>
+                        </div>
+                        <div class="h1 mb-2 text-red">{{ statistics.hot }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="text-muted">Priorité urgente</div>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-red" style="width: {{ statistics.total > 0 ? (statistics.hot / statistics.total * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Suivis requis</div>
+                            <div class="ms-auto">
+                                <span class="badge bg-warning text-white">{{ statistics.needing_follow_up }}</span>
+                            </div>
+                        </div>
+                        <div class="h1 mb-2 text-warning">{{ statistics.needing_follow_up }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="text-muted">En retard : {{ statistics.overdue }}</div>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: {{ statistics.needing_follow_up > 0 ? (statistics.overdue / statistics.needing_follow_up * 100)|round : 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Taux de conversion</div>
+                            <div class="ms-auto">
+                                <span class="badge bg-success text-white">{{ statistics.conversion_rate }}%</span>
+                            </div>
+                        </div>
+                        <div class="h1 mb-2 text-success">{{ statistics.conversion_rate }}%</div>
+                        <div class="d-flex mb-2">
+                            <div class="text-muted">{{ statistics.converted }} / {{ statistics.total }}</div>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ statistics.conversion_rate }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Activities -->
+        <div class="row mb-4">
+            <!-- Tasks for Today -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-orange" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 12l2 2l4 -4"/>
+                                <path d="M21 2l-2 14l-6 -2l-6 2l2 -14z"/>
+                            </svg>
+                            Tâches du jour
+                            <span class="badge bg-orange text-white ms-2">{{ today_tasks|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if today_tasks is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 2l-2 14l-6 -2l-6 2l2 -14z"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Aucune tâche aujourd'hui</p>
+                                <p class="empty-subtitle text-muted">
+                                    Votre planning est libre aujourd'hui !
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for task in today_tasks %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm" style="background-color: {{ task.typeBadgeClass }}; color: white;">
+                                                    {{ task.typeIcon }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="fw-bold">{{ task.title }}</div>
+                                                <div class="text-muted small">
+                                                    {{ task.prospect.fullName }}
+                                                    {% if task.scheduledAt %}
+                                                        • {{ task.scheduledAt|date('H:i') }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('admin_prospect_show', {id: task.prospect.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overdue Tasks -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-red" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v4"/>
+                                <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/>
+                                <path d="M12 16h.01"/>
+                            </svg>
+                            Tâches en retard
+                            <span class="badge bg-red text-white ms-2">{{ overdue_tasks|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if overdue_tasks is empty %}
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 2l-2 14l-6 -2l-6 2l2 -14z"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Aucune tâche en retard</p>
+                                <p class="empty-subtitle text-muted">
+                                    Excellent ! Vous êtes à jour.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for task in overdue_tasks %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm bg-red text-white">
+                                                    {{ task.typeIcon }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="fw-bold">{{ task.title }}</div>
+                                                <div class="text-muted small">
+                                                    {{ task.prospect.fullName }}
+                                                    {% if task.scheduledAt %}
+                                                        • En retard depuis {{ task.scheduledAt|date('d/m/Y') }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('admin_prospect_add_note', {id: task.prospect.id}) }}" class="btn btn-sm btn-red">Traiter</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prospects Requiring Attention -->
+        <div class="row mb-4">
+            <!-- High Priority Prospects -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-red" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M8.5 4.5l2.5 2.5l2.5 -2.5a4.95 4.95 0 0 1 7 7l-2.5 2.5l2.5 2.5a4.95 4.95 0 0 1 -7 7l-2.5 -2.5l-2.5 2.5a4.95 4.95 0 0 1 -7 -7l2.5 -2.5l-2.5 -2.5a4.95 4.95 0 0 1 7 -7z"/>
+                            </svg>
+                            Prospects prioritaires
+                            <span class="badge bg-red text-white ms-2">{{ high_priority_prospects|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if high_priority_prospects is empty %}
+                            <div class="empty">
+                                <p class="empty-title">Aucun prospect prioritaire</p>
+                                <p class="empty-subtitle text-muted">
+                                    Tous vos prospects prioritaires sont à jour.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for prospect in high_priority_prospects %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm" style="background-color: var(--tblr-red); color: white;">
+                                                    {{ prospect.firstName|first|upper }}{{ prospect.lastName|first|upper }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="fw-bold">{{ prospect.fullName }}</div>
+                                                <div class="text-muted small">
+                                                    {{ prospect.email }}
+                                                    {% if prospect.company %}• {{ prospect.company }}{% endif %}
+                                                </div>
+                                                <div class="d-flex gap-1 mt-1">
+                                                    <span class="badge {{ prospect.statusBadgeClass }} text-white">{{ prospect.statusLabel }}</span>
+                                                    <span class="badge {{ prospect.priorityBadgeClass }} text-white">{{ prospect.priorityLabel }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('admin_prospect_show', {id: prospect.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                    <a href="{{ path('admin_prospect_add_note', {id: prospect.id}) }}" class="btn btn-sm btn-primary">Note</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prospects Needing Follow Up -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-warning" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                                <path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>
+                                <path d="M19 11h2m-1 -1v2"/>
+                            </svg>
+                            Suivis requis
+                            <span class="badge bg-warning text-white ms-2">{{ needing_follow_up|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if needing_follow_up is empty %}
+                            <div class="empty">
+                                <p class="empty-title">Aucun suivi requis</p>
+                                <p class="empty-subtitle text-muted">
+                                    Tous vos prospects sont suivis à jour.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for prospect in needing_follow_up %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm" style="background-color: var(--tblr-warning); color: white;">
+                                                    {{ prospect.firstName|first|upper }}{{ prospect.lastName|first|upper }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="fw-bold">{{ prospect.fullName }}</div>
+                                                <div class="text-muted small">
+                                                    {{ prospect.email }}
+                                                    {% if prospect.nextFollowUpDate %}
+                                                        • Suivi prévu : {{ prospect.nextFollowUpDate|date('d/m/Y') }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="d-flex gap-1 mt-1">
+                                                    <span class="badge {{ prospect.statusBadgeClass }} text-white">{{ prospect.statusLabel }}</span>
+                                                    {% if prospect.nextFollowUpDate and prospect.nextFollowUpDate < date() %}
+                                                        <span class="badge bg-red text-white">En retard</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('admin_prospect_show', {id: prospect.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                    <a href="{{ path('admin_prospect_add_note', {id: prospect.id}) }}" class="btn btn-sm btn-warning">Suivre</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Analytics -->
+        <div class="row">
+            <!-- Recent Activity -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M4 4l6 6l-6 6"/>
+                                <path d="M14 4l6 6l-6 6"/>
+                            </svg>
+                            Activité récente
+                            <span class="badge bg-blue text-white ms-2">{{ recent_activity|length }}</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_activity is empty %}
+                            <div class="empty">
+                                <p class="empty-title">Aucune activité récente</p>
+                                <p class="empty-subtitle text-muted">
+                                    Les dernières interactions apparaîtront ici.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="list-group list-group-flush">
+                                {% for activity in recent_activity %}
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="avatar avatar-sm" style="background-color: {{ activity.typeBadgeClass }}; color: white;">
+                                                    {{ activity.typeIcon }}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="fw-bold">{{ activity.title }}</div>
+                                                <div class="text-muted">{{ activity.prospect.fullName }} • {{ activity.content|slice(0, 80) }}{% if activity.content|length > 80 %}...{% endif %}</div>
+                                                <div class="text-muted small">
+                                                    Par {{ activity.createdBy.fullName }} • {{ activity.createdAt|date('d/m/Y H:i') }}
+                                                    {% if activity.isImportant %}
+                                                        <span class="badge bg-red text-white ms-1">Important</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('admin_prospect_show', {id: activity.prospect.id}) }}" class="btn btn-sm btn-outline-primary">Voir prospect</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Sidebar -->
+            <div class="col-lg-4">
+                <!-- Activity Statistics -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M12 7v5l3 3"/>
+                            </svg>
+                            Activité
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Notes totales</div>
+                                    <div class="h3 mb-0">{{ activity_stats.total }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Cette semaine</div>
+                                    <div class="h3 mb-0 text-blue">{{ activity_stats.recent }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Tâches en cours</div>
+                                    <div class="h3 mb-0 text-warning">{{ activity_stats.pending_tasks }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">En retard</div>
+                                    <div class="h3 mb-0 text-red">{{ activity_stats.overdue }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversion Statistics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 13l3 3l7 -7"/>
+                                <path d="M2 12l5 5m5 -5l5 -5"/>
+                            </svg>
+                            Conversions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Clients</div>
+                                    <div class="h3 mb-0 text-success">{{ conversion_stats.customers }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="text-muted small">Perdus</div>
+                                    <div class="h3 mb-0 text-danger">{{ conversion_stats.lost }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-muted">Taux de conversion</div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="text-success fw-bold">{{ conversion_stats.conversion_rate }}%</div>
+                                </div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: {{ conversion_stats.conversion_rate }}%"></div>
+                            </div>
+                        </div>
+
+                        {% if conversion_stats.avg_days_to_conversion %}
+                            <div class="text-center mt-3">
+                                <div class="text-muted small">Durée moyenne de conversion</div>
+                                <div class="h4 mb-0">{{ conversion_stats.avg_days_to_conversion }} jours</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

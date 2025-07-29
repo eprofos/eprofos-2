@@ -1,0 +1,558 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Paramètres Mentor
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos préférences et paramètres de compte
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_profile') }}" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="7" r="4"/>
+                                <path d="m6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                            </svg>
+                            Mon profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Security Issues Alert -->
+        {% if security_issues is defined and security_issues|length > 0 %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-danger d-flex align-items-center">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M12 8l0 4"/>
+                                <path d="M12 16l.01 0"/>
+                            </svg>
+                        </div>
+                        <div class="flex-fill">
+                            <h4 class="alert-title">Problèmes de sécurité détectés</h4>
+                            <div class="text-muted">{{ security_issues|length }} problème(s) de sécurité nécessite(nt) votre attention.</div>
+                            <ul class="mt-2 mb-0">
+                                {% for issue in security_issues %}
+                                    <li>{{ issue }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="#security-section" class="btn btn-danger">Corriger</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row row-deck row-cards">
+            <!-- Account Settings -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Paramètres du compte</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ path('mentor_settings') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Statut du compte</label>
+                                <div class="form-selectgroup">
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="account_status" value="active" class="form-selectgroup-input" {% if mentor.active %}checked{% endif %}>
+                                        <span class="form-selectgroup-label">
+                                            <span class="form-selectgroup-check"></span>
+                                            <span class="form-selectgroup-label-content">
+                                                <span class="form-selectgroup-title">Actif</span>
+                                                <span class="form-selectgroup-text">Recevoir les notifications et assignments</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="account_status" value="inactive" class="form-selectgroup-input" {% if not mentor.active %}checked{% endif %}>
+                                        <span class="form-selectgroup-label">
+                                            <span class="form-selectgroup-check"></span>
+                                            <span class="form-selectgroup-label-content">
+                                                <span class="form-selectgroup-title">Inactif</span>
+                                                <span class="form-selectgroup-text">Suspendre temporairement le compte</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Langue de l'interface</label>
+                                <select class="form-select" name="language">
+                                    <option value="fr" selected>Français</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Fuseau horaire</label>
+                                <select class="form-select" name="timezone">
+                                    <option value="Europe/Paris" selected>Europe/Paris (GMT+1)</option>
+                                    <option value="Europe/London">Europe/London (GMT+0)</option>
+                                    <option value="America/New_York">America/New_York (GMT-5)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="auto_logout" id="auto-logout" checked>
+                                    <label class="form-check-label" for="auto-logout">
+                                        Déconnexion automatique après 30 minutes d'inactivité
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="session_tracking" id="session-tracking">
+                                    <label class="form-check-label" for="session-tracking">
+                                        Enregistrer les activités de session pour la sécurité
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Préférences de notification</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ path('mentor_settings') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Notifications par email</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="email_apprentice_updates" id="email-apprentice" checked>
+                                    <label class="form-check-label" for="email-apprentice">
+                                        Mises à jour des apprentis
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="email_evaluation_reminders" id="email-evaluations" checked>
+                                    <label class="form-check-label" for="email-evaluations">
+                                        Rappels d'évaluation
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="email_system_announcements" id="email-system" checked>
+                                    <label class="form-check-label" for="email-system">
+                                        Annonces système
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="email_weekly_summary" id="email-weekly">
+                                    <label class="form-check-label" for="email-weekly">
+                                        Résumé hebdomadaire
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Notifications push (navigateur)</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="push_urgent" id="push-urgent" checked>
+                                    <label class="form-check-label" for="push-urgent">
+                                        Notifications urgentes seulement
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="push_all" id="push-all">
+                                    <label class="form-check-label" for="push-all">
+                                        Toutes les notifications
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Fréquence des rappels</label>
+                                <select class="form-select" name="reminder_frequency">
+                                    <option value="immediate">Immédiatement</option>
+                                    <option value="daily" selected>Une fois par jour</option>
+                                    <option value="weekly">Une fois par semaine</option>
+                                    <option value="never">Jamais</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Heures de notification</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label class="form-label">De</label>
+                                        <input type="time" class="form-control" name="notification_start" value="09:00">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">À</label>
+                                        <input type="time" class="form-control" name="notification_end" value="18:00">
+                                    </div>
+                                </div>
+                                <div class="form-hint">Les notifications en dehors de ces heures seront différées</div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Customization -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Personnalisation du tableau de bord</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ path('mentor_settings') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Widgets affichés</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="widget_statistics" id="widget-stats" checked>
+                                    <label class="form-check-label" for="widget-stats">
+                                        Statistiques d'activité
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="widget_recent_activities" id="widget-activities" checked>
+                                    <label class="form-check-label" for="widget-activities">
+                                        Activités récentes
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="widget_upcoming_events" id="widget-events" checked>
+                                    <label class="form-check-label" for="widget-events">
+                                        Événements à venir
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="widget_quick_actions" id="widget-actions" checked>
+                                    <label class="form-check-label" for="widget-actions">
+                                        Actions rapides
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Thème de l'interface</label>
+                                <div class="form-selectgroup form-selectgroup-boxes d-flex">
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="theme" value="light" class="form-selectgroup-input" checked>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Clair</strong>
+                                                <div class="text-muted">Thème par défaut</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="theme" value="dark" class="form-selectgroup-input">
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Sombre</strong>
+                                                <div class="text-muted">Moins fatiguant</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="radio" name="theme" value="auto" class="form-selectgroup-input">
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <strong>Auto</strong>
+                                                <div class="text-muted">Suit le système</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Page par défaut</label>
+                                <select class="form-select" name="default_page">
+                                    <option value="dashboard" selected>Tableau de bord</option>
+                                    <option value="apprentices">Mes apprentis</option>
+                                    <option value="missions">Mes missions</option>
+                                    <option value="evaluations">Évaluations</option>
+                                </select>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="col-md-6" id="security-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sécurité et confidentialité</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h4 class="h5">Mot de passe</h4>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-fill">
+                                    <div class="text-muted">Dernière modification : il y a 3 mois</div>
+                                </div>
+                                <div class="ms-auto">
+                                    <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#change-password-modal">
+                                        Modifier
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="h5">Vérification email</h4>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-fill">
+                                    {% if mentor.emailVerified %}
+                                        <span class="badge bg-green">Vérifié</span>
+                                        <div class="text-muted">Email vérifié le {{ mentor.emailVerifiedAt|date('d/m/Y') }}</div>
+                                    {% else %}
+                                        <span class="badge bg-orange">Non vérifié</span>
+                                        <div class="text-muted">Votre email n'est pas encore vérifié</div>
+                                    {% endif %}
+                                </div>
+                                {% if not mentor.emailVerified %}
+                                <div class="ms-auto">
+                                    <a href="#" class="btn btn-sm btn-warning">
+                                        Renvoyer l'email
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="h5">Sessions actives</h4>
+                            <div class="divide-y">
+                                <div class="row">
+                                    <div class="col">
+                                        <div><strong>Session actuelle</strong></div>
+                                        <div class="text-muted">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2v-10"/>
+                                                <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2"/>
+                                                <path d="M13 3l0 4"/>
+                                                <path d="M11 3l0 4"/>
+                                            </svg>
+                                            Chrome - Windows 10 • Paris, France
+                                        </div>
+                                        <div class="text-muted">Connecté maintenant</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="badge bg-green">Actuelle</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div><strong>Session mobile</strong></div>
+                                        <div class="text-muted">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-16a2 2 0 0 1 2 -2z"/>
+                                                <path d="M11 4h2"/>
+                                                <path d="M12 17v.01"/>
+                                            </svg>
+                                            Safari - iPhone • Paris, France
+                                        </div>
+                                        <div class="text-muted">Il y a 2 heures</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="#" class="btn btn-sm btn-outline-danger">Révoquer</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="h5">Données et confidentialité</h4>
+                            <div class="divide-y">
+                                <div class="row">
+                                    <div class="col">
+                                        <div>Télécharger mes données</div>
+                                        <div class="text-muted">Exporter toutes vos données personnelles</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">Télécharger</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div>Supprimer mon compte</div>
+                                        <div class="text-muted">Suppression permanente et irréversible</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete-account-modal">Supprimer</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal modal-blur fade" id="change-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le mot de passe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-control" placeholder="Votre mot de passe actuel">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" placeholder="Votre nouveau mot de passe">
+                            <div class="form-hint">Le mot de passe doit contenir au moins 8 caractères</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmer le mot de passe</label>
+                            <input type="password" class="form-control" placeholder="Confirmez votre nouveau mot de passe">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </a>
+                    <a href="#" class="btn btn-primary ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"/>
+                            <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/>
+                            <path d="M8 11v-4a4 4 0 1 1 8 0v4"/>
+                        </svg>
+                        Modifier le mot de passe
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal modal-blur fade" id="delete-account-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Supprimer mon compte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 9v2m0 4v.01"/>
+                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                    </svg>
+                    <h3>Êtes-vous vraiment sûr ?</h3>
+                    <div class="text-muted">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</div>
+                    
+                    <div class="mt-4">
+                        <div class="mb-3">
+                            <label class="form-label">Pour confirmer, tapez "SUPPRIMER"</label>
+                            <input type="text" class="form-control" placeholder="SUPPRIMER" id="delete-confirmation">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-control" placeholder="Votre mot de passe">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <a href="#" class="btn w-100" data-bs-dismiss="modal">
+                                    Annuler
+                                </a>
+                            </div>
+                            <div class="col">
+                                <a href="#" class="btn btn-danger w-100" id="confirm-delete-btn" disabled>
+                                    Supprimer définitivement
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enable delete button only when confirmation text is entered
+        document.getElementById('delete-confirmation').addEventListener('input', function() {
+            const deleteBtn = document.getElementById('confirm-delete-btn');
+            if (this.value === 'SUPPRIMER') {
+                deleteBtn.removeAttribute('disabled');
+            } else {
+                deleteBtn.setAttribute('disabled', 'disabled');
+            }
+        });
+    </script>
+{% endblock %}

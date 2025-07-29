@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez EPROFOS - Accès formateur</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #28a745;
+            color: white !important;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #218838;
+            text-decoration: none;
+            color: white !important;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .credentials-box {
+            background-color: #f8f9fa;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            margin: 25px 0;
+        }
+        .credential-item {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .credential-label {
+            font-weight: bold;
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .credential-value {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #495057;
+            font-weight: bold;
+        }
+        .teacher-profile {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .qualiopi-info {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">📚 EPROFOS</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">École Professionnelle de Formation Spécialisée</p>
+            <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">Espace Formateur</p>
+        </div>
+        
+        <h2 style="color: #495057; margin-top: 0;">Bienvenue dans l'équipe pédagogique !</h2>
+        
+        <div class="alert alert-success">
+            <h4 style="margin-top: 0;">🎉 Compte créé avec succès</h4>
+            <p>
+                Bonjour <strong>{{ teacher.displayName }}</strong>, votre compte formateur a été créé avec succès ! 
+                Vous faites maintenant partie de l'équipe pédagogique EPROFOS.
+            </p>
+        </div>
+        
+        {% if temp_password %}
+            <div class="credentials-box">
+                <h3 style="margin-top: 0; color: #28a745;">🔐 Vos informations de connexion</h3>
+                
+                <div class="credential-item">
+                    <div class="credential-label">Adresse email</div>
+                    <div class="credential-value">{{ teacher.email }}</div>
+                </div>
+                
+                <div class="credential-item">
+                    <div class="credential-label">Mot de passe temporaire</div>
+                    <div class="credential-value">{{ temp_password }}</div>
+                </div>
+                
+                <div class="alert alert-warning" style="margin-top: 20px; text-align: left;">
+                    <strong>⚠️ Important :</strong> Ce mot de passe temporaire doit être changé lors de votre première connexion pour sécuriser votre compte.
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <h4 style="margin-top: 0;">🔑 Première connexion</h4>
+                <p>
+                    Vous devrez définir votre mot de passe lors de votre première connexion avec votre adresse email : 
+                    <strong>{{ teacher.email }}</strong>
+                </p>
+            </div>
+        {% endif %}
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ login_url }}" class="btn">
+                🚀 Accéder à mon espace formateur
+            </a>
+        </div>
+        
+        <div class="teacher-profile">
+            <h4 style="margin-top: 0; color: #495057;">👤 Récapitulatif de votre profil</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <strong>Nom complet :</strong><br>
+                    <span style="color: #28a745;">{{ teacher.fullName }}</span>
+                </div>
+                
+                <div>
+                    <strong>Email :</strong><br>
+                    <span style="color: #28a745;">{{ teacher.email }}</span>
+                </div>
+                
+                {% if teacher.specialty %}
+                    <div>
+                        <strong>Spécialité :</strong><br>
+                        <span style="color: #28a745;">{{ teacher.specialty }}</span>
+                    </div>
+                {% endif %}
+                
+                {% if teacher.yearsOfExperience %}
+                    <div>
+                        <strong>Expérience :</strong><br>
+                        <span style="color: #28a745;">{{ teacher.experienceDescription }}</span>
+                    </div>
+                {% endif %}
+                
+                {% if teacher.qualifications %}
+                    <div style="grid-column: 1 / -1;">
+                        <strong>Qualifications :</strong><br>
+                        <span style="color: #28a745;">{{ teacher.qualifications }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <h3 style="color: #495057;">🎯 Que pouvez-vous faire sur votre espace formateur ?</h3>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">📖 Gestion des formations</h5>
+                <p style="margin: 0; font-size: 14px;">Créer et gérer vos contenus pédagogiques, modules et chapitres</p>
+            </div>
+            
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">👥 Suivi des étudiants</h5>
+                <p style="margin: 0; font-size: 14px;">Suivre la progression de vos étudiants et alternants</p>
+            </div>
+            
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">📊 Évaluations</h5>
+                <p style="margin: 0; font-size: 14px;">Créer des exercices, QCM et suivre les résultats</p>
+            </div>
+            
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">📄 Documentation</h5>
+                <p style="margin: 0; font-size: 14px;">Gérer les documents pédagogiques et ressources</p>
+            </div>
+            
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">🤝 Coordination</h5>
+                <p style="margin: 0; font-size: 14px;">Collaborer avec les mentors d'entreprise</p>
+            </div>
+            
+            <div class="feature-item">
+                <h5 style="margin-top: 0; color: #28a745;">📈 Rapports</h5>
+                <p style="margin: 0; font-size: 14px;">Accéder aux statistiques et rapports de performance</p>
+            </div>
+        </div>
+        
+        <div class="qualiopi-info">
+            <h4 style="margin-top: 0; color: #1976d2;">🏆 Conformité Qualiopi</h4>
+            <p style="color: #1976d2; margin: 10px 0;">
+                En tant que formateur EPROFOS, vous contribuez à notre certification Qualiopi. 
+                Votre espace vous guide dans le respect des exigences qualité :
+            </p>
+            <ul style="color: #1976d2; margin: 10px 0;">
+                <li>Objectifs pédagogiques structurés par formation</li>
+                <li>Méthodes d'évaluation conformes aux standards</li>
+                <li>Suivi individualisé des apprenants</li>
+                <li>Documentation des parcours de formation</li>
+                <li>Indicateurs de satisfaction et de réussite</li>
+            </ul>
+        </div>
+        
+        <div class="alert alert-info">
+            <h4 style="margin-top: 0;">📚 Ressources disponibles</h4>
+            <p>Dans votre espace, vous trouverez :</p>
+            <ul style="margin: 10px 0;">
+                <li>Guide du formateur EPROFOS</li>
+                <li>Templates de cours et d'évaluations</li>
+                <li>Référentiels de compétences par formation</li>
+                <li>Outils de création de contenu interactif</li>
+                <li>Base de connaissances pédagogique</li>
+                <li>Contacts de l'équipe pédagogique</li>
+            </ul>
+        </div>
+        
+        <h4>🎓 Prochaines étapes recommandées</h4>
+        <ol>
+            <li>Connectez-vous et changez votre mot de passe</li>
+            <li>Complétez votre profil formateur</li>
+            <li>Explorez l'interface et les outils disponibles</li>
+            <li>Consultez le guide d'utilisation</li>
+            <li>Contactez votre coordinateur pédagogique</li>
+            <li>Participez à la prochaine réunion d'équipe</li>
+        </ol>
+        
+        <p style="margin-top: 30px;">
+            Nous sommes ravis de vous accueillir dans notre équipe pédagogique. 
+            Votre expertise contribuera à la réussite de nos apprenants et au maintien 
+            de notre niveau de qualité.
+        </p>
+        
+        <p>
+            Pour toute question ou assistance, notre équipe est disponible :
+        </p>
+        
+        <ul style="font-size: 14px;">
+            <li>📧 Email : <a href="mailto:pedagogie@eprofos.fr">pedagogie@eprofos.fr</a></li>
+            <li>📧 Support technique : <a href="mailto:support@eprofos.fr">support@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+            <li>🕒 Horaires : Lundi-Vendredi 9h-18h</li>
+        </ul>
+        
+        <p>
+            Excellente prise en main de votre espace formateur !<br>
+            <strong>L'équipe pédagogique EPROFOS</strong>
+        </p>
+        
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>EPROFOS - École Professionnelle de Formation Spécialisée<br>
+            Pour toute question, contactez-nous : pedagogie@eprofos.fr</p>
+        </div>
+    </div>
+</body>
+</html>

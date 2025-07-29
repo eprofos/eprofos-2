@@ -6,7 +6,8 @@ namespace App\Controller\Admin\Document;
 
 use App\Entity\Document\DocumentUIComponent;
 use App\Entity\Document\DocumentUITemplate;
-use App\Form\DocumentUITemplateType;
+use App\Form\Document\DocumentUITemplateType;
+use App\Repository\Document\DocumentTypeRepository;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Repository\Document\DocumentUITemplateRepository;
 use App\Service\Document\DocumentUITemplateService;
@@ -32,6 +33,7 @@ class DocumentUITemplateController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private DocumentUITemplateService $uiTemplateService,
+        private DocumentTypeRepository $documentTypeRepository,
     ) {}
 
     /**
@@ -387,6 +389,7 @@ class DocumentUITemplateController extends AbstractController
         }
 
         return $this->render('admin/document_ui_template/import.html.twig', [
+            'document_types' => $this->documentTypeRepository->findAllActive(),
             'page_title' => 'Importer un modèle UI',
             'breadcrumb' => [
                 ['label' => 'Dashboard', 'url' => $this->generateUrl('admin_dashboard')],

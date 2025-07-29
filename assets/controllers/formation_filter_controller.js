@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
  * Provides smooth user experience with loading states and debounced search.
  */
 export default class extends Controller {
-    static targets = ["search", "category", "level", "sort", "results", "resultsCount", "loading"]
+    static targets = ["search", "category", "level", "sort", "results", "resultsCount", "loading", "pageBtn", "pageInput", "pageJumpBtn", "clearBtn"]
     static values = { url: String }
 
     /**
@@ -16,6 +16,7 @@ export default class extends Controller {
     connect() {
         this.timeout = null
         this.debounceDelay = 300 // milliseconds
+        this.currentPage = 1
         
         // Add event listeners for real-time filtering
         this.searchTarget.addEventListener('input', this.debounceFilter.bind(this))
@@ -53,10 +54,13 @@ export default class extends Controller {
      * Main filter method
      * Sends AJAX request to filter formations
      */
-    async filter() {
+    async filter(page = 1) {
         try {
             // Show loading state
             this.showLoading()
+            
+            // Store current page
+            this.currentPage = page
             
             // Build query parameters
             const params = new URLSearchParams()
@@ -77,12 +81,17 @@ export default class extends Controller {
                 params.append('sort', this.sortTarget.value)
             }
             
+            // Add page parameter
+            if (page > 1) {
+                params.append('page', page.toString())
+            }
+            
             // Make AJAX request
             const url = `${this.urlValue}?${params.toString()}`
             const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+                    'Accept': 'text/html'
                 }
             })
             
@@ -90,19 +99,69 @@ export default class extends Controller {
                 throw new Error(`HTTP error! status: ${response.status}`)
             }
             
-            const data = await response.json()
+            const html = await response.text()
             
             // Update results
-            this.updateResults(data)
+            this.updateResults({ html: html })
             
             // Update URL without page reload
             this.updateUrl(params)
+            
+            // Scroll to results
+            this.scrollToResults()
             
         } catch (error) {
             console.error('Error filtering formations:', error)
             this.showError('Une erreur est survenue lors du filtrage.')
         } finally {
             this.hideLoading()
+        }
+    }
+
+    /**
+     * Handle pagination button clicks
+     */
+    goToPage(event) {
+        event.preventDefault()
+        const page = parseInt(event.currentTarget.dataset.page)
+        if (page && page > 0) {
+            this.filter(page)
+        }
+    }
+
+    /**
+     * Handle page jump input
+     */
+    jumpToPage(event) {
+        event.preventDefault()
+        const input = this.hasPageInputTarget ? this.pageInputTarget : null
+        if (input) {
+            const page = parseInt(input.value)
+            if (page && page > 0) {
+                this.filter(page)
+            }
+        }
+    }
+
+    /**
+     * Clear all filters and go to first page
+     */
+    clearAllFilters(event) {
+        if (event) {
+            event.preventDefault()
+        }
+        this.clearFilters()
+    }
+
+    /**
+     * Scroll to results section
+     */
+    scrollToResults() {
+        if (this.resultsTarget) {
+            this.resultsTarget.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            })
         }
     }
 
@@ -114,6 +173,9 @@ export default class extends Controller {
     updateResults(data) {
         if (data.html) {
             this.resultsTarget.innerHTML = data.html
+            
+            // Re-attach event listeners for pagination buttons after content update
+            this.attachPaginationListeners()
         }
         
         if (data.count !== undefined) {
@@ -127,6 +189,39 @@ export default class extends Controller {
                 filters: this.getCurrentFilters()
             } 
         })
+    }
+
+    /**
+     * Attach event listeners to pagination buttons
+     */
+    attachPaginationListeners() {
+        // Pagination buttons
+        const pageButtons = this.resultsTarget.querySelectorAll('[data-formation-filter-target="pageBtn"]')
+        pageButtons.forEach(btn => {
+            btn.addEventListener('click', this.goToPage.bind(this))
+        })
+
+        // Page jump button
+        const pageJumpBtn = this.resultsTarget.querySelector('[data-formation-filter-target="pageJumpBtn"]')
+        if (pageJumpBtn) {
+            pageJumpBtn.addEventListener('click', this.jumpToPage.bind(this))
+        }
+
+        // Page input (Enter key support)
+        const pageInput = this.resultsTarget.querySelector('[data-formation-filter-target="pageInput"]')
+        if (pageInput) {
+            pageInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    this.jumpToPage(event)
+                }
+            })
+        }
+
+        // Clear filters button
+        const clearBtn = this.resultsTarget.querySelector('[data-formation-filter-target="clearBtn"]')
+        if (clearBtn) {
+            clearBtn.addEventListener('click', this.clearAllFilters.bind(this))
+        }
     }
 
     /**
@@ -214,8 +309,9 @@ export default class extends Controller {
         this.categoryTarget.value = ''
         this.levelTarget.value = ''
         this.sortTarget.value = 'title'
+        this.currentPage = 1
         
-        this.filter()
+        this.filter(1)
     }
 
     /**

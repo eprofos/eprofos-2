@@ -1,0 +1,339 @@
+{% extends 'student/base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-list">
+        <a href="{{ path('student_dashboard') }}" class="btn btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 14l-4 -4l4 -4"/>
+                <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>
+            </svg>
+            Retour au tableau de bord
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row row-deck row-cards">
+        <!-- Statistics Cards -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-success text-white avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9l8 -4.5"/>
+                                    <path d="M12 12l8 -4.5"/>
+                                    <path d="M12 12v9"/>
+                                    <path d="M12 12l-8 -4.5"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">
+                                {{ earned_certificates|length }}
+                            </div>
+                            <div class="text-muted">
+                                Certificats obtenus
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-warning text-white avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                                    <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                                    <path d="M9 14l2 2l4 -4"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">
+                                {{ available_certifications|length }}
+                            </div>
+                            <div class="text-muted">
+                                Certifications disponibles
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-info text-white avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                    <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                                    <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">
+                                {% set progress_count = 0 %}
+                                {% for certification in available_certifications %}
+                                    {% if certification.progress > 0 %}
+                                        {% set progress_count = progress_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ progress_count }}
+                            </div>
+                            <div class="text-muted">
+                                En cours d'obtention
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-primary text-white avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 17l6 -6l4 4l8 -8"/>
+                                    <path d="M14 7l3 0l0 3"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">
+                                {% if earned_certificates|length > 0 and available_certifications|length > 0 %}
+                                    {{ ((earned_certificates|length / (earned_certificates|length + available_certifications|length)) * 100)|round }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                            <div class="text-muted">
+                                Taux de réussite
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-deck row-cards mt-4">
+        <!-- Earned Certificates -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                            <path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5"/>
+                            <path d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73"/>
+                            <path d="M6 9l12 0"/>
+                            <path d="M6 12l3 0"/>
+                            <path d="M6 15l2 0"/>
+                        </svg>
+                        Mes certificats obtenus
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if earned_certificates is not empty %}
+                        <div class="row g-3">
+                            {% for certificate in earned_certificates %}
+                                <div class="col-md-6">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="avatar avatar-sm bg-success text-white me-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M5 12l5 5l10 -10"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <h4 class="mb-1">{{ certificate.title ?? 'Certificat de formation' }}</h4>
+                                                    <div class="text-muted small">{{ certificate.formation_title ?? 'Formation complétée' }}</div>
+                                                    <div class="text-muted small">Obtenu le {{ certificate.earned_at|date('d/m/Y') ?? 'now'|date('d/m/Y') }}</div>
+                                                    {% if certificate.expiry_date is defined and certificate.expiry_date %}
+                                                        <div class="text-muted small">Expire le {{ certificate.expiry_date|date('d/m/Y') }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div class="btn-list">
+                                                    {% if certificate.download_url is defined %}
+                                                        <a href="{{ certificate.download_url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                                                                <path d="M7 11l5 5l5 -5"/>
+                                                                <path d="M12 4l0 12"/>
+                                                            </svg>
+                                                            Télécharger
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if certificate.verification_url is defined %}
+                                                        <a href="{{ certificate.verification_url }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                                                <path d="M9 12l2 2l4 -4"/>
+                                                            </svg>
+                                                            Vérifier
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty">
+                            <div class="empty-img">
+                                <img src="{{ asset('images/undraw_empty.svg') }}" height="128" alt="Aucun certificat" onerror="this.style.display='none'">
+                            </div>
+                            <p class="empty-title">Aucun certificat obtenu</p>
+                            <p class="empty-subtitle text-muted">
+                                Complétez vos formations pour obtenir vos premiers certificats.
+                            </p>
+                            <div class="empty-action">
+                                <a href="{{ path('student_courses') }}" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/>
+                                        <circle cx="12" cy="14" r="2"/>
+                                        <path d="M14 4l0 4l-6 0l0 -4"/>
+                                    </svg>
+                                    Voir mes formations
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Certifications -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
+                            <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/>
+                            <path d="M9 14l2 2l4 -4"/>
+                        </svg>
+                        Certifications disponibles
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if available_certifications is not empty %}
+                        <div class="list-group list-group-flush">
+                            {% for certification in available_certifications %}
+                                <div class="list-group-item d-flex align-items-center p-0 py-2">
+                                    <div class="avatar avatar-sm me-3 bg-light">
+                                        {% if certification.progress is defined and certification.progress > 0 %}
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" style="width: {{ certification.progress }}%" role="progressbar" aria-valuenow="{{ certification.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        {% else %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <circle cx="12" cy="12" r="9"/>
+                                                <path d="M12 8v4"/>
+                                                <path d="M12 16h.01"/>
+                                            </svg>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-fill">
+                                        <div class="fw-bold">{{ certification.title ?? 'Certification disponible' }}</div>
+                                        <div class="text-muted small">
+                                            {% if certification.progress is defined and certification.progress > 0 %}
+                                                Progression: {{ certification.progress }}%
+                                            {% else %}
+                                                {{ certification.description ?? 'Certification professionnelle' }}
+                                            {% endif %}
+                                        </div>
+                                        {% if certification.requirements is defined %}
+                                            <div class="text-muted small">{{ certification.requirements }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 8v4"/>
+                                <path d="M12 16h.01"/>
+                            </svg>
+                            <p class="text-muted">Aucune certification disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 8v4"/>
+                            <path d="M12 16h.01"/>
+                        </svg>
+                        Aide
+                    </h4>
+                    <p class="text-muted">
+                        Vos certificats sont générés automatiquement lors de la complétion réussie de vos formations.
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="d-flex align-items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-2 text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                            <small>Téléchargement au format PDF</small>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-2 text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                            <small>Vérification en ligne</small>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-2 text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l5 5l10 -10"/>
+                            </svg>
+                            <small>Conformité Qualiopi</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

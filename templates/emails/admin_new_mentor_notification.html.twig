@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau compte mentor créé - EPROFOS Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white !important;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+            color: white !important;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .mentor-details {
+            background-color: #f8f9fa;
+            border: 2px solid #6c757d;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .detail-item {
+            background-color: white;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 3px solid #6c757d;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        .company-info {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .expertise-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .expertise-tag {
+            background-color: #007bff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .admin-actions {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        @media (max-width: 600px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .expertise-tags {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">⚙️ EPROFOS Admin</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Notification de nouveau mentor</p>
+        </div>
+        
+        <h2 style="color: #495057; margin-top: 0;">Nouveau compte mentor créé</h2>
+        
+        <div class="alert alert-success">
+            <h4 style="margin-top: 0;">✅ Inscription confirmée</h4>
+            <p>
+                Un nouveau mentor vient de s'inscrire sur la plateforme EPROFOS. 
+                Veuillez examiner son profil et procéder à la validation si nécessaire.
+            </p>
+        </div>
+        
+        <div class="mentor-details">
+            <h3 style="margin-top: 0; color: #6c757d; text-align: center;">👤 Profil du nouveau mentor</h3>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Nom complet</div>
+                    <div class="detail-value">{{ mentor.fullName }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">{{ mentor.email }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Téléphone</div>
+                    <div class="detail-value">{{ mentor.phone ?? 'Non renseigné' }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Poste</div>
+                    <div class="detail-value">{{ mentor.position }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Expérience</div>
+                    <div class="detail-value">{{ mentor.experienceDescription }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Formation</div>
+                    <div class="detail-value">{{ mentor.educationLevelLabel }}</div>
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <div class="detail-label">Date d'inscription</div>
+                <div class="detail-value">{{ mentor.createdAt|date('d/m/Y à H:i') }}</div>
+            </div>
+            
+            {% if mentor.expertiseDomainsLabels|length > 0 %}
+                <div style="margin: 20px 0;">
+                    <div class="detail-label">Domaines d'expertise</div>
+                    <div class="expertise-tags">
+                        {% for domain in mentor.expertiseDomainsLabels %}
+                            <span class="expertise-tag">{{ domain }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="company-info">
+            <h4 style="margin-top: 0; color: #495057;">🏢 Informations entreprise</h4>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                <div>
+                    <strong>Nom de l'entreprise :</strong><br>
+                    <span style="color: #007bff; font-size: 18px; font-weight: 600;">{{ mentor.companyName }}</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>SIRET :</strong> {{ mentor.companySiret }}
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ admin_url }}" class="btn">
+                📊 Voir le profil dans l'admin
+            </a>
+        </div>
+        
+        <div class="admin-actions">
+            <h4 style="margin-top: 0; color: #856404;">📋 Actions administratives recommandées</h4>
+            <ol style="margin: 0; padding-left: 20px; color: #856404;">
+                <li>Vérifier les informations de l'entreprise (SIRET, secteur d'activité)</li>
+                <li>Valider l'adresse email professionnelle</li>
+                <li>Contrôler la cohérence entre le poste et les domaines d'expertise</li>
+                <li>Approuver ou ajuster le niveau d'accès</li>
+                <li>Planifier l'onboarding et la formation mentor si nécessaire</li>
+                <li>Ajouter l'entreprise aux partenaires si première inscription</li>
+            </ol>
+        </div>
+        
+        <div class="alert alert-info">
+            <h4 style="margin-top: 0;">📊 Statut du compte</h4>
+            <ul style="margin: 10px 0; list-style: none; padding: 0;">
+                <li>✅ <strong>Compte actif :</strong> {{ mentor.isActive ? 'Oui' : 'Non' }}</li>
+                <li>{% if mentor.isEmailVerified %}✅{% else %}❌{% endif %} <strong>Email vérifié :</strong> {{ mentor.isEmailVerified ? 'Oui' : 'Non' }}</li>
+                <li>📅 <strong>Dernière connexion :</strong> 
+                    {% if mentor.lastLoginAt %}
+                        {{ mentor.lastLoginAt|date('d/m/Y à H:i') }}
+                    {% else %}
+                        Jamais connecté
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+        
+        <h4>🔧 Système de suivi</h4>
+        <p>Ce mentor sera automatiquement intégré dans :</p>
+        <ul>
+            <li>Le système de gestion des alternants</li>
+            <li>Les notifications d'assignation d'apprentis</li>
+            <li>Le planning des visites et évaluations</li>
+            <li>Les rapports statistiques mensuels</li>
+            <li>Les communications pédagogiques</li>
+        </ul>
+        
+        <div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+            <h4 style="margin-top: 0; color: #721c24;">⚠️ Points d'attention</h4>
+            <ul style="margin: 10px 0; color: #721c24;">
+                <li>Vérifier que l'entreprise est habilitée à recevoir des alternants</li>
+                <li>S'assurer de la capacité d'encadrement déclarée</li>
+                <li>Contrôler la conformité avec les exigences Qualiopi</li>
+                <li>Valider les compétences pour les formations proposées</li>
+            </ul>
+        </div>
+        
+        <p style="margin-top: 30px;">
+            Cette notification a été générée automatiquement suite à l'inscription du mentor.
+            Merci de traiter cette demande dans les meilleurs délais.
+        </p>
+        
+        <p>
+            <strong>Système EPROFOS</strong><br>
+            <small>Notification automatique - {{ "now"|date('d/m/Y à H:i') }}</small>
+        </p>
+        
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement par le système EPROFOS.</p>
+            <p>EPROFOS - École Professionnelle de Formation Spécialisée<br>
+            Administration : admin@eprofos.fr</p>
+        </div>
+    </div>
+</body>
+</html>

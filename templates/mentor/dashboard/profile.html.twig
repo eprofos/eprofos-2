@@ -1,0 +1,522 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Mon Profil Mentor
+                    </h2>
+                    <div class="page-subtitle">
+                        Gérez vos informations professionnelles et votre expertise
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                                <path d="M16 5l3 3"/>
+                            </svg>
+                            Modifier le profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Profile Completion Status -->
+        {% if setup_completion is defined and not setup_completion.is_complete %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                        </div>
+                        <div class="flex-fill">
+                            <h4 class="alert-title">Profil incomplet</h4>
+                            <div class="text-muted">Votre profil est complété à {{ setup_completion.completion_percentage }}%. Complétez-le pour accéder à toutes les fonctionnalités.</div>
+                            <div class="progress mt-2">
+                                <div class="progress-bar bg-warning" style="width: {{ setup_completion.completion_percentage }}%"></div>
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{{ path('mentor_complete_setup') }}" class="btn btn-warning">Compléter</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row row-deck row-cards">
+            <!-- Personal Information -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations personnelles</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="avatar avatar-xl" style="background-image: url({{ mentor.avatarUrl ?? asset('images/default-avatar.png') }})">
+                                    {% if not mentor.avatarUrl %}
+                                        {{ mentor.initials }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="col">
+                                <h3 class="card-title mb-1">{{ mentor.fullName }}</h3>
+                                <div class="text-muted">{{ mentor.position }} chez {{ mentor.companyName }}</div>
+                                <div class="text-muted">{{ mentor.experienceDescription }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="datagrid">
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Email</div>
+                                        <div class="datagrid-content">
+                                            {{ mentor.email }}
+                                            {% if mentor.emailVerified %}
+                                                <span class="badge bg-green ms-2">Vérifié</span>
+                                            {% else %}
+                                                <span class="badge bg-orange ms-2">Non vérifié</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Téléphone</div>
+                                        <div class="datagrid-content">{{ mentor.phone ?? 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Niveau de formation</div>
+                                        <div class="datagrid-content">{{ mentor.educationLevelLabel }}</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Expérience</div>
+                                        <div class="datagrid-content">{{ mentor.experienceYears }} ans</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Membre depuis</div>
+                                        <div class="datagrid-content">{{ mentor.createdAt|date('d/m/Y') }}</div>
+                                    </div>
+                                    {% if mentor.lastLoginAt %}
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Dernière connexion</div>
+                                        <div class="datagrid-content">{{ mentor.lastLoginAt|date('d/m/Y à H:i') }}</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Information -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations entreprise</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Entreprise</div>
+                                <div class="datagrid-content">
+                                    <strong>{{ mentor.companyName }}</strong>
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">SIRET</div>
+                                <div class="datagrid-content">{{ mentor.companySiret }}</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Poste</div>
+                                <div class="datagrid-content">{{ mentor.position }}</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Statut</div>
+                                <div class="datagrid-content">
+                                    {% if mentor.active %}
+                                        <span class="badge bg-green">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-red">Inactif</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Performance Stats -->
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <div class="card card-sm">
+                                    <div class="card-body text-center">
+                                        <div class="text-h3 text-primary">{{ mentor.alternantsCount }}</div>
+                                        <div class="text-muted">Apprentis encadrés</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card card-sm">
+                                    <div class="card-body text-center">
+                                        <div class="text-h3 text-success">{{ mentor.missionsCount }}</div>
+                                        <div class="text-muted">Missions créées</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expertise Domains -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Domaines d'expertise</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if mentor.expertiseDomains|length > 0 %}
+                            <div class="row">
+                                {% for domain in mentor.expertiseDomainsLabels %}
+                                    <div class="col-sm-6 col-lg-4 col-xl-3 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <span class="bg-primary text-white avatar avatar-sm me-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 12l5 5l10 -10"/>
+                                                </svg>
+                                            </span>
+                                            <div>
+                                                <div class="font-weight-medium">{{ domain }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 6l0 6l4 2"/>
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                </svg>
+                                <p class="text-muted">Aucun domaine d'expertise renseigné</p>
+                                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">
+                                    Ajouter mes domaines d'expertise
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Activité récente</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y">
+                            <!-- TODO: Replace with real activity data -->
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-green text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Mission créée</strong>
+                                    </div>
+                                    <div class="text-muted">Développement front-end React</div>
+                                    <div class="text-muted">Il y a 2 heures</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-blue text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Évaluation terminée</strong>
+                                    </div>
+                                    <div class="text-muted">Marie Dupont - Mission API</div>
+                                    <div class="text-muted">Hier à 16:30</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <span class="bg-yellow text-white avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
+                                            <path d="M16 3v4"/>
+                                            <path d="M8 3v4"/>
+                                            <path d="M4 11h16"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="text-truncate">
+                                        <strong>Rendez-vous planifié</strong>
+                                    </div>
+                                    <div class="text-muted">Point hebdomadaire équipe</div>
+                                    <div class="text-muted">Demain à 14:00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{{ path('mentor_dashboard') }}" class="btn btn-outline-primary w-100">
+                                Voir toute l'activité
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Security -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sécurité du compte</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if mentor.emailVerified %}
+                                                <span class="bg-green text-white avatar avatar-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M5 12l5 5l10 -10"/>
+                                                    </svg>
+                                                </span>
+                                            {% else %}
+                                                <span class="bg-orange text-white avatar avatar-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 9v2m0 4v.01"/>
+                                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                                    </svg>
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-fill">
+                                            <div><strong>Email vérifié</strong></div>
+                                            <div class="text-muted">
+                                                {% if mentor.emailVerified %}
+                                                    Votre email a été vérifié le {{ mentor.emailVerifiedAt|date('d/m/Y') }}
+                                                {% else %}
+                                                    Votre email n'est pas encore vérifié
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if not mentor.emailVerified %}
+                                        <div class="ms-auto">
+                                            <a href="#" class="btn btn-sm btn-warning">Vérifier</a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <span class="bg-blue text-white avatar avatar-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"/>
+                                                    <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/>
+                                                    <path d="M8 11v-4a4 4 0 1 1 8 0v4"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="flex-fill">
+                                            <div><strong>Mot de passe</strong></div>
+                                            <div class="text-muted">Modifié récemment</div>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#change-password-modal">Modifier</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{{ path('mentor_settings') }}" class="btn btn-outline-primary w-100">
+                                Paramètres de sécurité
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal modal-blur fade" id="edit-profile-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier mon profil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" value="{{ mentor.firstName }}" placeholder="Votre prénom">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom</label>
+                                    <input type="text" class="form-control" value="{{ mentor.lastName }}" placeholder="Votre nom">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="{{ mentor.email }}" readonly>
+                                    <div class="form-hint">L'email ne peut pas être modifié</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" value="{{ mentor.phone }}" placeholder="Votre numéro de téléphone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Poste</label>
+                                    <input type="text" class="form-control" value="{{ mentor.position }}" placeholder="Votre poste">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Années d'expérience</label>
+                                    <input type="number" class="form-control" value="{{ mentor.experienceYears }}" min="0" max="60">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Niveau de formation</label>
+                            <select class="form-select">
+                                {% for key, label in education_levels %}
+                                    <option value="{{ key }}" {% if mentor.educationLevel == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Domaines d'expertise</label>
+                            <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                                {% for key, label in expertise_domains %}
+                                    <label class="form-selectgroup-item flex-fill">
+                                        <input type="checkbox" name="expertise_domains" value="{{ key }}" class="form-selectgroup-input" {% if key in mentor.expertiseDomains %}checked{% endif %}>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>{{ label }}</div>
+                                        </div>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </a>
+                    <a href="#" class="btn btn-primary ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 12l5 5l10 -10"/>
+                        </svg>
+                        Enregistrer les modifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal modal-blur fade" id="change-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le mot de passe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-control" placeholder="Votre mot de passe actuel">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" placeholder="Votre nouveau mot de passe">
+                            <div class="form-hint">Le mot de passe doit contenir au moins 8 caractères</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmer le mot de passe</label>
+                            <input type="password" class="form-control" placeholder="Confirmez votre nouveau mot de passe">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </a>
+                    <a href="#" class="btn btn-primary ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"/>
+                            <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/>
+                            <path d="M8 11v-4a4 4 0 1 1 8 0v4"/>
+                        </svg>
+                        Modifier le mot de passe
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

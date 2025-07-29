@@ -1,0 +1,453 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Évaluations & Rapports
+                    </h2>
+                    <div class="page-subtitle">
+                        Suivez et évaluez les progrès de vos apprentis
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#create-evaluation-modal">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Nouvelle évaluation
+                        </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Exporter les données</a></li>
+                                <li><a class="dropdown-item" href="#">Générer un rapport</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Modèles d'évaluation</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Statistics Cards -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Évaluations en attente</div>
+                        </div>
+                        <div class="h1 mb-3">{{ pending_evaluations|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-warning d-inline-flex align-items-center lh-1">
+                                    {{ pending_evaluations|length > 0 ? '+' ~ pending_evaluations|length : '0' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">À compléter</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Évaluations terminées</div>
+                        </div>
+                        <div class="h1 mb-3">{{ completed_evaluations|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-success d-inline-flex align-items-center lh-1">
+                                    +{{ completed_evaluations|length }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Ce mois-ci</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Rapports générés</div>
+                        </div>
+                        <div class="h1 mb-3">{{ progress_reports|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-info d-inline-flex align-items-center lh-1">
+                                    {{ progress_reports|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Modèles disponibles</div>
+                        </div>
+                        <div class="h1 mb-3">{{ evaluation_templates|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-primary d-inline-flex align-items-center lh-1">
+                                    {{ evaluation_templates|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Prêts à utiliser</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row row-deck row-cards">
+            <!-- Pending Evaluations -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Évaluations en attente</h3>
+                        <div class="card-actions">
+                            <a href="#" class="btn btn-sm btn-primary">
+                                Voir tout
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if pending_evaluations is defined and pending_evaluations|length > 0 %}
+                            <div class="divide-y">
+                                {% for evaluation in pending_evaluations %}
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span class="bg-warning text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M12 9v2m0 4v.01"/>
+                                                    <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-truncate">
+                                                <strong>{{ evaluation.apprentice_name }}</strong>
+                                            </div>
+                                            <div class="text-muted">{{ evaluation.mission_title }}</div>
+                                            <div class="text-muted">Échéance: {{ evaluation.due_date|date('d/m/Y') }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <a href="#" class="btn btn-sm btn-outline-primary">Évaluer</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 12l2 2l4 -4"/>
+                                    <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                    <path d="M15 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                    <path d="M9 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                    <path d="M3 12a9 9 0 0 1 9 -9a9 9 0 0 1 9 9"/>
+                                </svg>
+                                <p class="text-muted">Aucune évaluation en attente</p>
+                                <p class="text-muted">Toutes vos évaluations sont à jour !</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Evaluations -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Évaluations récentes</h3>
+                        <div class="card-actions">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                Historique complet
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if completed_evaluations is defined and completed_evaluations|length > 0 %}
+                            <div class="divide-y">
+                                {% for evaluation in completed_evaluations|slice(0, 5) %}
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <span class="bg-success text-white avatar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 12l5 5l10 -10"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-truncate">
+                                                <strong>{{ evaluation.apprentice_name }}</strong>
+                                            </div>
+                                            <div class="text-muted">{{ evaluation.mission_title }}</div>
+                                            <div class="text-muted">Note: {{ evaluation.score }}/20</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge bg-success">Terminée</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                    <path d="M9 9l1 0"/>
+                                    <path d="M9 13l6 0"/>
+                                    <path d="M9 17l6 0"/>
+                                </svg>
+                                <p class="text-muted">Aucune évaluation réalisée</p>
+                                <p class="text-muted">Commencez par évaluer vos apprentis !</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Templates -->
+        <div class="row row-cards mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Modèles d'évaluation</h3>
+                        <div class="card-actions">
+                            <a href="#" class="btn btn-sm btn-primary">
+                                Créer un modèle
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if evaluation_templates is defined and evaluation_templates|length > 0 %}
+                            <div class="row row-cards">
+                                {% for template in evaluation_templates %}
+                                    <div class="col-sm-6 col-lg-4">
+                                        <div class="card card-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="bg-primary text-white avatar me-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                                                            <path d="M9 9l1 0"/>
+                                                            <path d="M9 13l6 0"/>
+                                                            <path d="M9 17l6 0"/>
+                                                        </svg>
+                                                    </span>
+                                                    <div class="flex-fill">
+                                                        <div class="font-weight-medium">{{ template.name }}</div>
+                                                        <div class="text-muted">{{ template.description }}</div>
+                                                    </div>
+                                                    <div class="ms-auto">
+                                                        <a href="#" class="btn btn-sm btn-outline-primary">Utiliser</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="row">
+                                <div class="col-sm-6 col-lg-4">
+                                    <div class="card card-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <span class="bg-blue text-white avatar me-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M9 12l2 2l4 -4"/>
+                                                        <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                                        <path d="M15 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                                        <path d="M9 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                                        <path d="M3 12a9 9 0 0 1 9 -9a9 9 0 0 1 9 9"/>
+                                                    </svg>
+                                                </span>
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">Évaluation technique</div>
+                                                    <div class="text-muted">Grille d'évaluation des compétences techniques</div>
+                                                </div>
+                                                <div class="ms-auto">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">Utiliser</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <div class="card card-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <span class="bg-green text-white avatar me-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                                    </svg>
+                                                </span>
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">Évaluation comportementale</div>
+                                                    <div class="text-muted">Grille d'évaluation des soft skills</div>
+                                                </div>
+                                                <div class="ms-auto">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">Utiliser</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <div class="card card-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <span class="bg-yellow text-white avatar me-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M12 6l0 6l4 2"/>
+                                                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                                    </svg>
+                                                </span>
+                                                <div class="flex-fill">
+                                                    <div class="font-weight-medium">Évaluation de mission</div>
+                                                    <div class="text-muted">Bilan de fin de mission</div>
+                                                </div>
+                                                <div class="ms-auto">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">Utiliser</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Evaluation Modal -->
+    <div class="modal modal-blur fade" id="create-evaluation-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouvelle évaluation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Apprenti</label>
+                                    <select class="form-select">
+                                        <option value="">Sélectionner un apprenti</option>
+                                        <!-- TODO: Populate with mentor's apprentices -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Mission</label>
+                                    <select class="form-select">
+                                        <option value="">Sélectionner une mission</option>
+                                        <!-- TODO: Populate with missions -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Type d'évaluation</label>
+                            <select class="form-select">
+                                <option value="technique">Évaluation technique</option>
+                                <option value="comportementale">Évaluation comportementale</option>
+                                <option value="mission">Évaluation de mission</option>
+                                <option value="personnalisee">Évaluation personnalisée</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Période d'évaluation</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="date" class="form-control" placeholder="Date de début">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="date" class="form-control" placeholder="Date de fin">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Commentaires initiaux</label>
+                            <textarea class="form-control" rows="3" placeholder="Remarques sur la période à évaluer..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </a>
+                    <a href="#" class="btn btn-primary ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 5l0 14"/>
+                            <path d="M5 12l14 0"/>
+                        </svg>
+                        Créer l'évaluation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

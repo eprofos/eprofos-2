@@ -1,0 +1,205 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier {{ exercise.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier {{ exercise.title }}
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ path('admin_exercise_show', {id: exercise.id}) }}" class="btn btn-info">
+                        <i class="fas fa-eye me-2"></i>Voir
+                    </a>
+                    <a href="{{ path('admin_exercise_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Modification de l'exercice
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ path('admin_exercise_edit', {id: exercise.id}) }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           value="{{ exercise.title }}" 
+                                           placeholder="Titre de l'exercice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="description" name="description" 
+                                              rows="3" placeholder="Description de l'exercice" required>{{ exercise.description }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="instructions" class="form-label">Instructions <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="instructions" name="instructions" 
+                                              rows="4" placeholder="Instructions détaillées pour réaliser l'exercice" required>{{ exercise.instructions }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="course_id" class="form-label">Cours <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="course_id" name="course_id" required>
+                                        <option value="">Sélectionner un cours</option>
+                                        {% for course in courses %}
+                                            <option value="{{ course.id }}"
+                                                    {% if exercise.course and exercise.course.id == course.id %}selected{% endif %}>
+                                                {{ course.chapter.module.formation.title }} - {{ course.chapter.module.title }} - {{ course.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">Sélectionner un type</option>
+                                        {% for key, label in types %}
+                                            <option value="{{ key }}"
+                                                    {% if exercise.type == key %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="difficulty" class="form-label">Difficulté <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="difficulty" name="difficulty" required>
+                                        <option value="">Sélectionner une difficulté</option>
+                                        {% for key, label in difficulties %}
+                                            <option value="{{ key }}"
+                                                    {% if exercise.difficulty == key %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="estimated_duration_minutes" class="form-label">Durée estimée (minutes) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="estimated_duration_minutes" 
+                                           name="estimated_duration_minutes" 
+                                           value="{{ exercise.estimatedDurationMinutes }}" 
+                                           placeholder="30" min="1" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="mb-3">
+                                            <label for="max_points" class="form-label">Points max</label>
+                                            <input type="number" class="form-control" id="max_points" 
+                                                   name="max_points" 
+                                                   value="{{ exercise.maxPoints }}" 
+                                                   placeholder="100" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="mb-3">
+                                            <label for="passing_points" class="form-label">Points requis</label>
+                                            <input type="number" class="form-control" id="passing_points" 
+                                                   name="passing_points" 
+                                                   value="{{ exercise.passingPoints }}" 
+                                                   placeholder="60" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="order_index" class="form-label">Ordre <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="order_index" 
+                                           name="order_index" 
+                                           value="{{ exercise.orderIndex }}" 
+                                           placeholder="1" min="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" 
+                                               name="is_active" value="1"
+                                               {% if exercise.isActive %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            Exercice actif
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-target me-2"></i>Résultats attendus</h6>
+                                <div class="mb-3">
+                                    <label for="expected_outcomes" class="form-label">Résultats attendus</label>
+                                    <textarea class="form-control" id="expected_outcomes" name="expected_outcomes" 
+                                              rows="4" placeholder="Un résultat par ligne">{% if exercise.expectedOutcomes %}{{ exercise.expectedOutcomes|join('\n') }}{% endif %}</textarea>
+                                    <div class="form-text">Saisissez un résultat attendu par ligne</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-check-circle me-2"></i>Critères d'évaluation</h6>
+                                <div class="mb-3">
+                                    <label for="evaluation_criteria" class="form-label">Critères d'évaluation</label>
+                                    <textarea class="form-control" id="evaluation_criteria" name="evaluation_criteria" 
+                                              rows="4" placeholder="Un critère par ligne">{% if exercise.evaluationCriteria %}{{ exercise.evaluationCriteria|join('\n') }}{% endif %}</textarea>
+                                    <div class="form-text">Saisissez un critère d'évaluation par ligne</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-book me-2"></i>Ressources nécessaires</h6>
+                                <div class="mb-3">
+                                    <label for="resources" class="form-label">Ressources</label>
+                                    <textarea class="form-control" id="resources" name="resources" 
+                                              rows="4" placeholder="Une ressource par ligne">{% if exercise.resources %}{{ exercise.resources|join('\n') }}{% endif %}</textarea>
+                                    <div class="form-text">Saisissez une ressource par ligne</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-star me-2"></i>Critères de réussite</h6>
+                                <div class="mb-3">
+                                    <label for="success_criteria" class="form-label">Critères de réussite</label>
+                                    <textarea class="form-control" id="success_criteria" name="success_criteria" 
+                                              rows="4" placeholder="Un critère par ligne">{% if exercise.successCriteria %}{{ exercise.successCriteria|join('\n') }}{% endif %}</textarea>
+                                    <div class="form-text">Saisissez un critère de réussite par ligne</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6><i class="fas fa-graduation-cap me-2"></i>Prérequis</h6>
+                                <div class="mb-3">
+                                    <label for="prerequisites" class="form-label">Prérequis</label>
+                                    <textarea class="form-control" id="prerequisites" name="prerequisites" 
+                                              rows="3" placeholder="Connaissances ou compétences requises avant cet exercice">{{ exercise.prerequisites|default('') }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ path('admin_exercise_show', {id: exercise.id}) }}" class="btn btn-secondary me-2">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Sauvegarder
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modules - {{ formation.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-puzzle-piece me-2"></i>
+                    Modules de la formation : {{ formation.title }}
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ path('admin_modules_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouveau module
+                    </a>
+                    <a href="{{ path('admin_formation_show', {id: formation.id}) }}" class="btn btn-info">
+                        <i class="fas fa-eye me-2"></i>Voir la formation
+                    </a>
+                    <a href="{{ path('admin_modules_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Tous les modules
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formation Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Informations de la formation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-2"><strong>Catégorie :</strong> {{ formation.category.name }}</p>
+                            {% if formation.description %}
+                                <p class="mb-2"><strong>Description :</strong> {{ formation.description|slice(0, 200) }}...</p>
+                            {% endif %}
+                            <p class="mb-2"><strong>Durée totale :</strong> {{ formation.formattedDuration }}</p>
+                            <p class="mb-2"><strong>Niveau :</strong> {{ formation.levelLabel }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-2"><strong>Prix :</strong> {{ formation.formattedPrice }}</p>
+                            <p class="mb-2"><strong>Statut :</strong> 
+                                {% if formation.isActive %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-0"><strong>Modules :</strong> <span class="badge bg-primary">{{ modules|length }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des modules ({{ modules|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if modules %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Ordre</th>
+                                        <th>Titre</th>
+                                        <th>Durée</th>
+                                        <th>Chapitres</th>
+                                        <th>Objectifs</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modules-sortable">
+                                    {% for module in modules %}
+                                        <tr data-id="{{ module.id }}">
+                                            <td>
+                                                <span class="badge bg-secondary">{{ module.orderIndex }}</span>
+                                                <i class="fas fa-grip-vertical text-muted ms-2" style="cursor: move;"></i>
+                                            </td>
+                                            <td>
+                                                <strong>{{ module.title }}</strong>
+                                                {% if module.description %}
+                                                    <br><small class="text-muted">{{ module.description|slice(0, 100) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ module.formattedDuration }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ module.chapters|length }}</span>
+                                                {% if module.chapters|length > 0 %}
+                                                    <a href="{{ path('admin_chapters_by_module', {id: module.id}) }}" 
+                                                       class="btn btn-xs btn-outline-primary ms-1" title="Voir les chapitres">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if module.learningObjectives %}
+                                                    <span class="badge bg-success">{{ module.learningObjectives|length }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if module.isActive %}
+                                                    <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ path('admin_modules_show', {id: module.id}) }}" 
+                                                       class="btn btn-outline-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_modules_edit', {id: module.id}) }}" 
+                                                       class="btn btn-outline-primary" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_chapters_index', {module: module.id}) }}" 
+                                                       class="btn btn-outline-secondary" title="Chapitres">
+                                                        <i class="fas fa-book-open"></i>
+                                                    </a>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_modules_toggle_active', {id: module.id}) }}" 
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ module.id) }}">
+                                                        <button type="submit" class="btn btn-outline-warning" 
+                                                                title="{% if module.isActive %}Désactiver{% else %}Activer{% endif %}">
+                                                            <i class="fas fa-{% if module.isActive %}pause{% else %}play{% endif %}"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_modules_delete', {id: module.id}) }}" 
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce module ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
+                                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun module trouvé</h5>
+                            <p class="text-muted">Cette formation ne contient pas encore de modules.</p>
+                            <a href="{{ path('admin_modules_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un module
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if modules %}
+    <!-- Sortable functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.getElementById('modules-sortable');
+            if (tbody) {
+                new Sortable(tbody, {
+                    handle: '.fa-grip-vertical',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        const moduleIds = Array.from(tbody.children).map(tr => tr.dataset.id);
+                        
+                        fetch('{{ path('admin_modules_reorder') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({
+                                'modules': moduleIds,
+                                'formation_id': '{{ formation.id }}'
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endif %}
+{% endblock %}

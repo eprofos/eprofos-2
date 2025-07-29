@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvel alternant assigné - EPROFOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white !important;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+            color: white !important;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .apprentice-card {
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .apprentice-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .info-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #007bff;
+            font-size: 16px;
+        }
+        .mission-preview {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        @media (max-width: 600px) {
+            .apprentice-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">🎓 EPROFOS</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Nouvel alternant assigné</p>
+        </div>
+        
+        <h2 style="color: #495057; margin-top: 0;">Félicitations ! Un nouvel alternant vous a été assigné</h2>
+        
+        <p>Bonjour <strong>{{ mentor.fullName }}</strong>,</p>
+        
+        <div class="alert alert-success">
+            <h4 style="margin-top: 0;">🎉 Nouvelle assignation</h4>
+            <p>
+                Nous avons le plaisir de vous informer qu'un nouvel alternant a été assigné à votre supervision 
+                dans le cadre de son parcours de formation chez <strong>{{ mentor.companyName }}</strong>.
+            </p>
+        </div>
+        
+        <div class="apprentice-card">
+            <h3 style="margin-top: 0; color: #007bff; text-align: center;">👤 Informations de l'alternant</h3>
+            
+            <div class="apprentice-info">
+                <div class="info-item">
+                    <div class="info-label">Nom complet</div>
+                    <div class="info-value">{{ apprentice_data.full_name ?? 'À définir' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ apprentice_data.email ?? 'À définir' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Formation</div>
+                    <div class="info-value">{{ apprentice_data.formation ?? 'À définir' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Niveau d'études</div>
+                    <div class="info-value">{{ apprentice_data.level ?? 'À définir' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Date de début</div>
+                    <div class="info-value">{{ apprentice_data.start_date ?? 'À définir' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Durée du contrat</div>
+                    <div class="info-value">{{ apprentice_data.contract_duration ?? 'À définir' }}</div>
+                </div>
+            </div>
+            
+            {% if apprentice_data.specialization %}
+                <div style="margin-top: 20px; text-align: center;">
+                    <strong>Spécialisation :</strong> <span style="color: #007bff;">{{ apprentice_data.specialization }}</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ dashboard_url }}" class="btn">
+                📊 Accéder à mon tableau de bord
+            </a>
+        </div>
+        
+        <div class="mission-preview">
+            <h4 style="margin-top: 0; color: #495057;">🎯 Prochaines étapes recommandées</h4>
+            <ol style="margin: 0; padding-left: 20px;">
+                <li>Prendre contact avec l'alternant pour une première rencontre</li>
+                <li>Planifier une réunion de présentation de l'entreprise et de l'équipe</li>
+                <li>Définir les premiers objectifs et missions d'apprentissage</li>
+                <li>Coordonner avec l'équipe pédagogique EPROFOS</li>
+                <li>Mettre en place un planning de suivi régulier</li>
+            </ol>
+        </div>
+        
+        <div class="alert alert-info">
+            <h4 style="margin-top: 0;">📋 Vos responsabilités en tant que mentor</h4>
+            <ul style="margin: 10px 0;">
+                <li>Accueillir et intégrer l'alternant dans l'entreprise</li>
+                <li>Définir et suivre les missions d'apprentissage</li>
+                <li>Réaliser les évaluations périodiques</li>
+                <li>Maintenir le contact avec l'équipe pédagogique</li>
+                <li>Accompagner l'alternant dans son développement professionnel</li>
+                <li>Participer aux réunions de coordination tripartites</li>
+            </ul>
+        </div>
+        
+        <h4>📚 Ressources disponibles</h4>
+        <p>Dans votre espace mentor, vous trouverez :</p>
+        <ul>
+            <li>Le dossier complet de l'alternant</li>
+            <li>Les objectifs pédagogiques de la formation</li>
+            <li>Les outils d'évaluation et de suivi</li>
+            <li>Les contacts de l'équipe pédagogique</li>
+            <li>La documentation pour mentors</li>
+            <li>Le planning des visites et réunions</li>
+        </ul>
+        
+        <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <h4 style="margin-top: 0; color: #856404;">🤝 Contact équipe pédagogique</h4>
+            <p style="margin: 10px 0; color: #856404;">
+                Un référent pédagogique prendra contact avec vous dans les prochains jours pour :
+            </p>
+            <ul style="margin: 10px 0; color: #856404;">
+                <li>Planifier la première visite en entreprise</li>
+                <li>Présenter les outils de suivi</li>
+                <li>Répondre à vos questions</li>
+                <li>Établir le calendrier de formation</li>
+            </ul>
+        </div>
+        
+        <p style="margin-top: 30px;">
+            Nous vous remercions pour votre engagement dans la formation de nos alternants. 
+            Votre expertise et votre accompagnement sont essentiels à leur réussite.
+        </p>
+        
+        <p>
+            Pour toute question ou assistance, notre équipe est disponible :
+        </p>
+        
+        <ul style="font-size: 14px;">
+            <li>📧 Email : <a href="mailto:support@eprofos.fr">support@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+            <li>🕒 Horaires : Lundi-Vendredi 9h-18h</li>
+        </ul>
+        
+        <p>
+            Excellente collaboration,<br>
+            <strong>L'équipe EPROFOS</strong>
+        </p>
+        
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            <p>EPROFOS - École Professionnelle de Formation Spécialisée<br>
+            Pour toute question, contactez-nous : support@eprofos.fr</p>
+        </div>
+    </div>
+</body>
+</html>

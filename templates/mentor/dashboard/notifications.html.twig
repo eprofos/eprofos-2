@@ -1,0 +1,517 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Notifications
+                    </h2>
+                    <div class="page-subtitle">
+                        Restez informé des activités de vos apprentis et des mises à jour système
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="#" class="btn btn-outline-primary" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                            </svg>
+                            Filtrer
+                        </a>
+                        <div class="dropdown-menu">
+                            <h6 class="dropdown-header">Type de notification</h6>
+                            <a class="dropdown-item" href="?filter=all">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/>
+                                        <path d="M4 10l16 0"/>
+                                    </svg>
+                                </span>
+                                Toutes
+                            </a>
+                            <a class="dropdown-item" href="?filter=unread">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                        <path d="M3 7l9 6l9 -6"/>
+                                    </svg>
+                                </span>
+                                Non lues
+                            </a>
+                            <a class="dropdown-item" href="?filter=apprentice_updates">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                    </svg>
+                                </span>
+                                Apprentis
+                            </a>
+                            <a class="dropdown-item" href="?filter=system">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/>
+                                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>
+                                    </svg>
+                                </span>
+                                Système
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" onclick="markAllAsRead()">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10"/>
+                                    </svg>
+                                </span>
+                                Marquer tout comme lu
+                            </a>
+                        </div>
+                        <a href="{{ path('mentor_settings') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/>
+                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>
+                            </svg>
+                            Paramètres
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        <!-- Summary Cards -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Non lues</div>
+                        </div>
+                        <div class="h1 mb-3">{{ unread_notifications|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-warning d-inline-flex align-items-center lh-1">
+                                    +{{ unread_notifications|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Notifications</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Mises à jour apprentis</div>
+                        </div>
+                        <div class="h1 mb-3">{{ apprentice_updates|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-blue" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-blue d-inline-flex align-items-center lh-1">
+                                    {{ apprentice_updates|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Aujourd'hui</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Rappels évaluations</div>
+                        </div>
+                        <div class="h1 mb-3">{{ evaluation_reminders|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-red" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-red d-inline-flex align-items-center lh-1">
+                                    {{ evaluation_reminders|length }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 9v2m0 4v.01"/>
+                                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">À traiter</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Annonces système</div>
+                        </div>
+                        <div class="h1 mb-3">{{ system_announcements|length }}</div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-fill">
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-green" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <span class="text-green d-inline-flex align-items-center lh-1">
+                                    {{ system_announcements|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-muted">Récentes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Toutes les notifications</h3>
+                        <div class="card-actions">
+                            <div class="dropdown">
+                                <a href="#" class="btn-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                        <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                        <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                    </svg>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="#" onclick="markAllAsRead()">Marquer tout comme lu</a>
+                                    <a class="dropdown-item" href="#" onclick="deleteAllRead()">Supprimer les lues</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if unread_notifications is defined and unread_notifications|length > 0 or 
+                           apprentice_updates is defined and apprentice_updates|length > 0 or 
+                           evaluation_reminders is defined and evaluation_reminders|length > 0 or 
+                           system_announcements is defined and system_announcements|length > 0 %}
+                            
+                            <div class="divide-y">
+                                <!-- Evaluation Reminders (High Priority) -->
+                                {% if evaluation_reminders is defined and evaluation_reminders|length > 0 %}
+                                    {% for reminder in evaluation_reminders %}
+                                        <div class="row notification-item unread priority-high" data-notification-id="{{ reminder.id ?? 'reminder-' ~ loop.index }}">
+                                            <div class="col-auto">
+                                                <span class="bg-red text-white avatar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                                        <path d="M12 7v5l3 3"/>
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-fill">
+                                                        <div><strong>Évaluation en retard</strong></div>
+                                                        <div class="text-muted">{{ reminder.apprentice_name ?? 'Apprenti' }} - {{ reminder.mission_title ?? 'Mission à évaluer' }}</div>
+                                                        <div class="text-muted">Échéance dépassée de {{ reminder.days_overdue ?? '3' }} jours</div>
+                                                    </div>
+                                                    <div class="ms-auto text-end">
+                                                        <div class="text-muted">{{ reminder.created_at ?? 'now'|date('d/m/Y H:i') }}</div>
+                                                        <span class="badge bg-red">Urgent</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('mentor_evaluations') }}" class="btn btn-sm btn-red">Évaluer</a>
+                                                    <a href="#" class="btn btn-sm btn-ghost-red" onclick="markAsRead(this)">✓</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <!-- Apprentice Updates -->
+                                {% if apprentice_updates is defined and apprentice_updates|length > 0 %}
+                                    {% for update in apprentice_updates %}
+                                        <div class="row notification-item unread" data-notification-id="{{ update.id ?? 'update-' ~ loop.index }}">
+                                            <div class="col-auto">
+                                                <span class="bg-blue text-white avatar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-fill">
+                                                        <div><strong>{{ update.title ?? 'Progression apprenti' }}</strong></div>
+                                                        <div class="text-muted">{{ update.apprentice_name ?? 'Jean Dupont' }} - {{ update.description ?? 'A terminé la mission "Développement front-end"' }}</div>
+                                                        <div class="text-muted">{{ update.mission_title ?? 'Mission terminée avec succès' }}</div>
+                                                    </div>
+                                                    <div class="ms-auto text-end">
+                                                        <div class="text-muted">{{ update.created_at ?? 'now'|date('d/m/Y H:i') }}</div>
+                                                        <span class="badge bg-blue">Apprenti</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="{{ path('mentor_apprentices') }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                    <a href="#" class="btn btn-sm btn-ghost-secondary" onclick="markAsRead(this)">✓</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <!-- System Announcements -->
+                                {% if system_announcements is defined and system_announcements|length > 0 %}
+                                    {% for announcement in system_announcements %}
+                                        <div class="row notification-item {% if announcement.is_read is not defined or not announcement.is_read %}unread{% endif %}" data-notification-id="{{ announcement.id ?? 'announcement-' ~ loop.index }}">
+                                            <div class="col-auto">
+                                                <span class="bg-green text-white avatar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                                        <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-fill">
+                                                        <div><strong>{{ announcement.title ?? 'Nouvelle fonctionnalité disponible' }}</strong></div>
+                                                        <div class="text-muted">{{ announcement.description ?? 'De nouveaux outils d\'évaluation sont maintenant disponibles dans votre interface mentor.' }}</div>
+                                                        {% if announcement.action_url is defined %}
+                                                            <div class="mt-1">
+                                                                <a href="{{ announcement.action_url }}" class="text-primary">{{ announcement.action_text ?? 'En savoir plus' }}</a>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="ms-auto text-end">
+                                                        <div class="text-muted">{{ announcement.created_at ?? 'now'|date('d/m/Y H:i') }}</div>
+                                                        <span class="badge bg-green">Système</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    <a href="#" class="btn btn-sm btn-ghost-secondary" onclick="markAsRead(this)">✓</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <!-- Unread Notifications (Other types) -->
+                                {% if unread_notifications is defined and unread_notifications|length > 0 %}
+                                    {% for notification in unread_notifications %}
+                                        <div class="row notification-item unread" data-notification-id="{{ notification.id ?? 'notification-' ~ loop.index }}">
+                                            <div class="col-auto">
+                                                <span class="bg-{{ notification.type == 'success' ? 'green' : (notification.type == 'warning' ? 'yellow' : (notification.type == 'error' ? 'red' : 'blue')) }} text-white avatar">
+                                                    {% if notification.type == 'success' %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M5 12l5 5l10 -10"/>
+                                                        </svg>
+                                                    {% elseif notification.type == 'warning' %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M12 9v2m0 4v.01"/>
+                                                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                                                        </svg>
+                                                    {% elseif notification.type == 'error' %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                                            <path d="M12 8l0 4"/>
+                                                            <path d="M12 16l.01 0"/>
+                                                        </svg>
+                                                    {% else %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                                            <path d="M12 9h.01"/>
+                                                            <path d="M11 12h1v4h1"/>
+                                                        </svg>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-fill">
+                                                        <div><strong>{{ notification.title ?? 'Notification' }}</strong></div>
+                                                        <div class="text-muted">{{ notification.description ?? 'Description de la notification' }}</div>
+                                                        {% if notification.details is defined %}
+                                                            <div class="text-muted">{{ notification.details }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="ms-auto text-end">
+                                                        <div class="text-muted">{{ notification.created_at ?? 'now'|date('d/m/Y H:i') }}</div>
+                                                        <span class="badge bg-{{ notification.type == 'success' ? 'green' : (notification.type == 'warning' ? 'yellow' : (notification.type == 'error' ? 'red' : 'blue')) }}">
+                                                            {{ notification.type_label ?? 'Info' }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="btn-list">
+                                                    {% if notification.action_url is defined %}
+                                                        <a href="{{ notification.action_url }}" class="btn btn-sm btn-outline-primary">{{ notification.action_text ?? 'Voir' }}</a>
+                                                    {% endif %}
+                                                    <a href="#" class="btn btn-sm btn-ghost-secondary" onclick="markAsRead(this)">✓</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                        {% else %}
+                            <!-- Empty State -->
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                        <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                                        <path d="M21 7a2 2 0 0 0 -2 -2h-2"/>
+                                        <path d="M7 5a2 2 0 0 0 -2 2v2"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Aucune notification</p>
+                                <p class="empty-subtitle text-muted">
+                                    Vous êtes à jour ! Toutes vos notifications ont été traitées.
+                                </p>
+                                <div class="empty-action">
+                                    <a href="{{ path('mentor_dashboard') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                                            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/>
+                                            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+                                        </svg>
+                                        Retour au tableau de bord
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .notification-item {
+            padding: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .notification-item:hover {
+            background-color: var(--tblr-gray-50);
+        }
+        .notification-item.unread {
+            background-color: var(--tblr-blue-lt);
+            border-left: 3px solid var(--tblr-blue);
+        }
+        .notification-item.priority-high {
+            background-color: var(--tblr-red-lt);
+            border-left: 3px solid var(--tblr-red);
+        }
+        .notification-item.read {
+            opacity: 0.7;
+        }
+    </style>
+
+    <script>
+        function markAsRead(button) {
+            const notificationItem = button.closest('.notification-item');
+            const notificationId = notificationItem.dataset.notificationId;
+            
+            // Remove unread class and add read class
+            notificationItem.classList.remove('unread', 'priority-high');
+            notificationItem.classList.add('read');
+            
+            // Hide the mark as read button
+            button.style.display = 'none';
+            
+            // TODO: Send AJAX request to mark as read in backend
+            console.log('Marking notification as read:', notificationId);
+        }
+
+        function markAllAsRead() {
+            const unreadItems = document.querySelectorAll('.notification-item.unread');
+            
+            unreadItems.forEach(item => {
+                item.classList.remove('unread', 'priority-high');
+                item.classList.add('read');
+                
+                const markButton = item.querySelector('.btn-ghost-secondary, .btn-ghost-red');
+                if (markButton) {
+                    markButton.style.display = 'none';
+                }
+            });
+            
+            // TODO: Send AJAX request to mark all as read
+            console.log('Marking all notifications as read');
+            
+            // Show success message
+            if (unreadItems.length > 0) {
+                alert('Toutes les notifications ont été marquées comme lues.');
+            }
+        }
+
+        function deleteAllRead() {
+            const readItems = document.querySelectorAll('.notification-item.read');
+            
+            if (readItems.length === 0) {
+                alert('Aucune notification lue à supprimer.');
+                return;
+            }
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications lues ?')) {
+                readItems.forEach(item => {
+                    item.remove();
+                });
+                
+                // TODO: Send AJAX request to delete read notifications
+                console.log('Deleting all read notifications');
+                
+                alert('Les notifications lues ont été supprimées.');
+            }
+        }
+    </script>
+{% endblock %}

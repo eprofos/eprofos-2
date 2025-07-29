@@ -1,0 +1,305 @@
+{% extends 'mentor/base.html.twig' %}
+
+{% block body %}
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        Modifier la mission
+                    </h2>
+                    <div class="page-subtitle">
+                        {{ mission.title }}
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="{{ path('mentor_missions_show', {id: mission.id}) }}" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M5 12l14 0"/>
+                                <path d="M5 12l6 6"/>
+                                <path d="M5 12l6 -6"/>
+                            </svg>
+                            Retour à la mission
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xl">
+        {% if mission.activeAssignmentsCount > 0 %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 9v2m0 4v.01"/>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                            </svg>
+                        </div>
+                        <div class="flex-fill">
+                            <h4 class="alert-title">Mission assignée</h4>
+                            <div class="text-muted">Cette mission est actuellement assignée à {{ mission.activeAssignmentsCount }} apprenti(s). Les modifications peuvent affecter le travail en cours.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Informations de la mission</h3>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form, {attr: {class: 'needs-validation', novalidate: true}}) }}
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    {{ form_label(form.title, 'Titre de la mission', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.title, {attr: {class: 'form-control', placeholder: 'Nom de la mission'}}) }}
+                                    {{ form_errors(form.title) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.complexity, 'Niveau de complexité', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.complexity, {attr: {class: 'form-select'}}) }}
+                                    {{ form_errors(form.complexity) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.term, 'Durée prévue', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.term, {attr: {class: 'form-select'}}) }}
+                                    {{ form_errors(form.term) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.department, 'Département', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.department, {attr: {class: 'form-control', placeholder: 'Ex: Développement, Marketing...'}}) }}
+                                    {{ form_errors(form.department) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.duration, 'Durée estimée (heures)', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.duration, {attr: {class: 'form-control', type: 'number', min: 1, placeholder: 'Nombre d\'heures'}}) }}
+                                    {{ form_errors(form.duration) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.description, {attr: {class: 'form-control', rows: 4, placeholder: 'Décrivez la mission en détail...'}}) }}
+                            {{ form_errors(form.description) }}
+                            <div class="form-hint">Expliquez clairement ce qui est attendu de l'apprenti</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.context, 'Contexte métier', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.context, {attr: {class: 'form-control', rows: 3, placeholder: 'Situez la mission dans son contexte...'}}) }}
+                            {{ form_errors(form.context) }}
+                            <div class="form-hint">Aidez l'apprenti à comprendre l'enjeu business</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.objectives, 'Objectifs pédagogiques', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.objectives, {attr: {class: 'form-control', rows: 3, placeholder: 'Quels sont les objectifs d\'apprentissage ?'}}) }}
+                            {{ form_errors(form.objectives) }}
+                            <div class="form-hint">Définissez ce que l'apprenti va apprendre</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.requiredSkills, 'Compétences requises', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.requiredSkills, {attr: {class: 'form-control', rows: 3, placeholder: 'Compétences nécessaires pour cette mission...'}}) }}
+                                    {{ form_errors(form.requiredSkills) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.skillsToAcquire, 'Compétences à acquérir', {label_attr: {class: 'form-label'}}) }}
+                                    {{ form_widget(form.skillsToAcquire, {attr: {class: 'form-control', rows: 3, placeholder: 'Compétences que l\'apprenti va développer...'}}) }}
+                                    {{ form_errors(form.skillsToAcquire) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.prerequisites, 'Prérequis', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.prerequisites, {attr: {class: 'form-control', rows: 2, placeholder: 'Connaissances ou formations préalables...'}}) }}
+                            {{ form_errors(form.prerequisites) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.evaluationCriteria, 'Critères d\'évaluation', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.evaluationCriteria, {attr: {class: 'form-control', rows: 3, placeholder: 'Comment la mission sera-t-elle évaluée ?'}}) }}
+                            {{ form_errors(form.evaluationCriteria) }}
+                            <div class="form-hint">Précisez les critères de réussite</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.orderIndex, 'Ordre dans le parcours', {label_attr: {class: 'form-label'}}) }}
+                            {{ form_widget(form.orderIndex, {attr: {class: 'form-control', type: 'number', min: 1, placeholder: 'Position dans la progression'}}) }}
+                            {{ form_errors(form.orderIndex) }}
+                            <div class="form-hint">Ordre recommandé pour cette mission (1 = première mission)</div>
+                        </div>
+
+                        {{ form_rest(form) }}
+
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M5 12l5 5l10 -10"/>
+                                        </svg>
+                                        Enregistrer les modifications
+                                    </button>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="{{ path('mentor_missions_show', {id: mission.id}) }}" class="btn btn-link">
+                                        Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Mission Preview -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Aperçu de la mission</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Statut</div>
+                                <div class="datagrid-content">
+                                    {% if mission.isActive %}
+                                        <span class="badge bg-green">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-red">Inactive</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Complexité</div>
+                                <div class="datagrid-content">{{ mission.complexityLabel }}</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Durée</div>
+                                <div class="datagrid-content">{{ mission.termLabel }}</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Département</div>
+                                <div class="datagrid-content">{{ mission.department ?? 'Non spécifié' }}</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Temps estimé</div>
+                                <div class="datagrid-content">{{ mission.duration ?? 0 }}h</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Assignations</div>
+                                <div class="datagrid-content">
+                                    <span class="badge bg-blue">{{ mission.assignments.count }} total</span>
+                                    {% if mission.activeAssignmentsCount > 0 %}
+                                        <span class="badge bg-yellow ms-1">{{ mission.activeAssignmentsCount }} actives</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Créée le</div>
+                                <div class="datagrid-content">{{ mission.createdAt|date('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Conseils</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h4 class="h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-blue" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 17.75l-6.172 -3.245l-0.828 6.495l7 -3.25l7 3.25l-0.828 -6.495l-6.172 3.245z"/>
+                                    <path d="M12 12l-6.172 -3.245l-0.828 6.495l7 -3.25l7 3.25l-0.828 -6.495l-6.172 3.245z"/>
+                                    <path d="M12 6.25l-6.172 -3.245l-0.828 6.495l7 -3.25l7 3.25l-0.828 -6.495l-6.172 3.245z"/>
+                                </svg>
+                                Objectifs clairs
+                            </h4>
+                            <p class="text-muted">Définissez des objectifs SMART : Spécifiques, Mesurables, Atteignables, Réalistes, Temporels.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-green" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 12l2 2l4 -4"/>
+                                    <path d="M21 12c0 .5 -.1 1 -.3 1.5"/>
+                                    <path d="M15 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                    <path d="M9 3.5c0 -.6 -.4 -1 -1 -1s-1 .4 -1 1a2 2 0 0 0 2 0z"/>
+                                    <path d="M3 12a9 9 0 0 1 9 -9a9 9 0 0 1 9 9"/>
+                                </svg>
+                                Critères d'évaluation
+                            </h4>
+                            <p class="text-muted">Précisez comment la mission sera évaluée pour guider l'apprenti vers la réussite.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h4 class="h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-yellow" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 6l0 6l4 2"/>
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                                </svg>
+                                Durée réaliste
+                            </h4>
+                            <p class="text-muted">Estimez le temps nécessaire en tenant compte du niveau de l'apprenti.</p>
+                        </div>
+
+                        <div class="mb-0">
+                            <h4 class="h5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-purple" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                </svg>
+                                Contexte métier
+                            </h4>
+                            <p class="text-muted">Expliquez l'importance de la mission dans le contexte de l'entreprise.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
