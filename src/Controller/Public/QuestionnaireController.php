@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Public;
 
+use App\Entity\Assessment\Question;
 use App\Entity\Assessment\Questionnaire;
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\QuestionResponse;
-use App\Entity\Question;
+
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Assessment\QuestionnaireResponseRepository;
 use App\Repository\Training\FormationRepository;
