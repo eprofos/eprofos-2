@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Certificat non trouvé - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Certificat non vérifié
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 4rem;"></i>
+                        
+                        <h4 class="text-danger mb-3">Certificat non trouvé ou invalide</h4>
+                        
+                        <p class="text-muted mb-4">
+                            Le code de vérification <strong>{{ verification_code }}</strong> ne correspond à aucun certificat valide dans notre système.
+                        </p>
+
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Causes possibles :
+                            </h6>
+                            <ul class="mb-0 text-start">
+                                <li>Le code de vérification est incorrect</li>
+                                <li>Le certificat a été révoqué</li>
+                                <li>Le certificat n'existe pas dans notre système</li>
+                                <li>Il y a une erreur de saisie dans le code</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{{ path('certificate_verify_form') }}" class="btn btn-primary me-2">
+                                <i class="fas fa-redo me-2"></i>
+                                Réessayer
+                            </a>
+                            <a href="{{ path('public_contact') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope me-2"></i>
+                                Nous contacter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre service client.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

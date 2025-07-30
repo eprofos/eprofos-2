@@ -1,0 +1,204 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des certificats - Administration{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-certificate text-primary me-2"></i>
+        Gestion des certificats
+    </h1>
+    
+    <div>
+        <a href="{{ path('admin_certificate_bulk_generate') }}" class="btn btn-success">
+            <i class="fas fa-magic me-2"></i>
+            Génération en lot
+        </a>
+        <a href="{{ path('admin_certificate_analytics') }}" class="btn btn-info">
+            <i class="fas fa-chart-bar me-2"></i>
+            Statistiques
+        </a>
+    </div>
+</div>
+
+{# Statistics Cards #}
+{% if statistics.total_stats is defined %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.total_stats.total_certificates }}</h4>
+                        <small>Total certificats</small>
+                    </div>
+                    <i class="fas fa-certificate fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.total_stats.issued_count }}</h4>
+                        <small>Émis</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.total_stats.revoked_count }}</h4>
+                        <small>Révoqués</small>
+                    </div>
+                    <i class="fas fa-times-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">{{ statistics.total_stats.reissued_count }}</h4>
+                        <small>Réémis</small>
+                    </div>
+                    <i class="fas fa-sync-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Search and Filters #}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-control" 
+                    placeholder="Rechercher par nom, email, formation ou numéro de certificat..."
+                    value="{{ search }}"
+                >
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    {% for value, label in available_statuses %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Certificates Table #}
+<div class="card">
+    <div class="card-body">
+        {% if certificates|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Numéro</th>
+                            <th>Étudiant</th>
+                            <th>Formation</th>
+                            <th>Date d'émission</th>
+                            <th>Score</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for certificate in certificates %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('admin_certificate_show', {id: certificate.id}) }}" class="text-decoration-none">
+                                        <strong>{{ certificate.certificateNumber }}</strong>
+                                    </a>
+                                </td>
+                                <td>
+                                    {{ certificate.student.fullName }}<br>
+                                    <small class="text-muted">{{ certificate.student.email }}</small>
+                                </td>
+                                <td>
+                                    {{ certificate.formation.title }}
+                                    {% if certificate.formation.category %}
+                                        <br><small class="text-muted">{{ certificate.formation.category.name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ certificate.issuedAt|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    {% if certificate.finalScore %}
+                                        <span class="badge bg-primary">{{ certificate.finalScore }}%</span>
+                                        {% if certificate.grade %}
+                                            <br><small class="text-muted">{{ certificate.gradeLabel }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status_class = certificate.status == 'issued' ? 'success' : (certificate.status == 'revoked' ? 'danger' : 'warning') %}
+                                    <span class="badge bg-{{ status_class }}">
+                                        {{ certificate.statusLabel }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('admin_certificate_show', {id: certificate.id}) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if certificate.canBeDownloaded %}
+                                            <a href="{{ path('admin_certificate_download', {id: certificate.id}) }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Pagination #}
+            <div class="d-flex justify-content-center mt-3">
+                {{ knp_pagination_render(certificates) }}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Aucun certificat trouvé</h5>
+                {% if search or status %}
+                    <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
+                    <a href="{{ path('admin_certificate_index') }}" class="btn btn-outline-secondary">
+                        Voir tous les certificats
+                    </a>
+                {% else %}
+                    <p class="text-muted">Les certificats apparaîtront ici une fois générés.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

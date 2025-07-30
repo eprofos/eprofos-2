@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificat de Formation</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 20mm;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .certificate-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 8px solid #2c3e50;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .certificate-header {
+            margin-bottom: 30px;
+        }
+        
+        .certificate-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .certificate-subtitle {
+            font-size: 24px;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+        }
+        
+        .student-name {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .formation-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        
+        .completion-info {
+            margin: 30px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .completion-info strong {
+            color: #2c3e50;
+        }
+        
+        .certificate-footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .certificate-number {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .issue-date {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .signature-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .signature-line {
+            width: 200px;
+            border-bottom: 2px solid #2c3e50;
+            margin: 10px auto;
+        }
+        
+        .organization-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        
+        .grade-badge {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <div class="certificate-header">
+            <div class="certificate-title">Certificat de Formation</div>
+            <div class="certificate-subtitle">Attestation de réussite</div>
+        </div>
+        
+        <div>
+            <p style="font-size: 20px; margin-bottom: 20px;">
+                Il est certifié que
+            </p>
+            
+            <div class="student-name">
+                {{ student.fullName }}
+            </div>
+            
+            <p style="font-size: 20px; margin: 20px 0;">
+                a suivi avec succès la formation
+            </p>
+            
+            <div class="formation-title">
+                "{{ formation.title }}"
+            </div>
+            
+            {% if formation.category %}
+            <p style="font-size: 16px; color: #7f8c8d; margin: 10px 0;">
+                Catégorie : {{ formation.category.name }}
+            </p>
+            {% endif %}
+        </div>
+        
+        <div class="completion-info">
+            {% if certificate.completionDate %}
+            <p><strong>Date de fin de formation :</strong> {{ certificate.completionDate|date('d/m/Y') }}</p>
+            {% endif %}
+            
+            {% if certificate.totalHours %}
+            <p><strong>Durée :</strong> {{ certificate.totalHours }} heures</p>
+            {% endif %}
+            
+            {% if certificate.finalScore %}
+            <div style="margin: 20px 0;">
+                <span class="score-badge">Score final : {{ certificate.finalScore }}%</span>
+                {% if certificate.grade %}
+                    <span class="grade-badge">Grade : {{ certificate.gradeLabel }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if certificate.attendanceRate %}
+            <p><strong>Taux de présence :</strong> {{ certificate.attendanceRate }}%</p>
+            {% endif %}
+        </div>
+        
+        <div class="signature-section">
+            <div class="signature-line"></div>
+            <p style="margin: 10px 0; font-size: 14px;">Signature et cachet</p>
+            <div class="organization-name">EPROFOS</div>
+            <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                Organisme de formation professionnelle
+            </p>
+        </div>
+        
+        <div class="certificate-footer">
+            <div class="certificate-number">
+                Certificat N° {{ certificate.certificateNumber }}
+            </div>
+            <div class="issue-date">
+                Émis le {{ certificate.issuedAt|date('d/m/Y') }}
+            </div>
+        </div>
+        
+        <div style="position: absolute; bottom: 20px; right: 20px; font-size: 12px; color: #bdc3c7;">
+            Code de vérification : {{ certificate.verificationCode|slice(0, 8) }}...
+        </div>
+    </div>
+</body>
+</html>

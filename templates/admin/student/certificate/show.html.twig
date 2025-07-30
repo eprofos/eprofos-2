@@ -1,0 +1,290 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Certificat {{ certificate.certificateNumber }} - Administration{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-certificate text-primary me-2"></i>
+        Certificat {{ certificate.certificateNumber }}
+    </h1>
+    
+    <div>
+        <a href="{{ path('admin_certificate_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour à la liste
+        </a>
+        
+        {% if certificate.canBeDownloaded %}
+            <a href="{{ path('admin_certificate_download', {id: certificate.id}) }}" class="btn btn-primary">
+                <i class="fas fa-download me-2"></i>
+                Télécharger PDF
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{# Status Badge #}
+<div class="mb-4">
+    {% set status_class = certificate.status == 'issued' ? 'success' : (certificate.status == 'revoked' ? 'danger' : 'warning') %}
+    <span class="badge bg-{{ status_class }} fs-6">
+        {{ certificate.statusLabel }}
+    </span>
+    {% if certificate.revokedAt %}
+        <small class="text-muted ms-2">
+            (révoqué le {{ certificate.revokedAt|date('d/m/Y H:i') }})
+        </small>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {# Certificate Information #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informations du certificat
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <strong>Numéro de certificat :</strong><br>
+                        <code>{{ certificate.certificateNumber }}</code>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Date d'émission :</strong><br>
+                        {{ certificate.issuedAt|date('d/m/Y à H:i') }}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <strong>Code de vérification :</strong><br>
+                        <small class="text-muted font-monospace">{{ certificate.verificationCode|slice(0, 16) }}...</small>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Template utilisé :</strong><br>
+                        {{ certificate.certificateTemplate }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Student Information #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>
+                    Étudiant
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <strong>Nom complet :</strong><br>
+                        {{ certificate.student.fullName }}
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Email :</strong><br>
+                        <a href="mailto:{{ certificate.student.email }}">{{ certificate.student.email }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Formation Information #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Formation
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ certificate.formation.title }}</h6>
+                {% if certificate.formation.category %}
+                    <span class="badge bg-info mb-2">{{ certificate.formation.category.name }}</span>
+                {% endif %}
+                {% if certificate.formation.description %}
+                    <p class="text-muted">{{ certificate.formation.description|slice(0, 200) }}{% if certificate.formation.description|length > 200 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Completion Data #}
+        {% if certificate.completionData %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Données de completion
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if certificate.completionDate %}
+                    <div class="col-sm-6 mb-3">
+                        <strong>Date de fin :</strong><br>
+                        {{ certificate.completionDate|date('d/m/Y') }}
+                    </div>
+                    {% endif %}
+                    {% if certificate.totalHours %}
+                    <div class="col-sm-6 mb-3">
+                        <strong>Durée totale :</strong><br>
+                        {{ certificate.totalHours }} heures
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="row">
+                    {% if certificate.finalScore %}
+                    <div class="col-sm-6 mb-3">
+                        <strong>Score final :</strong><br>
+                        <span class="badge bg-primary">{{ certificate.finalScore }}%</span>
+                        {% if certificate.grade %}
+                            <span class="badge bg-secondary ms-1">{{ certificate.gradeLabel }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% if certificate.attendanceRate %}
+                    <div class="col-sm-6 mb-3">
+                        <strong>Taux de présence :</strong><br>
+                        {{ certificate.attendanceRate }}%
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if certificate.completionData.modules_completed is defined %}
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <strong>Modules complétés :</strong><br>
+                        {{ certificate.completionData.modules_completed }}
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>QCM / Exercices :</strong><br>
+                        {{ certificate.completionData.qcm_count ?? 0 }} QCM, {{ certificate.completionData.exercise_count ?? 0 }} exercices
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        {# Actions #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if certificate.status == 'issued' %}
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#revokeModal">
+                            <i class="fas fa-ban me-2"></i>
+                            Révoquer le certificat
+                        </button>
+                    {% endif %}
+                    
+                    {% if certificate.status == 'revoked' %}
+                        <form method="post" action="{{ path('admin_certificate_reissue', {id: certificate.id}) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir réémettre ce certificat ?')">
+                                <i class="fas fa-redo me-2"></i>
+                                Réémettre le certificat
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    <form method="post" action="{{ path('admin_certificate_send_email', {id: certificate.id}) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-envelope me-2"></i>
+                            Renvoyer par email
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {# Verification Link #}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    Vérification publique
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">Lien de vérification public :</p>
+                <div class="input-group">
+                    <input type="text" class="form-control font-monospace small" readonly 
+                           value="{{ url('certificate_verify', {code: certificate.verificationCode}) }}"
+                           id="verificationUrl">
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('verificationUrl')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ path('certificate_verify', {code: certificate.verificationCode}) }}" 
+                       target="_blank" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        Tester la vérification
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Revoke Modal #}
+{% if certificate.status == 'issued' %}
+<div class="modal fade" id="revokeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ path('admin_certificate_revoke', {id: certificate.id}) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Révoquer le certificat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Attention :</strong> Cette action est irréversible. Le certificat ne sera plus valide.
+                    </div>
+                    <div class="mb-3">
+                        <label for="revocation_reason" class="form-label">Raison de la révocation *</label>
+                        <textarea class="form-control" id="revocation_reason" name="revocation_reason" 
+                                  rows="3" required placeholder="Expliquez pourquoi ce certificat doit être révoqué..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Révoquer le certificat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(element.value);
+    
+    // Show feedback
+    const button = element.nextElementSibling;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => {
+        button.innerHTML = originalText;
+    }, 2000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Certificat vérifié - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Certificat vérifié avec succès
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="text-success mb-3">{{ formation.title }}</h4>
+                            
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Bénéficiaire</h6>
+                                    <p class="fw-bold">{{ student.fullName }}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Email</h6>
+                                    <p>{{ student.email }}</p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Numéro de certificat</h6>
+                                    <p class="fw-bold">{{ certificate.certificateNumber }}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Date d'émission</h6>
+                                    <p>{{ certificate.issuedAt|date('d/m/Y à H:i') }}</p>
+                                </div>
+                            </div>
+
+                            {% if certificate.completionDate %}
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Date de fin de formation</h6>
+                                    <p>{{ certificate.completionDate|date('d/m/Y') }}</p>
+                                </div>
+                                {% if certificate.totalHours %}
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Durée</h6>
+                                    <p>{{ certificate.totalHours }} heures</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            {% if certificate.finalScore %}
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Score final</h6>
+                                    <p>
+                                        <span class="badge bg-primary">{{ certificate.finalScore }}%</span>
+                                        {% if certificate.grade %}
+                                            <span class="badge bg-secondary ms-1">{{ certificate.gradeLabel }}</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                {% if certificate.attendanceRate %}
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted">Taux de présence</h6>
+                                    <p>{{ certificate.attendanceRate }}%</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <div class="mt-4">
+                                <h6 class="text-muted">Description de la formation</h6>
+                                <p class="text-muted">{{ formation.description|slice(0, 300) }}{% if formation.description|length > 300 %}...{% endif %}</p>
+                            </div>
+
+                            {% if formation.category %}
+                            <div class="mt-3">
+                                <span class="badge bg-info">{{ formation.category.name }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-certificate text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            
+                            <h6 class="text-muted">Statut du certificat</h6>
+                            <span class="badge bg-success fs-6">{{ certificate.statusLabel }}</span>
+
+                            <div class="mt-4">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Ce certificat a été vérifié automatiquement
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <small>
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Certificat authentique délivré par EPROFOS
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <small>Vérifié le {{ "now"|date('d/m/Y à H:i') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ path('certificate_verify_form') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-search me-2"></i>
+                    Vérifier un autre certificat
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Certificate Details{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-certificate me-2"></i>Certificate Details
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Certificate Information</h5>
+                <div class="btn-group">
+                    <a href="{{ path('certificate_verify') }}?verification_code={{ certificate.verificationCode }}" 
+                       class="btn btn-sm btn-outline-info" target="_blank">
+                        <i class="fas fa-shield-alt me-1"></i>Verify
+                    </a>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resendCertificate()">
+                        <i class="fas fa-envelope me-1"></i>Resend Email
+                    </button>
+                    <a href="{{ path('admin_certificate_download_pdf', {'id': certificate.id}) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>Download PDF
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Student Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="30%"><strong>Name:</strong></td>
+                                <td>{{ certificate.student.firstName }} {{ certificate.student.lastName }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ certificate.student.email }}</td>
+                            </tr>
+                            {% if certificate.student.phone %}
+                            <tr>
+                                <td><strong>Phone:</strong></td>
+                                <td>{{ certificate.student.phone }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Formation Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="30%"><strong>Title:</strong></td>
+                                <td>{{ certificate.formation.title }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ certificate.formation.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Duration:</strong></td>
+                                <td>{{ certificate.formation.durationHours }} hours</td>
+                            </tr>
+                            {% if certificate.formation.level %}
+                            <tr>
+                                <td><strong>Level:</strong></td>
+                                <td>{{ certificate.formation.level|title }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Certificate Details</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="30%"><strong>Issue Date:</strong></td>
+                                <td>{{ certificate.issuedAt|date('d/m/Y H:i:s') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Verification Code:</strong></td>
+                                <td><code class="fs-6">{{ certificate.verificationCode }}</code></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Certificate Status</h6>
+                        <div class="text-center">
+                            <span class="badge bg-{{ certificate.status == 'issued' ? 'success' : (certificate.status == 'revoked' ? 'danger' : 'warning') }} fs-6 p-3">
+                                <i class="fas fa-{{ certificate.status == 'issued' ? 'check-circle' : (certificate.status == 'revoked' ? 'times-circle' : 'clock') }} me-2"></i>
+                                {{ certificate.statusLabel }}
+                            </span>
+                            {% if certificate.revokedAt %}
+                                <p class="text-muted mt-2">Revoked on {{ certificate.revokedAt|date('d/m/Y H:i') }}</p>
+                                {% if certificate.revocationReason %}
+                                    <p class="text-muted"><strong>Reason:</strong> {{ certificate.revocationReason }}</p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Enrollment Progress</h6>
+            </div>
+            <div class="card-body">
+                {% set enrollment = certificate.enrollment %}
+                {% if enrollment %}
+                    <div class="mb-3">
+                        <strong>Status:</strong> 
+                        <span class="badge bg-{{ enrollment.status == 'completed' ? 'success' : 'info' }}">
+                            {{ enrollment.status|title }}
+                        </span>
+                    </div>
+                    
+                    {% if enrollment.startDate %}
+                    <div class="mb-3">
+                        <strong>Start Date:</strong><br>
+                        {{ enrollment.startDate|date('d/m/Y') }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if enrollment.endDate %}
+                    <div class="mb-3">
+                        <strong>End Date:</strong><br>
+                        {{ enrollment.endDate|date('d/m/Y') }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if enrollment.finalGrade %}
+                    <div class="mb-3">
+                        <strong>Final Grade:</strong><br>
+                        <span class="badge bg-{{ enrollment.finalGrade >= 10 ? 'success' : 'danger' }} fs-6">
+                            {{ enrollment.finalGrade }}/20
+                        </span>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted">Enrollment information not available</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ path('admin_certificate_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to List
+                    </a>
+                    <button class="btn btn-primary" onclick="regenerateCertificate()">
+                        <i class="fas fa-sync me-1"></i>Regenerate Certificate
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteCertificate()">
+                        <i class="fas fa-trash me-1"></i>Delete Certificate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function resendCertificate() {
+    if (confirm('Resend certificate email to student?')) {
+        fetch('{{ path("admin_certificate_resend", {"id": certificate.id}) }}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Certificate email sent successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function regenerateCertificate() {
+    if (confirm('Regenerate this certificate? This will create a new verification code.')) {
+        fetch('{{ path("admin_certificate_regenerate", {"id": certificate.id}) }}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Certificate regenerated successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function deleteCertificate() {
+    if (confirm('Are you sure you want to delete this certificate? This action cannot be undone.')) {
+        fetch('{{ path("admin_certificate_delete", {"id": certificate.id}) }}', {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Certificate deleted successfully!');
+                window.location.href = '{{ path("admin_certificate_index") }}';
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
