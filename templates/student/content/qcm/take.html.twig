@@ -1,257 +1,301 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+{% block title %}{{ qcm.title }} - QCM{% endblock %}
 
 {% block body %}
-<div class="container-fluid" 
-     data-controller="qcm-enhanced" 
-     data-qcm-enhanced-time-limit-value="{{ qcm.timeLimitMinutes|default(0) }}"
-     data-qcm-enhanced-total-questions-value="{{ qcm.questions|length }}"
-     data-qcm-enhanced-auto-save-value="true"
-     data-qcm-enhanced-auto-save-url-value="{{ path('student_qcm_take', {id: qcm.id}) }}"
-     data-qcm-enhanced-qcm-id-value="{{ qcm.id }}">
-    <div class="row">
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
         <div class="col-12">
-            <!-- Header with Timer and Progress -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h3 mb-0">{{ qcm.title }}</h1>
-                    <span class="text-muted">QCM en cours</span>
-                </div>
-                <div class="d-flex gap-3 align-items-center">
-                    <!-- Progress -->
-                    <div class="text-center">
-                        <div class="small text-muted">Progression</div>
-                        <div class="fw-bold">
-                            <span id="current-question">1</span> / {{ qcm.questions|length }}
-                        </div>
-                    </div>
-                    
-                    <!-- Timer -->
-                    {% if qcm.timeLimitMinutes %}
-                        <div class="card border-warning">
-                            <div class="card-body p-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-clock text-warning me-2"></i>
-                                    <span class="fw-bold text-warning" data-qcm-enhanced-target="timer">{{ qcm.timeLimitMinutes }}:00</span>
-                                </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h4 class="mb-1">{{ qcm.title }}</h4>
+                            <div class="text-muted small">
+                                <span class="me-3">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    {{ course.chapter.module.title }}
+                                </span>
+                                <span class="me-3">
+                                    <i class="fas fa-book me-1"></i>
+                                    {{ course.title }}
+                                </span>
+                                <span class="me-3">
+                                    <i class="fas fa-question-circle me-1"></i>
+                                    {{ qcm.questions|length }} question{{ qcm.questions|length > 1 ? 's' : '' }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-redo me-1"></i>
+                                    Tentative #{{ attempt.attemptNumber }}
+                                </span>
                             </div>
                         </div>
-                    {% endif %}
+                        <div class="d-flex align-items-center gap-3">
+                            {% if qcm.timeLimitMinutes %}
+                                <div class="text-center">
+                                    <div class="h5 mb-0" id="timer">
+                                        <i class="fas fa-clock text-warning me-1"></i>
+                                        <span id="time-display">{{ (attempt.remainingTimeSeconds / 60)|round(0, 'floor') }}:{{ '%02d'|format(attempt.remainingTimeSeconds % 60) }}</span>
+                                    </div>
+                                    <small class="text-muted">Temps restant</small>
+                                </div>
+                            {% endif %}
+                            <div class="text-center">
+                                <div class="h5 mb-0">
+                                    <span id="answered-count">{{ answered_count }}</span>/{{ qcm.questions|length }}
+                                </div>
+                                <small class="text-muted">Réponses</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- QCM Form -->
-                    <form method="post" id="qcmForm" data-action="submit->qcm-enhanced#prepareSubmit">
-                        <input type="hidden" name="_token" value="{{ csrf_token('qcm_submit') }}">
-                        
-                        {% for question in qcm.questions %}
-                            <div class="card border-0 shadow-sm mb-4 question-card" 
-                                 data-qcm-enhanced-target="question"
-                                 id="question-{{ loop.index }}" 
-                                 {% if loop.index > 1 %}style="display: none;"{% endif %}>
-                                <div class="card-header bg-warning text-dark">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0">
-                                            Question {{ loop.index }} / {{ qcm.questions|length }}
-                                        </h5>
-                                        {% if question.points %}
-                                            <span class="badge bg-primary">{{ question.points }} point{{ question.points > 1 ? 's' : '' }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <!-- Question Text -->
-                                    <div class="mb-4">
-                                        <p class="fw-bold fs-5 mb-3">{{ question.text }}</p>
-                                        {% if question.explanation %}
-                                            <div class="alert alert-info">
-                                                <i class="fas fa-info-circle me-2"></i>
-                                                {{ question.explanation }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
+    <div class="row">
+        <!-- Questions -->
+        <div class="col-lg-8">
+            <form id="qcm-form" method="post" action="{{ path('student_qcm_submit', {id: qcm.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('qcm_submit_' ~ qcm.id) }}">
+                <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+                
+                {% for question in questions %}
+                <div class="card border-0 shadow-sm mb-4 question-card" data-question-id="{{ question.id }}">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                            Question {{ loop.index }}
+                        </h6>
+                        <div class="question-status">
+                            {% if question.id in answered_questions %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>
+                                    Répondu
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">
+                                    <i class="far fa-circle me-1"></i>
+                                    Non répondu
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="question-text">{{ question.questionText|raw }}</h6>
+                            {% if question.questionType == 'multiple_choice' %}
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Sélectionnez une réponse
+                                </small>
+                            {% elseif question.questionType == 'multiple_select' %}
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Plusieurs réponses possibles
+                                </small>
+                            {% elseif question.questionType == 'true_false' %}
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Vrai ou Faux
+                                </small>
+                            {% endif %}
+                        </div>
 
-                                    <!-- Question Image -->
-                                    {% if question.image %}
-                                        <div class="mb-4 text-center">
-                                            <img src="{{ asset('uploads/questions/' ~ question.image) }}" 
-                                                 alt="Question {{ loop.index }}"
-                                                 class="img-fluid rounded shadow-sm"
-                                                 style="max-height: 300px;">
-                                        </div>
-                                    {% endif %}
+                        {% if question.image %}
+                            <div class="mb-4 text-center">
+                                <img src="{{ asset('uploads/qcm/questions/' ~ question.image) }}" 
+                                     alt="Image de la question" 
+                                     class="img-fluid rounded border" 
+                                     style="max-height: 300px;">
+                            </div>
+                        {% endif %}
 
-                                    <!-- Answer Options -->
-                                    <div class="row">
-                                        {% for option in question.options %}
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    {% if question.type == 'multiple_choice' %}
-                                                        <input class="form-check-input" 
-                                                               type="checkbox" 
-                                                               name="answers[{{ question.id }}][]" 
-                                                               value="{{ option.id }}" 
-                                                               id="option_{{ question.id }}_{{ option.id }}"
-                                                               data-action="change->qcm-enhanced#answerChanged">
-                                                    {% else %}
-                                                        <input class="form-check-input" 
-                                                               type="radio" 
-                                                               name="answers[{{ question.id }}]" 
-                                                               value="{{ option.id }}" 
-                                                               id="option_{{ question.id }}_{{ option.id }}"
-                                                               data-action="change->qcm-enhanced#answerChanged">
-                                                    {% endif %}
-                                                    <label class="form-check-label w-100" 
-                                                           for="option_{{ question.id }}_{{ option.id }}">
-                                                        <div class="border rounded p-3 h-100 d-flex align-items-center hover-bg-light">
-                                                            {% if option.image %}
-                                                                <img src="{{ asset('uploads/question-options/' ~ option.image) }}" 
-                                                                     alt="Option {{ loop.index }}"
-                                                                     class="me-3 rounded"
-                                                                     style="width: 60px; height: 60px; object-fit: cover;">
-                                                            {% endif %}
-                                                            <div class="flex-grow-1">
-                                                                <strong>{{ 'ABCD'[loop.index0] }})</strong> {{ option.text }}
-                                                            </div>
-                                                        </div>
-                                                    </label>
+                        <div class="options">
+                            {% if question.questionType == 'multiple_choice' or question.questionType == 'true_false' %}
+                                {% for option in question.questionOptions %}
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input question-option" 
+                                           type="radio" 
+                                           name="question_{{ question.id }}" 
+                                           id="option_{{ option.id }}" 
+                                           value="{{ option.id }}"
+                                           data-question-id="{{ question.id }}"
+                                           {% if option.id in (answers[question.id] ?? []) %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="option_{{ option.id }}">
+                                        <div class="p-3 border rounded option-content">
+                                            {% if option.image %}
+                                                <div class="mb-2">
+                                                    <img src="{{ asset('uploads/qcm/options/' ~ option.image) }}" 
+                                                         alt="Option image" 
+                                                         class="img-fluid rounded" 
+                                                         style="max-height: 100px;">
                                                 </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-
-                                    <!-- Question Actions -->
-                                    <div class="d-flex justify-content-between align-items-center mt-4">
-                                        <div class="d-flex gap-2">
-                                            <button type="button" 
-                                                    class="btn btn-outline-warning btn-sm"
-                                                    data-action="click->qcm-enhanced#markForReview">
-                                                <i class="fas fa-flag me-1"></i>
-                                                Marquer pour révision
-                                            </button>
-                                            <button type="button" 
-                                                    class="btn btn-outline-danger btn-sm"
-                                                    data-action="click->qcm-enhanced#clearAnswer">
-                                                <i class="fas fa-eraser me-1"></i>
-                                                Effacer la réponse
-                                            </button>
-                                        </div>
-                                        
-                                        <div class="d-flex gap-2">
-                                            <button type="button" 
-                                                    class="btn btn-outline-secondary prev-question" 
-                                                    {% if loop.index == 1 %}disabled{% endif %}
-                                                    data-action="click->qcm-enhanced#previousQuestion">
-                                                <i class="fas fa-arrow-left me-1"></i>
-                                                Question précédente
-                                            </button>
-                                            
-                                            {% if loop.last %}
-                                                <button type="button" 
-                                                        class="btn btn-success"
-                                                        data-qcm-enhanced-target="submitButton" 
-                                                        data-action="click->qcm-enhanced#prepareSubmit">
-                                                    <i class="fas fa-check me-1"></i>
-                                                    Terminer le QCM
-                                                </button>
-                                            {% else %}
-                                                <button type="button" 
-                                                        class="btn btn-primary next-question"
-                                                        data-action="click->qcm-enhanced#nextQuestion">
-                                                    <i class="fas fa-arrow-right me-1"></i>
-                                                    Question suivante
-                                                </button>
                                             {% endif %}
+                                            <div>{{ option.optionText|raw }}</div>
                                         </div>
-                                    </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            {% elseif question.questionType == 'multiple_select' %}
+                                {% for option in question.questionOptions %}
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input question-option" 
+                                           type="checkbox" 
+                                           name="question_{{ question.id }}[]" 
+                                           id="option_{{ option.id }}" 
+                                           value="{{ option.id }}"
+                                           data-question-id="{{ question.id }}"
+                                           {% if option.id in (answers[question.id] ?? []) %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="option_{{ option.id }}">
+                                        <div class="p-3 border rounded option-content">
+                                            {% if option.image %}
+                                                <div class="mb-2">
+                                                    <img src="{{ asset('uploads/qcm/options/' ~ option.image) }}" 
+                                                         alt="Option image" 
+                                                         class="img-fluid rounded" 
+                                                         style="max-height: 100px;">
+                                                </div>
+                                            {% endif %}
+                                            <div>{{ option.optionText|raw }}</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Submit Actions -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="submit" name="action" value="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Terminer le QCM
+                            </button>
+                            <button type="submit" name="action" value="save" class="btn btn-outline-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Sauvegarder
+                            </button>
+                            <a href="{{ path('student_qcm_view', {id: qcm.id}) }}" 
+                               class="btn btn-outline-danger"
+                               onclick="return confirm('Êtes-vous sûr de vouloir quitter ? Vos réponses seront sauvegardées automatiquement.')">
+                                <i class="fas fa-times me-1"></i>
+                                Quitter
+                            </a>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Vos réponses sont sauvegardées automatiquement
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Navigation Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 20px;">
+                <!-- Progress Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>
+                            Progression
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Questions répondues</span>
+                            <span class="fw-bold">
+                                <span id="progress-count">{{ answered_count }}</span>/{{ qcm.questions|length }}
+                            </span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 id="progress-bar"
+                                 style="width: {{ (answered_count / qcm.questions|length * 100)|round }}%"
+                                 aria-valuenow="{{ answered_count }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="{{ qcm.questions|length }}">
+                            </div>
+                        </div>
+                        
+                        {% if qcm.timeLimitMinutes %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Temps utilisé</span>
+                                <span class="fw-bold" id="time-used">
+                                    {{ ((qcm.timeLimitMinutes * 60 - attempt.remainingTimeSeconds) / 60)|round }}min
+                                </span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" 
+                                     role="progressbar" 
+                                     id="time-progress"
+                                     style="width: {{ ((qcm.timeLimitMinutes * 60 - attempt.remainingTimeSeconds) / (qcm.timeLimitMinutes * 60) * 100)|round }}%">
                                 </div>
                             </div>
-                        {% endfor %}
-                    </form>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <div class="col-lg-4">
-                    <!-- Question Navigator -->
-                    <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 1rem;">
-                        <div class="card-header">
-                            <h6 class="mb-0">Navigation des questions</h6>
+                <!-- Question Navigation -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Navigation
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            {% for question in questions %}
+                            <div class="col-4 col-md-3">
+                                <button type="button" 
+                                        class="btn btn-sm w-100 question-nav-btn"
+                                        data-question-id="{{ question.id }}"
+                                        data-question-number="{{ loop.index }}">
+                                    {{ loop.index }}
+                                </button>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                {% for question in qcm.questions %}
-                                    <div class="col-3">
-                                        <button type="button" 
-                                                class="btn btn-outline-secondary btn-sm w-100" 
-                                                data-qcm-enhanced-target="navigationButton"
-                                                data-question="{{ loop.index }}"
-                                                data-action="click->qcm-enhanced#goToQuestion"
-                                                id="nav-btn-{{ loop.index }}">
-                                            {{ loop.index }}
-                                        </button>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="mt-3 small">
-                                <div class="d-flex align-items-center mb-1">
-                                    <div class="btn btn-primary btn-sm me-2" style="width: 20px; height: 20px;"></div>
-                                    <span>Question actuelle</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-1">
-                                    <div class="btn btn-success btn-sm me-2" style="width: 20px; height: 20px;"></div>
-                                    <span>Question répondue</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-1">
-                                    <div class="btn btn-warning btn-sm me-2" style="width: 20px; height: 20px;"></div>
-                                    <span>Marqué pour révision</span>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="btn btn-outline-secondary btn-sm me-2" style="width: 20px; height: 20px;"></div>
-                                    <span>Question non répondue</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Progress Bar -->
-                            <div class="mt-3">
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-warning" 
-                                         data-qcm-enhanced-target="progressBar"
-                                         role="progressbar" 
-                                         style="width: 10%" 
-                                         aria-valuenow="1" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="{{ qcm.questions|length }}"></div>
-                                </div>
+                        
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between text-sm">
+                                <span class="d-flex align-items-center">
+                                    <span class="badge bg-success me-1"></span>
+                                    Répondu
+                                </span>
+                                <span class="d-flex align-items-center">
+                                    <span class="badge bg-light text-dark me-1"></span>
+                                    Non répondu
+                                </span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- QCM Info -->
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header">
-                            <h6 class="mb-0">Informations</h6>
-                        </div>
-                        <div class="card-body small">
-                            {% if qcm.timeLimitMinutes %}
-                                <div class="mb-2">
-                                    <strong>Temps limite:</strong> {{ qcm.timeLimitMinutes }} minutes
-                                </div>
-                            {% endif %}
-                            {% if qcm.passingScore %}
-                                <div class="mb-2">
-                                    <strong>Score requis:</strong> {{ qcm.passingScore }}%
-                                </div>
-                            {% endif %}
-                            <div class="mb-2">
-                                <strong>Questions:</strong> {{ qcm.questions|length }}
-                            </div>
-                            {% if qcm.maxAttempts %}
-                                <div class="mb-2">
-                                    <strong>Tentatives restantes:</strong> {{ qcm.maxAttempts }}
-                                </div>
-                            {% endif %}
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body text-center">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="review-unanswered">
+                                <i class="fas fa-search me-1"></i>
+                                Questions non répondues
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="scroll-to-top">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                Haut de page
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -260,30 +304,35 @@
     </div>
 </div>
 
-<!-- Submit Confirmation Modal -->
-<div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Auto-save status toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="auto-save-toast" class="toast" role="alert">
+        <div class="toast-body">
+            <i class="fas fa-save text-success me-2"></i>
+            Réponses sauvegardées automatiquement
+        </div>
+    </div>
+</div>
+
+<!-- Timer expiry modal -->
+<div class="modal fade" id="timer-expired-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="submitModalLabel">Confirmer la soumission</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-clock me-2"></i>
+                    Temps écoulé
+                </h5>
             </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir soumettre votre QCM ?</p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Une fois soumis, vous ne pourrez plus modifier vos réponses.
-                </div>
-                <div id="unanswered-questions" class="alert alert-danger" style="display: none;">
-                    <strong>Questions non répondues:</strong>
-                    <span id="unanswered-list"></span>
-                </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-hourglass-end text-danger mb-3" style="font-size: 3rem;"></i>
+                <h5>Le temps imparti est écoulé</h5>
+                <p class="text-muted">Votre QCM va être automatiquement soumis avec les réponses actuelles.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-success" onclick="submitQCM()">
-                    <i class="fas fa-paper-plane me-1"></i>
-                    Soumettre définitivement
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-danger" id="submit-expired">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    Soumettre maintenant
                 </button>
             </div>
         </div>
@@ -292,6 +341,204 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <!-- QCM functionality is now handled by the qcm-enhanced Stimulus controller -->
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('qcm-form');
+    const timerDisplay = document.getElementById('time-display');
+    const progressBar = document.getElementById('progress-bar');
+    const progressCount = document.getElementById('progress-count');
+    const answeredCount = document.getElementById('answered-count');
+    const autoSaveToast = new bootstrap.Toast(document.getElementById('auto-save-toast'));
+    
+    let remainingTime = {{ attempt.remainingTimeSeconds ?? 'null' }};
+    let timerInterval;
+    let autoSaveTimeout;
+    let hasAnswered = new Set({{ answered_questions|json_encode|raw }});
+    
+    // Initialize question navigation buttons
+    updateNavigationButtons();
+    
+    // Timer functionality
+    {% if qcm.timeLimitMinutes and attempt.remainingTimeSeconds %}
+    function updateTimer() {
+        if (remainingTime <= 0) {
+            clearInterval(timerInterval);
+            showTimerExpiredModal();
+            return;
+        }
+        
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        timerDisplay.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        
+        // Update time progress bar
+        const timeProgress = document.getElementById('time-progress');
+        const timeUsed = document.getElementById('time-used');
+        if (timeProgress && timeUsed) {
+            const totalTime = {{ qcm.timeLimitMinutes * 60 }};
+            const usedTime = totalTime - remainingTime;
+            const usedPercent = (usedTime / totalTime) * 100;
+            timeProgress.style.width = usedPercent + '%';
+            timeUsed.textContent = Math.round(usedTime / 60) + 'min';
+        }
+        
+        // Change timer color based on remaining time
+        if (remainingTime < 300) { // Less than 5 minutes
+            timerDisplay.className = 'h5 mb-0 text-danger';
+        } else if (remainingTime < 600) { // Less than 10 minutes
+            timerDisplay.className = 'h5 mb-0 text-warning';
+        }
+        
+        remainingTime--;
+    }
+    
+    function showTimerExpiredModal() {
+        const modal = new bootstrap.Modal(document.getElementById('timer-expired-modal'));
+        modal.show();
+        
+        document.getElementById('submit-expired').addEventListener('click', function() {
+            form.querySelector('button[name="action"][value="submit"]').click();
+        });
+    }
+    
+    timerInterval = setInterval(updateTimer, 1000);
+    {% endif %}
+    
+    // Auto-save functionality
+    function autoSave() {
+        const formData = new FormData(form);
+        formData.set('action', 'auto_save');
+        
+        fetch('{{ path('student_qcm_save_answers', {id: qcm.id}) }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                autoSaveToast.show();
+            }
+        })
+        .catch(console.error);
+    }
+    
+    function triggerAutoSave() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(autoSave, 2000); // Auto-save after 2 seconds of inactivity
+    }
+    
+    // Question option change handlers
+    document.querySelectorAll('.question-option').forEach(option => {
+        option.addEventListener('change', function() {
+            const questionId = this.getAttribute('data-question-id');
+            
+            // Update answered status
+            if (this.type === 'radio' && this.checked) {
+                hasAnswered.add(questionId);
+            } else if (this.type === 'checkbox') {
+                const checkedBoxes = document.querySelectorAll(`input[name="question_${questionId}[]"]:checked`);
+                if (checkedBoxes.length > 0) {
+                    hasAnswered.add(questionId);
+                } else {
+                    hasAnswered.delete(questionId);
+                }
+            }
+            
+            updateProgress();
+            updateNavigationButtons();
+            triggerAutoSave();
+        });
+    });
+    
+    function updateProgress() {
+        const total = {{ qcm.questions|length }};
+        const answered = hasAnswered.size;
+        const percentage = (answered / total) * 100;
+        
+        progressBar.style.width = percentage + '%';
+        progressCount.textContent = answered;
+        answeredCount.textContent = answered;
+    }
+    
+    function updateNavigationButtons() {
+        document.querySelectorAll('.question-nav-btn').forEach(btn => {
+            const questionId = btn.getAttribute('data-question-id');
+            if (hasAnswered.has(questionId)) {
+                btn.className = 'btn btn-sm w-100 btn-success question-nav-btn';
+            } else {
+                btn.className = 'btn btn-sm w-100 btn-outline-secondary question-nav-btn';
+            }
+        });
+        
+        // Update question status badges
+        document.querySelectorAll('.question-card').forEach(card => {
+            const questionId = card.getAttribute('data-question-id');
+            const statusBadge = card.querySelector('.question-status .badge');
+            if (hasAnswered.has(questionId)) {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Répondu';
+            } else {
+                statusBadge.className = 'badge bg-light text-dark';
+                statusBadge.innerHTML = '<i class="far fa-circle me-1"></i>Non répondu';
+            }
+        });
+    }
+    
+    // Navigation button clicks
+    document.querySelectorAll('.question-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const questionId = this.getAttribute('data-question-id');
+            const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (questionCard) {
+                questionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    
+    // Review unanswered questions
+    document.getElementById('review-unanswered').addEventListener('click', function() {
+        const unanswered = document.querySelectorAll('.question-card').values();
+        for (let card of unanswered) {
+            const questionId = card.getAttribute('data-question-id');
+            if (!hasAnswered.has(questionId)) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                break;
+            }
+        }
+    });
+    
+    // Scroll to top
+    document.getElementById('scroll-to-top').addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (e.submitter.value === 'submit') {
+            const unansweredCount = {{ qcm.questions|length }} - hasAnswered.size;
+            if (unansweredCount > 0) {
+                const message = `Il vous reste ${unansweredCount} question${unansweredCount > 1 ? 's' : ''} non répondue${unansweredCount > 1 ? 's' : ''}. Êtes-vous sûr de vouloir terminer le QCM ?`;
+                if (!confirm(message)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            // Clear timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        }
+    });
+    
+    // Prevent accidental page leave
+    window.addEventListener('beforeunload', function(e) {
+        if (hasAnswered.size > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+});
+</script>
 {% endblock %}

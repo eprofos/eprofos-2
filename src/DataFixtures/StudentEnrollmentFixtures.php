@@ -107,16 +107,6 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
             $status = $enrollment->getStatus();
             $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
         }
-
-        echo sprintf(
-            "Created %d student enrollments: %s\n",
-            $enrollmentCount,
-            implode(', ', array_map(
-                static fn ($status, $count) => "{$count} {$status}",
-                array_keys($statusCounts),
-                $statusCounts
-            ))
-        );
     }
 
     private function createEnrollment(

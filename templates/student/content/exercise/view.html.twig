@@ -39,9 +39,22 @@
                                      style="width: 50px; height: 50px;">
                                     <i class="fas fa-pencil-alt fa-lg"></i>
                                 </div>
-                                <div>
+                                <div class="flex-grow-1">
                                     <h1 class="h3 mb-1">{{ exercise.title }}</h1>
-                                    <span class="badge bg-success">Exercice</span>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-success">Exercice</span>
+                                        {% if has_passed %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Réussi
+                                            </span>
+                                        {% endif %}
+                                        {% if exercise.type %}
+                                            <span class="badge bg-info">{{ exercise.typeLabel }}</span>
+                                        {% endif %}
+                                        {% if exercise.difficulty %}
+                                            <span class="badge bg-secondary">{{ exercise.difficultyLabel }}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             
@@ -51,33 +64,82 @@
                             
                             <!-- Exercise Metadata -->
                             <div class="row g-2 mb-3">
-                                {% if exercise.type %}
-                                    <div class="col-auto">
-                                        <span class="badge bg-info">
-                                            <i class="fas fa-tag me-1"></i>
-                                            {{ exercise.typeLabel|default(exercise.type) }}
-                                        </span>
-                                    </div>
-                                {% endif %}
-                                {% if exercise.maxAttempts %}
-                                    <div class="col-auto">
-                                        <span class="badge bg-warning">
-                                            <i class="fas fa-redo me-1"></i>
-                                            {{ exercise.maxAttempts }} tentative{{ exercise.maxAttempts > 1 ? 's' : '' }} max
-                                        </span>
-                                    </div>
-                                {% endif %}
-                                {% if exercise.timeLimitMinutes %}
+                                {% if exercise.estimatedDurationMinutes %}
                                     <div class="col-auto">
                                         <span class="badge bg-primary">
                                             <i class="fas fa-clock me-1"></i>
-                                            {{ exercise.timeLimitMinutes }} min max
+                                            {{ exercise.formattedDuration }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.maxPoints %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-star me-1"></i>
+                                            {{ exercise.maxPoints }} points max
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.passingPoints %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-trophy me-1"></i>
+                                            {{ exercise.passingPoints }} points requis
                                         </span>
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
+
+                    <!-- Progress Status -->
+                    {% if submissions is not empty %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    Votre progression
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            <h4 class="text-primary mb-0">{{ submissions|length }}</h4>
+                                            <small class="text-muted">Tentative{{ submissions|length > 1 ? 's' : '' }}</small>
+                                        </div>
+                                    </div>
+                                    {% if best_score is not null %}
+                                        <div class="col-sm-6 col-lg-3">
+                                            <div class="text-center">
+                                                <h4 class="text-success mb-0">{{ best_score }}</h4>
+                                                <small class="text-muted">Meilleur score</small>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {% if exercise.maxPoints and best_score is not null %}
+                                        <div class="col-sm-6 col-lg-3">
+                                            <div class="text-center">
+                                                <h4 class="text-info mb-0">{{ ((best_score / exercise.maxPoints) * 100)|round }}%</h4>
+                                                <small class="text-muted">Pourcentage</small>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            {% if has_passed %}
+                                                <h4 class="text-success mb-0"><i class="fas fa-check"></i></h4>
+                                                <small class="text-muted">Validé</small>
+                                            {% else %}
+                                                <h4 class="text-warning mb-0"><i class="fas fa-hourglass-half"></i></h4>
+                                                <small class="text-muted">En cours</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
 
                     <!-- Exercise Instructions -->
                     {% if exercise.instructions %}
@@ -96,51 +158,40 @@
                         </div>
                     {% endif %}
 
-                    <!-- Exercise Content -->
-                    {% if exercise.content %}
+                    <!-- Expected Outcomes -->
+                    {% if exercise.expectedOutcomes %}
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-clipboard-list me-2"></i>
-                                    Énoncé de l'exercice
+                                    <i class="fas fa-bullseye me-2"></i>
+                                    Objectifs attendus
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="content-text">
-                                    {{ exercise.content|nl2br }}
-                                </div>
+                                <ul class="mb-0">
+                                    {% for outcome in exercise.expectedOutcomes %}
+                                        <li>{{ outcome }}</li>
+                                    {% endfor %}
+                                </ul>
                             </div>
                         </div>
                     {% endif %}
 
-                    <!-- Resource Files for Exercise -->
-                    {% if exercise.resourceFiles %}
+                    <!-- Resources -->
+                    {% if exercise.resources %}
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-download me-2"></i>
-                                    Ressources pour l'exercice
+                                    <i class="fas fa-tools me-2"></i>
+                                    Ressources nécessaires
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="list-group list-group-flush">
-                                    {% for file in exercise.resourceFiles %}
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <i class="fas fa-file me-2"></i>
-                                                {{ file.name|default('Fichier ressource') }}
-                                                {% if file.description %}
-                                                    <small class="text-muted d-block">{{ file.description }}</small>
-                                                {% endif %}
-                                            </div>
-                                            <a href="{{ asset('uploads/exercises/resources/' ~ file.filename) }}" 
-                                               class="btn btn-outline-primary btn-sm" 
-                                               download>
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                        </div>
+                                <ul class="mb-0">
+                                    {% for resource in exercise.resources %}
+                                        <li>{{ resource }}</li>
                                     {% endfor %}
-                                </div>
+                                </ul>
                             </div>
                         </div>
                     {% endif %}
@@ -148,27 +199,90 @@
                     <!-- Start Exercise Action -->
                     <div class="card border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <h5 class="mb-3">Prêt à commencer l'exercice ?</h5>
-                            <p class="text-muted mb-4">
-                                Assurez-vous d'avoir lu toutes les instructions et téléchargé les ressources nécessaires.
-                            </p>
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                <a href="{{ path('student_exercise_start', {id: exercise.id}) }}" 
-                                   class="btn btn-success btn-lg">
-                                    <i class="fas fa-play me-2"></i>
-                                    Commencer l'exercice
-                                </a>
-                                <a href="{{ path('student_course_view', {id: course.id}) }}" 
-                                   class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left me-1"></i>
-                                    Retour au cours
-                                </a>
-                            </div>
+                            {% if can_attempt %}
+                                <h5 class="mb-3">
+                                    {% if submissions is empty %}
+                                        Prêt à commencer l'exercice ?
+                                    {% else %}
+                                        Recommencer l'exercice
+                                    {% endif %}
+                                </h5>
+                                <p class="text-muted mb-4">
+                                    {% if submissions is empty %}
+                                        Assurez-vous d'avoir lu toutes les instructions et préparé les ressources nécessaires.
+                                    {% else %}
+                                        Vous pouvez recommencer cet exercice pour améliorer votre score.
+                                    {% endif %}
+                                </p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <a href="{{ path('student_exercise_start', {id: exercise.id}) }}" 
+                                       class="btn btn-success btn-lg">
+                                        <i class="fas fa-play me-2"></i>
+                                        {% if submissions is empty %}Commencer l'exercice{% else %}Nouvelle tentative{% endif %}
+                                    </a>
+                                    <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour au cours
+                                    </a>
+                                </div>
+                            {% else %}
+                                <h5 class="mb-3 text-muted">Exercice terminé</h5>
+                                <p class="text-muted mb-4">
+                                    Vous avez terminé cet exercice. Consultez vos résultats ci-dessous.
+                                </p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour au cours
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-4">
+                    <!-- Exercise Progress -->
+                    {% if submissions is not empty %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Historique des tentatives</h6>
+                            </div>
+                            <div class="card-body">
+                                {% for submission in submissions %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <strong>Tentative #{{ submission.attemptNumber }}</strong>
+                                            <div class="small text-muted">
+                                                {{ submission.createdAt|date('d/m/Y H:i') }}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            {% if submission.score is not null %}
+                                                <span class="badge bg-{{ submission.passed ? 'success' : 'warning' }}">
+                                                    {{ submission.score }}/{{ exercise.maxPoints ?? '?' }}
+                                                </span>
+                                                <div class="small">
+                                                    <a href="{{ path('student_exercise_result', {id: exercise.id, submissionId: submission.id}) }}" 
+                                                       class="text-decoration-none">
+                                                        Voir le résultat
+                                                    </a>
+                                                </div>
+                                            {% else %}
+                                                <span class="badge bg-{{ submission.statusLabel == 'Soumis' ? 'info' : 'secondary' }}">
+                                                    {{ submission.statusLabel }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if not loop.last %}<hr class="my-2">{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <!-- Exercise Info -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header">
@@ -179,40 +293,31 @@
                                 {% if exercise.type %}
                                     <div class="col-12">
                                         <strong class="small text-muted">Type:</strong>
-                                        <div>{{ exercise.typeLabel|default(exercise.type) }}</div>
+                                        <div>{{ exercise.typeLabel }}</div>
                                     </div>
                                 {% endif %}
-                                {% if exercise.maxAttempts %}
-                                    <div class="col-6">
-                                        <strong class="small text-muted">Tentatives max:</strong>
-                                        <div>{{ exercise.maxAttempts }}</div>
-                                    </div>
-                                {% endif %}
-                                {% if exercise.timeLimitMinutes %}
-                                    <div class="col-6">
-                                        <strong class="small text-muted">Temps limite:</strong>
-                                        <div>{{ exercise.timeLimitMinutes }} min</div>
-                                    </div>
-                                {% endif %}
-                                {% if exercise.isAutoGraded %}
+                                {% if exercise.difficulty %}
                                     <div class="col-12">
-                                        <strong class="small text-muted">Évaluation:</strong>
-                                        <div>
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-robot me-1"></i>
-                                                Automatique
-                                            </span>
-                                        </div>
+                                        <strong class="small text-muted">Difficulté:</strong>
+                                        <div>{{ exercise.difficultyLabel }}</div>
                                     </div>
-                                {% else %}
-                                    <div class="col-12">
-                                        <strong class="small text-muted">Évaluation:</strong>
-                                        <div>
-                                            <span class="badge bg-info">
-                                                <i class="fas fa-user me-1"></i>
-                                                Manuelle
-                                            </span>
-                                        </div>
+                                {% endif %}
+                                {% if exercise.estimatedDurationMinutes %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Durée estimée:</strong>
+                                        <div>{{ exercise.formattedDuration }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.maxPoints %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Points max:</strong>
+                                        <div>{{ exercise.maxPoints }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.passingPoints %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Seuil de réussite:</strong>
+                                        <div>{{ exercise.passingPoints }} pts ({{ exercise.passingPercentage|round }}%)</div>
                                     </div>
                                 {% endif %}
                             </div>
@@ -253,12 +358,12 @@
                         <div class="card-body">
                             <ul class="small mb-0">
                                 <li>Lisez attentivement les instructions</li>
-                                <li>Téléchargez toutes les ressources nécessaires</li>
-                                {% if exercise.timeLimitMinutes %}
-                                    <li>Attention au temps limite de {{ exercise.timeLimitMinutes }} minutes</li>
+                                <li>Consultez les objectifs attendus</li>
+                                {% if exercise.estimatedDurationMinutes %}
+                                    <li>Durée estimée : {{ exercise.formattedDuration }}</li>
                                 {% endif %}
-                                {% if exercise.maxAttempts %}
-                                    <li>Vous avez {{ exercise.maxAttempts }} tentative{{ exercise.maxAttempts > 1 ? 's' : '' }}</li>
+                                {% if exercise.passingPoints %}
+                                    <li>Score requis : {{ exercise.passingPoints }}/{{ exercise.maxPoints }} points</li>
                                 {% endif %}
                                 <li>Sauvegardez régulièrement votre travail</li>
                             </ul>

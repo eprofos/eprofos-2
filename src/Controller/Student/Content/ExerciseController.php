@@ -8,7 +8,10 @@ use App\Entity\Training\Exercise;
 use App\Entity\User\Student;
 use App\Repository\Training\ExerciseRepository;
 use App\Service\Security\ContentAccessService;
+use App\Service\Student\ExerciseSubmissionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -25,7 +28,8 @@ class ExerciseController extends AbstractController
 {
     public function __construct(
         private readonly ExerciseRepository $exerciseRepository,
-        private readonly ContentAccessService $contentAccessService
+        private readonly ContentAccessService $contentAccessService,
+        private readonly ExerciseSubmissionService $submissionService
     ) {
     }
 
@@ -50,6 +54,12 @@ class ExerciseController extends AbstractController
             }
         }
 
+        // Get submission information
+        $submissions = $this->submissionService->getStudentSubmissions($student, $exercise);
+        $bestScore = $this->submissionService->getStudentBestScore($student, $exercise);
+        $hasPassed = $this->submissionService->hasStudentPassed($student, $exercise);
+        $canAttempt = $this->submissionService->canStudentAttempt($student, $exercise);
+
         return $this->render('student/content/exercise/view.html.twig', [
             'exercise' => $exercise,
             'course' => $exercise->getCourse(),
@@ -58,6 +68,10 @@ class ExerciseController extends AbstractController
             'formation' => $exercise->getCourse()?->getChapter()?->getModule()?->getFormation(),
             'enrollment' => $enrollment,
             'student' => $student,
+            'submissions' => $submissions,
+            'best_score' => $bestScore,
+            'has_passed' => $hasPassed,
+            'can_attempt' => $canAttempt,
             'page_title' => $exercise->getTitle(),
         ]);
     }
@@ -67,18 +81,124 @@ class ExerciseController extends AbstractController
      */
     #[Route('/{id}/start', name: 'student_exercise_start', methods: ['GET', 'POST'])]
     #[IsGranted('interact', subject: 'exercise')]
-    public function start(Exercise $exercise): Response
+    public function start(Exercise $exercise, Request $request): Response
     {
         /** @var Student $student */
         $student = $this->getUser();
 
-        // TODO: Implement exercise interaction logic
-        // This would include tracking progress, saving answers, etc.
+        if (!$this->submissionService->canStudentAttempt($student, $exercise)) {
+            $this->addFlash('error', 'Vous ne pouvez plus démarrer cette exercice.');
+            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+        }
+
+        // Get or create submission
+        $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
+
+        if ($request->isMethod('POST')) {
+            $submissionData = $request->request->all();
+            
+            try {
+                $this->submissionService->saveSubmissionData($submission, $submissionData);
+                
+                if ($request->request->get('action') === 'submit') {
+                    $this->submissionService->submitExercise($submission);
+                    $this->addFlash('success', 'Exercice soumis avec succès!');
+                    return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+                }
+                
+                $this->addFlash('success', 'Progression sauvegardée.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de la sauvegarde: ' . $e->getMessage());
+            }
+        }
 
         return $this->render('student/content/exercise/start.html.twig', [
             'exercise' => $exercise,
+            'submission' => $submission,
             'student' => $student,
             'page_title' => 'Exercice: ' . $exercise->getTitle(),
+        ]);
+    }
+
+    /**
+     * Auto-save exercise data via AJAX.
+     */
+    #[Route('/{id}/autosave', name: 'student_exercise_autosave', methods: ['POST'])]
+    #[IsGranted('interact', subject: 'exercise')]
+    public function autosave(Exercise $exercise, Request $request): JsonResponse
+    {
+        /** @var Student $student */
+        $student = $this->getUser();
+
+        try {
+            $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
+            $data = json_decode($request->getContent(), true);
+            
+            $this->submissionService->saveSubmissionData($submission, $data);
+            
+            return new JsonResponse(['success' => true, 'message' => 'Sauvegardé automatiquement']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * Submit exercise for grading.
+     */
+    #[Route('/{id}/submit', name: 'student_exercise_submit', methods: ['POST'])]
+    #[IsGranted('interact', subject: 'exercise')]
+    public function submit(Exercise $exercise, Request $request): Response
+    {
+        /** @var Student $student */
+        $student = $this->getUser();
+
+        try {
+            $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
+            
+            // Save final data
+            $submissionData = $request->request->all();
+            $this->submissionService->saveSubmissionData($submission, $submissionData);
+            
+            // Submit for grading
+            $this->submissionService->submitExercise($submission);
+            
+            $this->addFlash('success', 'Exercice soumis avec succès pour évaluation!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la soumission: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+    }
+
+    /**
+     * View exercise results.
+     */
+    #[Route('/{id}/result/{submissionId}', name: 'student_exercise_result', methods: ['GET'])]
+    #[IsGranted('view', subject: 'exercise')]
+    public function result(Exercise $exercise, int $submissionId): Response
+    {
+        /** @var Student $student */
+        $student = $this->getUser();
+
+        $submissions = $this->submissionService->getStudentSubmissions($student, $exercise);
+        $submission = null;
+        
+        foreach ($submissions as $s) {
+            if ($s->getId() === $submissionId) {
+                $submission = $s;
+                break;
+            }
+        }
+
+        if (!$submission) {
+            throw $this->createNotFoundException('Submission not found');
+        }
+
+        return $this->render('student/content/exercise/result.html.twig', [
+            'exercise' => $exercise,
+            'submission' => $submission,
+            'student' => $student,
+            'page_title' => 'Résultat: ' . $exercise->getTitle(),
         ]);
     }
 }

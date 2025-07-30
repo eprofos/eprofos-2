@@ -1,0 +1,342 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_exercise_view', {id: exercise.id}) }}">{{ exercise.title }}</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Résultat #{{ submission.attemptNumber }}</li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Result Header -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-{{ submission.passed ? 'success' : 'warning' }} text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-{{ submission.passed ? 'check' : 'clock' }} fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h1 class="h3 mb-1">{{ exercise.title }}</h1>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-{{ submission.passed ? 'success' : 'warning' }}">
+                                            {% if submission.passed %}
+                                                <i class="fas fa-trophy me-1"></i>Réussi
+                                            {% else %}
+                                                <i class="fas fa-hourglass-half me-1"></i>{{ submission.statusLabel }}
+                                            {% endif %}
+                                        </span>
+                                        <span class="badge bg-info">Tentative #{{ submission.attemptNumber }}</span>
+                                        {% if submission.score is not null %}
+                                            <span class="badge bg-primary">{{ submission.score }}/{{ exercise.maxPoints ?? '?' }} points</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if submission.score is not null and exercise.maxPoints %}
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar bg-{{ submission.passed ? 'success' : 'warning' }}" 
+                                         role="progressbar" 
+                                         style="width: {{ submission.scorePercentage }}%"
+                                         aria-valuenow="{{ submission.scorePercentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                                <p class="text-muted mb-0">
+                                    Score obtenu : {{ submission.scorePercentage|round }}% 
+                                    {% if exercise.passingPercentage %}
+                                        ({{ exercise.passingPercentage|round }}% requis)
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Score Details -->
+                    {% if submission.score is not null %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Détails de l'évaluation
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            <h4 class="text-primary mb-0">{{ submission.score }}</h4>
+                                            <small class="text-muted">Points obtenus</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            <h4 class="text-info mb-0">{{ exercise.maxPoints ?? '?' }}</h4>
+                                            <small class="text-muted">Points maximum</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            <h4 class="text-{{ submission.passed ? 'success' : 'warning' }} mb-0">{{ submission.scorePercentage|round }}%</h4>
+                                            <small class="text-muted">Pourcentage</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <div class="text-center">
+                                            {% if submission.passed %}
+                                                <h4 class="text-success mb-0"><i class="fas fa-trophy"></i></h4>
+                                                <small class="text-muted">Validé</small>
+                                            {% else %}
+                                                <h4 class="text-warning mb-0"><i class="fas fa-redo"></i></h4>
+                                                <small class="text-muted">À reprendre</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Feedback -->
+                    {% if submission.feedback %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-comments me-2"></i>
+                                    Commentaires de l'instructeur
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="content-text">
+                                    {{ submission.feedback|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Submitted Work -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Votre travail soumis
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if submission.type == 'text' %}
+                                <!-- Text Submission -->
+                                <div class="content-text bg-light p-3 rounded">
+                                    {{ submission.content|nl2br }}
+                                </div>
+                                
+                            {% elseif submission.type == 'file' %}
+                                <!-- File Submission -->
+                                {% if submission.files is not empty %}
+                                    <div class="list-group list-group-flush">
+                                        {% for file in submission.files %}
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-file me-2"></i>
+                                                    <strong>{{ file.name }}</strong>
+                                                    <small class="text-muted d-block">{{ file.size }} - Soumis le {{ file.uploaded_at|date('d/m/Y à H:i') }}</small>
+                                                </div>
+                                                <a href="{{ asset('uploads/submissions/' ~ file.filename) }}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   download>
+                                                    <i class="fas fa-download me-1"></i>Télécharger
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if submission.submissionData.description %}
+                                    <div class="mt-3">
+                                        <strong>Description :</strong>
+                                        <div class="content-text">{{ submission.submissionData.description|nl2br }}</div>
+                                    </div>
+                                {% endif %}
+                                
+                            {% elseif submission.type == 'practical' %}
+                                <!-- Practical Submission -->
+                                {% if submission.checklistProgress is not empty %}
+                                    <div class="mb-3">
+                                        <h6>Liste de contrôle :</h6>
+                                        {% for i, criteria in exercise.successCriteria ?? [] %}
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-{{ submission.checklistProgress[i] is defined and submission.checklistProgress[i] ? 'check-circle text-success' : 'circle text-muted' }} me-2"></i>
+                                                {{ criteria }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if submission.submissionData.self_assessment %}
+                                    <div class="mt-3">
+                                        <h6>Auto-évaluation :</h6>
+                                        <div class="content-text bg-light p-3 rounded">
+                                            {{ submission.submissionData.self_assessment|nl2br }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a href="{{ path('student_exercise_view', {id: exercise.id}) }}" 
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour à l'exercice
+                                    </a>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    {% if not submission.passed %}
+                                        <a href="{{ path('student_exercise_start', {id: exercise.id}) }}" 
+                                           class="btn btn-warning">
+                                            <i class="fas fa-redo me-1"></i>
+                                            Nouvelle tentative
+                                        </a>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+                                        <i class="fas fa-print me-1"></i>
+                                        Imprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Submission Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informations de soumission</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <strong class="small text-muted">Tentative :</strong>
+                                    <div>#{{ submission.attemptNumber }}</div>
+                                </div>
+                                <div class="col-12">
+                                    <strong class="small text-muted">Statut :</strong>
+                                    <div>
+                                        <span class="badge bg-{{ submission.passed ? 'success' : 'warning' }}">
+                                            {{ submission.statusLabel }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <strong class="small text-muted">Soumis le :</strong>
+                                    <div>{{ submission.submittedAt|date('d/m/Y') }}</div>
+                                    <small class="text-muted">{{ submission.submittedAt|date('H:i') }}</small>
+                                </div>
+                                {% if submission.gradedAt %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Évalué le :</strong>
+                                        <div>{{ submission.gradedAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ submission.gradedAt|date('H:i') }}</small>
+                                    </div>
+                                {% endif %}
+                                {% if submission.timeSpentMinutes %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Temps passé :</strong>
+                                        <div>{{ submission.formattedTimeSpent }}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise Details -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Détails de l'exercice</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <strong class="small text-muted">Type :</strong>
+                                    <div>{{ exercise.typeLabel }}</div>
+                                </div>
+                                {% if exercise.difficulty %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Difficulté :</strong>
+                                        <div>{{ exercise.difficultyLabel }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.maxPoints %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Points max :</strong>
+                                        <div>{{ exercise.maxPoints }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.passingPoints %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Seuil requis :</strong>
+                                        <div>{{ exercise.passingPoints }} pts</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="card border-{{ submission.passed ? 'success' : 'warning' }}">
+                        <div class="card-header bg-{{ submission.passed ? 'success' : 'warning' }} text-{{ submission.passed ? 'white' : 'dark' }}">
+                            <h6 class="mb-0">
+                                <i class="fas fa-{{ submission.passed ? 'check-circle' : 'exclamation-triangle' }} me-2"></i>
+                                Prochaines étapes
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if submission.passed %}
+                                <p class="small mb-2">
+                                    <strong>Félicitations !</strong> Vous avez réussi cet exercice.
+                                </p>
+                                <ul class="small mb-0">
+                                    <li>Exercice validé dans votre progression</li>
+                                    <li>Vous pouvez passer au contenu suivant</li>
+                                    <li>Consultez vos autres exercices</li>
+                                </ul>
+                            {% else %}
+                                <p class="small mb-2">
+                                    L'exercice n'est pas encore validé.
+                                </p>
+                                <ul class="small mb-0">
+                                    {% if submission.score is not null %}
+                                        <li>Score requis : {{ exercise.passingPoints ?? '?' }} points minimum</li>
+                                    {% else %}
+                                        <li>En attente d'évaluation par l'instructeur</li>
+                                    {% endif %}
+                                    <li>Vous pouvez refaire l'exercice</li>
+                                    <li>Relisez les instructions et objectifs</li>
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
