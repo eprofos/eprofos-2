@@ -345,7 +345,7 @@ class ProspectRepository extends ServiceEntityRepository
 
         // Get average days to conversion
         $avgDaysToConversion = $this->createQueryBuilder('p')
-            ->select('AVG(DATEDIFF(p.updatedAt, p.createdAt))')
+            ->select('AVG(p.updatedAt - p.createdAt)')
             ->where('p.status = :status')
             ->setParameter('status', 'customer')
             ->getQuery()

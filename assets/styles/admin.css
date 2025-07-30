@@ -5,6 +5,11 @@
  * that extend or override the default Tabler UI framework styles.
  */
 
+/* ============== BADGE COLOR FIX ============== */
+span.badge {
+    color: #fff !important;
+}
+
 /* ============== ALTERNANCE FORM STYLES ============== */
 
 .alternance-fields {
