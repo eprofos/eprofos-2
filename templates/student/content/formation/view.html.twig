@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_formation_index') }}">Formations</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ formation.title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Formation Header -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        {% if formation.image %}
+                            <img src="{{ asset('uploads/formations/' ~ formation.image) }}" 
+                                 class="card-img-top" 
+                                 alt="{{ formation.title }}"
+                                 style="height: 300px; object-fit: cover;">
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h1 class="h3 mb-3">{{ formation.title }}</h1>
+                            <p class="text-muted mb-4">{{ formation.shortDescription }}</p>
+                            
+                            <!-- Formation Metadata -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                        <div class="fw-bold">{{ formation.durationHours }}h</div>
+                                        <small class="text-muted">Durée</small>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-signal fa-2x text-success mb-2"></i>
+                                        <div class="fw-bold">{{ formation.levelLabel }}</div>
+                                        <small class="text-muted">Niveau</small>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-desktop fa-2x text-info mb-2"></i>
+                                        <div class="fw-bold">{{ formation.formatLabel }}</div>
+                                        <small class="text-muted">Format</small>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-tag fa-2x text-warning mb-2"></i>
+                                        <div class="fw-bold">{{ formation.category.name }}</div>
+                                        <small class="text-muted">Catégorie</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            {% if formation.description %}
+                                <div class="mb-4">
+                                    <h5>Description</h5>
+                                    <div class="text-muted">
+                                        {{ formation.description|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Enrollment Info -->
+                    {% if enrollment %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Inscription confirmée
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small mb-2">
+                                    <strong>Statut:</strong> 
+                                    <span class="badge {{ enrollment.statusBadgeClass }}">
+                                        {{ enrollment.statusLabel }}
+                                    </span>
+                                </p>
+                                <p class="small mb-2">
+                                    <strong>Inscrit le:</strong> {{ enrollment.enrolledAt|date('d/m/Y H:i') }}
+                                </p>
+                                {% if enrollment.session %}
+                                    <p class="small mb-0">
+                                        <strong>Session:</strong> {{ enrollment.session.name }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Quick Access -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header">
+                            <h6 class="mb-0">Accès rapide</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="#modules" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-list me-1"></i>
+                                    Voir les modules
+                                </a>
+                                {% if formation.activeModules|length > 0 %}
+                                    {% set firstModule = formation.activeModules|first %}
+                                    <a href="{{ path('student_module_view', {id: firstModule.id}) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-play me-1"></i>
+                                        Commencer la formation
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules Section -->
+            <div id="modules">
+                <h4 class="mb-4">Modules de formation</h4>
+                
+                {% if formation.activeModules|length > 0 %}
+                    <div class="row g-4">
+                        {% for module in formation.activeModules %}
+                            <div class="col-lg-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px; flex-shrink: 0;">
+                                                <span class="fw-bold">{{ loop.index }}</span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-1">{{ module.title }}</h5>
+                                                <p class="text-muted small mb-0">
+                                                    {% if module.durationHours %}
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ module.formattedDuration }}
+                                                    {% endif %}
+                                                    {% if module.activeChapters|length > 0 %}
+                                                        <i class="fas fa-book ms-3 me-1"></i>
+                                                        {{ module.activeChapters|length }} chapitre{{ module.activeChapters|length > 1 ? 's' : '' }}
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if module.description %}
+                                            <p class="text-muted small mb-3">
+                                                {{ module.description|slice(0, 150) }}{% if module.description|length > 150 %}...{% endif %}
+                                            </p>
+                                        {% endif %}
+                                        
+                                        {% if module.learningObjectives %}
+                                            <div class="mb-3">
+                                                <strong class="small">Objectifs:</strong>
+                                                <ul class="small mb-0 ms-3">
+                                                    {% for objective in module.learningObjectives|slice(0, 3) %}
+                                                        <li>{{ objective }}</li>
+                                                    {% endfor %}
+                                                    {% if module.learningObjectives|length > 3 %}
+                                                        <li class="text-muted">Et {{ module.learningObjectives|length - 3 }} autres...</li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="card-footer bg-transparent border-0 pt-0">
+                                        <a href="{{ path('student_module_view', {id: module.id}) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-arrow-right me-1"></i>
+                                            Accéder au module
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucun module disponible pour cette formation.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

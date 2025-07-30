@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">{{ page_title }}</h1>
+                    <p class="text-muted mb-0">Formations auxquelles vous êtes inscrit</p>
+                </div>
+                <a href="{{ path('student_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour au tableau de bord
+                </a>
+            </div>
+
+            {% if formations|length > 0 %}
+                <!-- Formations Grid -->
+                <div class="row g-4">
+                    {% for formation in formations %}
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                {% if formation.image %}
+                                    <img src="{{ asset('uploads/formations/' ~ formation.image) }}" 
+                                         class="card-img-top" 
+                                         alt="{{ formation.title }}"
+                                         style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-primary d-flex align-items-center justify-content-center text-white" 
+                                         style="height: 200px;">
+                                        <i class="fas fa-graduation-cap fa-3x opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ formation.title }}</h5>
+                                    <p class="card-text text-muted small">
+                                        {{ formation.shortDescription|slice(0, 120) }}{% if formation.shortDescription|length > 120 %}...{% endif %}
+                                    </p>
+                                    
+                                    <!-- Formation Info -->
+                                    <div class="row g-2 mb-3 small">
+                                        <div class="col-6">
+                                            <i class="fas fa-clock text-primary me-1"></i>
+                                            {{ formation.durationHours }}h
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fas fa-signal text-success me-1"></i>
+                                            {{ formation.levelLabel }}
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fas fa-desktop text-info me-1"></i>
+                                            {{ formation.formatLabel }}
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fas fa-tag text-warning me-1"></i>
+                                            {{ formation.category.name }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent border-0 pt-0">
+                                    <div class="d-grid">
+                                        <a href="{{ path('student_formation_view', {id: formation.id}) }}" 
+                                           class="btn btn-primary">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Accéder à la formation
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Formations Message -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-graduation-cap fa-4x text-muted opacity-50"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">Aucune formation accessible</h4>
+                    <p class="text-muted mb-4">
+                        Vous n'êtes actuellement inscrit à aucune formation.<br>
+                        Contactez votre organisme de formation pour plus d'informations.
+                    </p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{{ path('public_formation_index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-1"></i>
+                            Découvrir nos formations
+                        </a>
+                        <a href="{{ path('public_contact') }}" class="btn btn-primary">
+                            <i class="fas fa-envelope me-1"></i>
+                            Nous contacter
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

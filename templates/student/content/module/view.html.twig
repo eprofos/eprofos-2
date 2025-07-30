@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_formation_index') }}">Formations</a>
+                    </li>
+                    {% if formation %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_formation_view', {id: formation.id}) }}">{{ formation.title }}</a>
+                        </li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ module.title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Module Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="h3 mb-2">{{ module.title }}</h1>
+                            {% if module.description %}
+                                <p class="text-muted mb-3">{{ module.description }}</p>
+                            {% endif %}
+                            
+                            <!-- Module Metadata -->
+                            <div class="row g-2">
+                                {% if module.durationHours %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ module.formattedDuration }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if module.activeChapters|length > 0 %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-book me-1"></i>
+                                            {{ module.activeChapters|length }} chapitre{{ module.activeChapters|length > 1 ? 's' : '' }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 text-lg-end">
+                            {% if module.activeChapters|length > 0 %}
+                                {% set firstChapter = module.activeChapters|first %}
+                                <a href="{{ path('student_chapter_view', {id: firstChapter.id}) }}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-play me-1"></i>
+                                    Commencer le module
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Objectives -->
+            {% if module.learningObjectives %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-target me-2"></i>
+                            Objectifs d'apprentissage
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for objective in module.learningObjectives %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                        <span>{{ objective }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Chapters -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Chapitres du module
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if module.activeChapters|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for chapter in module.activeChapters %}
+                                <div class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-8">
+                                            <div class="d-flex align-items-start">
+                                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 32px; height: 32px; flex-shrink: 0; font-size: 0.875rem;">
+                                                    {{ loop.index }}
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">{{ chapter.title }}</h6>
+                                                    {% if chapter.description %}
+                                                        <p class="text-muted small mb-2">
+                                                            {{ chapter.description|slice(0, 120) }}{% if chapter.description|length > 120 %}...{% endif %}
+                                                        </p>
+                                                    {% endif %}
+                                                    
+                                                    <div class="d-flex gap-3 small text-muted">
+                                                        {% if chapter.durationMinutes %}
+                                                            <span>
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                {{ chapter.formattedDuration }}
+                                                            </span>
+                                                        {% endif %}
+                                                        {% if chapter.activeCourses|length > 0 %}
+                                                            <span>
+                                                                <i class="fas fa-play-circle me-1"></i>
+                                                                {{ chapter.activeCourses|length }} cours
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-4 text-lg-end">
+                                            <a href="{{ path('student_chapter_view', {id: chapter.id}) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-arrow-right me-1"></i>
+                                                Accéder
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <i class="fas fa-book fa-3x opacity-50 mb-3"></i>
+                            <p class="mb-0">Aucun chapitre disponible pour ce module.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\User;
 
 use App\Entity\Alternance\MissionAssignment;
+use App\Entity\Core\AttendanceRecord;
 use App\Repository\User\StudentRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -130,9 +131,18 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: MissionAssignment::class, cascade: ['persist', 'remove'])]
     private Collection $missionAssignments;
 
+    /**
+     * Collection of attendance records for this student.
+     *
+     * @var Collection<int, AttendanceRecord>
+     */
+    #[ORM\OneToMany(mappedBy: 'student', targetEntity: AttendanceRecord::class, cascade: ['persist'])]
+    private Collection $attendanceRecords;
+
     public function __construct()
     {
         $this->missionAssignments = new ArrayCollection();
+        $this->attendanceRecords = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTimeImmutable();
         $this->roles = ['ROLE_STUDENT'];
@@ -583,6 +593,36 @@ class Student implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($missionAssignment->getStudent() === $this) {
                 $missionAssignment->setStudent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttendanceRecord>
+     */
+    public function getAttendanceRecords(): Collection
+    {
+        return $this->attendanceRecords;
+    }
+
+    public function addAttendanceRecord(AttendanceRecord $attendanceRecord): static
+    {
+        if (!$this->attendanceRecords->contains($attendanceRecord)) {
+            $this->attendanceRecords->add($attendanceRecord);
+            $attendanceRecord->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttendanceRecord(AttendanceRecord $attendanceRecord): static
+    {
+        if ($this->attendanceRecords->removeElement($attendanceRecord)) {
+            // set the owning side to null (unless already changed)
+            if ($attendanceRecord->getStudent() === $this) {
+                $attendanceRecord->setStudent(null);
             }
         }
 

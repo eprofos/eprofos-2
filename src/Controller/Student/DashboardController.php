@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Student;
 
 use App\Entity\User\Student;
+use App\Service\Security\ContentAccessService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,6 +21,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_STUDENT')]
 class DashboardController extends AbstractController
 {
+    public function __construct(
+        private readonly ContentAccessService $contentAccessService
+    ) {
+    }
+
     /**
      * Student dashboard homepage.
      *
@@ -32,19 +38,24 @@ class DashboardController extends AbstractController
         /** @var Student $student */
         $student = $this->getUser();
 
-        // TODO: Add real data once training sessions and enrollments are implemented
+        // Get student's accessible formations and enrollments
+        $accessibleFormations = $this->contentAccessService->getAccessibleFormations($student);
+        $enrollments = $this->contentAccessService->getStudentEnrollments($student);
+
+        // Calculate basic statistics
+        $stats = [
+            'enrolled_courses' => count($enrollments),
+            'completed_courses' => count(array_filter($enrollments, fn($e) => $e->isCompleted())),
+            'active_enrollments' => count(array_filter($enrollments, fn($e) => $e->isActive())),
+            'accessible_formations' => count($accessibleFormations),
+        ];
+
         $dashboardData = [
             'student' => $student,
-            'stats' => [
-                'enrolled_courses' => 0, // TODO: Count actual enrollments
-                'completed_courses' => 0, // TODO: Count completed courses
-                'hours_studied' => 0, // TODO: Calculate from progress tracking
-                'certificates_earned' => 0, // TODO: Count certificates
-            ],
-            'recent_activities' => [], // TODO: Get recent learning activities
-            'upcoming_sessions' => [], // TODO: Get upcoming training sessions
-            'available_courses' => [], // TODO: Get available/recommended courses
-            'notifications' => [], // TODO: Get student notifications
+            'stats' => $stats,
+            'accessible_formations' => array_slice($accessibleFormations, 0, 3), // Show first 3
+            'recent_enrollments' => array_slice($enrollments, 0, 5), // Show latest 5
+            'page_title' => 'Tableau de bord',
         ];
 
         return $this->render('student/dashboard/index.html.twig', $dashboardData);
@@ -68,26 +79,14 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * Student courses page.
+     * Student courses page - Redirect to formations.
      *
-     * Displays enrolled courses, available courses, and course history.
+     * Redirects to the formations index since that's the main content access point.
      */
     #[Route('/courses', name: 'student_courses', methods: ['GET'])]
     public function courses(): Response
     {
-        /** @var Student $student */
-        $student = $this->getUser();
-
-        // TODO: Implement when course enrollment system is ready
-        $coursesData = [
-            'student' => $student,
-            'enrolled_courses' => [], // TODO: Get enrolled courses
-            'available_courses' => [], // TODO: Get available courses
-            'completed_courses' => [], // TODO: Get completed courses
-            'page_title' => 'Mes Formations',
-        ];
-
-        return $this->render('student/dashboard/courses.html.twig', $coursesData);
+        return $this->redirectToRoute('student_formation_index');
     }
 
     /**

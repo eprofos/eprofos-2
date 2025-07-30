@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accès Refusé - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Access Denied Header -->
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-lock fa-2x me-3"></i>
+                        <div>
+                            <h4 class="mb-0">Accès Refusé</h4>
+                            <small>Contenu réservé aux étudiants inscrits</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Content Information -->
+                    {% if content is defined %}
+                        <div class="alert alert-info border-0 mb-4">
+                            <h5 class="alert-heading mb-3">
+                                <i class="fas fa-{{ content_icon|default('book') }} me-2"></i>
+                                {{ content.title|default('Contenu non disponible') }}
+                            </h5>
+                            
+                            {% if content.description is defined %}
+                                <p class="mb-0">{{ content.description|slice(0, 200) }}{% if content.description|length > 200 %}...{% endif %}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Access Restriction Explanation -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Pourquoi cet accès est-il restreint ?
+                                    </h6>
+                                    <p class="card-text small">
+                                        Ce contenu de formation est exclusivement réservé aux étudiants 
+                                        officiellement inscrits à cette session de formation.
+                                    </p>
+                                    <ul class="small mb-0">
+                                        <li>Inscription à une session confirmée requise</li>
+                                        <li>Statut d'étudiant actif nécessaire</li>
+                                        <li>Accès sécurisé selon les normes Qualiopi</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-success">
+                                        <i class="fas fa-user-graduate me-2"></i>
+                                        Comment obtenir l'accès ?
+                                    </h6>
+                                    <p class="card-text small">
+                                        Pour accéder à ce contenu, vous devez être inscrit 
+                                        à la formation correspondante.
+                                    </p>
+                                    <div class="d-grid gap-2">
+                                        {% if formation is defined %}
+                                            <a href="{{ path('public_formation_show', {slug: formation.slug}) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>
+                                                Voir la formation
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ path('public_contact') }}" 
+                                           class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            Nous contacter
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Sessions -->
+                    {% if available_sessions is defined and available_sessions|length > 0 %}
+                        <div class="mt-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Sessions disponibles pour cette formation
+                            </h6>
+                            <div class="row g-3">
+                                {% for session in available_sessions %}
+                                    <div class="col-md-6">
+                                        <div class="card border-primary">
+                                            <div class="card-body p-3">
+                                                <h6 class="card-title mb-2">{{ session.name }}</h6>
+                                                <p class="card-text small mb-2">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    Du {{ session.startDate|date('d/m/Y') }} 
+                                                    au {{ session.endDate|date('d/m/Y') }}
+                                                </p>
+                                                {% if session.isRegistrationOpen %}
+                                                    <a href="{{ path('public_session_register', {id: session.id}) }}" 
+                                                       class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-sign-in-alt me-1"></i>
+                                                        S'inscrire
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inscription fermée</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Contact Information -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="text-dark mb-3">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Besoin d'aide ?
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                    <p class="small mb-1"><strong>Email</strong></p>
+                                    <p class="small mb-0">contact@eprofos.fr</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                    <p class="small mb-1"><strong>Téléphone</strong></p>
+                                    <p class="small mb-0">01 23 45 67 89</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                                    <p class="small mb-1"><strong>Horaires</strong></p>
+                                    <p class="small mb-0">Lun-Ven: 9h-18h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="mt-4 d-flex gap-2">
+                        {% if is_granted('ROLE_STUDENT') %}
+                            <a href="{{ path('student_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Retour au tableau de bord
+                            </a>
+                            <a href="{{ path('student_formation_index') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-graduation-cap me-1"></i>
+                                Mes formations accessibles
+                            </a>
+                        {% else %}
+                            <a href="{{ path('student_login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Se connecter
+                            </a>
+                            <a href="{{ path('public_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-1"></i>
+                                Retour à l'accueil
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
