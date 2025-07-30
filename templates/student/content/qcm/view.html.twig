@@ -1,0 +1,290 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_formation_index') }}">Formations</a>
+                    </li>
+                    {% if formation %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_formation_view', {id: formation.id}) }}">{{ formation.title }}</a>
+                        </li>
+                    {% endif %}
+                    {% if course %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_course_view', {id: course.id}) }}">{{ course.title }}</a>
+                        </li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ qcm.title }}</li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- QCM Header -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-question fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h1 class="h3 mb-1">{{ qcm.title }}</h1>
+                                    <span class="badge bg-warning">QCM</span>
+                                </div>
+                            </div>
+                            
+                            {% if qcm.description %}
+                                <p class="text-muted mb-3">{{ qcm.description }}</p>
+                            {% endif %}
+                            
+                            <!-- QCM Metadata -->
+                            <div class="row g-2 mb-3">
+                                {% if qcm.questions|length > 0 %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-list me-1"></i>
+                                            {{ qcm.questions|length }} question{{ qcm.questions|length > 1 ? 's' : '' }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.timeLimitMinutes %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ qcm.timeLimitMinutes }} min max
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.maxAttempts %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-redo me-1"></i>
+                                            {{ qcm.maxAttempts }} tentative{{ qcm.maxAttempts > 1 ? 's' : '' }} max
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.passingScore %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>
+                                            {{ qcm.passingScore }}% requis
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QCM Instructions -->
+                    {% if qcm.instructions %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Instructions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="content-text">
+                                    {{ qcm.instructions|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Questions Preview -->
+                    {% if qcm.questions|length > 0 %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Aperçu des questions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for question in qcm.questions|slice(0, 3) %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="border rounded p-3">
+                                                <h6 class="mb-2">Question {{ loop.index }}</h6>
+                                                <p class="small text-muted mb-0">
+                                                    {{ question.text|slice(0, 80) }}{% if question.text|length > 80 %}...{% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if qcm.questions|length > 3 %}
+                                    <p class="text-muted small text-center mb-0">
+                                        Et {{ qcm.questions|length - 3 }} question{{ (qcm.questions|length - 3) > 1 ? 's' : '' }} de plus...
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Start QCM Action -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="mb-3">Prêt à commencer le QCM ?</h5>
+                            <p class="text-muted mb-4">
+                                Une fois commencé, {% if qcm.timeLimitMinutes %}vous aurez {{ qcm.timeLimitMinutes }} minutes pour terminer{% else %}prenez votre temps pour répondre{% endif %}.
+                                {% if qcm.maxAttempts > 1 %}
+                                    Vous pouvez le refaire jusqu'à {{ qcm.maxAttempts }} fois.
+                                {% else %}
+                                    Vous n'avez qu'une seule tentative.
+                                {% endif %}
+                            </p>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <a href="{{ path('student_qcm_take', {id: qcm.id}) }}" 
+                                   class="btn btn-warning btn-lg">
+                                    <i class="fas fa-play me-2"></i>
+                                    Commencer le QCM
+                                </a>
+                                <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Retour au cours
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- QCM Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informations sur le QCM</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% if qcm.questions|length > 0 %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Nombre de questions:</strong>
+                                        <div>{{ qcm.questions|length }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.timeLimitMinutes %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Temps limite:</strong>
+                                        <div>{{ qcm.timeLimitMinutes }} min</div>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.maxAttempts %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Tentatives max:</strong>
+                                        <div>{{ qcm.maxAttempts }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.passingScore %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Score requis:</strong>
+                                        <div>{{ qcm.passingScore }}%</div>
+                                    </div>
+                                {% endif %}
+                                {% if qcm.showResults %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Résultats:</strong>
+                                        <div>
+                                            <span class="badge bg-success">Affichés</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Résultats:</strong>
+                                        <div>
+                                            <span class="badge bg-secondary">Masqués</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Course Context -->
+                    {% if course %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Contexte du cours</h6>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="mb-2">{{ course.title }}</h6>
+                                <p class="text-muted small mb-3">
+                                    {% if chapter %}{{ chapter.title }}{% endif %}
+                                    {% if module %} - {{ module.title }}{% endif %}
+                                </p>
+                                <div class="d-grid gap-2">
+                                    <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour au cours
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Previous Attempts -->
+                    {% set attempts = [] %} {# TODO: Get actual attempts from database #}
+                    {% if attempts|length > 0 %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Tentatives précédentes</h6>
+                            </div>
+                            <div class="card-body">
+                                {% for attempt in attempts %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="small">
+                                            Tentative {{ loop.index }}
+                                            <small class="text-muted">{{ attempt.createdAt|date('d/m/Y H:i') }}</small>
+                                        </span>
+                                        <span class="badge {{ attempt.score >= qcm.passingScore ? 'bg-success' : 'bg-danger' }}">
+                                            {{ attempt.score }}%
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Tips Card -->
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Conseils
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="small mb-0">
+                                <li>Lisez attentivement chaque question</li>
+                                <li>Prenez votre temps pour réfléchir</li>
+                                {% if qcm.timeLimitMinutes %}
+                                    <li>Gérez votre temps ({{ qcm.timeLimitMinutes }} min)</li>
+                                {% endif %}
+                                <li>Relisez vos réponses avant de valider</li>
+                                {% if qcm.maxAttempts > 1 %}
+                                    <li>Vous pouvez refaire le QCM si nécessaire</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

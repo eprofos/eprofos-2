@@ -1,0 +1,272 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_formation_index') }}">Formations</a>
+                    </li>
+                    {% if formation %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_formation_view', {id: formation.id}) }}">{{ formation.title }}</a>
+                        </li>
+                    {% endif %}
+                    {% if course %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_course_view', {id: course.id}) }}">{{ course.title }}</a>
+                        </li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ exercise.title }}</li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Exercise Header -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-pencil-alt fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h1 class="h3 mb-1">{{ exercise.title }}</h1>
+                                    <span class="badge bg-success">Exercice</span>
+                                </div>
+                            </div>
+                            
+                            {% if exercise.description %}
+                                <p class="text-muted mb-3">{{ exercise.description }}</p>
+                            {% endif %}
+                            
+                            <!-- Exercise Metadata -->
+                            <div class="row g-2 mb-3">
+                                {% if exercise.type %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-tag me-1"></i>
+                                            {{ exercise.typeLabel|default(exercise.type) }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.maxAttempts %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-redo me-1"></i>
+                                            {{ exercise.maxAttempts }} tentative{{ exercise.maxAttempts > 1 ? 's' : '' }} max
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.timeLimitMinutes %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ exercise.timeLimitMinutes }} min max
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise Instructions -->
+                    {% if exercise.instructions %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Instructions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="content-text">
+                                    {{ exercise.instructions|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Exercise Content -->
+                    {% if exercise.content %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    Énoncé de l'exercice
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="content-text">
+                                    {{ exercise.content|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Resource Files for Exercise -->
+                    {% if exercise.resourceFiles %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-download me-2"></i>
+                                    Ressources pour l'exercice
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    {% for file in exercise.resourceFiles %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="fas fa-file me-2"></i>
+                                                {{ file.name|default('Fichier ressource') }}
+                                                {% if file.description %}
+                                                    <small class="text-muted d-block">{{ file.description }}</small>
+                                                {% endif %}
+                                            </div>
+                                            <a href="{{ asset('uploads/exercises/resources/' ~ file.filename) }}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Start Exercise Action -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="mb-3">Prêt à commencer l'exercice ?</h5>
+                            <p class="text-muted mb-4">
+                                Assurez-vous d'avoir lu toutes les instructions et téléchargé les ressources nécessaires.
+                            </p>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <a href="{{ path('student_exercise_start', {id: exercise.id}) }}" 
+                                   class="btn btn-success btn-lg">
+                                    <i class="fas fa-play me-2"></i>
+                                    Commencer l'exercice
+                                </a>
+                                <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Retour au cours
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Exercise Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informations sur l'exercice</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% if exercise.type %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Type:</strong>
+                                        <div>{{ exercise.typeLabel|default(exercise.type) }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.maxAttempts %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Tentatives max:</strong>
+                                        <div>{{ exercise.maxAttempts }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.timeLimitMinutes %}
+                                    <div class="col-6">
+                                        <strong class="small text-muted">Temps limite:</strong>
+                                        <div>{{ exercise.timeLimitMinutes }} min</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.isAutoGraded %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Évaluation:</strong>
+                                        <div>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-robot me-1"></i>
+                                                Automatique
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="col-12">
+                                        <strong class="small text-muted">Évaluation:</strong>
+                                        <div>
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-user me-1"></i>
+                                                Manuelle
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Course Context -->
+                    {% if course %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Contexte du cours</h6>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="mb-2">{{ course.title }}</h6>
+                                <p class="text-muted small mb-3">
+                                    {% if chapter %}{{ chapter.title }}{% endif %}
+                                    {% if module %} - {{ module.title }}{% endif %}
+                                </p>
+                                <div class="d-grid gap-2">
+                                    <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour au cours
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Tips Card -->
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Conseils
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="small mb-0">
+                                <li>Lisez attentivement les instructions</li>
+                                <li>Téléchargez toutes les ressources nécessaires</li>
+                                {% if exercise.timeLimitMinutes %}
+                                    <li>Attention au temps limite de {{ exercise.timeLimitMinutes }} minutes</li>
+                                {% endif %}
+                                {% if exercise.maxAttempts %}
+                                    <li>Vous avez {{ exercise.maxAttempts }} tentative{{ exercise.maxAttempts > 1 ? 's' : '' }}</li>
+                                {% endif %}
+                                <li>Sauvegardez régulièrement votre travail</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

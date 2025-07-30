@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_dashboard') }}">Tableau de bord</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('student_formation_index') }}">Formations</a>
+                    </li>
+                    {% if formation %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_formation_view', {id: formation.id}) }}">{{ formation.title }}</a>
+                        </li>
+                    {% endif %}
+                    {% if module %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('student_module_view', {id: module.id}) }}">{{ module.title }}</a>
+                        </li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ chapter.title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Chapter Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="h3 mb-2">{{ chapter.title }}</h1>
+                            {% if chapter.description %}
+                                <p class="text-muted mb-3">{{ chapter.description }}</p>
+                            {% endif %}
+                            
+                            <!-- Chapter Metadata -->
+                            <div class="row g-2">
+                                {% if chapter.durationMinutes %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ chapter.formattedDuration }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if chapter.activeCourses|length > 0 %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-play-circle me-1"></i>
+                                            {{ chapter.activeCourses|length }} cours
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% if chapter.order %}
+                                    <div class="col-auto">
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-list-ol me-1"></i>
+                                            Chapitre {{ chapter.order }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 text-lg-end">
+                            {% if chapter.activeCourses|length > 0 %}
+                                {% set firstCourse = chapter.activeCourses|first %}
+                                <a href="{{ path('student_course_view', {id: firstCourse.id}) }}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-play me-1"></i>
+                                    Commencer le chapitre
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Objectives -->
+            {% if chapter.learningObjectives %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-target me-2"></i>
+                            Objectifs d'apprentissage
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for objective in chapter.learningObjectives %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                        <span>{{ objective }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Content Section -->
+            {% if chapter.content %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-text me-2"></i>
+                            Contenu du chapitre
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="content-text">
+                            {{ chapter.content|nl2br }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Courses -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-play-circle me-2"></i>
+                        Cours du chapitre
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if chapter.activeCourses|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for course in chapter.activeCourses %}
+                                <div class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-8">
+                                            <div class="d-flex align-items-start">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 32px; height: 32px; flex-shrink: 0; font-size: 0.875rem;">
+                                                    {{ loop.index }}
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">{{ course.title }}</h6>
+                                                    {% if course.description %}
+                                                        <p class="text-muted small mb-2">
+                                                            {{ course.description|slice(0, 120) }}{% if course.description|length > 120 %}...{% endif %}
+                                                        </p>
+                                                    {% endif %}
+                                                    
+                                                    <div class="d-flex gap-3 small text-muted">
+                                                        {% if course.durationMinutes %}
+                                                            <span>
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                {{ course.formattedDuration }}
+                                                            </span>
+                                                        {% endif %}
+                                                        {% if course.type %}
+                                                            <span>
+                                                                <i class="fas fa-tag me-1"></i>
+                                                                {{ course.typeLabel|default(course.type) }}
+                                                            </span>
+                                                        {% endif %}
+                                                        {% if course.exercises|length > 0 or course.qcms|length > 0 %}
+                                                            <span>
+                                                                <i class="fas fa-tasks me-1"></i>
+                                                                {{ (course.exercises|length + course.qcms|length) }} activité{{ (course.exercises|length + course.qcms|length) > 1 ? 's' : '' }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-4 text-lg-end">
+                                            <a href="{{ path('student_course_view', {id: course.id}) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-arrow-right me-1"></i>
+                                                Accéder au cours
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <i class="fas fa-play-circle fa-3x opacity-50 mb-3"></i>
+                            <p class="mb-0">Aucun cours disponible pour ce chapitre.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

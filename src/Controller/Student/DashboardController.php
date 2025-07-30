@@ -7,6 +7,8 @@ namespace App\Controller\Student;
 use App\Entity\User\Student;
 use App\Service\Security\ContentAccessService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -171,6 +173,47 @@ class DashboardController extends AbstractController
         return $this->render('student/dashboard/settings.html.twig', [
             'student' => $student,
             'page_title' => 'Paramètres',
+        ]);
+    }
+
+    /**
+     * Update progress tracking for content consumption.
+     * 
+     * API endpoint for Stimulus controllers to track learning progress.
+     */
+    #[Route('/progress/update', name: 'student_progress_update', methods: ['POST'])]
+    public function updateProgress(Request $request): JsonResponse
+    {
+        /** @var Student $student */
+        $student = $this->getUser();
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        $contentId = $data['contentId'] ?? null;
+        $contentType = $data['contentType'] ?? null;
+        $action = $data['action'] ?? 'view';
+
+        if (!$contentId || !$contentType) {
+            return new JsonResponse(['error' => 'Missing required fields'], 400);
+        }
+
+        // TODO: Implement actual progress tracking when StudentProgress system is enhanced
+        // For now, just log the progress update
+        $this->contentAccessService->logContentAccess($student, (object) [
+            'getId' => fn() => $contentId,
+            'getTitle' => fn() => "Content {$contentId}"
+        ], true);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Progress updated',
+            'contentId' => $contentId,
+            'contentType' => $contentType,
+            'action' => $action
         ]);
     }
 }

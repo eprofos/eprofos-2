@@ -1,0 +1,308 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header with Timer -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">{{ exercise.title }}</h1>
+                {% if exercise.timeLimitMinutes %}
+                    <div class="card border-warning">
+                        <div class="card-body p-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <span class="fw-bold text-warning" id="timer">{{ exercise.timeLimitMinutes }}:00</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Exercise Content -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-pencil-alt me-2"></i>
+                                Exercice en cours
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if exercise.instructions %}
+                                <div class="alert alert-info mb-4">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Instructions:
+                                    </h6>
+                                    {{ exercise.instructions|nl2br }}
+                                </div>
+                            {% endif %}
+
+                            {% if exercise.content %}
+                                <div class="mb-4">
+                                    <h6>Énoncé:</h6>
+                                    <div class="content-text border p-3 rounded bg-light">
+                                        {{ exercise.content|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Exercise Interaction Form -->
+                            <form method="post" id="exerciseForm" enctype="multipart/form-data">
+                                <input type="hidden" name="_token" value="{{ csrf_token('exercise_submit') }}">
+                                
+                                {% if exercise.type == 'text' or exercise.type is null %}
+                                    <!-- Text Response -->
+                                    <div class="mb-4">
+                                        <label for="textResponse" class="form-label">
+                                            <strong>Votre réponse:</strong>
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  id="textResponse" 
+                                                  name="response[text]" 
+                                                  rows="10" 
+                                                  placeholder="Saisissez votre réponse ici..."
+                                                  required></textarea>
+                                        <div class="form-text">
+                                            Rédigez votre réponse de manière claire et détaillée.
+                                        </div>
+                                    </div>
+                                {% elseif exercise.type == 'file_upload' %}
+                                    <!-- File Upload -->
+                                    <div class="mb-4">
+                                        <label for="fileResponse" class="form-label">
+                                            <strong>Télécharger votre fichier:</strong>
+                                        </label>
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="fileResponse" 
+                                               name="response[file]" 
+                                               accept=".pdf,.doc,.docx,.txt,.zip"
+                                               required>
+                                        <div class="form-text">
+                                            Formats acceptés: PDF, DOC, DOCX, TXT, ZIP (max 10MB)
+                                        </div>
+                                    </div>
+                                {% elseif exercise.type == 'coding' %}
+                                    <!-- Code Editor -->
+                                    <div class="mb-4">
+                                        <label for="codeResponse" class="form-label">
+                                            <strong>Votre code:</strong>
+                                        </label>
+                                        <textarea class="form-control font-monospace" 
+                                                  id="codeResponse" 
+                                                  name="response[code]" 
+                                                  rows="15" 
+                                                  placeholder="// Écrivez votre code ici..."
+                                                  required></textarea>
+                                        <div class="form-text">
+                                            Écrivez votre code en respectant les bonnes pratiques.
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- Generic Response -->
+                                    <div class="mb-4">
+                                        <label for="genericResponse" class="form-label">
+                                            <strong>Votre réponse:</strong>
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  id="genericResponse" 
+                                                  name="response[generic]" 
+                                                  rows="8" 
+                                                  placeholder="Saisissez votre réponse..."
+                                                  required></textarea>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Additional Notes -->
+                                <div class="mb-4">
+                                    <label for="notes" class="form-label">
+                                        <strong>Notes supplémentaires (optionnel):</strong>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="notes" 
+                                              name="notes" 
+                                              rows="3" 
+                                              placeholder="Ajoutez des commentaires ou des explications..."></textarea>
+                                </div>
+
+                                <!-- Submit Actions -->
+                                <div class="d-flex gap-3 justify-content-between">
+                                    <button type="button" class="btn btn-outline-warning" onclick="saveAsDraft()">
+                                        <i class="fas fa-save me-1"></i>
+                                        Sauvegarder comme brouillon
+                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ path('student_exercise_view', {id: exercise.id}) }}" 
+                                           class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-1"></i>
+                                            Annuler
+                                        </a>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-paper-plane me-1"></i>
+                                            Soumettre l'exercice
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Exercise Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informations</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 small">
+                                {% if exercise.maxAttempts %}
+                                    <div class="col-12">
+                                        <strong class="text-muted">Tentatives restantes:</strong>
+                                        <div>{{ exercise.maxAttempts - 0 }}/{{ exercise.maxAttempts }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.timeLimitMinutes %}
+                                    <div class="col-12">
+                                        <strong class="text-muted">Temps limite:</strong>
+                                        <div>{{ exercise.timeLimitMinutes }} minutes</div>
+                                    </div>
+                                {% endif %}
+                                {% if exercise.isAutoGraded %}
+                                    <div class="col-12">
+                                        <strong class="text-muted">Correction:</strong>
+                                        <div>
+                                            <span class="badge bg-success">Automatique</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resources -->
+                    {% if exercise.resourceFiles %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Ressources</h6>
+                            </div>
+                            <div class="card-body">
+                                {% for file in exercise.resourceFiles %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="small">
+                                            <i class="fas fa-file me-1"></i>
+                                            {{ file.name|default('Ressource') }}
+                                        </span>
+                                        <a href="{{ asset('uploads/exercises/resources/' ~ file.filename) }}" 
+                                           class="btn btn-outline-primary btn-sm" 
+                                           download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Help Card -->
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Aide
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="small mb-0">
+                                <li>Sauvegardez régulièrement votre travail</li>
+                                <li>Relisez votre réponse avant de soumettre</li>
+                                {% if exercise.timeLimitMinutes %}
+                                    <li>Surveillez le temps restant</li>
+                                {% endif %}
+                                <li>Utilisez les ressources fournies</li>
+                                <li>En cas de problème, contactez votre formateur</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if exercise.timeLimitMinutes %}
+        <script>
+            // Timer functionality
+            let timeLeft = {{ exercise.timeLimitMinutes }} * 60; // Convert to seconds
+            const timerElement = document.getElementById('timer');
+            
+            function updateTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 300) { // Last 5 minutes
+                    timerElement.classList.add('text-danger');
+                    timerElement.classList.remove('text-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    // Auto-submit when time is up
+                    alert('Temps écoulé ! L\'exercice va être soumis automatiquement.');
+                    document.getElementById('exerciseForm').submit();
+                    return;
+                }
+                
+                timeLeft--;
+            }
+            
+            // Update timer every second
+            setInterval(updateTimer, 1000);
+            
+            // Initial timer update
+            updateTimer();
+        </script>
+    {% endif %}
+    
+    <script>
+        function saveAsDraft() {
+            // Add draft functionality here
+            const formData = new FormData(document.getElementById('exerciseForm'));
+            formData.append('action', 'save_draft');
+            
+            fetch('{{ path('student_exercise_start', {id: exercise.id}) }}', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    alert('Brouillon sauvegardé !');
+                } else {
+                    alert('Erreur lors de la sauvegarde');
+                }
+            });
+        }
+        
+        // Auto-save every 2 minutes
+        setInterval(saveAsDraft, 120000);
+        
+        // Warn before leaving page
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault();
+            e.returnValue = '';
+            return 'Êtes-vous sûr de vouloir quitter ? Votre progression pourrait être perdue.';
+        });
+        
+        // Remove warning when submitting
+        document.getElementById('exerciseForm').addEventListener('submit', function() {
+            window.removeEventListener('beforeunload', arguments.callee);
+        });
+    </script>
+{% endblock %}
