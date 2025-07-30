@@ -6,6 +6,7 @@ namespace App\Form\Document;
 
 use App\Entity\Document\DocumentUIComponent;
 use App\Entity\Document\DocumentUITemplate;
+use App\Form\DataTransformer\JsonToArrayTransformer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -153,6 +154,12 @@ class DocumentUIComponentType extends AbstractType
                 'required' => false,
             ])
         ;
+
+        // Add JSON data transformers for array fields
+        $builder->get('styleConfig')->addModelTransformer(new JsonToArrayTransformer());
+        $builder->get('positionConfig')->addModelTransformer(new JsonToArrayTransformer());
+        $builder->get('dataBinding')->addModelTransformer(new JsonToArrayTransformer());
+        $builder->get('conditionalDisplay')->addModelTransformer(new JsonToArrayTransformer());
     }
 
     public function configureOptions(OptionsResolver $resolver): void

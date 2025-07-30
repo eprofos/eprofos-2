@@ -6,6 +6,7 @@ namespace App\Form\Document;
 
 use App\Entity\Document\DocumentType;
 use App\Entity\Document\DocumentUITemplate;
+use App\Form\DataTransformer\JsonToStringTransformer;
 use App\Repository\Document\DocumentTypeRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -13,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -145,6 +147,106 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => ['class' => 'form-select'],
             ])
 
+            ->add('marginTop', NumberType::class, [
+                'label' => 'Marge haute (mm)',
+                'help' => 'Marge en haut de la page en millimètres',
+                'required' => false,
+                'scale' => 1,
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 0,
+                    'max' => 100,
+                    'step' => 0.1,
+                    'placeholder' => '20.0',
+                ],
+                'constraints' => [
+                    new Assert\PositiveOrZero(message: 'La marge doit être positive ou zéro.'),
+                    new Assert\LessThanOrEqual(value: 100, message: 'La marge ne peut pas dépasser 100mm.'),
+                ],
+            ])
+
+            ->add('marginRight', NumberType::class, [
+                'label' => 'Marge droite (mm)',
+                'help' => 'Marge à droite de la page en millimètres',
+                'required' => false,
+                'scale' => 1,
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 0,
+                    'max' => 100,
+                    'step' => 0.1,
+                    'placeholder' => '20.0',
+                ],
+                'constraints' => [
+                    new Assert\PositiveOrZero(message: 'La marge doit être positive ou zéro.'),
+                    new Assert\LessThanOrEqual(value: 100, message: 'La marge ne peut pas dépasser 100mm.'),
+                ],
+            ])
+
+            ->add('marginBottom', NumberType::class, [
+                'label' => 'Marge basse (mm)',
+                'help' => 'Marge en bas de la page en millimètres',
+                'required' => false,
+                'scale' => 1,
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 0,
+                    'max' => 100,
+                    'step' => 0.1,
+                    'placeholder' => '20.0',
+                ],
+                'constraints' => [
+                    new Assert\PositiveOrZero(message: 'La marge doit être positive ou zéro.'),
+                    new Assert\LessThanOrEqual(value: 100, message: 'La marge ne peut pas dépasser 100mm.'),
+                ],
+            ])
+
+            ->add('marginLeft', NumberType::class, [
+                'label' => 'Marge gauche (mm)',
+                'help' => 'Marge à gauche de la page en millimètres',
+                'required' => false,
+                'scale' => 1,
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 0,
+                    'max' => 100,
+                    'step' => 0.1,
+                    'placeholder' => '20.0',
+                ],
+                'constraints' => [
+                    new Assert\PositiveOrZero(message: 'La marge doit être positive ou zéro.'),
+                    new Assert\LessThanOrEqual(value: 100, message: 'La marge ne peut pas dépasser 100mm.'),
+                ],
+            ])
+
+            ->add('showPageNumbers', CheckboxType::class, [
+                'label' => 'Afficher les numéros de page',
+                'help' => 'Afficher automatiquement les numéros de page',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
+            ])
+
+            ->add('customCss', TextareaType::class, [
+                'label' => 'CSS personnalisé',
+                'help' => 'CSS personnalisé pour le modèle',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control code-editor',
+                    'rows' => 8,
+                    'data-language' => 'css',
+                    'placeholder' => '/* CSS personnalisé pour ce modèle */
+.document-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
+.document-title {
+    font-size: 24px;
+    font-weight: bold;
+}',
+                ],
+            ])
+
             ->add('isGlobal', CheckboxType::class, [
                 'label' => 'Modèle global',
                 'help' => 'Un modèle global peut être utilisé pour tous les types de documents',
@@ -222,12 +324,16 @@ class DocumentUITemplateType extends AbstractType
                 'attr' => ['class' => 'json-field'],
                 'required' => false,
             ])
-
-            ->add('margins', HiddenType::class, [
-                'attr' => ['class' => 'json-field'],
-                'required' => false,
-            ])
         ;
+
+        // Add JSON data transformers for the JSON fields
+        $jsonTransformer = new JsonToStringTransformer();
+        
+        $builder->get('layoutConfiguration')->addModelTransformer($jsonTransformer);
+        $builder->get('pageSettings')->addModelTransformer($jsonTransformer);
+        $builder->get('headerFooterConfig')->addModelTransformer($jsonTransformer);
+        $builder->get('componentStyles')->addModelTransformer($jsonTransformer);
+        $builder->get('variables')->addModelTransformer($jsonTransformer);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
