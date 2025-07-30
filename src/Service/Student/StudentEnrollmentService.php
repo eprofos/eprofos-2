@@ -183,7 +183,7 @@ class StudentEnrollmentService
      * @param Student[] $students
      * @return array Array with 'success' and 'failed' counts and details
      */
-    public function bulkEnrollStudents(Session $session, array $students): array
+    public function bulkEnrollStudents(Session $session, array $students, string $adminNotes = '', bool $notifyStudents = false): array
     {
         $results = [
             'success' => 0,
@@ -225,7 +225,7 @@ class StudentEnrollmentService
                 $enrollment->setStudent($student);
                 $enrollment->setSessionRegistration($registration);
                 $enrollment->setEnrollmentSource('bulk_admin');
-                $enrollment->setAdminNotes('Bulk enrollment via admin interface');
+                $enrollment->setAdminNotes($adminNotes ?: 'Bulk enrollment via admin interface');
 
                 // Create associated StudentProgress
                 $progress = new StudentProgress();
@@ -243,6 +243,11 @@ class StudentEnrollmentService
                     'student' => $student->getFullName(),
                     'status' => 'success',
                 ];
+
+                // Send notification if requested
+                if ($notifyStudents) {
+                    $this->sendEnrollmentNotification($enrollment);
+                }
 
                 $this->logger->info('Bulk enrolled student in session', [
                     'student_id' => $student->getId(),
@@ -266,6 +271,257 @@ class StudentEnrollmentService
         $this->entityManager->flush();
 
         return $results;
+    }
+
+    /**
+     * Bulk update enrollment status.
+     *
+     * @param StudentEnrollment[] $enrollments
+     */
+    public function bulkUpdateStatus(array $enrollments, string $newStatus, string $dropoutReason = '', string $adminNotes = '', bool $notifyStudents = false): array
+    {
+        $results = [
+            'success' => 0,
+            'failed' => 0,
+            'details' => [],
+        ];
+
+        foreach ($enrollments as $enrollment) {
+            try {
+                $oldStatus = $enrollment->getStatus();
+                $enrollment->setStatus($newStatus);
+
+                if ($newStatus === StudentEnrollment::STATUS_DROPPED_OUT && $dropoutReason) {
+                    $enrollment->setDropoutReason($dropoutReason);
+                }
+
+                if ($adminNotes) {
+                    $currentNotes = $enrollment->getAdminNotes() ?: '';
+                    $updatedNotes = $currentNotes . "\n[" . date('Y-m-d H:i') . "] " . $adminNotes;
+                    $enrollment->setAdminNotes($updatedNotes);
+                }
+
+                $this->entityManager->persist($enrollment);
+                
+                $results['success']++;
+                $results['details'][] = [
+                    'student' => $enrollment->getStudent()->getFullName(),
+                    'formation' => $enrollment->getFormation()->getTitle(),
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'status' => 'success',
+                ];
+
+                // Send notification if requested
+                if ($notifyStudents) {
+                    $this->sendStatusChangeNotification($enrollment, $oldStatus, $newStatus);
+                }
+
+                $this->logger->info('Bulk updated enrollment status', [
+                    'enrollment_id' => $enrollment->getId(),
+                    'student_id' => $enrollment->getStudent()->getId(),
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                ]);
+            } catch (\Exception $e) {
+                $results['failed']++;
+                $results['details'][] = [
+                    'student' => $enrollment->getStudent()->getFullName(),
+                    'formation' => $enrollment->getFormation()->getTitle(),
+                    'error' => $e->getMessage(),
+                ];
+
+                $this->logger->error('Failed to bulk update enrollment status', [
+                    'enrollment_id' => $enrollment->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $results;
+    }
+
+    /**
+     * Bulk unenroll students.
+     *
+     * @param StudentEnrollment[] $enrollments
+     */
+    public function bulkUnenroll(array $enrollments, string $reason, bool $notifyStudents = false): array
+    {
+        $results = [
+            'success' => 0,
+            'failed' => 0,
+            'details' => [],
+        ];
+
+        foreach ($enrollments as $enrollment) {
+            try {
+                $student = $enrollment->getStudent();
+                $formation = $enrollment->getFormation();
+
+                // Mark as dropped out with reason
+                $enrollment->markDroppedOut($reason);
+                $this->entityManager->persist($enrollment);
+
+                $results['success']++;
+                $results['details'][] = [
+                    'student' => $student->getFullName(),
+                    'formation' => $formation->getTitle(),
+                    'status' => 'success',
+                ];
+
+                // Send notification if requested
+                if ($notifyStudents) {
+                    $this->sendUnenrollmentNotification($enrollment, $reason);
+                }
+
+                $this->logger->info('Bulk unenrolled student', [
+                    'enrollment_id' => $enrollment->getId(),
+                    'student_id' => $student->getId(),
+                    'reason' => $reason,
+                ]);
+            } catch (\Exception $e) {
+                $results['failed']++;
+                $results['details'][] = [
+                    'student' => $enrollment->getStudent()->getFullName(),
+                    'formation' => $enrollment->getFormation()->getTitle(),
+                    'error' => $e->getMessage(),
+                ];
+
+                $this->logger->error('Failed to bulk unenroll student', [
+                    'enrollment_id' => $enrollment->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $results;
+    }
+
+    /**
+     * Validate bulk enrollment before processing.
+     */
+    public function validateBulkEnrollment(Session $session, array $students): array
+    {
+        $validation = [
+            'valid' => [],
+            'invalid' => [],
+            'warnings' => [],
+            'session_capacity' => $session->getMaxCapacity(),
+            'current_enrollments' => 0,
+            'available_spots' => 0,
+        ];
+
+        // Check current enrollments
+        $currentEnrollments = $this->enrollmentRepository->findBy(['sessionRegistration.session' => $session]);
+        $validation['current_enrollments'] = count($currentEnrollments);
+        
+        if ($session->getMaxCapacity() > 0) {
+            $validation['available_spots'] = $session->getMaxCapacity() - $validation['current_enrollments'];
+        }
+
+        foreach ($students as $student) {
+            $issues = [];
+
+            // Check if student is active
+            if (!$student->isActive()) {
+                $issues[] = 'Student account is inactive';
+            }
+
+            // Check if already enrolled
+            $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSession($student, $session);
+            if ($existingEnrollment) {
+                $issues[] = 'Already enrolled in this session';
+            }
+
+            // Check session capacity
+            if ($session->getMaxCapacity() > 0 && $validation['available_spots'] <= 0) {
+                $issues[] = 'Session is at full capacity';
+            }
+
+            if (empty($issues)) {
+                $validation['valid'][] = [
+                    'student' => $student,
+                    'name' => $student->getFullName(),
+                    'email' => $student->getEmail(),
+                ];
+                if ($session->getMaxCapacity() > 0) {
+                    $validation['available_spots']--;
+                }
+            } else {
+                $validation['invalid'][] = [
+                    'student' => $student,
+                    'name' => $student->getFullName(),
+                    'email' => $student->getEmail(),
+                    'issues' => $issues,
+                ];
+            }
+        }
+
+        return $validation;
+    }
+
+    /**
+     * Send status change notification email.
+     */
+    private function sendStatusChangeNotification(StudentEnrollment $enrollment, string $oldStatus, string $newStatus): void
+    {
+        try {
+            $student = $enrollment->getStudent();
+            $formation = $enrollment->getFormation();
+
+            $email = (new Email())
+                ->from('noreply@eprofos.fr')
+                ->to($student->getEmail())
+                ->subject('Changement de statut d\'inscription - ' . $formation->getTitle())
+                ->html($this->twig->render('emails/enrollment_status_change.html.twig', [
+                    'student' => $student,
+                    'enrollment' => $enrollment,
+                    'formation' => $formation,
+                    'oldStatus' => $oldStatus,
+                    'newStatus' => $newStatus,
+                ]));
+
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to send status change notification', [
+                'enrollment_id' => $enrollment->getId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Send unenrollment notification email.
+     */
+    private function sendUnenrollmentNotification(StudentEnrollment $enrollment, string $reason): void
+    {
+        try {
+            $student = $enrollment->getStudent();
+            $formation = $enrollment->getFormation();
+
+            $email = (new Email())
+                ->from('noreply@eprofos.fr')
+                ->to($student->getEmail())
+                ->subject('Désinscription - ' . $formation->getTitle())
+                ->html($this->twig->render('emails/enrollment_unenrollment.html.twig', [
+                    'student' => $student,
+                    'enrollment' => $enrollment,
+                    'formation' => $formation,
+                    'reason' => $reason,
+                ]));
+
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to send unenrollment notification', [
+                'enrollment_id' => $enrollment->getId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

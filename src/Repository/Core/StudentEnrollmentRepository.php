@@ -370,6 +370,101 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find enrollments with filters.
+     *
+     * @return StudentEnrollment[]
+     */
+    public function findEnrollmentsWithFilters(array $filters = []): array
+    {
+        $qb = $this->createEnrollmentQueryBuilder();
+
+        if (!empty($filters['status'])) {
+            $qb->andWhere('se.status = :status')
+               ->setParameter('status', $filters['status']);
+        }
+
+        if (!empty($filters['formation'])) {
+            $qb->andWhere('f.id = :formation')
+               ->setParameter('formation', $filters['formation']);
+        }
+
+        if (!empty($filters['session'])) {
+            $qb->andWhere('s.id = :session')
+               ->setParameter('session', $filters['session']);
+        }
+
+        if (!empty($filters['enrollment_source'])) {
+            $qb->andWhere('se.enrollmentSource = :enrollment_source')
+               ->setParameter('enrollment_source', $filters['enrollment_source']);
+        }
+
+        if (!empty($filters['enrolled_after'])) {
+            $qb->andWhere('se.enrolledAt >= :enrolled_after')
+               ->setParameter('enrolled_after', $filters['enrolled_after']);
+        }
+
+        if (!empty($filters['enrolled_before'])) {
+            $qb->andWhere('se.enrolledAt <= :enrolled_before')
+               ->setParameter('enrolled_before', $filters['enrolled_before']);
+        }
+
+        if (!empty($filters['student_search'])) {
+            $qb->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search')
+               ->setParameter('search', '%' . $filters['student_search'] . '%');
+        }
+
+        $qb->orderBy('se.enrolledAt', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Count enrollments with filters.
+     */
+    public function countEnrollmentsWithFilters(array $filters = []): int
+    {
+        $qb = $this->createEnrollmentQueryBuilder()
+            ->select('COUNT(se.id)');
+
+        if (!empty($filters['status'])) {
+            $qb->andWhere('se.status = :status')
+               ->setParameter('status', $filters['status']);
+        }
+
+        if (!empty($filters['formation'])) {
+            $qb->andWhere('f.id = :formation')
+               ->setParameter('formation', $filters['formation']);
+        }
+
+        if (!empty($filters['session'])) {
+            $qb->andWhere('s.id = :session')
+               ->setParameter('session', $filters['session']);
+        }
+
+        if (!empty($filters['enrollment_source'])) {
+            $qb->andWhere('se.enrollmentSource = :enrollment_source')
+               ->setParameter('enrollment_source', $filters['enrollment_source']);
+        }
+
+        if (!empty($filters['enrolled_after'])) {
+            $qb->andWhere('se.enrolledAt >= :enrolled_after')
+               ->setParameter('enrolled_after', $filters['enrolled_after']);
+        }
+
+        if (!empty($filters['enrolled_before'])) {
+            $qb->andWhere('se.enrolledAt <= :enrolled_before')
+               ->setParameter('enrolled_before', $filters['enrolled_before']);
+        }
+
+        if (!empty($filters['student_search'])) {
+            $qb->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search')
+               ->setParameter('search', '%' . $filters['student_search'] . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * Save entity.
      */
     public function save(StudentEnrollment $entity, bool $flush = false): void

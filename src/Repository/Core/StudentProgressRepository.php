@@ -325,6 +325,42 @@ class StudentProgressRepository extends ServiceEntityRepository
     }
 
     /**
+     * Count students by progress range.
+     */
+    public function countByProgressRange(float $min, float $max): int
+    {
+        return $this->createQueryBuilder('sp')
+            ->select('COUNT(sp.id)')
+            ->leftJoin('sp.student', 's')
+            ->leftJoin('s.enrollments', 'se')
+            ->where('se.status = :enrolled')
+            ->andWhere('sp.completionPercentage >= :min')
+            ->andWhere('sp.completionPercentage <= :max')
+            ->setParameter('enrolled', 'enrolled')
+            ->setParameter('min', $min)
+            ->setParameter('max', $max)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Get average progress across all active students.
+     */
+    public function getAverageProgress(): float
+    {
+        $result = $this->createQueryBuilder('sp')
+            ->select('AVG(sp.completionPercentage)')
+            ->leftJoin('sp.student', 's')
+            ->leftJoin('s.enrollments', 'se')
+            ->where('se.status = :enrolled')
+            ->setParameter('enrolled', 'enrolled')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result ? round((float) $result, 2) : 0.0;
+    }
+
+    /**
      * Save entity.
      */
     public function save(StudentProgress $entity, bool $flush = false): void

@@ -1,0 +1,492 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Inscription en Lot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Inscription en Lot</h1>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Enrollment Form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Inscrire des étudiants en lot</h5>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="card-body">
+                <!-- Session Selection -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label for="session_id" class="form-label">Session cible <span class="text-danger">*</span></label>
+                        <select class="form-select" id="session_id" name="session_id" required>
+                            <option value="">Sélectionner une session</option>
+                            {% for session in sessions %}
+                                <option value="{{ session.id }}">
+                                    {{ session.formation.title }} - {{ session.name }}
+                                    ({{ session.startDate|date('d/m/Y') }} - {{ session.endDate|date('d/m/Y') }})
+                                    {% if session.maxCapacity %}
+                                        [{{ session.confirmedRegistrations|length }}/{{ session.maxCapacity }}]
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Enrollment Method Selection -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label">Méthode d'inscription <span class="text-danger">*</span></label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="enrollment_method" 
+                                           id="manual_selection" value="manual_selection" checked>
+                                    <label class="form-check-label" for="manual_selection">
+                                        Sélection manuelle
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="enrollment_method" 
+                                           id="csv_upload" value="csv_upload">
+                                    <label class="form-check-label" for="csv_upload">
+                                        Import CSV
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="enrollment_method" 
+                                           id="criteria_based" value="criteria_based">
+                                    <label class="form-check-label" for="criteria_based">
+                                        Critères automatiques
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Selection -->
+                <div id="manual_selection_panel" class="enrollment-method-panel">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="student_search" class="form-label">Rechercher des étudiants</label>
+                            <input type="text" class="form-control" id="student_search" 
+                                   placeholder="Tapez le nom ou email d'un étudiant...">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div id="student_selection_area" class="border rounded p-3" style="min-height: 200px;">
+                                <p class="text-muted text-center">
+                                    Utilisez la barre de recherche pour trouver et sélectionner des étudiants
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CSV Upload -->
+                <div id="csv_upload_panel" class="enrollment-method-panel" style="display: none;">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="csv_file" class="form-label">Fichier CSV</label>
+                            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv">
+                            <div class="form-text">
+                                Le fichier CSV doit contenir les colonnes: email, first_name, last_name
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Format CSV requis:</h6>
+                                <ul class="mb-0">
+                                    <li>Colonne 1: email (requis)</li>
+                                    <li>Colonne 2: first_name (optionnel)</li>
+                                    <li>Colonne 3: last_name (optionnel)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Criteria Based -->
+                <div id="criteria_based_panel" class="enrollment-method-panel" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="education" class="form-label">Niveau d'éducation</label>
+                                <input type="text" class="form-control" id="education" name="education" 
+                                       placeholder="Ex: Master, Licence...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profession" class="form-label">Profession</label>
+                                <input type="text" class="form-control" id="profession" name="profession" 
+                                       placeholder="Ex: Développeur, Manager...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Localisation</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="Ville ou code postal">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="age_min" class="form-label">Âge minimum</label>
+                                <input type="number" class="form-control" id="age_min" name="age_min" 
+                                       min="16" max="100">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="age_max" class="form-label">Âge maximum</label>
+                                <input type="number" class="form-control" id="age_max" name="age_max" 
+                                       min="16" max="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="has_completed_formations" 
+                                       name="has_completed_formations" value="true">
+                                <label class="form-check-label" for="has_completed_formations">
+                                    A déjà terminé des formations
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-outline-primary" id="preview_criteria">
+                                <i class="fas fa-search"></i> Prévisualiser les résultats
+                            </button>
+                        </div>
+                    </div>
+                    <div id="criteria_results" class="mt-3" style="display: none;">
+                        <!-- Results will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h6>Options d'inscription</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_students" 
+                                   name="notify_students" value="1">
+                            <label class="form-check-label" for="notify_students">
+                                Notifier les étudiants par email
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <label for="admin_notes" class="form-label">Notes administratives</label>
+                        <textarea class="form-control" id="admin_notes" name="admin_notes" rows="3" 
+                                  placeholder="Notes optionnelles sur cette inscription en lot..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" id="validate_enrollments">
+                        <i class="fas fa-check"></i> Valider les inscriptions
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submit_enrollments" disabled>
+                        <i class="fas fa-users"></i> Inscrire les étudiants
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Validation des inscriptions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="validation_results">
+                <!-- Validation results will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirm_enrollments">
+                    Confirmer les inscriptions
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle enrollment method selection
+    const methodRadios = document.querySelectorAll('input[name="enrollment_method"]');
+    const panels = document.querySelectorAll('.enrollment-method-panel');
+    
+    methodRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            panels.forEach(panel => panel.style.display = 'none');
+            const panelId = this.value + '_panel';
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.style.display = 'block';
+            }
+        });
+    });
+
+    // Student search functionality
+    const studentSearch = document.getElementById('student_search');
+    const selectionArea = document.getElementById('student_selection_area');
+    let selectedStudents = [];
+
+    if (studentSearch) {
+        let searchTimeout;
+        studentSearch.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`{{ path('admin_enrollment_bulk_search_students') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        q: query
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayStudentSearchResults(data.students);
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                });
+            }, 300);
+        });
+    }
+
+    function displayStudentSearchResults(students) {
+        const resultsHtml = students.map(student => `
+            <div class="student-search-result border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${student.name}</strong>
+                    <br>
+                    <small class="text-muted">${student.email}</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary add-student" 
+                        data-student-id="${student.id}" data-student-name="${student.name}" 
+                        data-student-email="${student.email}">
+                    Ajouter
+                </button>
+            </div>
+        `).join('');
+
+        selectionArea.innerHTML = resultsHtml;
+
+        // Add event listeners to add buttons
+        document.querySelectorAll('.add-student').forEach(button => {
+            button.addEventListener('click', function() {
+                const studentData = {
+                    id: this.dataset.studentId,
+                    name: this.dataset.studentName,
+                    email: this.dataset.studentEmail
+                };
+                addStudentToSelection(studentData);
+                this.disabled = true;
+                this.textContent = 'Ajouté';
+            });
+        });
+    }
+
+    function addStudentToSelection(student) {
+        if (selectedStudents.find(s => s.id === student.id)) {
+            return; // Already selected
+        }
+
+        selectedStudents.push(student);
+        updateSelectionDisplay();
+    }
+
+    function updateSelectionDisplay() {
+        const selectionHtml = selectedStudents.map(student => `
+            <div class="selected-student border rounded p-2 mb-2 d-flex justify-content-between align-items-center bg-light">
+                <div>
+                    <strong>${student.name}</strong>
+                    <br>
+                    <small class="text-muted">${student.email}</small>
+                    <input type="hidden" name="student_ids[]" value="${student.id}">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-student" 
+                        data-student-id="${student.id}">
+                    Retirer
+                </button>
+            </div>
+        `).join('');
+
+        if (selectedStudents.length > 0) {
+            selectionArea.innerHTML = `
+                <h6>Étudiants sélectionnés (${selectedStudents.length}):</h6>
+                ${selectionHtml}
+            `;
+        } else {
+            selectionArea.innerHTML = `
+                <p class="text-muted text-center">
+                    Utilisez la barre de recherche pour trouver et sélectionner des étudiants
+                </p>
+            `;
+        }
+
+        // Add remove event listeners
+        document.querySelectorAll('.remove-student').forEach(button => {
+            button.addEventListener('click', function() {
+                const studentId = this.dataset.studentId;
+                selectedStudents = selectedStudents.filter(s => s.id !== studentId);
+                updateSelectionDisplay();
+            });
+        });
+    }
+
+    // Validation functionality
+    const validateButton = document.getElementById('validate_enrollments');
+    const submitButton = document.getElementById('submit_enrollments');
+    
+    if (validateButton) {
+        validateButton.addEventListener('click', function() {
+            const sessionId = document.getElementById('session_id').value;
+            const method = document.querySelector('input[name="enrollment_method"]:checked').value;
+            
+            if (!sessionId) {
+                alert('Veuillez sélectionner une session');
+                return;
+            }
+
+            let studentIds = [];
+            if (method === 'manual_selection') {
+                studentIds = Array.from(document.querySelectorAll('input[name="student_ids[]"]'))
+                    .map(input => input.value);
+            }
+
+            if (method === 'manual_selection' && studentIds.length === 0) {
+                alert('Veuillez sélectionner au moins un étudiant');
+                return;
+            }
+
+            // Call validation endpoint
+            fetch(`{{ path('admin_enrollment_bulk_validate') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    session_id: sessionId,
+                    student_ids: studentIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayValidationResults(data.validation);
+                } else {
+                    alert('Erreur de validation: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Validation error:', error);
+            });
+        });
+    }
+
+    function displayValidationResults(validation) {
+        const modal = new bootstrap.Modal(document.getElementById('validationModal'));
+        const resultsContainer = document.getElementById('validation_results');
+        
+        const html = `
+            <div class="mb-3">
+                <h6>Résumé de la validation:</h6>
+                <ul class="list-unstyled">
+                    <li><span class="badge bg-success">${validation.valid.length}</span> Inscriptions valides</li>
+                    <li><span class="badge bg-danger">${validation.invalid.length}</span> Inscriptions invalides</li>
+                    ${validation.session_capacity > 0 ? `<li><span class="badge bg-info">${validation.available_spots}</span> Places disponibles</li>` : ''}
+                </ul>
+            </div>
+            
+            ${validation.invalid.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-danger">Inscriptions invalides:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Problèmes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${validation.invalid.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td><small class="text-danger">${item.issues.join(', ')}</small></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ` : ''}
+        `;
+        
+        resultsContainer.innerHTML = html;
+        modal.show();
+        
+        if (validation.valid.length > 0) {
+            submitButton.disabled = false;
+        }
+    }
+
+    // Confirm enrollments
+    const confirmButton = document.getElementById('confirm_enrollments');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', function() {
+            bootstrap.Modal.getInstance(document.getElementById('validationModal')).hide();
+            document.querySelector('form').submit();
+        });
+    }
+});
+</script>
+{% endblock %}

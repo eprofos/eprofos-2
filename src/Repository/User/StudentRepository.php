@@ -494,6 +494,64 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
     }
 
     /**
+     * Find students by criteria for bulk operations.
+     */
+    public function findByCriteria(array $criteria, ?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->andWhere('s.isActive = :active')
+            ->setParameter('active', true);
+
+        if (!empty($criteria['education'])) {
+            $qb->andWhere('s.education = :education')
+               ->setParameter('education', $criteria['education']);
+        }
+
+        if (!empty($criteria['profession'])) {
+            $qb->andWhere('s.profession = :profession')
+               ->setParameter('profession', $criteria['profession']);
+        }
+
+        if (!empty($criteria['location'])) {
+            $qb->andWhere('s.city = :location OR s.postalCode = :location')
+               ->setParameter('location', $criteria['location']);
+        }
+
+        if (!empty($criteria['age_min'])) {
+            $maxBirthDate = new DateTimeImmutable(sprintf('-%d years', $criteria['age_min']));
+            $qb->andWhere('s.birthDate <= :max_birth_date')
+               ->setParameter('max_birth_date', $maxBirthDate);
+        }
+
+        if (!empty($criteria['age_max'])) {
+            $minBirthDate = new DateTimeImmutable(sprintf('-%d years', $criteria['age_max']));
+            $qb->andWhere('s.birthDate >= :min_birth_date')
+               ->setParameter('min_birth_date', $minBirthDate);
+        }
+
+        if (isset($criteria['has_completed_formations'])) {
+            // This would need a join with StudentEnrollment to check for completed formations
+            // For now, we'll implement a basic version
+            if ($criteria['has_completed_formations']) {
+                $qb->leftJoin('s.enrollments', 'se')
+                   ->andWhere('se.status = :completed')
+                   ->setParameter('completed', 'completed')
+                   ->groupBy('s.id')
+                   ->having('COUNT(se.id) > 0');
+            }
+        }
+
+        $qb->orderBy('s.lastName', 'ASC')
+           ->addOrderBy('s.firstName', 'ASC');
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Find students who haven't logged in for specified days.
      */
     public function findInactiveForDays(int $days): array

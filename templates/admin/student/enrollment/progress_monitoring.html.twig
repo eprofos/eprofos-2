@@ -1,0 +1,473 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Suivi de Progression{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Suivi de Progression</h1>
+        <div class="btn-group">
+            <a href="{{ path('admin_enrollment_progress_at_risk') }}" class="btn btn-warning">
+                <i class="fas fa-exclamation-triangle"></i> Étudiants à risque
+            </a>
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_progress_export') }}?format=excel">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_progress_export') }}?format=pdf">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" id="filters-form">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="formation" class="form-label">Formation</label>
+                        <select class="form-select" id="formation" name="formation">
+                            <option value="">Toutes les formations</option>
+                            {% for formation in formations %}
+                                <option value="{{ formation.id }}" {{ app.request.get('formation') == formation.id ? 'selected' : '' }}>
+                                    {{ formation.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="session" class="form-label">Session</label>
+                        <select class="form-select" id="session" name="session">
+                            <option value="">Toutes les sessions</option>
+                            {% for session in sessions %}
+                                <option value="{{ session.id }}" {{ app.request.get('session') == session.id ? 'selected' : '' }}>
+                                    {{ session.name }} ({{ session.startDate|date('d/m/Y') }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="progress_min" class="form-label">Progression min (%)</label>
+                        <input type="number" class="form-control" id="progress_min" name="progress_min" 
+                               min="0" max="100" value="{{ app.request.get('progress_min') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="progress_max" class="form-label">Progression max (%)</label>
+                        <input type="number" class="form-control" id="progress_max" name="progress_max" 
+                               min="0" max="100" value="{{ app.request.get('progress_max') }}">
+                    </div>
+                    <div class="col-md-2 align-self-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-2">{{ progress_stats.excellent }}</h3>
+                    <p class="mb-0">Excellente progression</p>
+                    <small>(80-100%)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-2">{{ progress_stats.good }}</h3>
+                    <p class="mb-0">Bonne progression</p>
+                    <small>(60-79%)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-2">{{ progress_stats.moderate }}</h3>
+                    <p class="mb-0">Progression modérée</p>
+                    <small>(40-59%)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-2">{{ progress_stats.low }}</h3>
+                    <p class="mb-0">Progression faible</p>
+                    <small>(0-39%)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Table -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    Progression des étudiants 
+                    <span class="badge bg-primary">{{ enrollments|length }}</span>
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-success" id="bulk-contact">
+                        <i class="fas fa-envelope"></i> Contact multiple
+                    </button>
+                    <button class="btn btn-outline-warning" id="bulk-risk">
+                        <i class="fas fa-flag"></i> Marquer à risque
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if enrollments is empty %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i>
+                    Aucune inscription trouvée avec les critères sélectionnés.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="40">
+                                    <input type="checkbox" id="select-all">
+                                </th>
+                                <th>Étudiant</th>
+                                <th>Formation / Session</th>
+                                <th>Date d'inscription</th>
+                                <th>Progression</th>
+                                <th>Dernière activité</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrollments %}
+                                <tr class="{{ enrollment.progress and enrollment.progress.completionPercentage < 40 ? 'table-warning' : '' }}">
+                                    <td>
+                                        <input type="checkbox" class="enrollment-checkbox" value="{{ enrollment.id }}">
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ enrollment.student.user.firstName }} {{ enrollment.student.user.lastName }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ enrollment.student.user.email }}</small>
+                                            {% if enrollment.progress and enrollment.progress.isAtRisk %}
+                                                <br>
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-exclamation-triangle"></i> À risque
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ enrollment.sessionRegistration.session.formation.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ enrollment.sessionRegistration.session.name }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small>{{ enrollment.registrationDate|date('d/m/Y H:i') }}</small>
+                                    </td>
+                                    <td>
+                                        {% set progress_percentage = enrollment.progress ? enrollment.progress.completionPercentage : 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                                <div class="progress-bar {{ progress_percentage >= 80 ? 'bg-success' : 
+                                                                            (progress_percentage >= 60 ? 'bg-info' : 
+                                                                            (progress_percentage >= 40 ? 'bg-warning' : 'bg-danger')) }}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ progress_percentage }}%">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">{{ progress_percentage }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress and enrollment.progress.lastActivity %}
+                                            <small>{{ enrollment.progress.lastActivity|date('d/m/Y H:i') }}</small>
+                                        {% else %}
+                                            <small class="text-muted">Aucune</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ enrollment.status == 'confirmed' ? 'bg-success' : 
+                                                              (enrollment.status == 'pending' ? 'bg-warning' : 
+                                                              (enrollment.status == 'cancelled' ? 'bg-danger' : 'bg-info')) }}">
+                                            {% if enrollment.status == 'confirmed' %}
+                                                Confirmé
+                                            {% elseif enrollment.status == 'pending' %}
+                                                En attente
+                                            {% elseif enrollment.status == 'cancelled' %}
+                                                Annulé
+                                            {% else %}
+                                                {{ enrollment.status|title }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_enrollment_progress_detailed', {id: enrollment.id}) }}" 
+                                               class="btn btn-outline-primary btn-sm" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button class="btn btn-outline-warning btn-sm record-intervention" 
+                                                    data-enrollment-id="{{ enrollment.id }}" title="Enregistrer intervention">
+                                                <i class="fas fa-comment"></i>
+                                            </button>
+                                            {% if enrollment.progress and not enrollment.progress.isAtRisk %}
+                                                <button class="btn btn-outline-danger btn-sm mark-at-risk" 
+                                                        data-enrollment-id="{{ enrollment.id }}" title="Marquer à risque">
+                                                    <i class="fas fa-flag"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if pagination.pageCount > 1 %}
+                    <nav aria-label="Pagination">
+                        <ul class="pagination justify-content-center">
+                            {% for page in 1..pagination.pageCount %}
+                                <li class="page-item {{ page == pagination.currentPage ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ path('admin_enrollment_progress_index', 
+                                        app.request.query.all|merge({page: page})) }}">{{ page }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Intervention Modal -->
+<div class="modal fade" id="interventionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enregistrer une intervention</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="intervention-form">
+                <div class="modal-body">
+                    <input type="hidden" id="intervention-enrollment-id" name="enrollment_id">
+                    
+                    <div class="mb-3">
+                        <label for="intervention-type" class="form-label">Type d'intervention</label>
+                        <select class="form-select" id="intervention-type" name="type" required>
+                            <option value="">Sélectionner un type</option>
+                            <option value="phone_call">Appel téléphonique</option>
+                            <option value="email">Email de suivi</option>
+                            <option value="meeting">Entretien</option>
+                            <option value="support">Support technique</option>
+                            <option value="motivation">Motivation</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="intervention-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="intervention-description" name="description" 
+                                  rows="4" required placeholder="Décrivez l'intervention effectuée..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="intervention-outcome" class="form-label">Résultat</label>
+                        <select class="form-select" id="intervention-outcome" name="outcome">
+                            <option value="">Sélectionner un résultat</option>
+                            <option value="positive">Positif</option>
+                            <option value="neutral">Neutre</option>
+                            <option value="negative">Négatif</option>
+                            <option value="no_response">Pas de réponse</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="intervention-follow-up" name="follow_up">
+                            <label class="form-check-label" for="intervention-follow-up">
+                                Nécessite un suivi
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- At Risk Modal -->
+<div class="modal fade" id="atRiskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Marquer comme à risque</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="at-risk-form">
+                <div class="modal-body">
+                    <input type="hidden" id="risk-enrollment-id" name="enrollment_id">
+                    
+                    <div class="mb-3">
+                        <label for="risk-factors" class="form-label">Facteurs de risque</label>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="risk-low-progress" name="risk_factors[]" value="low_progress">
+                                <label class="form-check-label" for="risk-low-progress">Progression faible</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="risk-no-activity" name="risk_factors[]" value="no_activity">
+                                <label class="form-check-label" for="risk-no-activity">Aucune activité récente</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="risk-low-engagement" name="risk_factors[]" value="low_engagement">
+                                <label class="form-check-label" for="risk-low-engagement">Faible engagement</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="risk-technical-issues" name="risk_factors[]" value="technical_issues">
+                                <label class="form-check-label" for="risk-technical-issues">Problèmes techniques</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="risk-personal-issues" name="risk_factors[]" value="personal_issues">
+                                <label class="form-check-label" for="risk-personal-issues">Problèmes personnels</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="risk-notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="risk-notes" name="notes" rows="3" 
+                                  placeholder="Notes additionnelles sur les risques identifiés..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Marquer à risque</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all functionality
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.enrollment-checkbox');
+    
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Record intervention
+    document.querySelectorAll('.record-intervention').forEach(button => {
+        button.addEventListener('click', function() {
+            const enrollmentId = this.dataset.enrollmentId;
+            document.getElementById('intervention-enrollment-id').value = enrollmentId;
+            const modal = new bootstrap.Modal(document.getElementById('interventionModal'));
+            modal.show();
+        });
+    });
+
+    // Mark at risk
+    document.querySelectorAll('.mark-at-risk').forEach(button => {
+        button.addEventListener('click', function() {
+            const enrollmentId = this.dataset.enrollmentId;
+            document.getElementById('risk-enrollment-id').value = enrollmentId;
+            const modal = new bootstrap.Modal(document.getElementById('atRiskModal'));
+            modal.show();
+        });
+    });
+
+    // Handle intervention form submission
+    document.getElementById('intervention-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(`{{ path('admin_enrollment_progress_record_intervention') }}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('interventionModal')).hide();
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de l\'enregistrement de l\'intervention');
+        });
+    });
+
+    // Handle at risk form submission
+    document.getElementById('at-risk-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(`{{ path('admin_enrollment_progress_update_risk_status') }}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('atRiskModal')).hide();
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de la mise à jour du statut de risque');
+        });
+    });
+
+    // Auto-submit filters on change
+    const filterInputs = document.querySelectorAll('#filters-form select, #filters-form input');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            document.getElementById('filters-form').submit();
+        });
+    });
+});
+</script>
+{% endblock %}

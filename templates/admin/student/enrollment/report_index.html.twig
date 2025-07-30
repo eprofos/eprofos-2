@@ -1,0 +1,399 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapports d'Inscription{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Rapports d'Inscription</h1>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_report_export', {type: 'completion'}) }}">
+                    <i class="fas fa-file-excel"></i> Rapport de Completion
+                </a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_report_export', {type: 'dropout'}) }}">
+                    <i class="fas fa-file-excel"></i> Rapport d'Abandon
+                </a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_report_export', {type: 'progress'}) }}">
+                    <i class="fas fa-file-excel"></i> Rapport de Progression
+                </a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_enrollment_report_export', {type: 'qualiopi'}) }}">
+                    <i class="fas fa-file-pdf"></i> Rapport Qualiopi
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_enrollments|number_format }}</h4>
+                            <p class="mb-0">Total Inscriptions</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ active_enrollments|number_format }}</h4>
+                            <p class="mb-0">Inscriptions Actives</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ completion_rate|number_format(1) }}%</h4>
+                            <p class="mb-0">Taux de Completion</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-graduation-cap fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ dropout_rate|number_format(1) }}%</h4>
+                            <p class="mb-0">Taux d'Abandon</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Navigation -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ path('admin_enrollment_report_completion') }}" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-chart-line"></i>
+                                <br>
+                                <strong>Rapport de Completion</strong>
+                                <br>
+                                <small>Analyse des taux de réussite</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ path('admin_enrollment_report_dropout') }}" class="btn btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-user-times"></i>
+                                <br>
+                                <strong>Rapport d'Abandon</strong>
+                                <br>
+                                <small>Analyse des abandons</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ path('admin_enrollment_report_progress') }}" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-tasks"></i>
+                                <br>
+                                <strong>Rapport de Progression</strong>
+                                <br>
+                                <small>Suivi des progressions</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ path('admin_enrollment_report_qualiopi') }}" class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-certificate"></i>
+                                <br>
+                                <strong>Rapport Qualiopi</strong>
+                                <br>
+                                <small>Conformité qualité</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analytics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Évolution des Inscriptions</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="enrollmentTrendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Répartition par Statut</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusDistributionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top 10 Formations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topFormationsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Progression Moyenne par Formation</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressByFormationChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Activités Récentes</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities is empty %}
+                        <p class="text-muted text-center">Aucune activité récente</p>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                        <th>Étudiant</th>
+                                        <th>Formation</th>
+                                        <th>Détails</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activity in recent_activities %}
+                                        <tr>
+                                            <td>
+                                                <small>{{ activity.created_at|date('d/m/Y H:i') }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ activity.action == 'enrollment' ? 'bg-success' : 
+                                                                    (activity.action == 'status_change' ? 'bg-warning' : 
+                                                                    (activity.action == 'completion' ? 'bg-info' : 'bg-secondary')) }}">
+                                                    {% if activity.action == 'enrollment' %}
+                                                        Inscription
+                                                    {% elseif activity.action == 'status_change' %}
+                                                        Changement statut
+                                                    {% elseif activity.action == 'completion' %}
+                                                        Completion
+                                                    {% else %}
+                                                        {{ activity.action|title }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ activity.student_name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ activity.student_email }}</small>
+                                            </td>
+                                            <td>
+                                                {{ activity.formation_title }}
+                                                {% if activity.session_name %}
+                                                    <br>
+                                                    <small class="text-muted">{{ activity.session_name }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ activity.details|default('') }}</small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart.js configuration
+    Chart.defaults.responsive = true;
+    Chart.defaults.maintainAspectRatio = false;
+
+    // Enrollment Trend Chart
+    const enrollmentCtx = document.getElementById('enrollmentTrendChart').getContext('2d');
+    new Chart(enrollmentCtx, {
+        type: 'line',
+        data: {
+            labels: {{ enrollment_trend_labels|json_encode|raw }},
+            datasets: [{
+                label: 'Inscriptions',
+                data: {{ enrollment_trend_data|json_encode|raw }},
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusDistributionChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ status_labels|json_encode|raw }},
+            datasets: [{
+                data: {{ status_data|json_encode|raw }},
+                backgroundColor: [
+                    '#17a2b8', // info - registered
+                    '#28a745', // success - confirmed
+                    '#ffc107', // warning - pending
+                    '#dc3545', // danger - cancelled
+                    '#6c757d'  // secondary - completed
+                ]
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Top Formations Chart
+    const formationsCtx = document.getElementById('topFormationsChart').getContext('2d');
+    new Chart(formationsCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ top_formations_labels|json_encode|raw }},
+            datasets: [{
+                label: 'Inscriptions',
+                data: {{ top_formations_data|json_encode|raw }},
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Progress by Formation Chart
+    const progressCtx = document.getElementById('progressByFormationChart').getContext('2d');
+    new Chart(progressCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ progress_formations_labels|json_encode|raw }},
+            datasets: [{
+                label: 'Progression Moyenne (%)',
+                data: {{ progress_formations_data|json_encode|raw }},
+                backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
