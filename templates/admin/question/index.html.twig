@@ -2,6 +2,38 @@
 
 {% block title %}Questions - {{ questionnaire.title }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .reorder-mode {
+            cursor: move !important;
+            transition: background-color 0.2s ease;
+        }
+        
+        .reorder-mode:hover {
+            background-color: #f8f9fa !important;
+        }
+        
+        .reorder-mode.drag-over {
+            background-color: #e3f2fd !important;
+            border-top: 2px solid #2196f3;
+        }
+        
+        .drag-handle {
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+        
+        .reorder-mode .drag-handle {
+            opacity: 1;
+        }
+        
+        .reorder-mode td {
+            border-bottom-color: transparent;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div class="page-header d-print-none">
     <div class="container-xl">
@@ -77,16 +109,21 @@
         {% if questions|length > 0 %}
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card" 
+                         data-controller="question-reorder"
+                         data-question-reorder-url-value="{{ path('admin_question_reorder', {questionnaireId: questionnaire.id}) }}"
+                         data-question-reorder-questionnaire-id-value="{{ questionnaire.id }}">
                         <div class="card-header">
                             <h3 class="card-title">
                                 <i class="fas fa-list me-2"></i>
                                 Questions ({{ questions|length }})
                             </h3>
                             <div class="card-actions">
-                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="reorderQuestions()">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary" 
+                                        data-action="click->question-reorder#toggleReorderMode">
                                     <i class="fas fa-sort me-1"></i>Réorganiser
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <div class="card-body p-0">
@@ -100,12 +137,13 @@
                                             <th width="80">Requis</th>
                                             <th width="100">Étape</th>
                                             <th width="80">Points</th>
-                                            <th width="100">Actions</th>
+                                            <th width="100">Statut</th>
+                                            <th width="120">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="questions-tbody">
+                                    <tbody id="questions-tbody" data-question-reorder-target="tbody">
                                         {% for question in questions %}
-                                            <tr data-question-id="{{ question.id }}">
+                                            <tr data-question-id="{{ question.id }}" data-question-reorder-target="row">
                                                 <td>
                                                     <span class="text-muted">{{ question.sortOrder ?: loop.index }}</span>
                                                     <span class="drag-handle ms-2" style="cursor: move;">
@@ -147,11 +185,39 @@
                                                     {% endif %}
                                                 </td>
                                                 <td>
+                                                    <form method="post" action="{{ path('admin_question_toggle_status', {questionnaireId: questionnaire.id, id: question.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ question.id) }}">
+                                                        <button type="submit" class="btn btn-sm {{ question.isActive ? 'btn-success' : 'btn-outline-secondary' }}" 
+                                                                onclick="return confirm('Êtes-vous sûr de vouloir {{ question.isActive ? 'désactiver' : 'activer' }} cette question ?')">
+                                                            {% if question.isActive %}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M5 12l5 5l10 -10"/>
+                                                                </svg>
+                                                                Active
+                                                            {% else %}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path d="M18 6l-12 12"/>
+                                                                    <path d="M6 6l12 12"/>
+                                                                </svg>
+                                                                Inactive
+                                                            {% endif %}
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                                <td>
                                                     <div class="btn-group" role="group">
                                                         <a href="{{ path('admin_question_edit', {questionnaireId: questionnaire.id, id: question.id}) }}" 
                                                            class="btn btn-sm btn-outline-primary" title="Modifier">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
+                                                        <form method="POST" action="{{ path('admin_question_duplicate', {questionnaireId: questionnaire.id, id: question.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ question.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-info" title="Dupliquer">
+                                                                <i class="fas fa-copy"></i>
+                                                            </button>
+                                                        </form>
                                                         <button type="button" class="btn btn-sm btn-outline-danger" 
                                                                 onclick="deleteQuestion({{ question.id }})" title="Supprimer">
                                                             <i class="fas fa-trash"></i>
@@ -227,8 +293,12 @@
                                 <span class="badge bg-danger">{{ questions|filter(q => q.isRequired)|length }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-dark">Questions actives</span>
+                                <span class="badge bg-success">{{ questions|filter(q => q.isActive)|length }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-dark">Questions avec points</span>
-                                <span class="badge bg-success">{{ questions|filter(q => q.maxPoints)|length }}</span>
+                                <span class="badge bg-info">{{ questions|filter(q => q.maxPoints)|length }}</span>
                             </div>
                             {% if questionnaire.isMultiStep %}
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -288,25 +358,11 @@ document.getElementById('confirmDelete').addEventListener('click', function() {
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = '_token';
-        csrfInput.value = '{{ csrf_token('delete_question') }}';
+        csrfInput.value = '{{ csrf_token('delete') }}' + questionToDelete;
         form.appendChild(csrfInput);
         
         document.body.appendChild(form);
         form.submit();
-    }
-});
-
-function reorderQuestions() {
-    // Simple alert for now - you can implement drag & drop later
-    alert('Fonctionnalité de réorganisation à implémenter avec du drag & drop');
-}
-
-// Make table rows sortable (basic implementation)
-document.addEventListener('DOMContentLoaded', function() {
-    const tbody = document.getElementById('questions-tbody');
-    if (tbody) {
-        // You can implement Sortable.js here for drag & drop functionality
-        console.log('Table ready for drag & drop implementation');
     }
 });
 </script>

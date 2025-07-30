@@ -127,10 +127,12 @@ class QuestionnaireController extends AbstractController
 
         // Get existing responses for this step
         $existingResponses = [];
+        $existingQuestionResponses = [];
         foreach ($questions as $question) {
             $questionResponse = $response->getResponseForQuestion($question);
             if ($questionResponse) {
                 $existingResponses[$question->getId()] = $questionResponse->getResponseValue();
+                $existingQuestionResponses[$question->getId()] = $questionResponse;
             }
         }
 
@@ -141,6 +143,7 @@ class QuestionnaireController extends AbstractController
             'currentStep' => $step,
             'totalSteps' => $totalSteps,
             'existingResponses' => $existingResponses,
+            'existingQuestionResponses' => $existingQuestionResponses,
             'progressPercentage' => (int) (($step / $totalSteps) * 100),
         ]);
     }

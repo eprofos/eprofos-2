@@ -40,6 +40,27 @@
                                 </div>
                                 <div>
                                     {{ error.messageKey|trans(error.messageData, 'security') }}
+                                    
+                                    {# Show resend verification option if error suggests email not verified #}
+                                    {% if error.messageKey == 'Account disabled.' or 'verif' in error.messageKey|lower %}
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block mb-2">
+                                                Votre email n'est pas encore vérifié ? 
+                                            </small>
+                                            <form action="{{ path('mentor_resend_verification') }}" method="post" class="d-inline">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('resend_verification') }}">
+                                                <input type="hidden" name="email" value="{{ last_username }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                                        <path d="M3 7l9 6l9 -6"/>
+                                                    </svg>
+                                                    Renvoyer l'email de vérification
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -119,6 +140,16 @@
                                 Créer un compte mentor
                             </a>
                         </div>
+                    </div>
+                    <div class="text-center text-muted mt-3">
+                        <a href="{{ path('mentor_resend_verification_form') }}" class="text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
+                                <path d="M3 7l9 6l9 -6"/>
+                            </svg>
+                            Renvoyer l'email de vérification
+                        </a>
                     </div>
                 </div>
             </div>

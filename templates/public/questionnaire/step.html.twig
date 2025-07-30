@@ -52,39 +52,40 @@
                                 <!-- Question Input -->
                                 <div class="question-input ms-5">
                                     {% set existingResponse = existingResponses[question.id] ?? null %}
+                                    {% set existingQuestionResponse = existingQuestionResponses[question.id] ?? null %}
                                     
                                     {% if question.type == 'text' %}
                                         <input type="text" 
                                                class="form-control" 
-                                               name="responses[{{ question.id }}]" 
-                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               name="question_{{ question.id }}" 
+                                               value="{{ existingResponse ? existingResponse : '' }}"
                                                {% if question.isRequired %}required{% endif %}>
                                     
                                     {% elseif question.type == 'textarea' %}
                                         <textarea class="form-control" 
                                                   rows="4" 
-                                                  name="responses[{{ question.id }}]" 
-                                                  {% if question.isRequired %}required{% endif %}>{{ existingResponse ? existingResponse.responseText : '' }}</textarea>
+                                                  name="question_{{ question.id }}" 
+                                                  {% if question.isRequired %}required{% endif %}>{{ existingResponse ? existingResponse : '' }}</textarea>
                                     
                                     {% elseif question.type == 'number' %}
                                         <input type="number" 
                                                class="form-control" 
-                                               name="responses[{{ question.id }}]" 
-                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               name="question_{{ question.id }}" 
+                                               value="{{ existingResponse ? existingResponse : '' }}"
                                                {% if question.isRequired %}required{% endif %}>
                                     
                                     {% elseif question.type == 'email' %}
                                         <input type="email" 
                                                class="form-control" 
-                                               name="responses[{{ question.id }}]" 
-                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               name="question_{{ question.id }}" 
+                                               value="{{ existingResponse ? existingResponse : '' }}"
                                                {% if question.isRequired %}required{% endif %}>
                                     
                                     {% elseif question.type == 'date' %}
                                         <input type="date" 
                                                class="form-control" 
-                                               name="responses[{{ question.id }}]" 
-                                               value="{{ existingResponse ? existingResponse.responseText : '' }}"
+                                               name="question_{{ question.id }}" 
+                                               value="{{ existingResponse ? existingResponse : '' }}"
                                                {% if question.isRequired %}required{% endif %}>
                                     
                                     {% elseif question.type == 'single_choice' %}
@@ -92,10 +93,10 @@
                                             <div class="form-check mb-2">
                                                 <input class="form-check-input" 
                                                        type="radio" 
-                                                       name="responses[{{ question.id }}]" 
+                                                       name="question_{{ question.id }}" 
                                                        value="{{ option.id }}" 
                                                        id="option_{{ option.id }}"
-                                                       {% if existingResponse and existingResponse.selectedOptions and option.id in existingResponse.selectedOptions %}checked{% endif %}
+                                                       {% if existingQuestionResponse and existingQuestionResponse.choiceResponse and option.id in existingQuestionResponse.choiceResponse %}checked{% endif %}
                                                        {% if question.isRequired %}required{% endif %}>
                                                 <label class="form-check-label" for="option_{{ option.id }}">
                                                     {{ option.optionText }}
@@ -108,33 +109,53 @@
                                             <div class="form-check mb-2">
                                                 <input class="form-check-input" 
                                                        type="checkbox" 
-                                                       name="responses[{{ question.id }}][]" 
+                                                       name="question_{{ question.id }}[]" 
                                                        value="{{ option.id }}" 
                                                        id="option_{{ option.id }}"
-                                                       {% if existingResponse and existingResponse.selectedOptions and option.id in existingResponse.selectedOptions %}checked{% endif %}>
+                                                       {% if existingQuestionResponse and existingQuestionResponse.choiceResponse and option.id in existingQuestionResponse.choiceResponse %}checked{% endif %}>
                                                 <label class="form-check-label" for="option_{{ option.id }}">
                                                     {{ option.optionText }}
                                                 </label>
                                             </div>
-                                        {% endfor %}
-                                    
-                                    {% elseif question.type == 'file_upload' %}
-                                        <input type="file" 
-                                               class="form-control" 
-                                               name="responses[{{ question.id }}]" 
-                                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                               {% if question.isRequired and not existingResponse %}required{% endif %}>
-                                        {% if existingResponse and existingResponse.uploadedFile %}
-                                            <div class="mt-2">
-                                                <small class="text-success">
-                                                    <i class="fas fa-file-check me-1"></i>
-                                                    Fichier téléchargé : {{ existingResponse.uploadedFile }}
-                                                </small>
+                                        {% endfor %}                                    {% elseif question.type == 'file_upload' %}
+                                        <div class="file-upload-container" data-question-id="{{ question.id }}">
+                                            <input type="file" 
+                                                   class="form-control file-upload-input" 
+                                                   data-question-id="{{ question.id }}"
+                                                   {% if question.allowedFileTypes %}accept=".{{ question.allowedFileTypes|join(',.') }}"{% else %}accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"{% endif %}
+                                                   {% if question.isRequired and not existingQuestionResponse %}required{% endif %}>
+                                            
+                                            <!-- Hidden input to store uploaded filename -->
+                                            <input type="hidden" 
+                                                   name="file_{{ question.id }}" 
+                                                   value="{% if existingQuestionResponse and existingQuestionResponse.fileResponse %}{{ existingQuestionResponse.fileResponse }}{% endif %}">
+                                            
+                                            <!-- Upload progress -->
+                                            <div class="upload-progress mt-2" style="display: none;">
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                         role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted">Téléchargement en cours...</small>
                                             </div>
-                                        {% endif %}
-                                        <small class="form-text text-muted">
-                                            Formats acceptés : PDF, DOC, DOCX, JPG, PNG (max 10MB)
-                                        </small>
+                                            
+                                            <!-- Upload success/error messages -->
+                                            <div class="upload-status mt-2"></div>
+                                            
+                                            {% if existingQuestionResponse and existingQuestionResponse.fileResponse %}
+                                                <div class="mt-2 uploaded-file-info">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-file-check me-1"></i>
+                                                        Fichier téléchargé : {{ existingQuestionResponse.fileResponse|split('_')|slice(1)|join('_') }}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <small class="form-text text-muted">
+                                                Formats acceptés : {% if question.allowedFileTypes %}{{ question.allowedFileTypesString }}{% else %}PDF, DOC, DOCX, JPG, PNG{% endif %}
+                                                {% if question.maxFileSize %} (max {{ question.formattedMaxFileSize }}){% else %} (max 10MB){% endif %}
+                                            </small>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -256,15 +277,92 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // File upload validation
-    const fileInputs = form.querySelectorAll('input[type="file"]');
+    // File upload handling
+    const fileInputs = form.querySelectorAll('.file-upload-input');
     fileInputs.forEach(input => {
         input.addEventListener('change', function() {
             const file = this.files[0];
-            if (file && file.size > 10 * 1024 * 1024) { // 10MB
-                alert('Le fichier ne doit pas dépasser 10MB');
+            const questionId = this.dataset.questionId;
+            const container = this.closest('.file-upload-container');
+            const progressDiv = container.querySelector('.upload-progress');
+            const statusDiv = container.querySelector('.upload-status');
+            const hiddenInput = container.querySelector('input[type="hidden"]');
+            const progressBar = progressDiv.querySelector('.progress-bar');
+            
+            if (!file) return;
+            
+            // File size validation (default 10MB if not specified)
+            const maxSize = 10 * 1024 * 1024; // 10MB default
+            if (file.size > maxSize) {
+                statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Le fichier ne doit pas dépasser 10MB</small>';
                 this.value = '';
+                return;
             }
+            
+            // Prepare upload
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('question_id', questionId);
+            formData.append('token', '{{ response.token }}');
+            
+            // Show progress
+            progressDiv.style.display = 'block';
+            statusDiv.innerHTML = '';
+            progressBar.style.width = '0%';
+            
+            // Upload file via AJAX
+            fetch('{{ path('questionnaire_upload_file') }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                progressDiv.style.display = 'none';
+                
+                if (data.success) {
+                    // Store filename in hidden input
+                    hiddenInput.value = data.filename;
+                    
+                    // Show success message
+                    statusDiv.innerHTML = `<small class="text-success">
+                        <i class="fas fa-file-check me-1"></i>
+                        Fichier téléchargé : ${data.originalName}
+                    </small>`;
+                    
+                    // Remove existing uploaded file info if any
+                    const existingInfo = container.querySelector('.uploaded-file-info');
+                    if (existingInfo) {
+                        existingInfo.remove();
+                    }
+                } else {
+                    // Show error message
+                    statusDiv.innerHTML = `<small class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        ${data.message || 'Erreur lors du téléchargement'}
+                    </small>`;
+                    this.value = '';
+                }
+            })
+            .catch(error => {
+                progressDiv.style.display = 'none';
+                statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Erreur lors du téléchargement</small>';
+                this.value = '';
+                console.error('Upload error:', error);
+            });
+            
+            // Simulate progress (since we don't have real progress tracking)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            // Clear progress simulation when done
+            setTimeout(() => {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+            }, 1000);
         });
     });
 });

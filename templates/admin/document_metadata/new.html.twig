@@ -30,6 +30,11 @@
                         </div>
                         <div class="card-body">
                             {{ form_start(form) }}
+                                <!-- Datalist for metadata keys autocomplete -->
+                                <datalist id="metadata-keys-list">
+                                    <!-- Options will be populated via AJAX -->
+                                </datalist>
+                                
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         {{ form_row(form.document) }}
@@ -143,8 +148,42 @@
 document.addEventListener('DOMContentLoaded', function() {
     const valueTypeSelect = document.querySelector('#document_metadata_dataType');
     const valueInput = document.querySelector('#document_metadata_metaValue');
+    const keyInput = document.querySelector('#document_metadata_metaKey');
     const previewCard = document.getElementById('preview-card');
     const previewDiv = document.getElementById('value-preview');
+    const datalist = document.getElementById('metadata-keys-list');
+
+    // Load available metadata keys for autocomplete
+    async function loadMetadataKeys() {
+        try {
+            const response = await fetch('{{ path('admin_document_metadata_keys') }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.warn('Could not load metadata keys for autocomplete');
+                return;
+            }
+            
+            const keys = await response.json();
+            
+            // Clear existing options
+            datalist.innerHTML = '';
+            
+            // Add new options
+            keys.forEach(keyData => {
+                const option = document.createElement('option');
+                option.value = keyData.key;
+                option.textContent = `${keyData.key} (utilisé ${keyData.usage_count} fois)`;
+                datalist.appendChild(option);
+            });
+        } catch (error) {
+            console.warn('Error loading metadata keys:', error);
+        }
+    }
 
     function updateValueInput() {
         const type = valueTypeSelect.value;
@@ -252,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial setup
     updateValueInput();
     updatePreview();
+    loadMetadataKeys();
 });
 </script>
 {% endblock %}

@@ -60,7 +60,7 @@
                                 <p class="card-text text-muted" style="line-height: 1.6;">
                                     Obtenez un devis personnalisé et gratuit pour vos besoins en formation.
                                 </p>
-                                <a href="{{ path('app_contact_quote') }}" class="btn btn-primary" style="border-radius: 20px; font-weight: 600;">
+                                <a href="#contact-form" class="btn btn-primary" style="border-radius: 20px; font-weight: 600;" onclick="setFormType('quote')">
                                     <i class="fas fa-calculator me-2"></i>Devis gratuit
                                 </a>
                             </div>
@@ -77,7 +77,7 @@
                                 <p class="card-text text-muted" style="line-height: 1.6;">
                                     Nos experts vous conseillent sur le choix de vos formations.
                                 </p>
-                                <a href="{{ path('app_contact_consultation') }}" class="btn btn-success" style="border-radius: 20px; font-weight: 600;">
+                                <a href="#contact-form" class="btn btn-success" style="border-radius: 20px; font-weight: 600;" onclick="setFormType('advice')">
                                     <i class="fas fa-lightbulb me-2"></i>Conseil gratuit
                                 </a>
                             </div>
@@ -94,7 +94,7 @@
                                 <p class="card-text text-muted" style="line-height: 1.6;">
                                     Inscrivez-vous rapidement à une formation qui vous intéresse.
                                 </p>
-                                <a href="{{ path('app_contact_quick_registration') }}" class="btn btn-warning" style="border-radius: 20px; font-weight: 600;">
+                                <a href="#contact-form" class="btn btn-warning" style="border-radius: 20px; font-weight: 600;" onclick="setFormType('quick_registration')">
                                     <i class="fas fa-rocket me-2"></i>S'inscrire
                                 </a>
                             </div>
@@ -105,13 +105,36 @@
                         <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
                             <div class="card-body p-4">
                                 <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                    <i class="fas fa-info-circle fa-2x text-info"></i>
+                                    <i class="fas fa-universal-access fa-2x text-info"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">Adaptation handicap</h5>
+                                <p class="card-text text-muted" style="line-height: 1.6;">
+                                    Demandez une adaptation de nos formations selon vos besoins spécifiques.
+                                </p>
+                                <button type="button" 
+                                        class="btn btn-info" 
+                                        style="border-radius: 20px; font-weight: 600;"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#accessibilityModal">
+                                    <i class="fas fa-hand-holding-heart me-2"></i>Demander une adaptation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm" style="border-radius: 20px; transition: transform 0.3s ease;">
+                            <div class="card-body p-4">
+                                <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-info-circle fa-2x text-secondary"></i>
                                 </div>
                                 <h5 class="card-title fw-bold">Informations</h5>
                                 <p class="card-text text-muted" style="line-height: 1.6;">
                                     Posez-nous toutes vos questions sur nos formations et services.
                                 </p>
-                                <a href="{{ path('app_contact_information') }}" class="btn btn-info" style="border-radius: 20px; font-weight: 600;">
+                                <a href="#contact-form" class="btn btn-secondary" style="border-radius: 20px; font-weight: 600;" onclick="setFormType('information')">
                                     <i class="fas fa-envelope me-2"></i>Nous écrire
                                 </a>
                             </div>
@@ -206,7 +229,7 @@
             </div>
 
             {# Modern Contact Form #}
-            <div class="col-lg-8">
+            <div class="col-lg-8" id="contact-form">
                 <div class="card border-0 shadow-sm" style="border-radius: 20px;">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-4">
@@ -216,7 +239,7 @@
                             <h3 class="h4 fw-bold mb-0">Envoyez-nous un message</h3>
                         </div>
 
-                        <form action="{{ path('app_contact_information') }}" method="POST">
+                        <form action="{{ path('app_contact_information') }}" method="POST" id="mainContactForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="firstName" class="form-label fw-semibold">Prénom *</label>
@@ -427,4 +450,205 @@
             </div>
         </div>
     </div>
+
+    {# Accessibility Request Modal #}
+    <div class="modal fade" id="accessibilityModal" tabindex="-1" aria-labelledby="accessibilityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); border-radius: 20px 20px 0 0;">
+                    <div class="w-100 text-center text-white py-3">
+                        <div class="bg-white text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-universal-access fa-lg"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-2" id="accessibilityModalLabel">Demande d'adaptation handicap</h5>
+                        <p class="mb-0 opacity-90">Accessibilité de nos formations</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 mb-4" style="border-radius: 15px;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle text-info me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold mb-2">Notre engagement pour l'accessibilité</h6>
+                                <p class="mb-0" style="line-height: 1.6;">
+                                    EPROFOS s'engage à rendre ses formations accessibles à tous. Décrivez-nous vos besoins spécifiques
+                                    et notre référent handicap vous contactera pour étudier les adaptations possibles.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="{{ path('app_contact_accessibility_request') }}" method="POST" class="needs-validation" novalidate id="accessibilityRequestForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="accessibilityFirstName" class="form-label fw-semibold">Prénom *</label>
+                                <input type="text" 
+                                       class="form-control border-0 shadow-sm" 
+                                       id="accessibilityFirstName" 
+                                       name="first_name" 
+                                       style="border-radius: 15px; padding: 0.75rem 1rem;" 
+                                       required>
+                                <div class="invalid-feedback">
+                                    Veuillez saisir votre prénom.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="accessibilityLastName" class="form-label fw-semibold">Nom *</label>
+                                <input type="text" 
+                                       class="form-control border-0 shadow-sm" 
+                                       id="accessibilityLastName" 
+                                       name="last_name" 
+                                       style="border-radius: 15px; padding: 0.75rem 1rem;" 
+                                       required>
+                                <div class="invalid-feedback">
+                                    Veuillez saisir votre nom.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="accessibilityEmail" class="form-label fw-semibold">Email *</label>
+                                <input type="email" 
+                                       class="form-control border-0 shadow-sm" 
+                                       id="accessibilityEmail" 
+                                       name="email" 
+                                       style="border-radius: 15px; padding: 0.75rem 1rem;" 
+                                       required>
+                                <div class="invalid-feedback">
+                                    Veuillez saisir une adresse email valide.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="accessibilityPhone" class="form-label fw-semibold">Téléphone</label>
+                                <input type="tel" 
+                                       class="form-control border-0 shadow-sm" 
+                                       id="accessibilityPhone" 
+                                       name="phone" 
+                                       style="border-radius: 15px; padding: 0.75rem 1rem;"
+                                       placeholder="01 23 45 67 89">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessibilityCompany" class="form-label fw-semibold">Entreprise / Organisation</label>
+                            <input type="text" 
+                                   class="form-control border-0 shadow-sm" 
+                                   id="accessibilityCompany" 
+                                   name="company" 
+                                   style="border-radius: 15px; padding: 0.75rem 1rem;">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formations" class="form-label fw-semibold">Formation concernée (optionnel)</label>
+                            <select class="form-select border-0 shadow-sm" 
+                                    id="formations" 
+                                    name="formation_id" 
+                                    style="border-radius: 15px; padding: 0.75rem 1rem;">
+                                <option value="">Sélectionnez une formation (optionnel)</option>
+                                {% for formation in formations %}
+                                    <option value="{{ formation.id }}">{{ formation.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessibilityMessage" class="form-label fw-semibold">Décrivez vos besoins d'adaptation *</label>
+                            <textarea class="form-control border-0 shadow-sm" 
+                                      id="accessibilityMessage" 
+                                      name="message" 
+                                      rows="5" 
+                                      style="border-radius: 15px; padding: 0.75rem 1rem;" 
+                                      placeholder="Décrivez précisément vos besoins : troubles visuels, auditifs, moteurs, cognitifs, matériel adapté nécessaire, etc."
+                                      required></textarea>
+                            <div class="form-text">
+                                Plus vous serez précis, mieux nous pourrons vous accompagner dans l'adaptation de la formation.
+                            </div>
+                            <div class="invalid-feedback">
+                                Veuillez décrire vos besoins d'adaptation.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="accessibilityConsent" 
+                                       name="consent" 
+                                       required>
+                                <label class="form-check-label" for="accessibilityConsent">
+                                    J'accepte que mes données soient utilisées pour traiter ma demande d'adaptation. 
+                                    <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-info">
+                                        Voir notre politique de confidentialité
+                                    </a>
+                                </label>
+                                <div class="invalid-feedback">
+                                    Vous devez accepter le traitement de vos données.
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 15px;">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" form="accessibilityRequestForm" class="btn btn-info" style="border-radius: 15px; font-weight: 600;">
+                        <i class="fas fa-paper-plane me-2"></i>Envoyer ma demande
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation for accessibility modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('accessibilityRequestForm');
+            
+            if (form) {
+                // Bootstrap form validation
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+        });
+
+        // Handle form type switching
+        function setFormType(type) {
+            const form = document.getElementById('mainContactForm');
+            const subjectSelect = document.getElementById('subject');
+            
+            // Update form action based on type
+            switch(type) {
+                case 'quote':
+                    form.action = '{{ path('app_contact_information') }}'; // Using information route for now
+                    subjectSelect.value = 'devis';
+                    break;
+                case 'advice':
+                    form.action = '{{ path('app_contact_consultation') }}';
+                    subjectSelect.value = 'conseil';
+                    break;
+                case 'quick_registration':
+                    form.action = '{{ path('app_contact_information') }}'; // Using information route for now
+                    subjectSelect.value = 'inscription';
+                    break;
+                case 'information':
+                default:
+                    form.action = '{{ path('app_contact_information') }}';
+                    subjectSelect.value = 'autre';
+                    break;
+            }
+            
+            // Scroll to form
+            document.getElementById('contact-form').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+    </script>
 {% endblock %}

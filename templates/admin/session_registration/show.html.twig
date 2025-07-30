@@ -12,7 +12,7 @@
         {% include 'admin/components/audit_history_button.html.twig' with { entity: registration, variant: 'btn-sm' } %}
         {% if registration.status == 'pending' %}
             <form method="post" action="{{ path('admin_session_registration_confirm', {id: registration.id}) }}" class="d-inline">
-                <input type="hidden" name="_token" value="{{ csrf_token('confirm_registration' ~ registration.id) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('confirm' ~ registration.id) }}">
                 <button type="submit" class="btn btn-success">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -25,7 +25,7 @@
         
         {% if registration.status != 'cancelled' %}
             <form method="post" action="{{ path('admin_session_registration_cancel', {id: registration.id}) }}" class="d-inline">
-                <input type="hidden" name="_token" value="{{ csrf_token('cancel_registration' ~ registration.id) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ registration.id) }}">
                 <button type="submit" class="btn btn-warning" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette inscription ?')">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -53,7 +53,7 @@
                 </a>
                 
                 <form method="post" action="{{ path('admin_session_registration_delete', {id: registration.id}) }}" class="d-inline">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete_registration' ~ registration.id) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ registration.id) }}">
                     <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette inscription ?')">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -79,15 +79,36 @@
                 <div class="card-header">
                     <h3 class="card-title">Détails de l'inscription</h3>
                     <div class="card-actions">
-                        {% if registration.status == 'pending' %}
-                            <span class="badge bg-warning-lt">En attente</span>
-                        {% elseif registration.status == 'confirmed' %}
-                            <span class="badge bg-success-lt">Confirmée</span>
-                        {% elseif registration.status == 'cancelled' %}
-                            <span class="badge bg-danger-lt">Annulée</span>
-                        {% else %}
-                            <span class="badge bg-secondary-lt">{{ registration.status|title }}</span>
-                        {% endif %}
+                        <div class="d-flex align-items-center gap-2">
+                            {% if registration.status == 'pending' %}
+                                <span class="badge bg-warning-lt">En attente</span>
+                            {% elseif registration.status == 'confirmed' %}
+                                <span class="badge bg-success-lt">Confirmée</span>
+                            {% elseif registration.status == 'cancelled' %}
+                                <span class="badge bg-danger-lt">Annulée</span>
+                            {% elseif registration.status == 'attended' %}
+                                <span class="badge bg-info-lt">Présent</span>
+                            {% elseif registration.status == 'no_show' %}
+                                <span class="badge bg-secondary-lt">Absent</span>
+                            {% else %}
+                                <span class="badge bg-secondary-lt">{{ registration.status|title }}</span>
+                            {% endif %}
+                            
+                            <!-- Status Update Form -->
+                            <form method="post" action="{{ path('admin_session_registration_update_status', {id: registration.id}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ registration.id) }}">
+                                <div class="d-flex align-items-center gap-1">
+                                    <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                                        <option value="">Changer le statut...</option>
+                                        <option value="pending"{{ registration.status == 'pending' ? ' disabled' : '' }}>En attente</option>
+                                        <option value="confirmed"{{ registration.status == 'confirmed' ? ' disabled' : '' }}>Confirmée</option>
+                                        <option value="cancelled"{{ registration.status == 'cancelled' ? ' disabled' : '' }}>Annulée</option>
+                                        <option value="attended"{{ registration.status == 'attended' ? ' disabled' : '' }}>Présent</option>
+                                        <option value="no_show"{{ registration.status == 'no_show' ? ' disabled' : '' }}>Absent</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">

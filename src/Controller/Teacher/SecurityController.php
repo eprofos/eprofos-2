@@ -7,6 +7,7 @@ namespace App\Controller\Teacher;
 use App\Entity\User\Teacher;
 use App\Form\User\TeacherRegistrationFormType;
 use App\Repository\User\TeacherRepository;
+use App\Service\User\TeacherService;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -30,6 +31,7 @@ class SecurityController extends AbstractController
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
+        private TeacherService $teacherService,
     ) {}
 
     /**
@@ -104,8 +106,14 @@ class SecurityController extends AbstractController
                 'ip' => $this->getClientIp(),
             ]);
 
-            // TODO: Send email verification email
-            $this->addFlash('success', 'Votre compte formateur a été créé avec succès ! Un email de vérification vous a été envoyé.');
+            // Send email verification email
+            $emailSent = $this->teacherService->sendEmailVerification($teacher);
+            
+            if ($emailSent) {
+                $this->addFlash('success', 'Votre compte formateur a été créé avec succès ! Un email de vérification vous a été envoyé.');
+            } else {
+                $this->addFlash('warning', 'Votre compte formateur a été créé avec succès ! Cependant, nous n\'avons pas pu envoyer l\'email de vérification. Contactez le support si nécessaire.');
+            }
 
             return $this->redirectToRoute('teacher_login');
         }
@@ -178,7 +186,8 @@ class SecurityController extends AbstractController
                     'ip' => $this->getClientIp(),
                 ]);
 
-                // TODO: Send password reset email
+                // Send password reset email
+                $this->teacherService->sendPasswordResetEmail($teacher);
             }
 
             // Always show success message for security reasons

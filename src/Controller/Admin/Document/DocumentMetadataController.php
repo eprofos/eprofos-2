@@ -256,6 +256,16 @@ class DocumentMetadataController extends AbstractController
 
     /**
      * Get available metadata keys (AJAX).
+     * 
+     * Provides autocomplete data for metadata key fields in forms.
+     * Returns available keys with usage statistics, sorted by popularity.
+     * Used by:
+     * - New metadata form (autocomplete datalist)
+     * - Edit metadata form (autocomplete datalist) 
+     * - Index page filter (autocomplete datalist)
+     * 
+     * @param string $search Optional search term to filter keys
+     * @return JsonResponse Array of objects with 'key' and 'usage_count' fields
      */
     #[Route('/keys', name: 'admin_document_metadata_keys', methods: ['GET'])]
     public function getAvailableKeys(Request $request): Response

@@ -322,20 +322,47 @@
 
     <!-- Other Report Types Placeholder -->
     {% if filters.report_type != 'overview' %}
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">Rapport "{{ available_reports[filters.report_type].name }}" en cours de développement</h4>
-                        <p class="text-muted">Ce type de rapport sera bientôt disponible.</p>
-                        <a href="{{ path('admin_alternance_reporting_index', {report_type: 'overview'}) }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-left me-2"></i>Retour à la vue d'ensemble
-                        </a>
+        {% if filters.report_type == 'financial' %}
+            <script>
+                // Redirect to dedicated financial report page
+                window.location.href = "{{ path('admin_alternance_reporting_financial', {period: filters.period, formation: filters.formation}) }}";
+            </script>
+        {% elseif filters.report_type == 'qualiopi' %}
+            <script>
+                // Redirect to dedicated qualiopi report page
+                window.location.href = "{{ path('admin_alternance_reporting_qualiopi', {period: filters.period, formation: filters.formation}) }}";
+            </script>
+        {% elseif filters.report_type == 'performance' %}
+            <script>
+                // Redirect to dedicated performance report page
+                window.location.href = "{{ path('admin_alternance_reporting_performance', {period: filters.period, formation: filters.formation}) }}";
+            </script>
+        {% elseif filters.report_type == 'mentors' %}
+            <script>
+                // Redirect to dedicated mentors report page
+                window.location.href = "{{ path('admin_alternance_reporting_mentors', {period: filters.period, formation: filters.formation}) }}";
+            </script>
+        {% elseif filters.report_type == 'missions' %}
+            <script>
+                // Redirect to dedicated missions report page
+                window.location.href = "{{ path('admin_alternance_reporting_missions', {period: filters.period, formation: filters.formation}) }}";
+            </script>
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Rapport "{{ available_reports[filters.report_type].name }}" en cours de développement</h4>
+                            <p class="text-muted">Ce type de rapport sera bientôt disponible.</p>
+                            <a href="{{ path('admin_alternance_reporting_index', {report_type: 'overview'}) }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour à la vue d'ensemble
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     {% endif %}
 
     <!-- Quick Actions -->
@@ -347,24 +374,34 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-primary w-100" disabled>
-                                <i class="fas fa-file-pdf me-2"></i>Générer Rapport PDF
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_analytics') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
                             </a>
                         </div>
-                        <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-success w-100" disabled>
-                                <i class="fas fa-envelope me-2"></i>Envoyer par Email
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_financial') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-euro-sign me-2"></i>Financier
                             </a>
                         </div>
-                        <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-info w-100" disabled>
-                                <i class="fas fa-calendar me-2"></i>Programmer Rapport
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_qualiopi') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-check-circle me-2"></i>Qualiopi
                             </a>
                         </div>
-                        <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-warning w-100" disabled>
-                                <i class="fas fa-cog me-2"></i>Configurer Alertes
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_performance') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-chart-bar me-2"></i>Performance
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_mentors') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-users me-2"></i>Mentors
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('admin_alternance_reporting_missions') }}" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-tasks me-2"></i>Missions
                             </a>
                         </div>
                     </div>

@@ -126,7 +126,6 @@ These fields are required for French training quality certification.
 - **Modal Integration**: When creating modals in Twig, use `modal_controller.js` with `data-controller="modal"`, `data-modal-modal-id-value="modal-id"`, and actions `click->modal#open`/`click->modal#close`
 - **NEW**: `alternance_dashboard_controller.js` - Chart.js integration for alternance analytics
 - **NEW**: `mentor_dashboard_controller.js` - Mentor-specific dashboard interactions
-- **NEW**: `student_alternance_controller.js` - Student alternance interface management
 
 ### Collection Form Pattern
 Use dedicated `CollectionController` for dynamic form fields:

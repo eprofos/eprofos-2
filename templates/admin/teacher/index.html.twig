@@ -309,16 +309,20 @@
                                                         Modifier
                                                     </a>
                                                     {% if not teacher.emailVerified %}
-                                                        <button class="dropdown-item" onclick="verifyEmail({{ teacher.id }})">
+                                                        <button class="dropdown-item" onclick="verifyEmail({{ teacher.id }}, '{{ csrf_token('verify_email' ~ teacher.id) }}')">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 12l2 2l4 -4"/><path d="M21 12c.552 0 1.005 -.449 .95 -.998a10 10 0 1 0 -8.953 8.953c.55 -.055 .998 -.398 .998 -.95h-.02c0 -.591 -.448 -1.068 -1.022 -1.022a8 8 0 1 1 7.072 -7.972c-.46 .045 -1.025 .43 -1.025 1z"/></svg>
-                                                            Vérifier email
+                                                            Vérifier email manuellement
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="sendEmailVerification({{ teacher.id }}, '{{ csrf_token('send_email_verification' ~ teacher.id) }}')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/><path d="M3 7l9 6l9 -6"/></svg>
+                                                            Envoyer lien de vérification
                                                         </button>
                                                     {% endif %}
                                                     <button class="dropdown-item" onclick="sendPasswordReset({{ teacher.id }})">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/><path d="M3 7l9 6l9 -6"/></svg>
                                                         Reset password
                                                     </button>
-                                                    <button class="dropdown-item" onclick="generatePassword({{ teacher.id }})">
+                                                    <button class="dropdown-item" onclick="generatePassword({{ teacher.id }}, '{{ csrf_token('generate_password' ~ teacher.id) }}')">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 12l-3 -3l3 -3"/><path d="M6 9h14.5"/><path d="M15 12l3 3l-3 3"/><path d="M18 15h-14.5"/></svg>
                                                         Générer mot de passe
                                                     </button>
@@ -450,15 +454,17 @@
             }
         }
 
-        async function verifyEmail(teacherId) {
+        async function verifyEmail(teacherId, token) {
             if (!confirm('Marquer cet email comme vérifié ?')) return;
             
             try {
                 const response = await fetch(`/admin/teachers/${teacherId}/verify-email`, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `_token=${token}`
                 });
                 const data = await response.json();
                 
@@ -473,15 +479,41 @@
             }
         }
 
-        async function generatePassword(teacherId) {
+        async function sendEmailVerification(teacherId, csrfToken) {
+            if (!confirm('Envoyer un email de vérification à ce formateur ?')) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/send-email-verification`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `_token=${csrfToken}`
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function generatePassword(teacherId, token) {
             if (!confirm('Générer un nouveau mot de passe temporaire ?')) return;
             
             try {
                 const response = await fetch(`/admin/teachers/${teacherId}/generate-password`, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `_token=${token}`
                 });
                 const data = await response.json();
                 

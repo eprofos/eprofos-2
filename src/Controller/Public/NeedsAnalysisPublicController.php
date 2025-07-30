@@ -72,28 +72,7 @@ class NeedsAnalysisPublicController extends AbstractController
         return $this->handleIndividualForm($needsAnalysisRequest, $request);
     }
 
-    /**
-     * Display information about the analysis request (before form).
-     */
-    #[Route('/info/{token}', name: 'needs_analysis_public_info', methods: ['GET'])]
-    public function info(string $token): Response
-    {
-        $needsAnalysisRequest = $this->needsAnalysisService->findRequestByToken($token);
 
-        if (!$needsAnalysisRequest) {
-            throw $this->createNotFoundException('Lien invalide ou expiré.');
-        }
-
-        if (!$this->needsAnalysisService->isRequestAccessible($needsAnalysisRequest)) {
-            return $this->render('public/needs_analysis/expired.html.twig', [
-                'request' => $needsAnalysisRequest,
-            ]);
-        }
-
-        return $this->render('public/needs_analysis/info.html.twig', [
-            'request' => $needsAnalysisRequest,
-        ]);
-    }
 
     /**
      * Display success page after form submission.

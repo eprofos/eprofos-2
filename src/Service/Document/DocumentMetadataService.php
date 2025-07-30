@@ -361,6 +361,13 @@ class DocumentMetadataService
 
     /**
      * Get available metadata keys with optional search.
+     * 
+     * Returns all unique metadata keys currently in use, along with
+     * their usage statistics. Used for autocomplete functionality
+     * in admin forms to help users choose consistent key names.
+     * 
+     * @param string $search Optional search term to filter keys
+     * @return array Array of associative arrays with 'key' and 'usage_count'
      */
     public function getAvailableMetadataKeys(string $search = ''): array
     {

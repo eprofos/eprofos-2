@@ -323,6 +323,35 @@
                                                                 Ajouter une note
                                                             </a>
                                                             <div class="dropdown-divider"></div>
+                                                            <h6 class="dropdown-header">Statut rapide</h6>
+                                                            {% if prospect.status != 'qualified' %}
+                                                                <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                                                    <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                                                    <input type="hidden" name="status" value="qualified">
+                                                                    <button type="submit" class="dropdown-item">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M9 12l2 2l4 -4"/>
+                                                                            <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s4.03 -9 9 -9s9 4.03 9 9"/>
+                                                                        </svg>
+                                                                        Qualifier
+                                                                    </button>
+                                                                </form>
+                                                            {% endif %}
+                                                            {% if prospect.status != 'customer' %}
+                                                                <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                                                    <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                                                    <input type="hidden" name="status" value="customer">
+                                                                    <button type="submit" class="dropdown-item">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                            <path d="M5 12l5 5l10 -10"/>
+                                                                        </svg>
+                                                                        Convertir
+                                                                    </button>
+                                                                </form>
+                                                            {% endif %}
+                                                            <div class="dropdown-divider"></div>
                                                             <form method="post" action="{{ path('admin_prospect_delete', {id: prospect.id}) }}" style="display: inline;">
                                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ prospect.id) }}">
                                                                 <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce prospect ? Cette action est irréversible.')">

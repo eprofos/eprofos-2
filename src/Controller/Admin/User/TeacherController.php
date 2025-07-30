@@ -244,11 +244,18 @@ class TeacherController extends AbstractController
     }
 
     /**
-     * Send email verification to teacher.
+     * Manually verify teacher email.
      */
     #[Route('/{id}/verify-email', name: 'admin_teacher_verify_email', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function verifyEmail(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
+    public function verifyEmail(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
     {
+        if (!$this->isCsrfTokenValid('verify_email' . $teacher->getId(), $request->request->get('_token'))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide.',
+            ], 400);
+        }
+
         try {
             if ($teacher->isEmailVerified()) {
                 return new JsonResponse([
@@ -284,11 +291,58 @@ class TeacherController extends AbstractController
     }
 
     /**
+     * Send email verification link to teacher.
+     */
+    #[Route('/{id}/send-email-verification', name: 'admin_teacher_send_email_verification', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function sendEmailVerification(Request $request, Teacher $teacher): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('send_email_verification' . $teacher->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
+        try {
+            $success = $this->teacherService->sendEmailVerification($teacher);
+
+            if ($success) {
+                $this->logger->info('Email verification sent to teacher', [
+                    'teacher_id' => $teacher->getId(),
+                    'sent_by' => $this->getUser()?->getUserIdentifier(),
+                ]);
+
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Email de vérification envoyé avec succès.',
+                ]);
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'email de vérification.',
+            ], 500);
+        } catch (Exception $e) {
+            $this->logger->error('Failed to send email verification to teacher', [
+                'teacher_id' => $teacher->getId(),
+                'error' => $e->getMessage(),
+                'sent_by' => $this->getUser()?->getUserIdentifier(),
+            ]);
+
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Generate temporary password for teacher.
      */
     #[Route('/{id}/generate-password', name: 'admin_teacher_generate_password', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function generatePassword(Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
+    public function generatePassword(Request $request, Teacher $teacher, EntityManagerInterface $entityManager): JsonResponse
     {
+        if (!$this->isCsrfTokenValid('generate_password' . $teacher->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+        }
+
         try {
             $newPassword = bin2hex(random_bytes(8));
             $hashedPassword = $this->passwordHasher->hashPassword($teacher, $newPassword);

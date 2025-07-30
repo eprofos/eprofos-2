@@ -280,6 +280,24 @@ class SecurityController extends AbstractController
     }
 
     /**
+     * Resend verification page.
+     *
+     * Standalone page for mentors to resend their email verification.
+     */
+    #[Route('/resend-verification', name: 'mentor_resend_verification_form', methods: ['GET'])]
+    public function resendVerificationForm(): Response
+    {
+        // If user is already authenticated, redirect to dashboard
+        if ($this->getUser()) {
+            return $this->redirectToRoute('mentor_dashboard');
+        }
+
+        return $this->render('mentor/security/resend_verification.html.twig', [
+            'page_title' => 'Renvoyer l\'email de vérification',
+        ]);
+    }
+
+    /**
      * Send email verification.
      *
      * Resends email verification link to mentor.
@@ -287,6 +305,13 @@ class SecurityController extends AbstractController
     #[Route('/resend-verification', name: 'mentor_resend_verification', methods: ['POST'])]
     public function resendVerification(Request $request): Response
     {
+        // Verify CSRF token
+        $submittedToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('resend_verification', $submittedToken)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('mentor_login');
+        }
+
         $email = $request->request->get('email');
 
         if (!$email) {
@@ -301,6 +326,12 @@ class SecurityController extends AbstractController
             try {
                 $this->mentorService->sendEmailVerification($mentor);
                 $this->addFlash('success', 'Email de vérification renvoyé.');
+
+                $this->logger->info('Email verification resent for mentor', [
+                    'mentor_id' => $mentor->getId(),
+                    'email' => $mentor->getEmail(),
+                    'ip' => $this->getClientIp(),
+                ]);
             } catch (Exception $e) {
                 $this->logger->error('Error resending verification email', [
                     'mentor_id' => $mentor->getId(),
@@ -315,29 +346,7 @@ class SecurityController extends AbstractController
         return $this->redirectToRoute('mentor_login');
     }
 
-    /**
-     * Account setup completion check.
-     *
-     * Checks if mentor account setup is complete and redirects accordingly.
-     */
-    #[Route('/setup-check', name: 'mentor_setup_check', methods: ['GET'])]
-    public function setupCheck(): Response
-    {
-        /** @var Mentor|null $mentor */
-        $mentor = $this->getUser();
 
-        if (!$mentor) {
-            return $this->redirectToRoute('mentor_login');
-        }
-
-        $setupCompletion = $this->mentorAuthService->getAccountSetupCompletion($mentor);
-
-        if (!$setupCompletion['is_complete']) {
-            return $this->redirectToRoute('mentor_complete_setup');
-        }
-
-        return $this->redirectToRoute('mentor_dashboard');
-    }
 
     /**
      * Complete account setup.

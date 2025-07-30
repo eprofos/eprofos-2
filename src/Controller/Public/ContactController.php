@@ -52,9 +52,6 @@ class ContactController extends AbstractController
     }
 
     /**
-     * Handle quote request form submission.
-     */
-    /**
      * Display quote request form (GET).
      */
     #[Route('/devis', name: 'app_contact_quote', methods: ['GET'])]
@@ -68,18 +65,6 @@ class ContactController extends AbstractController
 
         // Redirect to contact page with quote section
         return $this->redirectToRoute('app_contact_index', [], Response::HTTP_MOVED_PERMANENTLY);
-    }
-
-    /**
-     * Handle quote request form submission (POST).
-     */
-    #[Route('/devis', name: 'app_contact_quote_submit', methods: ['POST'])]
-    public function quote(Request $request): Response
-    {
-        $contactRequest = new ContactRequest();
-        $contactRequest->setType('quote');
-
-        return $this->handleContactForm($request, $contactRequest, 'quote');
     }
 
     /**
@@ -171,6 +156,15 @@ class ContactController extends AbstractController
             $contactRequest->setCompany($request->request->get('company'));
             $contactRequest->setMessage($request->request->get('message'));
 
+            // Handle formation selection
+            $formationId = $request->request->getInt('formation_id');
+            if ($formationId) {
+                $formation = $this->formationRepository->find($formationId);
+                if ($formation) {
+                    $contactRequest->setFormation($formation);
+                }
+            }
+
             // Validate the contact request
             $errors = $this->validator->validate($contactRequest);
             if (count($errors) > 0) {
@@ -184,6 +178,22 @@ class ContactController extends AbstractController
             // Save the contact request
             $this->contactRequestRepository->save($contactRequest, true);
 
+            // Create or update prospect
+            try {
+                $prospect = $this->prospectService->createProspectFromContactRequest($contactRequest);
+
+                $this->logger->info('Prospect created/updated from accessibility request', [
+                    'prospect_id' => $prospect->getId(),
+                    'contact_request_id' => $contactRequest->getId(),
+                ]);
+            } catch (Exception $e) {
+                $this->logger->error('Failed to create prospect from accessibility request', [
+                    'contact_request_id' => $contactRequest->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+                // Don't fail the request if prospect creation fails
+            }
+
             // Send notification email to admin
             $this->sendAccessibilityNotificationEmail($contactRequest);
 
@@ -194,9 +204,10 @@ class ContactController extends AbstractController
             $this->logger->info('Accessibility request submitted', [
                 'contact_request_id' => $contactRequest->getId(),
                 'email' => $contactRequest->getEmail(),
+                'formation_id' => $formationId ?: null,
             ]);
 
-            $this->addFlash('success', 'Votre demande d\'adaptation a été envoyée avec succès. Nous vous contacterons rapidement.');
+            $this->addFlash('success', 'Votre demande d\'adaptation a été envoyée avec succès. Notre référent handicap vous contactera rapidement.');
         } catch (Exception $e) {
             $this->logger->error('Error processing accessibility request', [
                 'error' => $e->getMessage(),
@@ -204,6 +215,15 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer.');
+        }
+
+        // Redirect to formation page if request came from a formation, otherwise to contact page
+        $formationId = $request->request->getInt('formation_id');
+        if ($formationId) {
+            $formation = $this->formationRepository->find($formationId);
+            if ($formation) {
+                return $this->redirectToRoute('app_formation_show', ['slug' => $formation->getSlug()]);
+            }
         }
 
         return $this->redirectToRoute('app_contact_index');
@@ -431,6 +451,10 @@ class ContactController extends AbstractController
 
         if ($contactRequest->getCompany()) {
             $content .= '- Entreprise: ' . $contactRequest->getCompany() . "\n";
+        }
+
+        if ($contactRequest->getFormation()) {
+            $content .= '- Formation concernée: ' . $contactRequest->getFormation()->getTitle() . "\n";
         }
 
         $content .= '- Date de la demande: ' . $contactRequest->getCreatedAt()->format('d/m/Y à H:i') . "\n\n";

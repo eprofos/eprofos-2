@@ -229,28 +229,6 @@ class StudentProgressRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get activity trends over time.
-     */
-    public function getActivityTrends(int $days = 30): array
-    {
-        $startDate = new DateTime('-' . $days . ' days');
-
-        return $this->createQueryBuilder('sp')
-            ->select([
-                'SUBSTRING(sp.lastActivity, 1, 10) as activityDate',
-                'COUNT(sp.id) as activeStudents',
-                'AVG(sp.engagementScore) as averageEngagement',
-            ])
-            ->where('sp.lastActivity >= :startDate')
-            ->setParameter('startDate', $startDate)
-            ->groupBy('activityDate')
-            ->orderBy('activityDate', 'ASC')
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
-    /**
      * Export data for Qualiopi compliance reporting.
      */
     public function getQualiopi12ComplianceData(): array

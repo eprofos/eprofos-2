@@ -80,7 +80,12 @@
                         </div>
                         <div class="col-md-4">
                             <label for="key_filter" class="form-label">Clé</label>
-                            <input type="text" name="key" id="key_filter" class="form-control" value="{{ filters.key }}" placeholder="Filtrer par clé...">
+                            <input type="text" name="key" id="key_filter" class="form-control" 
+                                   value="{{ filters.key }}" placeholder="Filtrer par clé..."
+                                   list="metadata-keys-filter-list">
+                            <datalist id="metadata-keys-filter-list">
+                                <!-- Options will be populated via AJAX -->
+                            </datalist>
                         </div>
                         <div class="col-md-4">
                             <label for="type_filter" class="form-label">Type de valeur</label>
@@ -112,6 +117,10 @@
                         <i class="fas fa-tags me-2"></i>Liste des métadonnées
                     </h5>
                     <div class="btn-group" role="group">
+                        <button type="button" id="bulkDeleteBtn" class="btn btn-outline-danger btn-sm" 
+                                onclick="showBulkDeleteModal()" style="display: none;">
+                            <i class="fas fa-trash me-1"></i>Supprimer sélection
+                        </button>
                         <a href="{{ path('admin_document_metadata_export') }}" class="btn btn-outline-success btn-sm">
                             <i class="fas fa-download me-1"></i>Export CSV
                         </a>
@@ -120,28 +129,45 @@
                 <div class="card-body p-0">
                     {% if metadata_with_stats|length > 0 %}
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Document</th>
-                                        <th>Clé</th>
-                                        <th>Nom d'affichage</th>
-                                        <th>Type</th>
-                                        <th>Valeur</th>
-                                        <th>Requis</th>
-                                        <th>Recherchable</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in metadata_with_stats %}
+                            <form id="bulkDeleteForm" method="post" action="{{ path('admin_document_metadata_bulk_delete') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete') }}">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
                                         <tr>
+                                            <th class="text-center">
+                                                <input type="checkbox" id="selectAll" class="form-check-input">
+                                            </th>
+                                            <th>Document</th>
+                                            <th>Clé</th>
+                                            <th>Nom d'affichage</th>
+                                            <th>Type</th>
+                                            <th>Valeur</th>
+                                            <th>Requis</th>
+                                            <th>Recherchable</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in metadata_with_stats %}
+                                            <tr>
+                                                <td class="text-center">
+                                                    <input type="checkbox" name="selected_metadata[]" 
+                                                           value="{{ item.metadata.id }}" 
+                                                           class="form-check-input metadata-checkbox">
+                                                </td>
                                             <td>
                                                 <div class="fw-medium">{{ item.document_title }}</div>
                                                 <small class="text-muted">{{ item.document_type }}</small>
                                             </td>
                                             <td>
-                                                <code class="text-dark">{{ item.metadata.metaKey }}</code>
+                                                <button type="button" 
+                                                        class="btn btn-link text-start p-0 text-decoration-none"
+                                                        data-action="click->metadata-statistics#showStatistics"
+                                                        data-key="{{ item.metadata.metaKey }}"
+                                                        title="Voir les statistiques pour cette clé">
+                                                    <code class="text-primary">{{ item.metadata.metaKey }}</code>
+                                                    <i class="fas fa-chart-bar ms-1 text-muted" style="font-size: 0.8em;"></i>
+                                                </button>
                                             </td>
                                             <td>{{ item.effective_display_name }}</td>
                                             <td>
@@ -214,9 +240,10 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                     {% else %}
                         <div class="text-center py-5">
@@ -258,6 +285,58 @@
     </div>
 </div>
 
+<!-- Bulk Delete Confirmation Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression multiple</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer <span id="selectedCount">0</span> métadonnée(s) sélectionnée(s) ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" onclick="submitBulkDelete()">Supprimer tout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metadata Statistics Modal -->
+<div class="modal fade" id="statisticsModal" tabindex="-1" 
+     data-controller="metadata-statistics"
+     data-metadata-statistics-target="modal"
+     data-metadata-statistics-url-value="{{ path('admin_document_metadata_statistics', {key: '__KEY__'}) }}">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" data-metadata-statistics-target="title">Statistiques de métadonnée</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading state -->
+                <div class="text-center py-4 d-none" data-metadata-statistics-target="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <div class="mt-2 text-muted">Chargement des statistiques...</div>
+                </div>
+                
+                <!-- Statistics content -->
+                <div data-metadata-statistics-target="content">
+                    <!-- Statistics will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function confirmDelete(metadataId) {
     const form = document.getElementById('deleteForm');
@@ -267,5 +346,101 @@ function confirmDelete(metadataId) {
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
 }
+
+// Bulk delete functionality
+function updateBulkDeleteButton() {
+    const checkboxes = document.querySelectorAll('.metadata-checkbox:checked');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
+    if (checkboxes.length > 0) {
+        bulkDeleteBtn.style.display = 'inline-block';
+    } else {
+        bulkDeleteBtn.style.display = 'none';
+    }
+}
+
+function showBulkDeleteModal() {
+    const checkboxes = document.querySelectorAll('.metadata-checkbox:checked');
+    if (checkboxes.length === 0) {
+        return;
+    }
+    
+    document.getElementById('selectedCount').textContent = checkboxes.length;
+    const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+    modal.show();
+}
+
+function submitBulkDelete() {
+    document.getElementById('bulkDeleteForm').submit();
+}
+
+// Load metadata keys for filter autocomplete
+document.addEventListener('DOMContentLoaded', function() {
+    const filterDatalist = document.getElementById('metadata-keys-filter-list');
+    
+    // Bulk delete event handlers
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const metadataCheckboxes = document.querySelectorAll('.metadata-checkbox');
+    
+    // Handle "Select All" checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        metadataCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBulkDeleteButton();
+    });
+    
+    // Handle individual checkboxes
+    metadataCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateBulkDeleteButton();
+            
+            // Update "Select All" checkbox state
+            const checkedBoxes = document.querySelectorAll('.metadata-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (checkedBoxes.length === metadataCheckboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        });
+    });
+    
+    async function loadMetadataKeysForFilter() {
+        try {
+            const response = await fetch('{{ path('admin_document_metadata_keys') }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.warn('Could not load metadata keys for filter autocomplete');
+                return;
+            }
+            
+            const keys = await response.json();
+            
+            // Clear existing options
+            filterDatalist.innerHTML = '';
+            
+            // Add new options
+            keys.forEach(keyData => {
+                const option = document.createElement('option');
+                option.value = keyData.key;
+                option.textContent = `${keyData.key} (${keyData.usage_count} utilisations)`;
+                filterDatalist.appendChild(option);
+            });
+        } catch (error) {
+            console.warn('Error loading metadata keys for filter:', error);
+        }
+    }
+    
+    loadMetadataKeysForFilter();
+});
 </script>
 {% endblock %}

@@ -9,7 +9,6 @@ use App\Repository\Training\CategoryRepository;
 use App\Repository\Training\FormationRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -140,40 +139,7 @@ class FormationController extends AbstractController
         ]);
     }
 
-    /**
-     * Ajax endpoint for formation search.
-     */
-    #[Route('/api/search', name: 'app_formations_search', methods: ['GET'])]
-    public function search(Request $request): JsonResponse
-    {
-        $query = $request->query->get('q', '');
 
-        if (strlen($query) < 2) {
-            return $this->json([]);
-        }
-
-        $filters = ['search' => $query];
-        $formations = $this->formationRepository
-            ->createCatalogQueryBuilder($filters)
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-
-        $results = [];
-        foreach ($formations as $formation) {
-            $results[] = [
-                'id' => $formation->getId(),
-                'title' => $formation->getTitle(),
-                'slug' => $formation->getSlug(),
-                'category' => $formation->getCategory()?->getName(),
-                'price' => $formation->getFormattedPrice(),
-                'duration' => $formation->getFormattedDuration(),
-            ];
-        }
-
-        return $this->json($results);
-    }
 
     /**
      * Ajax endpoint for formation filtering.

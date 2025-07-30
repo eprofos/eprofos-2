@@ -35,6 +35,102 @@
                             </svg>
                             Ajouter une note
                         </a>
+                        <!-- Quick Status Updates -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                    <path d="M9 12l2 2l4 -4"/>
+                                </svg>
+                                Statut
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% if prospect.status != 'prospect' %}
+                                    <li>
+                                        <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                            <input type="hidden" name="status" value="prospect">
+                                            <button type="submit" class="dropdown-item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M16 21v-2a4 4 0 0 0 -4 -4h-6a4 4 0 0 0 -4 4v2"/>
+                                                    <circle cx="9" cy="7" r="4"/>
+                                                    <path d="M22 11l-3 -3l-3 3"/>
+                                                    <path d="M19 8v8"/>
+                                                </svg>
+                                                Marquer comme Prospect
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                                {% if prospect.status != 'qualified' %}
+                                    <li>
+                                        <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                            <input type="hidden" name="status" value="qualified">
+                                            <button type="submit" class="dropdown-item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M9 12l2 2l4 -4"/>
+                                                    <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s4.03 -9 9 -9s9 4.03 9 9"/>
+                                                </svg>
+                                                Marquer comme Qualifié
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                                {% if prospect.status != 'negotiation' %}
+                                    <li>
+                                        <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                            <input type="hidden" name="status" value="negotiation">
+                                            <button type="submit" class="dropdown-item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-11a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1m3 0v18"/>
+                                                    <line x1="13" y1="8" x2="15" y2="8"/>
+                                                    <line x1="13" y1="12" x2="15" y2="12"/>
+                                                </svg>
+                                                Marquer en Négociation
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                                {% if prospect.status != 'customer' %}
+                                    <li>
+                                        <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                            <input type="hidden" name="status" value="customer">
+                                            <button type="submit" class="dropdown-item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M5 12l5 5l10 -10"/>
+                                                </svg>
+                                                Convertir en Client
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                                {% if prospect.status != 'lost' %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{{ path('admin_prospect_update_status', {id: prospect.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status' ~ prospect.id) }}">
+                                            <input type="hidden" name="status" value="lost">
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir marquer ce prospect comme perdu ?')">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <path d="M18 6l-12 12"/>
+                                                    <path d="M6 6l12 12"/>
+                                                </svg>
+                                                Marquer comme Perdu
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

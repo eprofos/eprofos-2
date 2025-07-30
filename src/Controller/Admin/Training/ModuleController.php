@@ -165,15 +165,4 @@ class ModuleController extends AbstractController
             'formation' => $request->request->get('formation_id'),
         ]);
     }
-
-    #[Route('/by-formation/{id}', name: 'admin_modules_by_formation', methods: ['GET'])]
-    public function byFormation(Formation $formation): Response
-    {
-        $modules = $this->moduleRepository->findByFormationOrdered($formation->getId());
-
-        return $this->render('admin/modules/by_formation.html.twig', [
-            'modules' => $modules,
-            'formation' => $formation,
-        ]);
-    }
 }

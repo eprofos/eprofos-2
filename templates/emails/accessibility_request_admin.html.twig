@@ -45,6 +45,12 @@
         <div class="formation-info">
             <h3>🎓 Formation concernée</h3>
             <p><strong>{{ contactRequest.formation.title }}</strong></p>
+            {% if contactRequest.formation.handicapAccessibility %}
+                <div class="alert alert-info">
+                    <strong>Informations d'accessibilité de cette formation:</strong><br>
+                    {{ contactRequest.formation.handicapAccessibility|nl2br }}
+                </div>
+            {% endif %}
         </div>
         {% endif %}
 

@@ -91,12 +91,17 @@
                                 </div>
                                 <div class="col">
                                     <strong>Email non vérifié</strong>
-                                    <div class="text-muted">Cliquez pour vérifier</div>
+                                    <div class="text-muted">Options de vérification</div>
                                 </div>
                                 <div class="col-auto">
-                                    <button class="btn btn-outline-warning btn-sm" onclick="verifyEmail({{ teacher.id }})">
-                                        Vérifier
-                                    </button>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-warning btn-sm" onclick="verifyEmail({{ teacher.id }})" title="Vérifier manuellement">
+                                            <i class="ti ti-mail-check"></i> Vérifier
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="sendEmailVerification({{ teacher.id }})" title="Envoyer lien de vérification">
+                                            <i class="ti ti-mail-forward"></i> Envoyer
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -350,14 +355,40 @@
                 const response = await fetch(`/admin/teachers/${teacherId}/verify-email`, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `_token={{ csrf_token('verify_email' ~ teacher.id) }}`
                 });
                 const data = await response.json();
                 
                 if (data.success) {
                     alert(data.message);
                     location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function sendEmailVerification(teacherId) {
+            if (!confirm('Envoyer un email de vérification à ce formateur ?')) return;
+            
+            try {
+                const response = await fetch(`/admin/teachers/${teacherId}/send-email-verification`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `_token={{ csrf_token('send_email_verification' ~ teacher.id) }}`
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
                 } else {
                     alert('Erreur: ' + data.message);
                 }

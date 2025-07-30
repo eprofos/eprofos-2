@@ -446,16 +446,5 @@ class DocumentUITemplateController extends AbstractController
         return new JsonResponse($result);
     }
 
-    /**
-     * Generate PDF preview.
-     */
-    #[Route('/{id}/pdf-preview', name: 'admin_document_ui_template_pdf_preview', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function pdfPreview(DocumentUITemplate $uiTemplate): Response
-    {
-        // This would integrate with a PDF generation service
-        // For now, return a placeholder
-        return new Response('PDF Preview functionality to be implemented', 200, [
-            'Content-Type' => 'text/plain',
-        ]);
-    }
+
 }

@@ -301,6 +301,20 @@
                     <div class="dropdown-menu">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
+                                <a class="dropdown-item" href="{{ path('admin_prospect_dashboard') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 4h6v6h-6z"/>
+                                        <path d="M14 4h6v6h-6z"/>
+                                        <path d="M4 14h6v6h-6z"/>
+                                        <path d="M17 17l0 .01"/>
+                                        <path d="M17 14l0 .01"/>
+                                        <path d="M20 17l0 .01"/>
+                                        <path d="M20 14l0 .01"/>
+                                    </svg>
+                                    Tableau de bord CRM
+                                </a>
+                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ path('admin_prospect_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -1020,6 +1034,51 @@
                                 <a class="dropdown-item" href="{{ path('admin_alternance_reporting_qualiopi') }}">
                                     <span class="badge bg-success text-white me-2">✓</span>
                                     Rapport Qualiopi
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_financial') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10"/>
+                                        <path d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/>
+                                        <path d="M12 7v10"/>
+                                    </svg>
+                                    Rapport Financier
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_performance') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 3v18h18"/>
+                                        <path d="M20 9l-4 -4l-4 4l-2 -2l-4 4"/>
+                                        <path d="M20 14h-2v-4h2z"/>
+                                    </svg>
+                                    Rapport Performance
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_mentors') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                                        <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>
+                                    </svg>
+                                    Rapport Mentors
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_missions') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M9 12l2 2l4 -4"/>
+                                        <path d="M21 12c0 4.97 -4.03 9 -9 9s-9 -4.03 -9 -9s4.03 -9 9 -9s9 4.03 9 9z"/>
+                                    </svg>
+                                    Rapport Missions
+                                </a>
+                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_analytics') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                        <path d="M12 3l0 8l4.5 -4.5"/>
+                                        <path d="M12 3l0 8l-4.5 -4.5"/>
+                                    </svg>
+                                    Analytics Avancées
                                 </a>
                                 <a class="dropdown-item" href="{{ path('admin_alternance_reporting_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">

@@ -137,6 +137,7 @@ security:
         - { path: ^/mentor/login, roles: PUBLIC_ACCESS }
         - { path: ^/mentor/register, roles: PUBLIC_ACCESS }
         - { path: ^/mentor/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/mentor/resend-verification, roles: PUBLIC_ACCESS }
         - { path: ^/mentor/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/mentor/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/mentor, roles: ROLE_MENTOR }

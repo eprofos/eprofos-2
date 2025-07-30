@@ -264,35 +264,6 @@ class AttendanceRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get attendance trends over time.
-     */
-    public function getAttendanceTrends(int $days = 30): array
-    {
-        $startDate = new DateTime('-' . $days . ' days');
-
-        return $this->createQueryBuilder('ar')
-            ->select([
-                'DATE(s.startDate) as session_date',
-                'COUNT(ar.id) as total_records',
-                'SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as present_count',
-                '(SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) * 100.0 / COUNT(ar.id)) as attendance_rate',
-            ])
-            ->leftJoin('ar.session', 's')
-            ->where('s.startDate >= :startDate')
-            ->setParameter('startDate', $startDate)
-            ->setParameter('present_statuses', [
-                AttendanceRecord::STATUS_PRESENT,
-                AttendanceRecord::STATUS_LATE,
-                AttendanceRecord::STATUS_PARTIAL,
-            ])
-            ->groupBy('session_date')
-            ->orderBy('session_date', 'ASC')
-            ->getQuery()
-            ->getArrayResult()
-        ;
-    }
-
-    /**
      * Export attendance data for Qualiopi compliance.
      */
     public function getQualiopi12AttendanceData(): array

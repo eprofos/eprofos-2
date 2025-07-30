@@ -259,48 +259,8 @@ class EngagementDashboardController extends AbstractController
         return new JsonResponse(['error' => 'Format not supported'], 400);
     }
 
-    /**
-     * AJAX endpoint for engagement trends.
-     */
-    #[Route('/api/trends', name: 'admin_engagement_api_trends')]
-    public function engagementTrends(Request $request): JsonResponse
-    {
-        $days = $request->query->getInt('days', 30);
 
-        $activityTrends = $this->progressRepository->getActivityTrends($days);
-        $attendanceTrends = $this->attendanceRepository->getAttendanceTrends($days);
 
-        return new JsonResponse([
-            'activity_trends' => $activityTrends,
-            'attendance_trends' => $attendanceTrends,
-        ]);
-    }
-
-    /**
-     * AJAX endpoint for student risk assessment.
-     */
-    #[Route('/api/student/{id}/risk', name: 'admin_engagement_api_student_risk')]
-    public function studentRiskAssessment(int $id): JsonResponse
-    {
-        $student = $this->progressRepository->find($id);
-
-        if (!$student) {
-            return new JsonResponse(['error' => 'Student not found'], 404);
-        }
-
-        $recommendations = $this->dropoutService->recommendInterventions($student->getStudent());
-
-        return new JsonResponse([
-            'student' => [
-                'id' => $student->getStudent()->getId(),
-                'name' => $student->getStudent()->getFullName(),
-                'engagement_score' => $student->getEngagementScore(),
-                'risk_score' => $student->getRiskScore(),
-                'at_risk' => $student->isAtRiskOfDropout(),
-            ],
-            'recommendations' => $recommendations,
-        ]);
-    }
 
     /**
      * Trigger risk analysis for all students.

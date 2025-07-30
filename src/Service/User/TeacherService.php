@@ -52,7 +52,7 @@ class TeacherService
                     $this->twig->render('emails/teacher/password_reset.html.twig', [
                         'teacher' => $teacher,
                         'reset_url' => $this->urlGenerator->generate(
-                            'teacher_password_reset_confirm',
+                            'teacher_reset_password',
                             ['token' => $teacher->getPasswordResetToken()],
                             UrlGeneratorInterface::ABSOLUTE_URL,
                         ),
@@ -100,7 +100,7 @@ class TeacherService
                     $this->twig->render('emails/teacher/email_verification.html.twig', [
                         'teacher' => $teacher,
                         'verification_url' => $this->urlGenerator->generate(
-                            'teacher_email_verify',
+                            'teacher_verify_email',
                             ['token' => $teacher->getEmailVerificationToken()],
                             UrlGeneratorInterface::ABSOLUTE_URL,
                         ),
