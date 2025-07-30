@@ -108,6 +108,7 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
             CompanyMissionFixtures::class, // Creates CompanyMission entities
             MissionAssignmentFixtures::class, // Depends on CompanyMission
             StudentProgressFixtures::class,
+            StudentEnrollmentFixtures::class, // Links Students to SessionRegistrations for content access
             SkillsAssessmentFixtures::class,
             ProgressAssessmentFixtures::class,
             AttendanceRecordFixtures::class,
