@@ -1,0 +1,282 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails de l'Inscription{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Détails de l'Inscription #{{ enrollment.id }}</h1>
+            <p class="text-muted">{{ enrollment.student.fullName }} - {{ enrollment.formation.title }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_student_enrollment_edit', {id: enrollment.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Student Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user text-primary"></i> Informations Étudiant
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Nom complet:</dt>
+                                <dd class="col-sm-8">{{ enrollment.student.fullName }}</dd>
+                                
+                                <dt class="col-sm-4">Email:</dt>
+                                <dd class="col-sm-8">
+                                    <a href="mailto:{{ enrollment.student.email }}">{{ enrollment.student.email }}</a>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Téléphone:</dt>
+                                <dd class="col-sm-8">{{ enrollment.student.phone ?? 'Non renseigné' }}</dd>
+                                
+                                <dt class="col-sm-4">Entreprise:</dt>
+                                <dd class="col-sm-8">{{ enrollment.student.company ?? 'Non renseignée' }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Statut:</dt>
+                                <dd class="col-sm-8">
+                                    {% if enrollment.student.isActive %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactif</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Inscrit depuis:</dt>
+                                <dd class="col-sm-8">{{ enrollment.student.createdAt|date('d/m/Y') }}</dd>
+                                
+                                <dt class="col-sm-4">Dernière connexion:</dt>
+                                <dd class="col-sm-8">{{ enrollment.student.lastLoginAt ? enrollment.student.lastLoginAt|date('d/m/Y H:i') : 'Jamais' }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formation and Session Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap text-info"></i> Formation et Session
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Formation</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Titre:</dt>
+                                <dd class="col-sm-8">{{ enrollment.formation.title }}</dd>
+                                
+                                <dt class="col-sm-4">Catégorie:</dt>
+                                <dd class="col-sm-8">{{ enrollment.formation.category.name }}</dd>
+                                
+                                <dt class="col-sm-4">Niveau:</dt>
+                                <dd class="col-sm-8">{{ enrollment.formation.level }}</dd>
+                                
+                                <dt class="col-sm-4">Durée:</dt>
+                                <dd class="col-sm-8">{{ enrollment.formation.duration }} heures</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Session</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Nom:</dt>
+                                <dd class="col-sm-8">{{ enrollment.session.name }}</dd>
+                                
+                                <dt class="col-sm-4">Période:</dt>
+                                <dd class="col-sm-8">
+                                    Du {{ enrollment.session.startDate|date('d/m/Y') }}
+                                    {% if enrollment.session.endDate %}
+                                        au {{ enrollment.session.endDate|date('d/m/Y') }}
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Capacité:</dt>
+                                <dd class="col-sm-8">
+                                    {{ enrollment.session.registrations|length }}
+                                    {% if enrollment.session.maxCapacity > 0 %}
+                                        / {{ enrollment.session.maxCapacity }}
+                                    {% endif %}
+                                    participants
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Information -->
+            {% if enrollment.progress %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line text-success"></i> Progression
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-6">Progression globale:</dt>
+                                    <dd class="col-sm-6">
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ enrollment.progress.overallProgress }}%">
+                                                {{ enrollment.progress.overallProgress }}%
+                                            </div>
+                                        </div>
+                                    </dd>
+                                    
+                                    <dt class="col-sm-6">Modules terminés:</dt>
+                                    <dd class="col-sm-6">{{ enrollment.progress.completedModules }} / {{ enrollment.progress.totalModules }}</dd>
+                                    
+                                    <dt class="col-sm-6">Exercices réussis:</dt>
+                                    <dd class="col-sm-6">{{ enrollment.progress.completedExercises }} / {{ enrollment.progress.totalExercises }}</dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-6">Temps passé:</dt>
+                                    <dd class="col-sm-6">{{ enrollment.progress.timeSpent }} minutes</dd>
+                                    
+                                    <dt class="col-sm-6">Dernière activité:</dt>
+                                    <dd class="col-sm-6">{{ enrollment.progress.lastActivity ? enrollment.progress.lastActivity|date('d/m/Y H:i') : 'Aucune' }}</dd>
+                                    
+                                    <dt class="col-sm-6">À risque d'abandon:</dt>
+                                    <dd class="col-sm-6">
+                                        {% if enrollment.progress.atRiskOfDropout %}
+                                            <span class="badge bg-warning">Oui</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Non</span>
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Enrollment Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info"></i> Statut de l'Inscription
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <span class="badge {{ enrollment.statusBadgeClass }} fs-6 p-3">
+                            {{ enrollment.statusLabel }}
+                        </span>
+                    </div>
+                    
+                    <dl class="row small">
+                        <dt class="col-6">Inscrit le:</dt>
+                        <dd class="col-6">{{ enrollment.enrolledAt|date('d/m/Y H:i') }}</dd>
+                        
+                        {% if enrollment.completedAt %}
+                            <dt class="col-6">Terminé le:</dt>
+                            <dd class="col-6">{{ enrollment.completedAt|date('d/m/Y H:i') }}</dd>
+                        {% endif %}
+                        
+                        <dt class="col-6">Durée:</dt>
+                        <dd class="col-6">{{ enrollment.enrollmentDuration }} jours</dd>
+                        
+                        <dt class="col-6">Source:</dt>
+                        <dd class="col-6">
+                            <span class="badge bg-secondary">
+                                {% if enrollment.enrollmentSource == 'manual' %}
+                                    Manuelle
+                                {% elseif enrollment.enrollmentSource == 'auto_email_match' %}
+                                    Email auto
+                                {% elseif enrollment.enrollmentSource == 'bulk_admin' %}
+                                    Lot admin
+                                {% elseif enrollment.enrollmentSource == 'manual_link' %}
+                                    Liaison manuelle
+                                {% else %}
+                                    {{ enrollment.enrollmentSource }}
+                                {% endif %}
+                            </span>
+                        </dd>
+                    </dl>
+
+                    {% if enrollment.dropoutReason %}
+                        <div class="alert alert-warning small mt-3" role="alert">
+                            <strong>Raison d'abandon:</strong><br>
+                            {{ enrollment.dropoutReason }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Admin Notes -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note text-warning"></i> Notes Administratives
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if enrollment.adminNotes %}
+                        <p class="mb-0">{{ enrollment.adminNotes|nl2br }}</p>
+                    {% else %}
+                        <p class="text-muted mb-0">Aucune note administrative</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs text-secondary"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('admin_student_enrollment_edit', {id: enrollment.id}) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Modifier l'Inscription
+                        </a>
+                        
+                        {% if enrollment.isActive %}
+                            <form method="POST" action="{{ path('admin_student_enrollment_unlink', {id: enrollment.id}) }}" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir délier cet étudiant ? Cette action est irréversible.')">
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="fas fa-unlink"></i> Délier l'Étudiant
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        <a href="{{ path('admin_student_enrollment_index') }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> Toutes les Inscriptions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

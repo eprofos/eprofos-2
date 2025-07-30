@@ -1,0 +1,221 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Lier un Étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Lier un Étudiant à une Inscription</h1>
+            <p class="text-muted">Associer manuellement un étudiant authentifié à une inscription de session confirmée</p>
+        </div>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Manual Linking Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Liaison Manuelle</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="student_id" class="form-label">Étudiant *</label>
+                                    <select class="form-select" id="student_id" name="student_id" required 
+                                            data-controller="select2" 
+                                            data-select2-url-value="{{ path('admin_student_enrollment_search_students') }}"
+                                            data-select2-placeholder-value="Rechercher un étudiant...">
+                                        <option value="">Sélectionner un étudiant</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Tapez le nom, prénom ou email pour rechercher
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="registration_id" class="form-label">Inscription de Session *</label>
+                                    <select class="form-select" id="registration_id" name="registration_id" required>
+                                        <option value="">Sélectionner une inscription</option>
+                                        {% for registration in unlinkedRegistrations %}
+                                            <option value="{{ registration.id }}" 
+                                                    data-email="{{ registration.email }}"
+                                                    data-formation="{{ registration.session.formation.title }}"
+                                                    data-session="{{ registration.session.name }}">
+                                                {{ registration.fullName }} - {{ registration.session.formation.title }}
+                                                (Session: {{ registration.session.name }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Seules les inscriptions confirmées non liées sont affichées
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes administratives</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Notes optionnelles sur cette liaison..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-link"></i> Lier l'étudiant
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Help and Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info"></i> Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>Liaison d'étudiants</h6>
+                    <p class="small text-muted">
+                        Cette fonction permet de lier manuellement un étudiant authentifié à une inscription 
+                        de session existante, créant automatiquement l'accès au contenu de formation.
+                    </p>
+
+                    <h6>Critères de liaison</h6>
+                    <ul class="small text-muted">
+                        <li>L'étudiant doit être actif</li>
+                        <li>L'inscription doit être confirmée</li>
+                        <li>L'inscription ne doit pas déjà être liée</li>
+                        <li>Aucune inscription existante pour cette session</li>
+                    </ul>
+
+                    <h6>Après liaison</h6>
+                    <ul class="small text-muted">
+                        <li>Création automatique de l'inscription étudiant</li>
+                        <li>Génération du suivi de progression</li>
+                        <li>Envoi d'email de confirmation</li>
+                        <li>Accès au contenu de formation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar text-success"></i> Statistiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Inscriptions non liées</span>
+                        <span class="badge bg-warning">{{ unlinkedRegistrations|length }}</span>
+                    </div>
+                    
+                    {% if unlinkedRegistrations|length == 0 %}
+                        <div class="alert alert-success small" role="alert">
+                            <i class="fas fa-check-circle"></i>
+                            Toutes les inscriptions confirmées sont liées !
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student-Registration Match Preview -->
+<div class="modal fade" id="matchPreviewModal" tabindex="-1" aria-labelledby="matchPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="matchPreviewModalLabel">Aperçu de la Liaison</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="matchPreviewContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studentSelect = document.getElementById('student_id');
+    const registrationSelect = document.getElementById('registration_id');
+    
+    // Auto-suggest matching registrations when student is selected
+    studentSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const studentEmail = selectedOption.dataset.email;
+        
+        if (studentEmail) {
+            // Highlight matching registrations by email
+            Array.from(registrationSelect.options).forEach(option => {
+                if (option.dataset.email === studentEmail) {
+                    option.style.backgroundColor = '#d1ecf1';
+                    option.style.fontWeight = 'bold';
+                }
+            });
+        }
+    });
+    
+    // Show preview when both student and registration are selected
+    function showMatchPreview() {
+        const studentOption = studentSelect.options[studentSelect.selectedIndex];
+        const registrationOption = registrationSelect.options[registrationSelect.selectedIndex];
+        
+        if (studentSelect.value && registrationSelect.value) {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Étudiant</h6>
+                        <p><strong>${studentOption.text}</strong></p>
+                        <p class="small text-muted">${studentOption.dataset.email || ''}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Inscription</h6>
+                        <p><strong>${registrationOption.dataset.formation || ''}</strong></p>
+                        <p class="small text-muted">Session: ${registrationOption.dataset.session || ''}</p>
+                        <p class="small text-muted">Email: ${registrationOption.dataset.email || ''}</p>
+                    </div>
+                </div>
+                
+                ${studentOption.dataset.email === registrationOption.dataset.email ? 
+                    '<div class="alert alert-success small"><i class="fas fa-check"></i> Les emails correspondent !</div>' :
+                    '<div class="alert alert-warning small"><i class="fas fa-exclamation-triangle"></i> Les emails ne correspondent pas</div>'
+                }
+            `;
+            
+            document.getElementById('matchPreviewContent').innerHTML = content;
+            // You could auto-show the modal here if desired
+        }
+    }
+    
+    studentSelect.addEventListener('change', showMatchPreview);
+    registrationSelect.addEventListener('change', showMatchPreview);
+});
+</script>
+{% endblock %}

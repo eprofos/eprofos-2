@@ -59,6 +59,9 @@
             ".php-cs-fixer.dist.php"
         ]
     },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.9.1"
+    },
     "knplabs/knp-snappy-bundle": {
         "version": "1.10",
         "recipe": {

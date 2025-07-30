@@ -295,4 +295,75 @@ class SessionRegistrationRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    /**
+     * Find confirmed registrations by email (for student linking).
+     *
+     * @return SessionRegistration[]
+     */
+    public function findConfirmedByEmail(string $email): array
+    {
+        return $this->createQueryBuilder('sr')
+            ->leftJoin('sr.session', 's')
+            ->leftJoin('s.formation', 'f')
+            ->addSelect('s', 'f')
+            ->where('sr.email = :email')
+            ->andWhere('sr.status = :status')
+            ->setParameter('email', $email)
+            ->setParameter('status', 'confirmed')
+            ->orderBy('sr.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * Find unlinked confirmed registrations by email.
+     *
+     * @return SessionRegistration[]
+     */
+    public function findUnlinkedConfirmedByEmail(string $email): array
+    {
+        return $this->createQueryBuilder('sr')
+            ->leftJoin('sr.session', 's')
+            ->leftJoin('s.formation', 'f')
+            ->addSelect('s', 'f')
+            ->where('sr.email = :email')
+            ->andWhere('sr.status = :status')
+            ->andWhere('sr.linkedStudent IS NULL')
+            ->setParameter('email', $email)
+            ->setParameter('status', 'confirmed')
+            ->orderBy('sr.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * Find unlinked confirmed registrations for admin linking interface.
+     *
+     * @return SessionRegistration[]
+     */
+    public function findUnlinkedConfirmedRegistrations(): array
+    {
+        return $this->createQueryBuilder('sr')
+            ->leftJoin('sr.session', 's')
+            ->leftJoin('s.formation', 'f')
+            ->addSelect('s', 'f')
+            ->where('sr.status = :status')
+            ->andWhere('sr.linkedStudent IS NULL')
+            ->setParameter('status', 'confirmed')
+            ->orderBy('sr.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * Check if registration is already linked to a student.
+     */
+    public function isRegistrationLinked(SessionRegistration $registration): bool
+    {
+        return $registration->hasLinkedStudent();
+    }
 }

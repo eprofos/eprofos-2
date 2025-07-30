@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Training;
 
 use App\Entity\CRM\Prospect;
+use App\Entity\User\Student;
 use App\Repository\Training\SessionRegistrationRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -149,6 +150,19 @@ class SessionRegistration
     #[ORM\ManyToOne(targetEntity: Prospect::class, inversedBy: 'sessionRegistrations')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Prospect $prospect = null;
+
+    /**
+     * Linked student for this session registration (when student account exists).
+     */
+    #[ORM\ManyToOne(targetEntity: Student::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Student $linkedStudent = null;
+
+    /**
+     * Date when student was linked to this registration.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?DateTimeImmutable $linkedAt = null;
 
     public function __construct()
     {
@@ -507,6 +521,60 @@ class SessionRegistration
     public function generateDocumentAcknowledgmentToken(): static
     {
         $this->documentAcknowledgmentToken = bin2hex(random_bytes(32));
+
+        return $this;
+    }
+
+    public function getLinkedStudent(): ?\App\Entity\User\Student
+    {
+        return $this->linkedStudent;
+    }
+
+    public function setLinkedStudent(?\App\Entity\User\Student $linkedStudent): static
+    {
+        $this->linkedStudent = $linkedStudent;
+
+        return $this;
+    }
+
+    public function getLinkedAt(): ?DateTimeImmutable
+    {
+        return $this->linkedAt;
+    }
+
+    public function setLinkedAt(?DateTimeImmutable $linkedAt): static
+    {
+        $this->linkedAt = $linkedAt;
+
+        return $this;
+    }
+
+    /**
+     * Check if this registration has a linked student.
+     */
+    public function hasLinkedStudent(): bool
+    {
+        return $this->linkedStudent !== null;
+    }
+
+    /**
+     * Link a student to this registration.
+     */
+    public function linkStudent(\App\Entity\User\Student $student): static
+    {
+        $this->linkedStudent = $student;
+        $this->linkedAt = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * Unlink the student from this registration.
+     */
+    public function unlinkStudent(): static
+    {
+        $this->linkedStudent = null;
+        $this->linkedAt = null;
 
         return $this;
     }

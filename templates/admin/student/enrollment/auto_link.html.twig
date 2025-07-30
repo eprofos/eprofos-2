@@ -1,0 +1,240 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Liaison Automatique{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Liaison Automatique</h1>
+            <p class="text-muted">Lier automatiquement les étudiants aux inscriptions par correspondance d'email</p>
+        </div>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Auto-Linking Dashboard -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">État de la Liaison Automatique</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Current Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 mb-1 text-primary">{{ linkingStats.total_confirmed_registrations }}</div>
+                                <div class="text-muted">Inscriptions confirmées</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 mb-1 text-success">{{ linkingStats.linked_registrations }}</div>
+                                <div class="text-muted">Déjà liées</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 mb-1 text-warning">{{ linkingStats.unlinked_registrations }}</div>
+                                <div class="text-muted">Non liées</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Taux de liaison</span>
+                            <span class="fw-bold">{{ linkingStats.linking_rate }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ linkingStats.linking_rate }}%" 
+                                 aria-valuenow="{{ linkingStats.linking_rate }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Potential Matches -->
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Correspondances potentielles:</strong> {{ potentialMatchesCount }} inscriptions 
+                        peuvent être liées automatiquement par correspondance d'email.
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="POST" class="d-grid">
+                                <input type="hidden" name="action" value="preview">
+                                <button type="submit" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-eye"></i> Prévisualiser les Correspondances
+                                </button>
+                                <small class="text-muted mt-2">
+                                    Voir les inscriptions qui peuvent être liées automatiquement
+                                </small>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="POST" class="d-grid" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir traiter toutes les liaisons automatiques ?')">
+                                <input type="hidden" name="action" value="process">
+                                <button type="submit" class="btn btn-success btn-lg" 
+                                        {{ potentialMatchesCount == 0 ? 'disabled' : '' }}>
+                                    <i class="fas fa-magic"></i> Traiter Toutes les Liaisons
+                                </button>
+                                <small class="text-muted mt-2">
+                                    Lier automatiquement toutes les correspondances trouvées
+                                </small>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if potentialMatchesCount == 0 and linkingStats.unlinked_registrations > 0 %}
+                <!-- No Matches Found -->
+                <div class="card mt-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune Correspondance Automatique</h5>
+                        <p class="text-muted">
+                            Il reste {{ linkingStats.unlinked_registrations }} inscriptions non liées, 
+                            mais aucune correspondance d'email n'a été trouvée avec les étudiants existants.
+                        </p>
+                        <a href="{{ path('admin_student_enrollment_link') }}" class="btn btn-primary">
+                            <i class="fas fa-link"></i> Liaison Manuelle
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if linkingStats.unlinked_registrations == 0 %}
+                <!-- All Linked -->
+                <div class="card mt-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-success">Toutes les Inscriptions sont Liées !</h5>
+                        <p class="text-muted">
+                            Parfait ! Toutes les inscriptions confirmées ont été liées à des étudiants. 
+                            Le système de liaison automatique fonctionne correctement.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Information Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info"></i> Comment ça fonctionne
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>Liaison par Email</h6>
+                    <p class="small text-muted">
+                        Le système compare automatiquement les adresses email des inscriptions 
+                        de session confirmées avec celles des étudiants authentifiés.
+                    </p>
+
+                    <h6>Critères de Correspondance</h6>
+                    <ul class="small text-muted">
+                        <li>Email identique</li>
+                        <li>Inscription confirmée</li>
+                        <li>Étudiant actif</li>
+                        <li>Pas d'inscription existante</li>
+                        <li>Inscription non déjà liée</li>
+                    </ul>
+
+                    <h6>Actions Automatiques</h6>
+                    <ul class="small text-muted">
+                        <li>Création de l'inscription étudiant</li>
+                        <li>Génération du suivi de progression</li>
+                        <li>Envoi d'email de confirmation</li>
+                        <li>Accès immédiat au contenu</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Best Practices -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning"></i> Bonnes Pratiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Exécutez la liaison automatique régulièrement</li>
+                        <li>Prévisualisez avant de traiter en lot</li>
+                        <li>Vérifiez les logs après traitement</li>
+                        <li>Utilisez la liaison manuelle pour les cas particuliers</li>
+                    </ul>
+
+                    <div class="alert alert-warning small mt-3" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Attention:</strong> La liaison automatique est irréversible 
+                        et envoie des emails de confirmation.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie text-primary"></i> Statistiques Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Taux de liaison</span>
+                        <span class="badge {% if linkingStats.linking_rate >= 80 %}bg-success{% elseif linkingStats.linking_rate >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ linkingStats.linking_rate }}%
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Correspondances possibles</span>
+                        <span class="badge {% if potentialMatchesCount > 0 %}bg-info{% else %}bg-secondary{% endif %}">
+                            {{ potentialMatchesCount }}
+                        </span>
+                    </div>
+
+                    {% if linkingStats.linking_rate < 80 %}
+                        <div class="alert alert-info small mt-3" role="alert">
+                            <i class="fas fa-target"></i>
+                            Objectif recommandé: 80% de liaison
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh statistics every 30 seconds when on this page
+    setInterval(function() {
+        fetch('{{ path("admin_student_enrollment_stats_api") }}')
+            .then(response => response.json())
+            .then(data => {
+                // Update linking statistics if they've changed
+                // This could be implemented to show real-time updates
+            })
+            .catch(error => console.log('Stats refresh failed:', error));
+    }, 30000);
+});
+</script>
+{% endblock %}

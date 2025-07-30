@@ -1,0 +1,413 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Inscription en Lot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Inscription en Lot</h1>
+            <p class="text-muted">Inscrire plusieurs étudiants simultanément à une session de formation</p>
+        </div>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Bulk Enrollment Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sélection de Session et Étudiants</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="bulkEnrollmentForm">
+                        <!-- Session Selection -->
+                        <div class="mb-4">
+                            <label for="session_id" class="form-label">Session de Formation *</label>
+                            <select class="form-select" id="session_id" name="session_id" required>
+                                <option value="">Sélectionner une session</option>
+                                {% for session in sessions %}
+                                    <option value="{{ session.id }}" 
+                                            data-formation="{{ session.formation.title }}"
+                                            data-start="{{ session.startDate|date('d/m/Y') }}"
+                                            data-end="{{ session.endDate ? session.endDate|date('d/m/Y') : 'Non définie' }}"
+                                            data-capacity="{{ session.maxCapacity > 0 ? session.maxCapacity : 'Illimitée' }}"
+                                            data-current="{{ session.registrations|length }}">
+                                        {{ session.formation.title }} - {{ session.name }}
+                                        ({{ session.startDate|date('d/m/Y') }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Sélectionnez la session pour laquelle inscrire les étudiants
+                            </div>
+                        </div>
+
+                        <!-- Session Info Display -->
+                        <div id="sessionInfo" class="alert alert-info d-none mb-4">
+                            <h6><i class="fas fa-info-circle"></i> Informations de la Session</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Formation:</strong> <span id="sessionFormation"></span><br>
+                                    <strong>Période:</strong> <span id="sessionPeriod"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Capacité:</strong> <span id="sessionCapacity"></span><br>
+                                    <strong>Inscrits actuels:</strong> <span id="sessionCurrent"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Search and Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Recherche d'Étudiants</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="studentSearch" 
+                                       placeholder="Rechercher par nom, prénom ou email...">
+                                <button type="button" class="btn btn-outline-secondary" id="searchBtn">
+                                    <i class="fas fa-search"></i> Rechercher
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search Results -->
+                        <div id="searchResults" class="mb-4" style="display: none;">
+                            <label class="form-label">Résultats de Recherche</label>
+                            <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                                <div id="searchResultsContent">
+                                    <!-- Search results will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Students -->
+                        <div class="mb-4">
+                            <label class="form-label">Étudiants Sélectionnés</label>
+                            <div class="border rounded p-3" style="min-height: 100px;">
+                                <div id="selectedStudents">
+                                    <div class="text-muted text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <p>Aucun étudiant sélectionné</p>
+                                        <small>Utilisez la recherche ci-dessus pour ajouter des étudiants</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                <span id="selectedCount">0</span> étudiant(s) sélectionné(s)
+                            </div>
+                        </div>
+
+                        <!-- Submit Section -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                            <button type="button" id="confirmBtn" class="btn btn-warning" disabled>
+                                <i class="fas fa-check"></i> Confirmer les Inscriptions
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Help and Guidelines -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info"></i> Guide d'Utilisation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>Étapes d'Inscription en Lot</h6>
+                    <ol class="small">
+                        <li>Sélectionnez la session de formation</li>
+                        <li>Recherchez et sélectionnez les étudiants</li>
+                        <li>Vérifiez la liste des sélectionnés</li>
+                        <li>Confirmez les inscriptions</li>
+                    </ol>
+
+                    <h6>Critères de Validation</h6>
+                    <ul class="small text-muted">
+                        <li>Étudiants actifs uniquement</li>
+                        <li>Pas d'inscription existante pour la session</li>
+                        <li>Respect de la capacité maximale</li>
+                        <li>Session future ou en cours</li>
+                    </ul>
+
+                    <div class="alert alert-warning small mt-3" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Attention:</strong> Cette action créera automatiquement des inscriptions 
+                        de session et enverra des emails de confirmation.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i> Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="selectAllBtn" disabled>
+                            <i class="fas fa-check-square"></i> Sélectionner Tous les Résultats
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearAllBtn" disabled>
+                            <i class="fas fa-times"></i> Désélectionner Tout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmation d'Inscription en Lot</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Attention:</strong> Vous êtes sur le point d'inscrire plusieurs étudiants à une session.
+                    Cette action est irréversible et enverra des emails de confirmation.
+                </div>
+                
+                <h6>Résumé de l'Inscription</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Session:</strong> <span id="confirmSession"></span><br>
+                        <strong>Formation:</strong> <span id="confirmFormation"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Nombre d'étudiants:</strong> <span id="confirmCount"></span><br>
+                        <strong>Date de début:</strong> <span id="confirmStartDate"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Étudiants à Inscrire:</h6>
+                    <div id="confirmStudentsList" class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Student list will be populated -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" form="bulkEnrollmentForm" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Confirmer les Inscriptions
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sessionSelect = document.getElementById('session_id');
+    const sessionInfo = document.getElementById('sessionInfo');
+    const studentSearch = document.getElementById('studentSearch');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchResults = document.getElementById('searchResults');
+    const searchResultsContent = document.getElementById('searchResultsContent');
+    const selectedStudents = document.getElementById('selectedStudents');
+    const selectedCount = document.getElementById('selectedCount');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    
+    let selectedStudentsList = [];
+    let searchResultsList = [];
+    
+    // Session selection handler
+    sessionSelect.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        if (this.value) {
+            sessionInfo.classList.remove('d-none');
+            document.getElementById('sessionFormation').textContent = option.dataset.formation;
+            document.getElementById('sessionPeriod').textContent = `${option.dataset.start} - ${option.dataset.end}`;
+            document.getElementById('sessionCapacity').textContent = option.dataset.capacity;
+            document.getElementById('sessionCurrent').textContent = option.dataset.current;
+        } else {
+            sessionInfo.classList.add('d-none');
+        }
+        updateConfirmButton();
+    });
+    
+    // Student search
+    function searchStudents() {
+        const query = studentSearch.value.trim();
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        fetch(`{{ path('admin_student_enrollment_search_students') }}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                searchResultsList = data;
+                displaySearchResults(data);
+                searchResults.style.display = 'block';
+                selectAllBtn.disabled = data.length === 0;
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                searchResultsContent.innerHTML = '<div class="text-danger">Erreur lors de la recherche</div>';
+            });
+    }
+    
+    searchBtn.addEventListener('click', searchStudents);
+    studentSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchStudents();
+        }
+    });
+    
+    // Display search results
+    function displaySearchResults(students) {
+        if (students.length === 0) {
+            searchResultsContent.innerHTML = '<div class="text-muted">Aucun étudiant trouvé</div>';
+            return;
+        }
+        
+        const html = students.map(student => {
+            const isSelected = selectedStudentsList.some(s => s.id === student.id);
+            return `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" 
+                           value="${student.id}" id="student_${student.id}"
+                           ${isSelected ? 'checked' : ''}>
+                    <label class="form-check-label" for="student_${student.id}">
+                        ${student.text}
+                    </label>
+                </div>
+            `;
+        }).join('');
+        
+        searchResultsContent.innerHTML = html;
+        
+        // Add event listeners to checkboxes
+        searchResultsContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const studentId = parseInt(this.value);
+                const student = students.find(s => s.id === studentId);
+                
+                if (this.checked) {
+                    addStudent(student);
+                } else {
+                    removeStudent(studentId);
+                }
+            });
+        });
+    }
+    
+    // Add student to selection
+    function addStudent(student) {
+        if (!selectedStudentsList.some(s => s.id === student.id)) {
+            selectedStudentsList.push(student);
+            updateSelectedStudentsDisplay();
+        }
+    }
+    
+    // Remove student from selection
+    function removeStudent(studentId) {
+        selectedStudentsList = selectedStudentsList.filter(s => s.id !== studentId);
+        updateSelectedStudentsDisplay();
+        
+        // Update search results checkboxes
+        const checkbox = document.getElementById(`student_${studentId}`);
+        if (checkbox) checkbox.checked = false;
+    }
+    
+    // Update selected students display
+    function updateSelectedStudentsDisplay() {
+        if (selectedStudentsList.length === 0) {
+            selectedStudents.innerHTML = `
+                <div class="text-muted text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <p>Aucun étudiant sélectionné</p>
+                    <small>Utilisez la recherche ci-dessus pour ajouter des étudiants</small>
+                </div>
+            `;
+        } else {
+            const html = selectedStudentsList.map(student => `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                        <strong>${student.text}</strong>
+                        <input type="hidden" name="student_ids[]" value="${student.id}">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            onclick="removeStudent(${student.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+            selectedStudents.innerHTML = html;
+        }
+        
+        selectedCount.textContent = selectedStudentsList.length;
+        clearAllBtn.disabled = selectedStudentsList.length === 0;
+        updateConfirmButton();
+    }
+    
+    // Select all search results
+    selectAllBtn.addEventListener('click', function() {
+        searchResultsList.forEach(student => addStudent(student));
+        // Update checkboxes in search results
+        searchResultsContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    });
+    
+    // Clear all selections
+    clearAllBtn.addEventListener('click', function() {
+        selectedStudentsList = [];
+        updateSelectedStudentsDisplay();
+        // Update checkboxes in search results
+        searchResultsContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    });
+    
+    // Update confirm button state
+    function updateConfirmButton() {
+        confirmBtn.disabled = !sessionSelect.value || selectedStudentsList.length === 0;
+    }
+    
+    // Confirmation modal
+    confirmBtn.addEventListener('click', function() {
+        const sessionOption = sessionSelect.options[sessionSelect.selectedIndex];
+        
+        document.getElementById('confirmSession').textContent = sessionOption.text;
+        document.getElementById('confirmFormation').textContent = sessionOption.dataset.formation;
+        document.getElementById('confirmCount').textContent = selectedStudentsList.length;
+        document.getElementById('confirmStartDate').textContent = sessionOption.dataset.start;
+        
+        const studentsList = selectedStudentsList.map(student => `
+            <div class="mb-1">${student.text}</div>
+        `).join('');
+        document.getElementById('confirmStudentsList').innerHTML = studentsList;
+        
+        new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+    });
+    
+    // Make removeStudent function global
+    window.removeStudent = removeStudent;
+});
+</script>
+{% endblock %}

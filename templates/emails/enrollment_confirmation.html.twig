@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation d'inscription - {{ formation.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .formation-details {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 3px;
+        }
+        .session-info {
+            background-color: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .status-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Confirmation d'inscription</h1>
+        <p>Votre accès à la formation est maintenant activé</p>
+    </div>
+
+    <div class="content">
+        <h2>Bonjour {{ student.firstName }} {{ student.lastName }},</h2>
+        
+        <p>Nous avons le plaisir de vous confirmer votre inscription à la formation suivante :</p>
+
+        <div class="formation-details">
+            <h3>{{ formation.title }}</h3>
+            {% if formation.description %}
+                <p>{{ formation.description|striptags|slice(0, 200) }}{% if formation.description|length > 200 %}...{% endif %}</p>
+            {% endif %}
+            
+            <div class="session-info">
+                <h4>📅 Informations de la session</h4>
+                <p><strong>Session :</strong> {{ session.name }}</p>
+                {% if session.startDate %}
+                    <p><strong>Date de début :</strong> {{ session.startDate|date('d/m/Y') }}</p>
+                {% endif %}
+                {% if session.endDate %}
+                    <p><strong>Date de fin :</strong> {{ session.endDate|date('d/m/Y') }}</p>
+                {% endif %}
+                {% if session.location %}
+                    <p><strong>Lieu :</strong> {{ session.location }}</p>
+                {% endif %}
+                {% if session.isOnline %}
+                    <p><strong>Format :</strong> Formation en ligne</p>
+                {% endif %}
+            </div>
+
+            <div class="session-info">
+                <h4>📋 Statut de votre inscription</h4>
+                <p><span class="status-badge">{{ enrollment.statusLabel }}</span></p>
+                <p><strong>Date d'inscription :</strong> {{ enrollment.enrolledAt|date('d/m/Y à H:i') }}</p>
+                {% if enrollment.enrollmentSource == 'auto_email_match' %}
+                    <p><em>Inscription automatique basée sur votre adresse email</em></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <h3>🎯 Prochaines étapes</h3>
+        <ol>
+            <li><strong>Connectez-vous à votre espace étudiant</strong> pour accéder au contenu de formation</li>
+            <li><strong>Explorez les modules</strong> et commencez votre parcours d'apprentissage</li>
+            <li><strong>Suivez votre progression</strong> dans le tableau de bord</li>
+            <li><strong>Participez aux exercices</strong> et évaluations</li>
+        </ol>
+
+        {% if formation.isActive %}
+            <div style="text-align: center;">
+                <a href="{{ url('student_dashboard') }}" class="cta-button">
+                    Accéder à mon espace formation
+                </a>
+            </div>
+        {% endif %}
+
+        <h3>📚 Contenu de la formation</h3>
+        <p>Cette formation comprend :</p>
+        <ul>
+            {% set moduleCount = formation.activeModules|length %}
+            {% if moduleCount > 0 %}
+                <li><strong>{{ moduleCount }} module{{ moduleCount > 1 ? 's' : '' }}</strong> de formation</li>
+            {% endif %}
+            {% if formation.totalDuration %}
+                <li><strong>{{ formation.totalDuration }} heures</strong> de contenu</li>
+            {% endif %}
+            <li>Exercices pratiques et évaluations</li>
+            <li>Suivi personnalisé de votre progression</li>
+            <li>Certificat de formation à l'issue</li>
+        </ul>
+
+        {% if formation.prerequisites %}
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h4>⚠️ Prérequis</h4>
+                <p>{{ formation.prerequisites }}</p>
+            </div>
+        {% endif %}
+
+        <h3>💬 Besoin d'aide ?</h3>
+        <p>Si vous avez des questions concernant votre formation ou des difficultés techniques, n'hésitez pas à nous contacter :</p>
+        <ul>
+            <li>📧 Email : <a href="mailto:support@eprofos.fr">support@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p><strong>EPROFOS</strong> - Plateforme de formation professionnelle</p>
+        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre directement.</p>
+        <p>Pour vous désinscrire ou modifier vos préférences, connectez-vous à votre espace personnel.</p>
+    </div>
+</body>
+</html>

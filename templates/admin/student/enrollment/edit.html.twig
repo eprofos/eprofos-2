@@ -1,0 +1,246 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier l'Inscription{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Modifier l'Inscription #{{ enrollment.id }}</h1>
+            <p class="text-muted">{{ enrollment.student.fullName }} - {{ enrollment.formation.title }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> Voir les Détails
+            </a>
+            <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Edit Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Modifier les Informations d'Inscription</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Status Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Statut de l'Inscription *</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    {% for statusKey, statusLabel in statuses %}
+                                        <option value="{{ statusKey }}" 
+                                                {{ enrollment.status == statusKey ? 'selected' : '' }}>
+                                            {{ statusLabel }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    Modifiez le statut selon l'évolution de l'inscription
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Statut Actuel</label>
+                                <div class="mt-2">
+                                    <span class="badge {{ enrollment.statusBadgeClass }} fs-6 p-2">
+                                        {{ enrollment.statusLabel }}
+                                    </span>
+                                </div>
+                                <div class="form-text">
+                                    Inscrit le {{ enrollment.enrolledAt|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dropout Reason (shown only for dropout status) -->
+                        <div class="mb-4" id="dropoutReasonSection" 
+                             style="{{ enrollment.status != 'dropped_out' ? 'display: none;' : '' }}">
+                            <label for="dropout_reason" class="form-label">Raison d'Abandon</label>
+                            <textarea class="form-control" id="dropout_reason" name="dropout_reason" 
+                                      rows="3" placeholder="Précisez la raison de l'abandon...">{{ enrollment.dropoutReason }}</textarea>
+                            <div class="form-text">
+                                Requis pour les abandons - information importante pour les statistiques
+                            </div>
+                        </div>
+
+                        <!-- Admin Notes -->
+                        <div class="mb-4">
+                            <label for="admin_notes" class="form-label">Notes Administratives</label>
+                            <textarea class="form-control" id="admin_notes" name="admin_notes" 
+                                      rows="4" placeholder="Notes internes sur cette inscription...">{{ enrollment.adminNotes }}</textarea>
+                            <div class="form-text">
+                                Notes visibles uniquement par les administrateurs
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Annuler
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer les Modifications
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Information Panel -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info"></i> Informations de l'Inscription
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row small">
+                        <dt class="col-6">Étudiant:</dt>
+                        <dd class="col-6">{{ enrollment.student.fullName }}</dd>
+                        
+                        <dt class="col-6">Email:</dt>
+                        <dd class="col-6">{{ enrollment.student.email }}</dd>
+                        
+                        <dt class="col-6">Formation:</dt>
+                        <dd class="col-6">{{ enrollment.formation.title }}</dd>
+                        
+                        <dt class="col-6">Session:</dt>
+                        <dd class="col-6">{{ enrollment.session.name }}</dd>
+                        
+                        <dt class="col-6">Date d'inscription:</dt>
+                        <dd class="col-6">{{ enrollment.enrolledAt|date('d/m/Y H:i') }}</dd>
+                        
+                        <dt class="col-6">Source:</dt>
+                        <dd class="col-6">
+                            <span class="badge bg-secondary">
+                                {% if enrollment.enrollmentSource == 'manual' %}
+                                    Manuelle
+                                {% elseif enrollment.enrollmentSource == 'auto_email_match' %}
+                                    Email auto
+                                {% elseif enrollment.enrollmentSource == 'bulk_admin' %}
+                                    Lot admin
+                                {% elseif enrollment.enrollmentSource == 'manual_link' %}
+                                    Liaison manuelle
+                                {% else %}
+                                    {{ enrollment.enrollmentSource }}
+                                {% endif %}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Status Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle text-warning"></i> Aide sur les Statuts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="small fw-bold">Statuts disponibles :</h6>
+                    <ul class="small mb-0">
+                        <li><span class="badge bg-success">Inscrit</span> - Inscription active et en cours</li>
+                        <li><span class="badge bg-primary">Terminé</span> - Formation complétée avec succès</li>
+                        <li><span class="badge bg-danger">Abandon</span> - Étudiant a abandonné la formation</li>
+                        <li><span class="badge bg-warning">Suspendu</span> - Inscription temporairement suspendue</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs text-secondary"></i> Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if enrollment.isActive %}
+                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                    onclick="setStatus('completed')">
+                                <i class="fas fa-check"></i> Marquer comme Terminé
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" 
+                                    onclick="setStatus('suspended')">
+                                <i class="fas fa-pause"></i> Suspendre
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                    onclick="setStatus('dropped_out')">
+                                <i class="fas fa-times"></i> Marquer comme Abandon
+                            </button>
+                        {% elseif enrollment.isDroppedOut or enrollment.isSuspended %}
+                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                    onclick="setStatus('enrolled')">
+                                <i class="fas fa-undo"></i> Réactiver
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status');
+    const dropoutReasonSection = document.getElementById('dropoutReasonSection');
+    const dropoutReasonTextarea = document.getElementById('dropout_reason');
+    
+    // Show/hide dropout reason based on status
+    function toggleDropoutReason() {
+        if (statusSelect.value === 'dropped_out') {
+            dropoutReasonSection.style.display = 'block';
+            dropoutReasonTextarea.required = true;
+        } else {
+            dropoutReasonSection.style.display = 'none';
+            dropoutReasonTextarea.required = false;
+        }
+    }
+    
+    statusSelect.addEventListener('change', toggleDropoutReason);
+    
+    // Quick status change functions
+    window.setStatus = function(status) {
+        statusSelect.value = status;
+        toggleDropoutReason();
+        
+        // Focus on dropout reason if needed
+        if (status === 'dropped_out') {
+            dropoutReasonTextarea.focus();
+        }
+    };
+    
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (statusSelect.value === 'dropped_out' && !dropoutReasonTextarea.value.trim()) {
+            e.preventDefault();
+            alert('Veuillez préciser la raison de l\'abandon.');
+            dropoutReasonTextarea.focus();
+            return false;
+        }
+    });
+    
+    // Initialize on page load
+    toggleDropoutReason();
+});
+</script>
+{% endblock %}
