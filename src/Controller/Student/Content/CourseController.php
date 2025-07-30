@@ -8,6 +8,7 @@ use App\Entity\Training\Course;
 use App\Entity\User\Student;
 use App\Repository\Training\CourseRepository;
 use App\Service\Security\ContentAccessService;
+use App\Service\Student\ProgressTrackingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,7 +26,8 @@ class CourseController extends AbstractController
 {
     public function __construct(
         private readonly CourseRepository $courseRepository,
-        private readonly ContentAccessService $contentAccessService
+        private readonly ContentAccessService $contentAccessService,
+        private readonly ProgressTrackingService $progressService
     ) {
     }
 
@@ -48,6 +50,11 @@ class CourseController extends AbstractController
                 $enrollment = $e;
                 break;
             }
+        }
+
+        // Record course view for progress tracking
+        if ($enrollment) {
+            $this->progressService->recordCourseView($enrollment, $course);
         }
 
         return $this->render('student/content/course/view.html.twig', [

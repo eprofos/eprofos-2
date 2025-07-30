@@ -4,11 +4,13 @@
 
 {% block body %}
 <div class="container-fluid" 
-     data-controller="content-navigation" 
-     data-content-navigation-content-id-value="{{ course.id }}"
-     data-content-navigation-content-type-value="course"
-     data-content-navigation-progress-url-value="{{ path('student_progress_update') }}"
-     data-content-navigation-completed-value="false">
+     data-controller="progress-tracking" 
+     data-progress-tracking-content-id-value="{{ course.id }}"
+     data-progress-tracking-content-type-value="course"
+     data-progress-tracking-progress-url-value="{{ path('student_progress_update') }}"
+     data-progress-tracking-stats-url-value="{{ path('student_progress_stats') }}"
+     data-progress-tracking-formation-id-value="{{ formation ? formation.id : '' }}"
+     data-progress-tracking-completed-value="false">
     <div class="row">
         <div class="col-12">
             <!-- Breadcrumb -->
@@ -325,49 +327,111 @@
                                 <hr>
                                 <button type="button" 
                                         class="btn btn-outline-success btn-sm"
-                                        data-action="click->content-navigation#markAsComplete">
+                                        data-action="click->progress-tracking#markComplete">
                                     <i class="fas fa-check me-1"></i>
                                     Marquer comme terminé
                                 </button>
                                 <button type="button" 
                                         class="btn btn-outline-warning btn-sm"
-                                        data-action="click->content-navigation#toggleBookmark">
+                                        data-action="click->progress-tracking#toggleBookmark">
                                     <i class="fas fa-bookmark me-1"></i>
                                     Ajouter aux favoris
                                 </button>
                                 <button type="button" 
                                         class="btn btn-outline-info btn-sm"
-                                        data-action="click->content-navigation#shareContent">
+                                        data-action="click->progress-tracking#shareProgress">
                                     <i class="fas fa-share me-1"></i>
                                     Partager
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm"
+                                        data-action="click->progress-tracking#exportProgress">
+                                    <i class="fas fa-download me-1"></i>
+                                    Exporter progrès
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Progress Info -->
+                    <!-- Enhanced Progress Info -->
                     {% if enrollment and enrollment.progress %}
                         <div class="card border-0 shadow-sm">
                             <div class="card-header">
                                 <h6 class="mb-0">
+                                    <i class="fas fa-chart-line me-1"></i>
                                     Progression
-                                    <span data-content-navigation-target="completionStatus" class="small text-muted ms-2">
+                                    <span data-progress-tracking-target="completionStatus" class="small text-muted ms-2">
                                         En cours...
                                     </span>
                                 </h6>
                             </div>
                             <div class="card-body">
-                                <div class="text-center">
-                                    <div class="progress mb-3" style="height: 8px;">
-                                        <div class="progress-bar" 
-                                             data-content-navigation-target="progressBar"
+                                <!-- Reading Progress -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Progression de lecture</span>
+                                        <span>0%</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" 
+                                             data-progress-tracking-target="progressBar"
                                              role="progressbar" 
                                              style="width: 0%" 
                                              aria-valuenow="0" 
                                              aria-valuemin="0" 
                                              aria-valuemax="100"></div>
                                     </div>
-                                    <small class="text-muted">Progression de lecture du cours</small>
+                                </div>
+                                
+                                <!-- Time Tracking -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small">
+                                        <span><i class="fas fa-clock me-1"></i>Temps passé</span>
+                                        <span data-progress-tracking-target="timeDisplay">0s</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Overall Formation Progress -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Formation complète</span>
+                                        <span class="overall-progress-text">{{ enrollment.progress.completionPercentage|round }}%</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 6px;">
+                                        <div class="progress-bar overall-progress-bar bg-success" 
+                                             role="progressbar" 
+                                             style="width: {{ enrollment.progress.completionPercentage }}%" 
+                                             aria-valuenow="{{ enrollment.progress.completionPercentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Engagement Score -->
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1">Score d'engagement</div>
+                                    <span class="badge engagement-score {{ enrollment.progress.engagementBadgeClass }}">
+                                        {{ enrollment.progress.engagementScore }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Milestones -->
+                        <div class="card border-0 shadow-sm mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-trophy me-1"></i>
+                                    Réussites
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div data-progress-tracking-target="milestoneContainer">
+                                    <!-- Milestones will be loaded here -->
+                                    <div class="text-center text-muted small">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>
+                                        Chargement des réussites...
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -88,6 +88,54 @@ class StudentProgress
     private ?array $chapterProgress = null;
 
     /**
+     * Course-level completion tracking.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $courseProgress = null;
+
+    /**
+     * Exercise submissions and progress.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $exerciseProgress = null;
+
+    /**
+     * QCM attempts and scores.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $qcmProgress = null;
+
+    /**
+     * Time spent per content item tracking.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $timeSpentTracking = null;
+
+    /**
+     * Personalized learning journey and path.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $learningPath = null;
+
+    /**
+     * Achievement milestones and badges.
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $milestones = null;
+
+    /**
+     * Consecutive learning days streak.
+     */
+    #[ORM\Column]
+    private ?int $streakDays = 0;
+
+    /**
+     * Last milestone achievement date.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastMilestone = null;
+
+    /**
      * Last activity timestamp.
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -226,6 +274,12 @@ class StudentProgress
         $this->lastActivity = new DateTime();
         $this->moduleProgress = [];
         $this->chapterProgress = [];
+        $this->courseProgress = [];
+        $this->exerciseProgress = [];
+        $this->qcmProgress = [];
+        $this->timeSpentTracking = [];
+        $this->learningPath = [];
+        $this->milestones = [];
         $this->difficultySignals = [];
     }
 
@@ -871,6 +925,150 @@ class StudentProgress
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    /**
+     * Get course progress data.
+     */
+    public function getCourseProgress(): ?array
+    {
+        return $this->courseProgress ?? [];
+    }
+
+    /**
+     * Set course progress data.
+     */
+    public function setCourseProgress(?array $courseProgress): static
+    {
+        $this->courseProgress = $courseProgress;
+
+        return $this;
+    }
+
+    /**
+     * Get exercise progress data.
+     */
+    public function getExerciseProgress(): ?array
+    {
+        return $this->exerciseProgress ?? [];
+    }
+
+    /**
+     * Set exercise progress data.
+     */
+    public function setExerciseProgress(?array $exerciseProgress): static
+    {
+        $this->exerciseProgress = $exerciseProgress;
+
+        return $this;
+    }
+
+    /**
+     * Get QCM progress data.
+     */
+    public function getQCMProgress(): ?array
+    {
+        return $this->qcmProgress ?? [];
+    }
+
+    /**
+     * Set QCM progress data.
+     */
+    public function setQCMProgress(?array $qcmProgress): static
+    {
+        $this->qcmProgress = $qcmProgress;
+
+        return $this;
+    }
+
+    /**
+     * Get time spent tracking data.
+     */
+    public function getTimeSpentTracking(): ?array
+    {
+        return $this->timeSpentTracking ?? [];
+    }
+
+    /**
+     * Set time spent tracking data.
+     */
+    public function setTimeSpentTracking(?array $timeSpentTracking): static
+    {
+        $this->timeSpentTracking = $timeSpentTracking;
+
+        return $this;
+    }
+
+    /**
+     * Get learning path data.
+     */
+    public function getLearningPath(): ?array
+    {
+        return $this->learningPath ?? [];
+    }
+
+    /**
+     * Set learning path data.
+     */
+    public function setLearningPath(?array $learningPath): static
+    {
+        $this->learningPath = $learningPath;
+
+        return $this;
+    }
+
+    /**
+     * Get milestones data.
+     */
+    public function getMilestones(): ?array
+    {
+        return $this->milestones ?? [];
+    }
+
+    /**
+     * Set milestones data.
+     */
+    public function setMilestones(?array $milestones): static
+    {
+        $this->milestones = $milestones;
+
+        return $this;
+    }
+
+    /**
+     * Get streak days.
+     */
+    public function getStreakDays(): ?int
+    {
+        return $this->streakDays;
+    }
+
+    /**
+     * Set streak days.
+     */
+    public function setStreakDays(int $streakDays): static
+    {
+        $this->streakDays = max(0, $streakDays);
+
+        return $this;
+    }
+
+    /**
+     * Get last milestone achievement date.
+     */
+    public function getLastMilestone(): ?DateTimeInterface
+    {
+        return $this->lastMilestone;
+    }
+
+    /**
+     * Set last milestone achievement date.
+     */
+    public function setLastMilestone(?DateTimeInterface $lastMilestone): static
+    {
+        $this->lastMilestone = $lastMilestone;
+
+        return $this;
     }
 
     // Alternance-specific methods
