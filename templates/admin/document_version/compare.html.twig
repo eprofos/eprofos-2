@@ -61,7 +61,7 @@
                                 <span class="badge bg-{% if version2.isCurrent %}green{% else %}blue{% endif %} me-2">v{{ version2.version }}</span>
                                 <strong>Version {{ version2.version }}</strong>
                                 {% if version2.isCurrent %}
-                                    <span class="badge bg-green-lt ms-2">Actuelle</span>
+                                    <span class="badge bg-green ms-2">Actuelle</span>
                                 {% endif %}
                             </div>
                             <div class="text-muted">
@@ -170,7 +170,7 @@
                         <div class="col-md-6">
                             <div class="card-body border-end">
                                 <h4 class="text-muted mb-2">Version {{ version1.version }}</h4>
-                                <div class="bg-red-lt p-3 rounded">
+                                <div class="bg-red p-3 rounded">
                                     {{ version1.title }}
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
                         <div class="col-md-6">
                             <div class="card-body">
                                 <h4 class="text-muted mb-2">Version {{ version2.version }}</h4>
-                                <div class="bg-green-lt p-3 rounded">
+                                <div class="bg-green p-3 rounded">
                                     {{ version2.title }}
                                 </div>
                             </div>
@@ -211,7 +211,7 @@
                             <div class="card-body border-end">
                                 <h4 class="text-muted mb-3">
                                     Version {{ version1.version }}
-                                    <span class="badge bg-red-lt ms-2">{{ version1.contentLength }} caractères</span>
+                                    <span class="badge bg-red ms-2">{{ version1.contentLength }} caractères</span>
                                 </h4>
                                 <div class="bg-light p-3 rounded" style="height: 400px; overflow-y: auto;">
                                     {% if version1.content %}
@@ -235,7 +235,7 @@
                             <div class="card-body">
                                 <h4 class="text-muted mb-3">
                                     Version {{ version2.version }}
-                                    <span class="badge bg-green-lt ms-2">{{ version2.contentLength }} caractères</span>
+                                    <span class="badge bg-green ms-2">{{ version2.contentLength }} caractères</span>
                                 </h4>
                                 <div class="bg-light p-3 rounded" style="height: 400px; overflow-y: auto;">
                                     {% if version2.content %}

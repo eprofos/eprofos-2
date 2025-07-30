@@ -203,7 +203,11 @@ class DropoutPreventionService
         foreach ($droppedOut as $progress) {
             // Analyze common difficulty signals
             foreach ($progress->getDifficultySignals() as $signal) {
-                $patterns['common_signals'][$signal] = ($patterns['common_signals'][$signal] ?? 0) + 1;
+                // Ensure signal is a string that can be used as an array key
+                $signalKey = is_string($signal) ? $signal : (string) $signal;
+                if (!empty($signalKey)) {
+                    $patterns['common_signals'][$signalKey] = ($patterns['common_signals'][$signalKey] ?? 0) + 1;
+                }
             }
 
             // Formation-specific analysis

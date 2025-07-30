@@ -194,19 +194,19 @@
                                         <td>
                                             <div class="text-sm">
                                                 {% if risk_factors.low_engagement is defined and risk_factors.low_engagement > 15 %}
-                                                    <span class="badge bg-danger bg-opacity-25 text-danger me-1">Faible engagement ({{ risk_factors.low_engagement }}j)</span>
+                                                    <span class="badge bg-danger bg-opacity-75 text-danger me-1">Faible engagement ({{ risk_factors.low_engagement }}j)</span>
                                                 {% endif %}
                                                 {% if risk_factors.prolonged_inactivity is defined and risk_factors.prolonged_inactivity > 14 %}
-                                                    <span class="badge bg-warning bg-opacity-25 text-dark me-1">Inactivité prolongée ({{ risk_factors.prolonged_inactivity }}j)</span>
+                                                    <span class="badge bg-warning bg-opacity-75 text-dark me-1">Inactivité prolongée ({{ risk_factors.prolonged_inactivity }}j)</span>
                                                 {% endif %}
                                                 {% if risk_factors.poor_attendance is defined and risk_factors.poor_attendance < 75 %}
-                                                    <span class="badge bg-info bg-opacity-25 text-dark me-1">Assiduité faible ({{ risk_factors.poor_attendance|number_format(1) }}%)</span>
+                                                    <span class="badge bg-info bg-opacity-75 text-dark me-1">Assiduité faible ({{ risk_factors.poor_attendance|number_format(1) }}%)</span>
                                                 {% endif %}
                                                 {% if risk_factors.slow_progress is defined %}
-                                                    <span class="badge bg-primary bg-opacity-25 text-primary me-1">Progression lente ({{ risk_factors.slow_progress.current|number_format(1) }}%)</span>
+                                                    <span class="badge bg-primary bg-opacity-75 text-primary me-1">Progression lente ({{ risk_factors.slow_progress.current|number_format(1) }}%)</span>
                                                 {% endif %}
                                                 {% if risk_factors.frequent_absences is defined and risk_factors.frequent_absences > 3 %}
-                                                    <span class="badge bg-secondary bg-opacity-25 text-dark me-1">Absences fréquentes ({{ risk_factors.frequent_absences }})</span>
+                                                    <span class="badge bg-secondary bg-opacity-75 text-dark me-1">Absences fréquentes ({{ risk_factors.frequent_absences }})</span>
                                                 {% endif %}
                                             </div>
                                         </td>

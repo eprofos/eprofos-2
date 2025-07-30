@@ -108,7 +108,7 @@
                             {{ constant('App\\Entity\\Document\\Document::STATUSES')[document.status] ?? document.status }}
                         </span>
                         {% if document.isPublic %}
-                            <span class="badge bg-green-lt">
+                            <span class="badge bg-green">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
@@ -117,7 +117,7 @@
                                 Public
                             </span>
                         {% else %}
-                            <span class="badge bg-yellow-lt">
+                            <span class="badge bg-yellow">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M5 11a7 7 0 0 1 9.648 -6.457"/>
@@ -154,7 +154,7 @@
                         <div class="mb-3">
                             <h4>Tags</h4>
                             {% for tag in document.tags %}
-                                <span class="badge bg-blue-lt me-1">{{ tag }}</span>
+                                <span class="badge bg-blue me-1">{{ tag }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -228,7 +228,7 @@
                             <div class="datagrid-title">Type</div>
                             <div class="datagrid-content">
                                 {% if document.documentType %}
-                                    <span class="badge bg-blue-lt">
+                                    <span class="badge bg-blue">
                                         {% if document.documentType.icon %}
                                             <i class="{{ document.documentType.icon }} me-1"></i>
                                         {% endif %}

@@ -115,7 +115,7 @@
                             <td>
                                 {% if mentor.expertiseDomains %}
                                     {% for domain in mentor.expertiseDomains|slice(0, 3) %}
-                                        <span class="badge bg-blue-lt me-1">{{ domain }}</span>
+                                        <span class="badge bg-blue me-1">{{ domain }}</span>
                                     {% endfor %}
                                     {% if mentor.expertiseDomains|length > 3 %}
                                         <span class="text-muted">+{{ mentor.expertiseDomains|length - 3 }} autres</span>

@@ -324,7 +324,7 @@
                                             <div class="small">
                                                 {% for factor, value in student_data.riskFactors %}
                                                     {% if loop.index <= 2 %}
-                                                        <span class="badge bg-red-lt me-1">
+                                                        <span class="badge bg-red me-1">
                                                             {% if factor == 'low_engagement' %}
                                                                 Engagement faible
                                                             {% elseif factor == 'prolonged_inactivity' %}
@@ -375,7 +375,7 @@
                             <div class="list-group list-group-flush">
                                 {% for signal, count in dropout_patterns.common_signals|slice(0, 5) %}
                                     <div class="list-group-item d-flex justify-content-between">
-                                        <span>{{ signal|replace('_', ' ')|title }}</span>
+                                        <span>{{ (signal ~ '')|replace({'_': ' '})|title }}</span>
                                         <span class="badge bg-red">{{ count }}</span>
                                     </div>
                                 {% endfor %}

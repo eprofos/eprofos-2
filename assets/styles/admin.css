@@ -10,6 +10,10 @@ span.badge {
     color: #fff !important;
 }
 
+span.badge.bg-light{
+    color: #000 !important;
+}
+
 /* ============== ALTERNANCE FORM STYLES ============== */
 
 .alternance-fields {

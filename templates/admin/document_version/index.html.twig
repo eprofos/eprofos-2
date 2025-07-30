@@ -63,7 +63,7 @@
                             <div class="mb-2">
                                 <strong>Type:</strong> 
                                 {% if document.documentType %}
-                                    <span class="badge bg-blue-lt">{{ document.documentType.name }}</span>
+                                    <span class="badge bg-blue">{{ document.documentType.name }}</span>
                                 {% else %}
                                     <span class="text-muted">-</span>
                                 {% endif %}
@@ -128,7 +128,7 @@
                                                     v{{ version.version }}
                                                 </span>
                                                 {% if version.isCurrent %}
-                                                    <span class="badge bg-green-lt">Actuelle</span>
+                                                    <span class="badge bg-green">Actuelle</span>
                                                 {% endif %}
                                             </div>
                                         </td>
