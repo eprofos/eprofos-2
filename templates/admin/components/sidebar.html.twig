@@ -54,7 +54,7 @@
                 
                 <!-- Formations Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-formations" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_formation' or app.request.get('_route') starts with 'admin_modules' or app.request.get('_route') starts with 'admin_chapters' or app.request.get('_route') starts with 'admin_course' or app.request.get('_route') starts with 'admin_exercise' or app.request.get('_route') starts with 'admin_qcm' or app.request.get('_route') starts with 'admin_session' or app.request.get('_route') starts with 'admin_category' ? 'active show' : '' }}" href="#navbar-formations" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_formation' or app.request.get('_route') starts with 'admin_modules' or app.request.get('_route') starts with 'admin_chapters' or app.request.get('_route') starts with 'admin_course' or app.request.get('_route') starts with 'admin_exercise' or app.request.get('_route') starts with 'admin_qcm' or app.request.get('_route') starts with 'admin_session' or app.request.get('_route') starts with 'admin_category' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -66,58 +66,58 @@
                             Formations
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_formation' or app.request.get('_route') starts with 'admin_modules' or app.request.get('_route') starts with 'admin_chapters' or app.request.get('_route') starts with 'admin_course' or app.request.get('_route') starts with 'admin_exercise' or app.request.get('_route') starts with 'admin_qcm' or app.request.get('_route') starts with 'admin_session' or app.request.get('_route') starts with 'admin_category' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_formation_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_formation_index' ? 'active' : '' }}" href="{{ path('admin_formation_index') }}">
                                     Toutes les formations
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_formation_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_formation_new' ? 'active' : '' }}" href="{{ path('admin_formation_new') }}">
                                     Ajouter une formation
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_modules_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_modules_index' ? 'active' : '' }}" href="{{ path('admin_modules_index') }}">
                                     Modules
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_modules_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_modules_new' ? 'active' : '' }}" href="{{ path('admin_modules_new') }}">
                                     Ajouter un module
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_chapters_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_chapters_index' ? 'active' : '' }}" href="{{ path('admin_chapters_index') }}">
                                     Chapitres
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_chapters_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_chapters_new' ? 'active' : '' }}" href="{{ path('admin_chapters_new') }}">
                                     Ajouter un chapitre
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_course_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_course_index' ? 'active' : '' }}" href="{{ path('admin_course_index') }}">
                                     Cours
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_course_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_course_new' ? 'active' : '' }}" href="{{ path('admin_course_new') }}">
                                     Ajouter un cours
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_exercise_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_exercise_index' ? 'active' : '' }}" href="{{ path('admin_exercise_index') }}">
                                     Exercices
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_exercise_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_exercise_new' ? 'active' : '' }}" href="{{ path('admin_exercise_new') }}">
                                     Ajouter un exercice
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_qcm_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_qcm_index' ? 'active' : '' }}" href="{{ path('admin_qcm_index') }}">
                                     QCM
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_qcm_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_qcm_new' ? 'active' : '' }}" href="{{ path('admin_qcm_new') }}">
                                     Ajouter un QCM
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_session_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_session_index' ? 'active' : '' }}" href="{{ path('admin_session_index') }}">
                                     Sessions
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_session_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_session_new' ? 'active' : '' }}" href="{{ path('admin_session_new') }}">
                                     Ajouter une session
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_session_registration_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_session_registration_index' ? 'active' : '' }}" href="{{ path('admin_session_registration_index') }}">
                                     Inscriptions
                                 </a>
                                 <div class="dropdown-divider"></div>
@@ -135,7 +135,7 @@
                                     Planning formation
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_category_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_category_index' ? 'active' : '' }}" href="{{ path('admin_category_index') }}">
                                     Catégories
                                 </a>
                             </div>
@@ -145,7 +145,7 @@
                 
                 <!-- Services Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-services" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_service' ? 'active show' : '' }}" href="#navbar-services" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_service' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -158,16 +158,16 @@
                             Services
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_service' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_service_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_service_index' ? 'active' : '' }}" href="{{ path('admin_service_index') }}">
                                     Tous les services
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_service_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_service_new' ? 'active' : '' }}" href="{{ path('admin_service_new') }}">
                                     Ajouter un service
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_service_category_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_service_category_index' ? 'active' : '' }}" href="{{ path('admin_service_category_index') }}">
                                     Catégories de services
                                 </a>
                             </div>
@@ -177,7 +177,7 @@
                 
                 <!-- Contact Requests Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_contact_request' ? 'active' : '' }}" href="#navbar-contact-requests" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_contact_request' ? 'active show' : '' }}" href="#navbar-contact-requests" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_contact_request' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -190,26 +190,26 @@
                         </span>
                         <span class="badge badge-sm bg-red text-white ms-auto">3</span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_contact_request' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_contact_request_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_contact_request_index' and app.request.get('status') is null ? 'active' : '' }}" href="{{ path('admin_contact_request_index') }}">
                                     Toutes les demandes
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_contact_request_index', {status: 'pending'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_contact_request_index' and app.request.get('status') == 'pending' ? 'active' : '' }}" href="{{ path('admin_contact_request_index', {status: 'pending'}) }}">
                                     <span class="badge bg-warning text-white me-2">●</span>
                                     En attente
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_contact_request_index', {status: 'in_progress'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_contact_request_index' and app.request.get('status') == 'in_progress' ? 'active' : '' }}" href="{{ path('admin_contact_request_index', {status: 'in_progress'}) }}">
                                     <span class="badge bg-info text-white me-2">●</span>
                                     En cours
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_contact_request_index', {status: 'completed'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_contact_request_index' and app.request.get('status') == 'completed' ? 'active' : '' }}" href="{{ path('admin_contact_request_index', {status: 'completed'}) }}">
                                     <span class="badge bg-success text-white me-2">●</span>
                                     Terminées
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_contact_request_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_contact_request_export' ? 'active' : '' }}" href="{{ path('admin_contact_request_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -227,7 +227,7 @@
                 
                 <!-- Needs Analysis Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_needs_analysis' ? 'active' : '' }}" href="#navbar-needs-analysis" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_needs_analysis' ? 'active show' : '' }}" href="#navbar-needs-analysis" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_needs_analysis' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -241,10 +241,10 @@
                         </span>
                         
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_needs_analysis' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_index' and app.request.get('status') is null ? 'active' : '' }}" href="{{ path('admin_needs_analysis_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 11l3 3l8 -8"/>
@@ -252,7 +252,7 @@
                                     </svg>
                                     Toutes les demandes
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_new' ? 'active' : '' }}" href="{{ path('admin_needs_analysis_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -261,19 +261,19 @@
                                     Nouvelle demande
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_index', {status: 'pending'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_index' and app.request.get('status') == 'pending' ? 'active' : '' }}" href="{{ path('admin_needs_analysis_index', {status: 'pending'}) }}">
                                     <span class="badge bg-warning text-white me-2">●</span>
                                     En attente
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_index', {status: 'sent'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_index' and app.request.get('status') == 'sent' ? 'active' : '' }}" href="{{ path('admin_needs_analysis_index', {status: 'sent'}) }}">
                                     <span class="badge bg-info text-white me-2">●</span>
                                     Envoyées
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_index', {status: 'completed'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_index' and app.request.get('status') == 'completed' ? 'active' : '' }}" href="{{ path('admin_needs_analysis_index', {status: 'completed'}) }}">
                                     <span class="badge bg-success text-white me-2">●</span>
                                     Complétées
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_needs_analysis_index', {status: 'expired'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_needs_analysis_index' and app.request.get('status') == 'expired' ? 'active' : '' }}" href="{{ path('admin_needs_analysis_index', {status: 'expired'}) }}">
                                     <span class="badge bg-danger text-white me-2">●</span>
                                     Expirées
                                 </a>
@@ -284,7 +284,7 @@
                 
                 <!-- Prospects Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_prospect' ? 'active' : '' }}" href="#navbar-prospects" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_prospect' ? 'active show' : '' }}" href="#navbar-prospects" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_prospect' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -298,10 +298,10 @@
                         </span>
                         <span class="badge badge-sm bg-blue text-white ms-auto">CRM</span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_prospect' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_prospect_dashboard') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_dashboard' ? 'active' : '' }}" href="{{ path('admin_prospect_dashboard') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 4h6v6h-6z"/>
@@ -315,7 +315,7 @@
                                     Tableau de bord CRM
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') is null and app.request.get('priority') is null ? 'active' : '' }}" href="{{ path('admin_prospect_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 11l3 3l8 -8"/>
@@ -323,7 +323,7 @@
                                     </svg>
                                     Tous les prospects
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_new' ? 'active' : '' }}" href="{{ path('admin_prospect_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -332,34 +332,34 @@
                                     Nouveau prospect
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'new'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') == 'new' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {status: 'new'}) }}">
                                     <span class="badge bg-blue text-white me-2">●</span>
                                     Nouveaux
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'qualified'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') == 'qualified' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {status: 'qualified'}) }}">
                                     <span class="badge bg-orange text-white me-2">●</span>
                                     Qualifiés
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'proposal_sent'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') == 'proposal_sent' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {status: 'proposal_sent'}) }}">
                                     <span class="badge bg-yellow text-white me-2">●</span>
                                     Proposition envoyée
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'negotiation'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') == 'negotiation' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {status: 'negotiation'}) }}">
                                     <span class="badge bg-purple text-white me-2">●</span>
                                     En négociation
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {status: 'converted'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('status') == 'converted' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {status: 'converted'}) }}">
                                     <span class="badge bg-green text-white me-2">●</span>
                                     Convertis
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_index', {priority: 'urgent'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_index' and app.request.get('priority') == 'urgent' ? 'active' : '' }}" href="{{ path('admin_prospect_index', {priority: 'urgent'}) }}">
                                     <span class="badge bg-red text-white me-2">🔥</span>
                                     Urgents
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <h6 class="dropdown-header">Notes & Suivi</h6>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_note_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_note_index' ? 'active' : '' }}" href="{{ path('admin_prospect_note_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
@@ -369,7 +369,7 @@
                                     </svg>
                                     Toutes les notes
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_note_new_standalone') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_note_new_standalone' ? 'active' : '' }}" href="{{ path('admin_prospect_note_new_standalone') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -377,16 +377,16 @@
                                     </svg>
                                     Nouvelle note
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_note_pending_tasks') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_note_pending_tasks' ? 'active' : '' }}" href="{{ path('admin_prospect_note_pending_tasks') }}">
                                     <span class="badge bg-yellow text-white me-2">⏰</span>
                                     Tâches en attente
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_note_important') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_note_important' ? 'active' : '' }}" href="{{ path('admin_prospect_note_important') }}">
                                     <span class="badge bg-orange text-white me-2">⭐</span>
                                     Notes importantes
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_export' ? 'active' : '' }}" href="{{ path('admin_prospect_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -397,7 +397,7 @@
                                     </svg>
                                     Exporter prospects
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_prospect_note_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_prospect_note_export' ? 'active' : '' }}" href="{{ path('admin_prospect_note_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -415,7 +415,7 @@
                 
                 <!-- Questionnaires Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_questionnaire' or app.request.get('_route') starts with 'admin_question' ? 'active' : '' }}" href="#navbar-questionnaires" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_questionnaire' or app.request.get('_route') starts with 'admin_question' ? 'active show' : '' }}" href="#navbar-questionnaires" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_questionnaire' or app.request.get('_route') starts with 'admin_question' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -430,10 +430,10 @@
                         </span>
                         
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_questionnaire' or app.request.get('_route') starts with 'admin_question' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_questionnaire_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_questionnaire_index' ? 'active' : '' }}" href="{{ path('admin_questionnaire_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 11l3 3l8 -8"/>
@@ -441,7 +441,7 @@
                                     </svg>
                                     Tous les questionnaires
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_questionnaire_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_questionnaire_new' ? 'active' : '' }}" href="{{ path('admin_questionnaire_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -450,7 +450,7 @@
                                     Nouveau questionnaire
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_questionnaire_response_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_questionnaire_response_index' ? 'active' : '' }}" href="{{ path('admin_questionnaire_response_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/>
@@ -458,12 +458,12 @@
                                     </svg>
                                     Réponses reçues
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_questionnaire_response_pending_evaluation') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_questionnaire_response_pending_evaluation' ? 'active' : '' }}" href="{{ path('admin_questionnaire_response_pending_evaluation') }}">
                                     <span class="badge bg-warning text-white me-2">●</span>
                                     En attente d'évaluation
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_questionnaire_send') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_questionnaire_send' ? 'active' : '' }}" href="{{ path('admin_questionnaire_send') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M10 14l11 -11"/>
@@ -478,7 +478,7 @@
                 
                 <!-- Students Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_student' ? 'active' : '' }}" href="#navbar-students" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_student' ? 'active show' : '' }}" href="#navbar-students" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_student' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -490,10 +490,10 @@
                             Étudiants
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_student' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_student_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_index' and app.request.get('status') is null and app.request.get('email_verified') is null ? 'active' : '' }}" href="{{ path('admin_student_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M17 21v-2a4 4 0 0 0 -4 -4h-6a4 4 0 0 0 -4 4v2"/>
@@ -501,7 +501,7 @@
                                     </svg>
                                     Tous les étudiants
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_student_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_new' ? 'active' : '' }}" href="{{ path('admin_student_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -510,20 +510,20 @@
                                     Nouvel étudiant
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_student_index', {status: 'active'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_index' and app.request.get('status') == 'active' ? 'active' : '' }}" href="{{ path('admin_student_index', {status: 'active'}) }}">
                                     <span class="badge bg-success text-white me-2">●</span>
                                     Actifs
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_student_index', {status: 'inactive'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_index' and app.request.get('status') == 'inactive' ? 'active' : '' }}" href="{{ path('admin_student_index', {status: 'inactive'}) }}">
                                     <span class="badge bg-secondary text-white me-2">●</span>
                                     Inactifs
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_student_index', {email_verified: '0'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_index' and app.request.get('email_verified') == '0' ? 'active' : '' }}" href="{{ path('admin_student_index', {email_verified: '0'}) }}">
                                     <span class="badge bg-warning text-white me-2">⚠️</span>
                                     Email non vérifié
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_student_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_student_export' ? 'active' : '' }}" href="{{ path('admin_student_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -541,7 +541,7 @@
                 
                 <!-- Teachers Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_teacher' ? 'active' : '' }}" href="#navbar-teachers" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_teacher' ? 'active show' : '' }}" href="#navbar-teachers" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_teacher' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -554,10 +554,10 @@
                             Formateurs
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_teacher' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_teacher_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_index' and app.request.get('status') is null and app.request.get('email_verified') is null ? 'active' : '' }}" href="{{ path('admin_teacher_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M17 21v-2a4 4 0 0 0 -4 -4h-6a4 4 0 0 0 -4 4v2"/>
@@ -565,7 +565,7 @@
                                     </svg>
                                     Tous les formateurs
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_teacher_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_new' ? 'active' : '' }}" href="{{ path('admin_teacher_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -574,20 +574,20 @@
                                     Nouveau formateur
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {status: 'active'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_index' and app.request.get('status') == 'active' ? 'active' : '' }}" href="{{ path('admin_teacher_index', {status: 'active'}) }}">
                                     <span class="badge bg-success text-white me-2">●</span>
                                     Actifs
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {status: 'inactive'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_index' and app.request.get('status') == 'inactive' ? 'active' : '' }}" href="{{ path('admin_teacher_index', {status: 'inactive'}) }}">
                                     <span class="badge bg-secondary text-white me-2">●</span>
                                     Inactifs
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_teacher_index', {email_verified: 'unverified'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_index' and app.request.get('email_verified') == 'unverified' ? 'active' : '' }}" href="{{ path('admin_teacher_index', {email_verified: 'unverified'}) }}">
                                     <span class="badge bg-warning text-white me-2">⚠️</span>
                                     Email non vérifié
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_teacher_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_teacher_export' ? 'active' : '' }}" href="{{ path('admin_teacher_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -605,7 +605,7 @@
                 
                 <!-- Engagement Dashboard Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_engagement' ? 'active' : '' }}" href="#navbar-engagement" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_engagement' ? 'active show' : '' }}" href="#navbar-engagement" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_engagement' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -619,10 +619,10 @@
                         </span>
                         
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_engagement' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_engagement_dashboard') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_dashboard' ? 'active' : '' }}" href="{{ path('admin_engagement_dashboard') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
@@ -630,7 +630,7 @@
                                     </svg>
                                     Tableau de bord
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_at_risk') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_at_risk' ? 'active' : '' }}" href="{{ path('admin_engagement_at_risk') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 9v2m0 4v.01"/>
@@ -638,7 +638,7 @@
                                     </svg>
                                     Étudiants à risque
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_attendance') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_attendance' ? 'active' : '' }}" href="{{ path('admin_engagement_attendance') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 11l3 3l8 -8"/>
@@ -647,7 +647,7 @@
                                     Suivi d'assiduité
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_quality_report') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_quality_report' ? 'active' : '' }}" href="{{ path('admin_engagement_quality_report') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -659,7 +659,7 @@
                                     Rapport réglementaire
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'pdf'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_export' and app.request.get('format') == 'pdf' ? 'active' : '' }}" href="{{ path('admin_engagement_export', {format: 'pdf'}) }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -671,7 +671,7 @@
                                     </svg>
                                     Exporter PDF
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'excel'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_export' and app.request.get('format') == 'excel' ? 'active' : '' }}" href="{{ path('admin_engagement_export', {format: 'excel'}) }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -681,7 +681,7 @@
                                     </svg>
                                     Exporter Excel
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_engagement_export', {format: 'csv'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_engagement_export' and app.request.get('format') == 'csv' ? 'active' : '' }}" href="{{ path('admin_engagement_export', {format: 'csv'}) }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -699,7 +699,7 @@
                 
                 <!-- Document Management Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_document' ? 'active' : '' }}" href="#navbar-document-management" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_document' ? 'active show' : '' }}" href="#navbar-document-management" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_document' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -713,10 +713,10 @@
                         </span>
                         <span class="badge badge-sm bg-purple text-white ms-auto">Nouveau</span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_document' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_document_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_index' and app.request.get('status') is null ? 'active' : '' }}" href="{{ path('admin_document_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -727,7 +727,7 @@
                                     </svg>
                                     Tous les documents
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_new' ? 'active' : '' }}" href="{{ path('admin_document_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -736,24 +736,24 @@
                                     Nouveau document
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'draft'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_index' and app.request.get('status') == 'draft' ? 'active' : '' }}" href="{{ path('admin_document_index', {status: 'draft'}) }}">
                                     <span class="badge bg-secondary text-white me-2">●</span>
                                     Brouillons
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'review'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_index' and app.request.get('status') == 'review' ? 'active' : '' }}" href="{{ path('admin_document_index', {status: 'review'}) }}">
                                     <span class="badge bg-warning text-white me-2">●</span>
                                     En révision
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'published'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_index' and app.request.get('status') == 'published' ? 'active' : '' }}" href="{{ path('admin_document_index', {status: 'published'}) }}">
                                     <span class="badge bg-success text-white me-2">●</span>
                                     Publiés
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_index', {status: 'archived'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_index' and app.request.get('status') == 'archived' ? 'active' : '' }}" href="{{ path('admin_document_index', {status: 'archived'}) }}">
                                     <span class="badge bg-dark text-white me-2">●</span>
                                     Archivés
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_document_type_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_type_index' ? 'active' : '' }}" href="{{ path('admin_document_type_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -764,14 +764,14 @@
                                     </svg>
                                     Types de documents
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_category_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_category_index' ? 'active' : '' }}" href="{{ path('admin_document_category_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 4h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/>
                                     </svg>
                                     Catégories
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_template_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_template_index' ? 'active' : '' }}" href="{{ path('admin_document_template_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 12l2 2l4 -4"/>
@@ -779,7 +779,7 @@
                                     </svg>
                                     Modèles de documents
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_metadata_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_metadata_index' ? 'active' : '' }}" href="{{ path('admin_document_metadata_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
@@ -790,7 +790,7 @@
                                     Métadonnées
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_ui_template_index' ? 'active' : '' }}" href="{{ path('admin_document_ui_template_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 4h16c.55 0 1 .45 1 1s-.45 1-1 1H4c-.55 0-1-.45-1-1s.45-1 1-1z"/>
@@ -801,7 +801,7 @@
                                     </svg>
                                     Modèles UI
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_ui_template_new' ? 'active' : '' }}" href="{{ path('admin_document_ui_template_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -810,7 +810,7 @@
                                     Nouveau modèle UI
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_document_ui_template_all_components') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_document_ui_template_all_components' ? 'active' : '' }}" href="{{ path('admin_document_ui_template_all_components') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 7h16"/>
@@ -830,7 +830,7 @@
 
                 <!-- Duration Management Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_duration' ? 'active' : '' }}" href="#navbar-duration-management" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_duration' ? 'active show' : '' }}" href="#navbar-duration-management" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_duration' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -844,10 +844,10 @@
                         </span>
                         <span class="badge badge-sm bg-orange text-white ms-auto">Qualiopi</span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_duration' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="{{ path('admin_duration_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_index' ? 'active' : '' }}" href="{{ path('admin_duration_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
@@ -855,7 +855,7 @@
                                     </svg>
                                     Tableau de bord durées
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_duration_statistics') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_statistics' ? 'active' : '' }}" href="{{ path('admin_duration_statistics') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
@@ -864,24 +864,24 @@
                                     Statistiques
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_duration_analyze', {entityType: 'formation'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_analyze' and app.request.get('entityType') == 'formation' ? 'active' : '' }}" href="{{ path('admin_duration_analyze', {entityType: 'formation'}) }}">
                                     <span class="badge bg-blue text-white me-2">●</span>
                                     Analyser formations
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_duration_analyze', {entityType: 'module'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_analyze' and app.request.get('entityType') == 'module' ? 'active' : '' }}" href="{{ path('admin_duration_analyze', {entityType: 'module'}) }}">
                                     <span class="badge bg-green text-white me-2">●</span>
                                     Analyser modules
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_duration_analyze', {entityType: 'chapter'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_analyze' and app.request.get('entityType') == 'chapter' ? 'active' : '' }}" href="{{ path('admin_duration_analyze', {entityType: 'chapter'}) }}">
                                     <span class="badge bg-yellow text-white me-2">●</span>
                                     Analyser chapitres
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_duration_analyze', {entityType: 'course'}) }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_analyze' and app.request.get('entityType') == 'course' ? 'active' : '' }}" href="{{ path('admin_duration_analyze', {entityType: 'course'}) }}">
                                     <span class="badge bg-purple text-white me-2">●</span>
                                     Analyser cours
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ path('admin_duration_sync_all') }}" data-method="post" data-confirm="Êtes-vous sûr de vouloir synchroniser toutes les durées ?">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_sync_all' ? 'active' : '' }}" href="{{ path('admin_duration_sync_all') }}" data-method="post" data-confirm="Êtes-vous sûr de vouloir synchroniser toutes les durées ?">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
@@ -889,7 +889,7 @@
                                     </svg>
                                     Synchroniser tout
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_duration_clear_cache') }}" data-method="post" data-confirm="Êtes-vous sûr de vouloir vider le cache ?">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_duration_clear_cache' ? 'active' : '' }}" href="{{ path('admin_duration_clear_cache') }}" data-method="post" data-confirm="Êtes-vous sûr de vouloir vider le cache ?">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 7v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/>
@@ -908,7 +908,7 @@
 
                 <!-- Alternance Section -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_alternance' ? 'active' : '' }}" href="#navbar-alternance" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_alternance' ? 'active show' : '' }}" href="#navbar-alternance" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_alternance' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -923,11 +923,11 @@
                         </span>
                         <span class="badge badge-sm bg-cyan text-white ms-auto">Admin</span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_alternance' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
                                 <h6 class="dropdown-header">Tableau de bord</h6>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_dashboard') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_dashboard' ? 'active' : '' }}" href="{{ path('admin_alternance_dashboard') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 4h6v6h-6z"/>
@@ -943,7 +943,7 @@
                                 
                                 <div class="dropdown-divider"></div>
                                 <h6 class="dropdown-header">Contrats</h6>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_contract_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_contract_index' ? 'active' : '' }}" href="{{ path('admin_alternance_contract_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -954,7 +954,7 @@
                                     </svg>
                                     Gestion des contrats
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_contract_new') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_contract_new' ? 'active' : '' }}" href="{{ path('admin_alternance_contract_new') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 5l0 14"/>
@@ -965,14 +965,14 @@
                                 
                                 <div class="dropdown-divider"></div>
                                 <h6 class="dropdown-header">Gestion</h6>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_mentor_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_mentor_index' ? 'active' : '' }}" href="{{ path('admin_alternance_mentor_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 2l3.09 6.26l6.91 1l-5 4.74l1.18 6.89l-6.18 -3.25l-6.18 3.25l1.18 -6.89l-5 -4.74l6.91 -1z"/>
                                     </svg>
                                     Gestion des mentors
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_company_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_company_index' ? 'active' : '' }}" href="{{ path('admin_alternance_company_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 21h18"/>
@@ -985,7 +985,7 @@
                                     </svg>
                                     Gestion des entreprises
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_mission_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_mission_index' ? 'active' : '' }}" href="{{ path('admin_alternance_mission_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
@@ -997,7 +997,7 @@
                                 
                                 <div class="dropdown-divider"></div>
                                 <h6 class="dropdown-header">Suivi & Évaluation</h6>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_evaluation_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_evaluation_index' ? 'active' : '' }}" href="{{ path('admin_alternance_evaluation_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/>
@@ -1007,7 +1007,7 @@
                                     </svg>
                                     Gestion des évaluations
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_planning_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_planning_index' ? 'active' : '' }}" href="{{ path('admin_alternance_planning_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/>
@@ -1022,7 +1022,7 @@
                                 
                                 <div class="dropdown-divider"></div>
                                 <h6 class="dropdown-header">Rapports</h6>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_index') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_index' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_index') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
@@ -1031,11 +1031,11 @@
                                     </svg>
                                     Rapports et analytics
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_qualiopi') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_qualiopi' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_qualiopi') }}">
                                     <span class="badge bg-success text-white me-2">✓</span>
                                     Rapport Qualiopi
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_financial') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_financial' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_financial') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10"/>
@@ -1044,7 +1044,7 @@
                                     </svg>
                                     Rapport Financier
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_performance') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_performance' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_performance') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 3v18h18"/>
@@ -1053,7 +1053,7 @@
                                     </svg>
                                     Rapport Performance
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_mentors') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_mentors' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_mentors') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
@@ -1063,7 +1063,7 @@
                                     </svg>
                                     Rapport Mentors
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_missions') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_missions' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_missions') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M9 12l2 2l4 -4"/>
@@ -1071,7 +1071,7 @@
                                     </svg>
                                     Rapport Missions
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_analytics') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_analytics' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_analytics') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
@@ -1080,7 +1080,7 @@
                                     </svg>
                                     Analytics Avancées
                                 </a>
-                                <a class="dropdown-item" href="{{ path('admin_alternance_reporting_export') }}">
+                                <a class="dropdown-item {{ app.request.get('_route') == 'admin_alternance_reporting_export' ? 'active' : '' }}" href="{{ path('admin_alternance_reporting_export') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -1119,7 +1119,7 @@
                 
                 <!-- System Information & Settings -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_system' ? 'active' : '' }}" href="#navbar-system" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'admin_system' ? 'active show' : '' }}" href="#navbar-system" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ app.request.get('_route') starts with 'admin_system' ? 'true' : 'false' }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -1131,7 +1131,7 @@
                             Système & Paramètres
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ app.request.get('_route') starts with 'admin_system' ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
                                 <a class="dropdown-item" href="#" onclick="alert('Informations système à venir')">

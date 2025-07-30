@@ -191,8 +191,8 @@ class EngagementDashboardController extends AbstractController
                     $sheet->setCellValue('C' . $row, $student['formation']);
                     $sheet->setCellValue('D' . $row, $student['risk_score']);
                     $sheet->setCellValue('E' . $row, $student['engagement_score']);
-                    $sheet->setCellValue('F' . $row, round($student['completion_percentage'], 1));
-                    $sheet->setCellValue('G' . $row, round($student['attendance_rate'], 1));
+                    $sheet->setCellValue('F' . $row, round((float) $student['completion_percentage'], 1));
+                    $sheet->setCellValue('G' . $row, round((float) $student['attendance_rate'], 1));
                     $sheet->setCellValue('H' . $row, $student['last_activity']);
                     $sheet->setCellValue('I' . $row, $student['difficulty_signals']);
                     $sheet->setCellValue('J' . $row, $student['recommendations']);
@@ -241,8 +241,8 @@ class EngagementDashboardController extends AbstractController
                         $student['formation'],
                         $student['risk_score'],
                         $student['engagement_score'],
-                        round($student['completion_percentage'], 1),
-                        round($student['attendance_rate'], 1),
+                        round((float) $student['completion_percentage'], 1),
+                        round((float) $student['attendance_rate'], 1),
                         $student['last_activity'],
                         $student['difficulty_signals'],
                         $student['recommendations'],
@@ -285,27 +285,27 @@ class EngagementDashboardController extends AbstractController
         $alerts = [];
 
         // Critical alerts (require immediate action)
-        if (($retentionStats['dropoutRate'] ?? 0) > 20) {
+        if (((float) ($retentionStats['dropoutRate'] ?? 0)) > 20) {
             $alerts[] = [
                 'level' => 'critical',
-                'message' => "Taux d'abandon critique: " . round($retentionStats['dropoutRate'], 1) . '%',
+                'message' => "Taux d'abandon critique: " . round((float) $retentionStats['dropoutRate'], 1) . '%',
                 'action' => 'Intervention immédiate requise',
             ];
         }
 
-        if (($attendanceStats['overall_attendance_rate'] ?? 0) < 70) {
+        if (((float) ($attendanceStats['overall_attendance_rate'] ?? 0)) < 70) {
             $alerts[] = [
                 'level' => 'critical',
-                'message' => "Taux d'assiduité global insuffisant: " . round($attendanceStats['overall_attendance_rate'], 1) . '%',
+                'message' => "Taux d'assiduité global insuffisant: " . round((float) $attendanceStats['overall_attendance_rate'], 1) . '%',
                 'action' => 'Revoir la stratégie d\'engagement',
             ];
         }
 
         // Warning alerts
-        if (($engagementMetrics['averageEngagement'] ?? 0) < 60) {
+        if (((float) ($engagementMetrics['averageEngagement'] ?? 0)) < 60) {
             $alerts[] = [
                 'level' => 'warning',
-                'message' => 'Engagement moyen faible: ' . round($engagementMetrics['averageEngagement'], 1) . '/100',
+                'message' => 'Engagement moyen faible: ' . round((float) $engagementMetrics['averageEngagement'], 1) . '/100',
                 'action' => 'Améliorer le suivi pédagogique',
             ];
         }
