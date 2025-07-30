@@ -743,7 +743,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
         }
 
         $totalContracts = count($durations);
-        $averageDuration = $totalContracts > 0 ? array_sum(array_column($durations, 'duration')) / $totalContracts : 0;
+        $averageDuration = $totalContracts > 0 ? array_sum(array_map('floatval', array_column($durations, 'duration'))) / $totalContracts : 0;
 
         // If no real data, return placeholder data
         if ($totalContracts === 0) {
@@ -909,7 +909,7 @@ class AlternanceContractRepository extends ServiceEntityRepository
             ->getSingleScalarResult()
         ;
 
-        return $result ? round($result, 1) : null;
+        return $result ? round((float) $result, 1) : null;
     }
 
     /**
