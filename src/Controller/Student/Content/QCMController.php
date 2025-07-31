@@ -98,15 +98,26 @@ class QCMController extends AbstractController
         // Get or create active attempt
         $attempt = $this->attemptService->getOrCreateActiveAttempt($student, $qcm);
 
+        // Get randomized questions
+        $questions = $this->attemptService->getRandomizedQuestions($qcm);
+
         if ($request->isMethod('POST')) {
             $action = $request->request->get('action');
             
             if ($action === 'submit') {
                 try {
                     // Save final answers
-                    $answers = $request->request->all('answers', []);
-                    foreach ($answers as $questionIndex => $answerIndices) {
-                        $this->attemptService->saveAnswer($attempt, (int)$questionIndex, (array)$answerIndices);
+                    $questionData = $request->request->all();
+                    
+                    // Process answers for each question by index
+                    foreach ($questions as $questionIndex => $question) {
+                        $answerKey = 'question_' . $questionIndex;
+                        if (isset($questionData[$answerKey])) {
+                            $answerValue = $questionData[$answerKey];
+                            // Convert single answer to array for consistency
+                            $answerIndices = is_array($answerValue) ? $answerValue : [$answerValue];
+                            $this->attemptService->saveAnswer($attempt, $questionIndex, $answerIndices);
+                        }
                     }
                     
                     $this->attemptService->submitAttempt($attempt);
@@ -130,14 +141,28 @@ class QCMController extends AbstractController
             }
         }
 
-        // Get randomized questions
-        $questions = $this->attemptService->getRandomizedQuestions($qcm);
+        // Get current answers and calculate progress
+        $answers = $attempt->getAnswers() ?? [];
+        $answeredQuestions = [];
+        $answeredCount = 0;
+
+        // Build array of answered question indices and format answers for template
+        foreach ($questions as $index => $question) {
+            $questionAnswers = $attempt->getAnswerForQuestion($index);
+            if (!empty($questionAnswers)) {
+                $answeredQuestions[] = $index;
+                $answeredCount++;
+            }
+        }
 
         return $this->render('student/content/qcm/take.html.twig', [
             'qcm' => $qcm,
             'attempt' => $attempt,
             'questions' => $questions,
             'student' => $student,
+            'answers' => $answers,
+            'answered_questions' => $answeredQuestions,
+            'answered_count' => $answeredCount,
             'page_title' => 'QCM: ' . $qcm->getTitle(),
         ]);
     }
@@ -159,11 +184,19 @@ class QCMController extends AbstractController
                 return new JsonResponse(['success' => false, 'message' => 'Aucune tentative active'], 400);
             }
 
-            $data = json_decode($request->getContent(), true);
-            $questionIndex = (int) $data['question_index'];
-            $answerIndices = (array) $data['answer_indices'];
+            // Get all form data and process answers for each question
+            $questionData = $request->request->all();
+            $questions = $this->attemptService->getRandomizedQuestions($qcm);
             
-            $this->attemptService->saveAnswer($activeAttempt, $questionIndex, $answerIndices);
+            foreach ($questions as $questionIndex => $question) {
+                $answerKey = 'question_' . $questionIndex;
+                if (isset($questionData[$answerKey])) {
+                    $answerValue = $questionData[$answerKey];
+                    // Convert single answer to array for consistency
+                    $answerIndices = is_array($answerValue) ? $answerValue : [$answerValue];
+                    $this->attemptService->saveAnswer($activeAttempt, $questionIndex, $answerIndices);
+                }
+            }
             
             return new JsonResponse(['success' => true, 'message' => 'Réponse sauvegardée']);
         } catch (\Exception $e) {

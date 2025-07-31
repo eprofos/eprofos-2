@@ -57,11 +57,11 @@
                                         </span>
                                     </div>
                                 {% endif %}
-                                {% if chapter.order %}
+                                {% if chapter.orderIndex %}
                                     <div class="col-auto">
                                         <span class="badge bg-secondary">
                                             <i class="fas fa-list-ol me-1"></i>
-                                            Chapitre {{ chapter.order }}
+                                            Chapitre {{ chapter.orderIndex }}
                                         </span>
                                     </div>
                                 {% endif %}
@@ -107,7 +107,7 @@
             {% endif %}
 
             <!-- Content Section -->
-            {% if chapter.content %}
+            {% if chapter.contentOutline %}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -117,7 +117,7 @@
                     </div>
                     <div class="card-body">
                         <div class="content-text">
-                            {{ chapter.content|nl2br }}
+                            {{ chapter.contentOutline|nl2br }}
                         </div>
                     </div>
                 </div>

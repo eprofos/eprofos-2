@@ -32,7 +32,7 @@
                         
                         <div class="card-body">
                             <h1 class="h3 mb-3">{{ formation.title }}</h1>
-                            <p class="text-muted mb-4">{{ formation.shortDescription }}</p>
+                            <p class="text-muted mb-4">{{ formation.description|slice(0, 200) }}{% if formation.description|length > 200 %}...{% endif %}</p>
                             
                             <!-- Formation Metadata -->
                             <div class="row g-3 mb-4">
@@ -46,14 +46,14 @@
                                 <div class="col-sm-6 col-md-3">
                                     <div class="text-center p-3 bg-light rounded">
                                         <i class="fas fa-signal fa-2x text-success mb-2"></i>
-                                        <div class="fw-bold">{{ formation.levelLabel }}</div>
+                                        <div class="fw-bold">{{ formation.level }}</div>
                                         <small class="text-muted">Niveau</small>
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-md-3">
                                     <div class="text-center p-3 bg-light rounded">
                                         <i class="fas fa-desktop fa-2x text-info mb-2"></i>
-                                        <div class="fw-bold">{{ formation.formatLabel }}</div>
+                                        <div class="fw-bold">{{ formation.format }}</div>
                                         <small class="text-muted">Format</small>
                                     </div>
                                 </div>

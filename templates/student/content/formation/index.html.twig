@@ -39,7 +39,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{ formation.title }}</h5>
                                     <p class="card-text text-muted small">
-                                        {{ formation.shortDescription|slice(0, 120) }}{% if formation.shortDescription|length > 120 %}...{% endif %}
+                                        {{ formation.description|slice(0, 120) }}{% if formation.description|length > 120 %}...{% endif %}
                                     </p>
                                     
                                     <!-- Formation Info -->
@@ -50,11 +50,11 @@
                                         </div>
                                         <div class="col-6">
                                             <i class="fas fa-signal text-success me-1"></i>
-                                            {{ formation.levelLabel }}
+                                            {{ formation.level }}
                                         </div>
                                         <div class="col-6">
                                             <i class="fas fa-desktop text-info me-1"></i>
-                                            {{ formation.formatLabel }}
+                                            {{ formation.format }}
                                         </div>
                                         <div class="col-6">
                                             <i class="fas fa-tag text-warning me-1"></i>

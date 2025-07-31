@@ -152,6 +152,41 @@ class Exercise
     private ?int $estimatedDurationMinutes = null;
 
     /**
+     * Time limit for completing the exercise in minutes (optional).
+     */
+    #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
+    private ?int $timeLimitMinutes = null;
+
+    /**
+     * Exercise content/description that students will see.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Gedmo\Versioned]
+    private ?string $content = null;
+
+    /**
+     * Maximum number of attempts allowed for this exercise.
+     */
+    #[ORM\Column(nullable: true)]
+    #[Gedmo\Versioned]
+    private ?int $maxAttempts = null;
+
+    /**
+     * Whether this exercise is automatically graded.
+     */
+    #[ORM\Column]
+    #[Gedmo\Versioned]
+    private ?bool $isAutoGraded = false;
+
+    /**
+     * Resource files associated with this exercise (JSON array).
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Gedmo\Versioned]
+    private ?array $resourceFiles = null;
+
+    /**
      * Maximum points/score for this exercise.
      */
     #[ORM\Column(nullable: true)]
@@ -339,6 +374,66 @@ class Exercise
     public function setEstimatedDurationMinutes(int $estimatedDurationMinutes): static
     {
         $this->estimatedDurationMinutes = $estimatedDurationMinutes;
+
+        return $this;
+    }
+
+    public function getTimeLimitMinutes(): ?int
+    {
+        return $this->timeLimitMinutes;
+    }
+
+    public function setTimeLimitMinutes(?int $timeLimitMinutes): static
+    {
+        $this->timeLimitMinutes = $timeLimitMinutes;
+
+        return $this;
+    }
+
+    public function getContent(): ?string
+    {
+        return $this->content;
+    }
+
+    public function setContent(?string $content): static
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+    public function getMaxAttempts(): ?int
+    {
+        return $this->maxAttempts;
+    }
+
+    public function setMaxAttempts(?int $maxAttempts): static
+    {
+        $this->maxAttempts = $maxAttempts;
+
+        return $this;
+    }
+
+    public function isAutoGraded(): ?bool
+    {
+        return $this->isAutoGraded;
+    }
+
+    public function setIsAutoGraded(bool $isAutoGraded): static
+    {
+        $this->isAutoGraded = $isAutoGraded;
+
+        return $this;
+    }
+
+    public function getResourceFiles(): ?array
+    {
+        return $this->resourceFiles;
+    }
+
+    public function setResourceFiles(?array $resourceFiles): static
+    {
+        $this->resourceFiles = $resourceFiles;
 
         return $this;
     }

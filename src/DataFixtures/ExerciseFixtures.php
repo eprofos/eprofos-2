@@ -105,6 +105,30 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                 $exercise->setOrderIndex($i + 1);
                 $exercise->setCourse($course);
 
+                // Set new properties
+                $exercise->setTimeLimitMinutes($faker->boolean(70) ? $faker->numberBetween(60, 240) : null);
+                $exercise->setContent($faker->paragraphs(2, true));
+                $exercise->setMaxAttempts($faker->boolean(60) ? $faker->numberBetween(1, 5) : null);
+                $exercise->setIsAutoGraded($faker->boolean(30));
+
+                // Set resource files (example structure)
+                if ($faker->boolean(40)) {
+                    $exercise->setResourceFiles([
+                        [
+                            'name' => 'Document de référence',
+                            'filename' => 'reference-' . $faker->uuid . '.pdf',
+                            'type' => 'pdf',
+                            'size' => $faker->numberBetween(100000, 5000000)
+                        ],
+                        [
+                            'name' => 'Template Excel',
+                            'filename' => 'template-' . $faker->uuid . '.xlsx',
+                            'type' => 'xlsx',
+                            'size' => $faker->numberBetween(50000, 1000000)
+                        ]
+                    ]);
+                }
+
                 // Set detailed instructions
                 $exercise->setInstructions($faker->paragraphs(3, true));
 

@@ -70,11 +70,11 @@
                                         </span>
                                     </div>
                                 {% endif %}
-                                {% if course.order %}
+                                {% if course.orderIndex %}
                                     <div class="col-auto">
                                         <span class="badge bg-secondary">
                                             <i class="fas fa-list-ol me-1"></i>
-                                            Cours {{ course.order }}
+                                            Cours {{ course.orderIndex }}
                                         </span>
                                     </div>
                                 {% endif %}
@@ -118,66 +118,6 @@
                             <div class="card-body">
                                 <div class="content-text">
                                     {{ course.content|nl2br }}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Video Content -->
-                    {% if course.videoUrl %}
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-video me-2"></i>
-                                    Vidéo du cours
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="ratio ratio-16x9">
-                                    {% if 'youtube.com' in course.videoUrl or 'youtu.be' in course.videoUrl %}
-                                        <iframe src="{{ course.videoUrl }}" 
-                                                title="{{ course.title }}" 
-                                                frameborder="0" 
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                allowfullscreen></iframe>
-                                    {% else %}
-                                        <video controls>
-                                            <source src="{{ course.videoUrl }}" type="video/mp4">
-                                            Votre navigateur ne supporte pas la lecture vidéo.
-                                        </video>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Resource Files -->
-                    {% if course.resourceFiles %}
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-download me-2"></i>
-                                    Ressources téléchargeables
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="list-group list-group-flush">
-                                    {% for file in course.resourceFiles %}
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <i class="fas fa-file me-2"></i>
-                                                {{ file.name|default('Fichier ressource') }}
-                                                {% if file.description %}
-                                                    <small class="text-muted d-block">{{ file.description }}</small>
-                                                {% endif %}
-                                            </div>
-                                            <a href="{{ asset('uploads/courses/resources/' ~ file.filename) }}" 
-                                               class="btn btn-outline-primary btn-sm" 
-                                               download>
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                        </div>
-                                    {% endfor %}
                                 </div>
                             </div>
                         </div>

@@ -120,7 +120,7 @@
                                             <div class="border rounded p-3">
                                                 <h6 class="mb-2">Question {{ loop.index }}</h6>
                                                 <p class="small text-muted mb-0">
-                                                    {{ question.text|slice(0, 80) }}{% if question.text|length > 80 %}...{% endif %}
+                                                    {{ question.question|slice(0, 80) }}{% if question.question|length > 80 %}...{% endif %}
                                                 </p>
                                             </div>
                                         </div>
@@ -249,7 +249,7 @@
                                         <div>{{ qcm.passingScore }}%</div>
                                     </div>
                                 {% endif %}
-                                {% if qcm.showResults %}
+                                {% if qcm.showCorrectAnswers %}
                                     <div class="col-6">
                                         <strong class="small text-muted">Résultats:</strong>
                                         <div>

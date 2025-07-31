@@ -3,7 +3,14 @@
 {% block title %}{{ qcm.title }} - QCM{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" 
+     data-controller="qcm-take"
+     data-qcm-take-remaining-time-value="{{ attempt.remainingTimeSeconds ?? 0 }}"
+     data-qcm-take-total-questions-value="{{ qcm.questions|length }}"
+     data-qcm-take-has-time-limit-value="{{ qcm.timeLimitMinutes ? 'true' : 'false' }}"
+     data-qcm-take-time-limit-minutes-value="{{ qcm.timeLimitMinutes ?? 0 }}"
+     data-qcm-take-save-url-value="{{ path('student_qcm_save_answer', {id: qcm.id}) }}"
+     data-qcm-take-answered-questions-value="{{ answered_questions|json_encode }}">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
@@ -15,11 +22,11 @@
                             <div class="text-muted small">
                                 <span class="me-3">
                                     <i class="fas fa-layer-group me-1"></i>
-                                    {{ course.chapter.module.title }}
+                                    {{ qcm.course.chapter.module.title }}
                                 </span>
                                 <span class="me-3">
                                     <i class="fas fa-book me-1"></i>
-                                    {{ course.title }}
+                                    {{ qcm.course.title }}
                                 </span>
                                 <span class="me-3">
                                     <i class="fas fa-question-circle me-1"></i>
@@ -36,14 +43,14 @@
                                 <div class="text-center">
                                     <div class="h5 mb-0" id="timer">
                                         <i class="fas fa-clock text-warning me-1"></i>
-                                        <span id="time-display">{{ (attempt.remainingTimeSeconds / 60)|round(0, 'floor') }}:{{ '%02d'|format(attempt.remainingTimeSeconds % 60) }}</span>
+                                        <span data-qcm-take-target="timerDisplay">{{ (attempt.remainingTimeSeconds / 60)|round(0, 'floor') }}:{{ '%02d'|format(attempt.remainingTimeSeconds % 60) }}</span>
                                     </div>
                                     <small class="text-muted">Temps restant</small>
                                 </div>
                             {% endif %}
                             <div class="text-center">
                                 <div class="h5 mb-0">
-                                    <span id="answered-count">{{ answered_count }}</span>/{{ qcm.questions|length }}
+                                    <span data-qcm-take-target="answeredCount">{{ answered_count }}</span>/{{ qcm.questions|length }}
                                 </div>
                                 <small class="text-muted">Réponses</small>
                             </div>
@@ -57,25 +64,27 @@
     <div class="row">
         <!-- Questions -->
         <div class="col-lg-8">
-            <form id="qcm-form" method="post" action="{{ path('student_qcm_submit', {id: qcm.id}) }}">
+            <form data-qcm-take-target="form" method="post" action="{{ path('student_qcm_take', {id: qcm.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('qcm_submit_' ~ qcm.id) }}">
                 <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
                 
                 {% for question in questions %}
-                <div class="card border-0 shadow-sm mb-4 question-card" data-question-id="{{ question.id }}">
+                <div class="card border-0 shadow-sm mb-4 question-card" 
+                     data-question-id="{{ loop.index0 }}"
+                     data-qcm-take-target="questionCard">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
                             <span class="badge bg-primary me-2">{{ loop.index }}</span>
                             Question {{ loop.index }}
                         </h6>
                         <div class="question-status">
-                            {% if question.id in answered_questions %}
-                                <span class="badge bg-success">
+                            {% if loop.index0 in answered_questions %}
+                                <span class="badge bg-success" data-qcm-take-target="questionStatus">
                                     <i class="fas fa-check me-1"></i>
                                     Répondu
                                 </span>
                             {% else %}
-                                <span class="badge bg-light text-dark">
+                                <span class="badge bg-light text-dark" data-qcm-take-target="questionStatus">
                                     <i class="far fa-circle me-1"></i>
                                     Non répondu
                                 </span>
@@ -84,26 +93,21 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-4">
-                            <h6 class="question-text">{{ question.questionText|raw }}</h6>
-                            {% if question.questionType == 'multiple_choice' %}
+                            <h6 class="question-text">{{ question.question|raw }}</h6>
+                            {% if question.type == 'single' %}
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
                                     Sélectionnez une réponse
                                 </small>
-                            {% elseif question.questionType == 'multiple_select' %}
+                            {% elseif question.type == 'multiple' %}
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
                                     Plusieurs réponses possibles
                                 </small>
-                            {% elseif question.questionType == 'true_false' %}
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Vrai ou Faux
-                                </small>
                             {% endif %}
                         </div>
 
-                        {% if question.image %}
+                        {% if question.image is defined and question.image %}
                             <div class="mb-4 text-center">
                                 <img src="{{ asset('uploads/qcm/questions/' ~ question.image) }}" 
                                      alt="Image de la question" 
@@ -113,52 +117,38 @@
                         {% endif %}
 
                         <div class="options">
-                            {% if question.questionType == 'multiple_choice' or question.questionType == 'true_false' %}
-                                {% for option in question.questionOptions %}
+                            {% if question.type == 'single' %}
+                                {% for optionIndex, optionText in question.answers %}
                                 <div class="form-check mb-3">
                                     <input class="form-check-input question-option" 
                                            type="radio" 
-                                           name="question_{{ question.id }}" 
-                                           id="option_{{ option.id }}" 
-                                           value="{{ option.id }}"
-                                           data-question-id="{{ question.id }}"
-                                           {% if option.id in (answers[question.id] ?? []) %}checked{% endif %}>
-                                    <label class="form-check-label w-100" for="option_{{ option.id }}">
+                                           name="question_{{ loop.parent.loop.index0 }}" 
+                                           id="option_{{ loop.parent.loop.index0 }}_{{ optionIndex }}" 
+                                           value="{{ optionIndex }}"
+                                           data-question-id="{{ loop.parent.loop.index0 }}"
+                                           data-qcm-take-target="questionOption"
+                                           {% if optionIndex in (answers[loop.parent.loop.index0] ?? []) %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="option_{{ loop.parent.loop.index0 }}_{{ optionIndex }}">
                                         <div class="p-3 border rounded option-content">
-                                            {% if option.image %}
-                                                <div class="mb-2">
-                                                    <img src="{{ asset('uploads/qcm/options/' ~ option.image) }}" 
-                                                         alt="Option image" 
-                                                         class="img-fluid rounded" 
-                                                         style="max-height: 100px;">
-                                                </div>
-                                            {% endif %}
-                                            <div>{{ option.optionText|raw }}</div>
+                                            <div>{{ optionText|raw }}</div>
                                         </div>
                                     </label>
                                 </div>
                                 {% endfor %}
-                            {% elseif question.questionType == 'multiple_select' %}
-                                {% for option in question.questionOptions %}
+                            {% elseif question.type == 'multiple' %}
+                                {% for optionIndex, optionText in question.answers %}
                                 <div class="form-check mb-3">
                                     <input class="form-check-input question-option" 
                                            type="checkbox" 
-                                           name="question_{{ question.id }}[]" 
-                                           id="option_{{ option.id }}" 
-                                           value="{{ option.id }}"
-                                           data-question-id="{{ question.id }}"
-                                           {% if option.id in (answers[question.id] ?? []) %}checked{% endif %}>
-                                    <label class="form-check-label w-100" for="option_{{ option.id }}">
+                                           name="question_{{ loop.parent.loop.index0 }}[]" 
+                                           id="option_{{ loop.parent.loop.index0 }}_{{ optionIndex }}" 
+                                           value="{{ optionIndex }}"
+                                           data-question-id="{{ loop.parent.loop.index0 }}"
+                                           data-qcm-take-target="questionOption"
+                                           {% if optionIndex in (answers[loop.parent.loop.index0] ?? []) %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="option_{{ loop.parent.loop.index0 }}_{{ optionIndex }}">
                                         <div class="p-3 border rounded option-content">
-                                            {% if option.image %}
-                                                <div class="mb-2">
-                                                    <img src="{{ asset('uploads/qcm/options/' ~ option.image) }}" 
-                                                         alt="Option image" 
-                                                         class="img-fluid rounded" 
-                                                         style="max-height: 100px;">
-                                                </div>
-                                            {% endif %}
-                                            <div>{{ option.optionText|raw }}</div>
+                                            <div>{{ optionText|raw }}</div>
                                         </div>
                                     </label>
                                 </div>
@@ -215,13 +205,13 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span>Questions répondues</span>
                             <span class="fw-bold">
-                                <span id="progress-count">{{ answered_count }}</span>/{{ qcm.questions|length }}
+                                <span data-qcm-take-target="progressCount">{{ answered_count }}</span>/{{ qcm.questions|length }}
                             </span>
                         </div>
                         <div class="progress mb-3">
                             <div class="progress-bar" 
                                  role="progressbar" 
-                                 id="progress-bar"
+                                 data-qcm-take-target="progressBar"
                                  style="width: {{ (answered_count / qcm.questions|length * 100)|round }}%"
                                  aria-valuenow="{{ answered_count }}" 
                                  aria-valuemin="0" 
@@ -232,14 +222,14 @@
                         {% if qcm.timeLimitMinutes %}
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span>Temps utilisé</span>
-                                <span class="fw-bold" id="time-used">
+                                <span class="fw-bold" data-qcm-take-target="timeUsed">
                                     {{ ((qcm.timeLimitMinutes * 60 - attempt.remainingTimeSeconds) / 60)|round }}min
                                 </span>
                             </div>
                             <div class="progress">
                                 <div class="progress-bar bg-warning" 
                                      role="progressbar" 
-                                     id="time-progress"
+                                     data-qcm-take-target="timeProgress"
                                      style="width: {{ ((qcm.timeLimitMinutes * 60 - attempt.remainingTimeSeconds) / (qcm.timeLimitMinutes * 60) * 100)|round }}%">
                                 </div>
                             </div>
@@ -261,8 +251,9 @@
                             <div class="col-4 col-md-3">
                                 <button type="button" 
                                         class="btn btn-sm w-100 question-nav-btn"
-                                        data-question-id="{{ question.id }}"
-                                        data-question-number="{{ loop.index }}">
+                                        data-question-id="{{ loop.index0 }}"
+                                        data-question-number="{{ loop.index }}"
+                                        data-qcm-take-target="questionNavBtn">
                                     {{ loop.index }}
                                 </button>
                             </div>
@@ -288,11 +279,15 @@
                 <div class="card border-0 shadow-sm mt-4">
                     <div class="card-body text-center">
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="review-unanswered">
+                            <button type="button" 
+                                    class="btn btn-outline-primary btn-sm" 
+                                    data-qcm-take-target="reviewUnansweredBtn">
                                 <i class="fas fa-search me-1"></i>
                                 Questions non répondues
                             </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="scroll-to-top">
+                            <button type="button" 
+                                    class="btn btn-outline-secondary btn-sm" 
+                                    data-qcm-take-target="scrollToTopBtn">
                                 <i class="fas fa-arrow-up me-1"></i>
                                 Haut de page
                             </button>
@@ -306,7 +301,7 @@
 
 <!-- Auto-save status toast -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="auto-save-toast" class="toast" role="alert">
+    <div class="toast" role="alert" data-qcm-take-target="autoSaveToast">
         <div class="toast-body">
             <i class="fas fa-save text-success me-2"></i>
             Réponses sauvegardées automatiquement
@@ -315,7 +310,7 @@
 </div>
 
 <!-- Timer expiry modal -->
-<div class="modal fade" id="timer-expired-modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" tabindex="-1" aria-hidden="true" data-qcm-take-target="timerExpiredModal">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
@@ -330,7 +325,9 @@
                 <p class="text-muted">Votre QCM va être automatiquement soumis avec les réponses actuelles.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-danger" id="submit-expired">
+                <button type="button" 
+                        class="btn btn-danger" 
+                        data-qcm-take-target="submitExpiredBtn">
                     <i class="fas fa-paper-plane me-2"></i>
                     Soumettre maintenant
                 </button>
@@ -342,203 +339,4 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('qcm-form');
-    const timerDisplay = document.getElementById('time-display');
-    const progressBar = document.getElementById('progress-bar');
-    const progressCount = document.getElementById('progress-count');
-    const answeredCount = document.getElementById('answered-count');
-    const autoSaveToast = new bootstrap.Toast(document.getElementById('auto-save-toast'));
-    
-    let remainingTime = {{ attempt.remainingTimeSeconds ?? 'null' }};
-    let timerInterval;
-    let autoSaveTimeout;
-    let hasAnswered = new Set({{ answered_questions|json_encode|raw }});
-    
-    // Initialize question navigation buttons
-    updateNavigationButtons();
-    
-    // Timer functionality
-    {% if qcm.timeLimitMinutes and attempt.remainingTimeSeconds %}
-    function updateTimer() {
-        if (remainingTime <= 0) {
-            clearInterval(timerInterval);
-            showTimerExpiredModal();
-            return;
-        }
-        
-        const minutes = Math.floor(remainingTime / 60);
-        const seconds = remainingTime % 60;
-        timerDisplay.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-        
-        // Update time progress bar
-        const timeProgress = document.getElementById('time-progress');
-        const timeUsed = document.getElementById('time-used');
-        if (timeProgress && timeUsed) {
-            const totalTime = {{ qcm.timeLimitMinutes * 60 }};
-            const usedTime = totalTime - remainingTime;
-            const usedPercent = (usedTime / totalTime) * 100;
-            timeProgress.style.width = usedPercent + '%';
-            timeUsed.textContent = Math.round(usedTime / 60) + 'min';
-        }
-        
-        // Change timer color based on remaining time
-        if (remainingTime < 300) { // Less than 5 minutes
-            timerDisplay.className = 'h5 mb-0 text-danger';
-        } else if (remainingTime < 600) { // Less than 10 minutes
-            timerDisplay.className = 'h5 mb-0 text-warning';
-        }
-        
-        remainingTime--;
-    }
-    
-    function showTimerExpiredModal() {
-        const modal = new bootstrap.Modal(document.getElementById('timer-expired-modal'));
-        modal.show();
-        
-        document.getElementById('submit-expired').addEventListener('click', function() {
-            form.querySelector('button[name="action"][value="submit"]').click();
-        });
-    }
-    
-    timerInterval = setInterval(updateTimer, 1000);
-    {% endif %}
-    
-    // Auto-save functionality
-    function autoSave() {
-        const formData = new FormData(form);
-        formData.set('action', 'auto_save');
-        
-        fetch('{{ path('student_qcm_save_answers', {id: qcm.id}) }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                autoSaveToast.show();
-            }
-        })
-        .catch(console.error);
-    }
-    
-    function triggerAutoSave() {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(autoSave, 2000); // Auto-save after 2 seconds of inactivity
-    }
-    
-    // Question option change handlers
-    document.querySelectorAll('.question-option').forEach(option => {
-        option.addEventListener('change', function() {
-            const questionId = this.getAttribute('data-question-id');
-            
-            // Update answered status
-            if (this.type === 'radio' && this.checked) {
-                hasAnswered.add(questionId);
-            } else if (this.type === 'checkbox') {
-                const checkedBoxes = document.querySelectorAll(`input[name="question_${questionId}[]"]:checked`);
-                if (checkedBoxes.length > 0) {
-                    hasAnswered.add(questionId);
-                } else {
-                    hasAnswered.delete(questionId);
-                }
-            }
-            
-            updateProgress();
-            updateNavigationButtons();
-            triggerAutoSave();
-        });
-    });
-    
-    function updateProgress() {
-        const total = {{ qcm.questions|length }};
-        const answered = hasAnswered.size;
-        const percentage = (answered / total) * 100;
-        
-        progressBar.style.width = percentage + '%';
-        progressCount.textContent = answered;
-        answeredCount.textContent = answered;
-    }
-    
-    function updateNavigationButtons() {
-        document.querySelectorAll('.question-nav-btn').forEach(btn => {
-            const questionId = btn.getAttribute('data-question-id');
-            if (hasAnswered.has(questionId)) {
-                btn.className = 'btn btn-sm w-100 btn-success question-nav-btn';
-            } else {
-                btn.className = 'btn btn-sm w-100 btn-outline-secondary question-nav-btn';
-            }
-        });
-        
-        // Update question status badges
-        document.querySelectorAll('.question-card').forEach(card => {
-            const questionId = card.getAttribute('data-question-id');
-            const statusBadge = card.querySelector('.question-status .badge');
-            if (hasAnswered.has(questionId)) {
-                statusBadge.className = 'badge bg-success';
-                statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Répondu';
-            } else {
-                statusBadge.className = 'badge bg-light text-dark';
-                statusBadge.innerHTML = '<i class="far fa-circle me-1"></i>Non répondu';
-            }
-        });
-    }
-    
-    // Navigation button clicks
-    document.querySelectorAll('.question-nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const questionId = this.getAttribute('data-question-id');
-            const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
-            if (questionCard) {
-                questionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-    
-    // Review unanswered questions
-    document.getElementById('review-unanswered').addEventListener('click', function() {
-        const unanswered = document.querySelectorAll('.question-card').values();
-        for (let card of unanswered) {
-            const questionId = card.getAttribute('data-question-id');
-            if (!hasAnswered.has(questionId)) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                break;
-            }
-        }
-    });
-    
-    // Scroll to top
-    document.getElementById('scroll-to-top').addEventListener('click', function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    
-    // Form submission validation
-    form.addEventListener('submit', function(e) {
-        if (e.submitter.value === 'submit') {
-            const unansweredCount = {{ qcm.questions|length }} - hasAnswered.size;
-            if (unansweredCount > 0) {
-                const message = `Il vous reste ${unansweredCount} question${unansweredCount > 1 ? 's' : ''} non répondue${unansweredCount > 1 ? 's' : ''}. Êtes-vous sûr de vouloir terminer le QCM ?`;
-                if (!confirm(message)) {
-                    e.preventDefault();
-                    return false;
-                }
-            }
-            
-            // Clear timer
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-        }
-    });
-    
-    // Prevent accidental page leave
-    window.addEventListener('beforeunload', function(e) {
-        if (hasAnswered.size > 0) {
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
-});
-</script>
 {% endblock %}
