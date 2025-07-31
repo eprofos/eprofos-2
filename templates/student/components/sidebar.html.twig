@@ -55,7 +55,7 @@
                 
                 <!-- Mes Formations -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') == 'student_courses' ? 'active' : '' }}" href="{{ path('student_courses') }}">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'student_formation' or app.request.get('_route') == 'student_courses' ? 'active' : '' }}" href="{{ path('student_courses') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -71,12 +71,16 @@
                 
                 <!-- Ma Progression -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') == 'student_progress' ? 'active' : '' }}" href="{{ path('student_progress') }}">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'student_progress' ? 'active' : '' }}" href="{{ path('student_progress') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969"/>
+                                <path d="M14 3.223a9.003 9.003 0 0 1 0 17.554"/>
+                                <path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592"/>
+                                <path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305"/>
+                                <path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356"/>
                                 <circle cx="12" cy="12" r="9"/>
-                                <path d="M12 3v9l4 2"/>
                             </svg>
                         </span>
                         <span class="nav-link-title">
@@ -183,11 +187,11 @@
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <circle cx="12" cy="13" r="2"/>
-                                <path d="m20 20l-1.5 -1.5"/>
-                                <circle cx="19" cy="19" r="1"/>
-                                <path d="M12 7v1l2.5 1.5"/>
-                                <circle cx="12" cy="12" r="9"/>
+                                <rect x="4" y="5" width="16" height="16" rx="2"/>
+                                <line x1="16" y1="3" x2="16" y2="7"/>
+                                <line x1="8" y1="3" x2="8" y2="7"/>
+                                <line x1="4" y1="11" x2="20" y2="11"/>
+                                <path d="m11 15l2 2l4 -4"/>
                             </svg>
                         </span>
                         <span class="nav-link-title">
