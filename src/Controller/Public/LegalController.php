@@ -19,7 +19,7 @@ class LegalController extends AbstractController
     /**
      * Display legal notices.
      */
-    #[Route('/mentions-legales', name: 'app_legal_notices', methods: ['GET'])]
+    #[Route('/mentions-legales', name: 'public_legal_notices', methods: ['GET'])]
     public function notices(): Response
     {
         $legalInfo = [
@@ -52,7 +52,7 @@ class LegalController extends AbstractController
     /**
      * Display privacy policy.
      */
-    #[Route('/politique-de-confidentialite', name: 'app_legal_privacy', methods: ['GET'])]
+    #[Route('/politique-de-confidentialite', name: 'public_legal_privacy', methods: ['GET'])]
     public function privacy(): Response
     {
         return $this->render('public/legal/privacy.html.twig');
@@ -61,7 +61,7 @@ class LegalController extends AbstractController
     /**
      * Display terms of service.
      */
-    #[Route('/conditions-generales', name: 'app_legal_terms', methods: ['GET'])]
+    #[Route('/conditions-generales', name: 'public_legal_terms', methods: ['GET'])]
     public function terms(): Response
     {
         return $this->render('public/legal/terms.html.twig');
@@ -70,7 +70,7 @@ class LegalController extends AbstractController
     /**
      * Display cookies policy.
      */
-    #[Route('/politique-cookies', name: 'app_legal_cookies', methods: ['GET'])]
+    #[Route('/politique-cookies', name: 'public_legal_cookies', methods: ['GET'])]
     public function cookies(): Response
     {
         return $this->render('public/legal/cookies.html.twig');

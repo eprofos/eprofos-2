@@ -118,7 +118,7 @@
                                                                 <circle cx="12" cy="12" r="9"/>
                                                                 <polyline points="12,6 12,12 16,14"/>
                                                             </svg>
-                                                            {{ notification.created_at|date('d/m/Y H:i') ?? 'now'|date('d/m/Y H:i') }}
+                                                            {{ notification.created_at ? notification.created_at|date('d/m/Y H:i') : 'now'|date('d/m/Y H:i') }}
                                                         </div>
                                                     </div>
                                                     <div class="d-flex align-items-center">
@@ -174,7 +174,7 @@
                                                                 <circle cx="12" cy="12" r="9"/>
                                                                 <polyline points="12,6 12,12 16,14"/>
                                                             </svg>
-                                                            {{ notification.created_at|date('d/m/Y H:i') ?? 'now'|date('d/m/Y H:i') }}
+                                                            {{ notification.created_at ? notification.created_at|date('d/m/Y H:i') : 'now'|date('d/m/Y H:i') }}
                                                         </div>
                                                     </div>
                                                     {% if notification.action_url is defined %}

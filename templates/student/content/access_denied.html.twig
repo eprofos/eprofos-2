@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'student/base.html.twig' %}
 
 {% block title %}Accès Refusé - {{ parent() }}{% endblock %}
 
@@ -74,7 +74,7 @@
                                                 Voir la formation
                                             </a>
                                         {% endif %}
-                                        <a href="{{ path('public_contact') }}" 
+                                        <a href="{{ path('public_contact_index') }}" 
                                            class="btn btn-outline-success btn-sm">
                                             <i class="fas fa-envelope me-1"></i>
                                             Nous contacter

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'student/base.html.twig' %}
 
 {% block title %}{{ page_title }} - {{ parent() }}{% endblock %}
 
@@ -88,11 +88,11 @@
                         Contactez votre organisme de formation pour plus d'informations.
                     </p>
                     <div class="d-flex gap-2 justify-content-center">
-                        <a href="{{ path('public_formation_index') }}" class="btn btn-outline-primary">
+                        <a href="{{ path('public_formations_index') }}" class="btn btn-outline-primary">
                             <i class="fas fa-search me-1"></i>
                             Découvrir nos formations
                         </a>
-                        <a href="{{ path('public_contact') }}" class="btn btn-primary">
+                        <a href="{{ path('public_contact_index') }}" class="btn btn-primary">
                             <i class="fas fa-envelope me-1"></i>
                             Nous contacter
                         </a>

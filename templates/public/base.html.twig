@@ -36,7 +36,7 @@
 
     <!-- Breadcrumb navigation -->
     {% block breadcrumb %}
-        {% if app.request.get('_route') != 'app_home' %}
+        {% if app.request.get('_route') != 'public_home' %}
             {% include 'public/components/breadcrumb.html.twig' %}
         {% endif %}
     {% endblock %}

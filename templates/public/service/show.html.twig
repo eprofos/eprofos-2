@@ -93,18 +93,18 @@
                             {% if service.isActive %}
                                 <div class="d-grid gap-2">
                                     {% if service.serviceCategory and service.serviceCategory.slug == 'conseil' %}
-                                        <a href="{{ path('app_contact_advice') }}?service={{ service.id }}" 
+                                        <a href="{{ path('public_contact_advice') }}?service={{ service.id }}" 
                                            class="btn btn-primary btn-lg">
                                             <i class="fas fa-comments me-2"></i>Demander conseil
                                         </a>
                                     {% else %}
-                                        <a href="{{ path('app_contact_quote') }}?service={{ service.id }}" 
+                                        <a href="{{ path('public_contact_quote') }}?service={{ service.id }}" 
                                            class="btn btn-primary btn-lg">
                                             <i class="fas fa-calculator me-2"></i>Demander un devis
                                         </a>
                                     {% endif %}
                                     
-                                    <a href="{{ path('app_contact_information') }}?service={{ service.id }}" 
+                                    <a href="{{ path('public_contact_information') }}?service={{ service.id }}" 
                                        class="btn btn-outline-primary">
                                         <i class="fas fa-info-circle me-2"></i>Plus d'informations
                                     </a>
@@ -204,7 +204,7 @@
                                 Nos experts sont à votre disposition pour répondre à vos questions.
                             </p>
                             <div class="d-grid gap-2">
-                                <a href="{{ path('app_contact_information') }}?service={{ service.id }}" 
+                                <a href="{{ path('public_contact_information') }}?service={{ service.id }}" 
                                    class="btn btn-outline-secondary">
                                     <i class="fas fa-envelope me-2"></i>Nous écrire
                                 </a>
@@ -273,10 +273,10 @@
         "provider": {
             "@type": "Organization",
             "name": "EPROFOS",
-            "url": "{{ absolute_url(path('app_home')) }}"
+            "url": "{{ absolute_url(path('public_home')) }}"
         },
         "serviceType": "{{ service.serviceCategory ? service.serviceCategory.name : 'Service professionnel' }}",
-        "url": "{{ absolute_url(path('app_service_show', {slug: service.slug})) }}"
+        "url": "{{ absolute_url(path('public_service_show', {slug: service.slug})) }}"
     }
     </script>
 {% endblock %}

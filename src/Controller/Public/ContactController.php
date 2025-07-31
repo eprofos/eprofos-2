@@ -40,7 +40,7 @@ class ContactController extends AbstractController
     /**
      * Display the main contact page with all form types.
      */
-    #[Route('', name: 'app_contact_index', methods: ['GET'])]
+    #[Route('', name: 'public_contact_index', methods: ['GET'])]
     public function index(): Response
     {
         // Get formations for quick registration dropdown
@@ -54,7 +54,7 @@ class ContactController extends AbstractController
     /**
      * Display quote request form (GET).
      */
-    #[Route('/devis', name: 'app_contact_quote', methods: ['GET'])]
+    #[Route('/devis', name: 'public_contact_quote', methods: ['GET'])]
     public function quoteForm(Request $request): Response
     {
         $this->logger->info('Quote form accessed via GET', [
@@ -64,13 +64,13 @@ class ContactController extends AbstractController
         ]);
 
         // Redirect to contact page with quote section
-        return $this->redirectToRoute('app_contact_index', [], Response::HTTP_MOVED_PERMANENTLY);
+        return $this->redirectToRoute('public_contact_index', [], Response::HTTP_MOVED_PERMANENTLY);
     }
 
     /**
      * Handle consultation request form submission.
      */
-    #[Route('/conseil', name: 'app_contact_consultation', methods: ['POST'])]
+    #[Route('/conseil', name: 'public_contact_consultation', methods: ['POST'])]
     public function consultation(Request $request): Response
     {
         $contactRequest = new ContactRequest();
@@ -82,7 +82,7 @@ class ContactController extends AbstractController
     /**
      * Handle general information request form submission.
      */
-    #[Route('/information', name: 'app_contact_information', methods: ['POST'])]
+    #[Route('/information', name: 'public_contact_information', methods: ['POST'])]
     public function information(Request $request): Response
     {
         $contactRequest = new ContactRequest();
@@ -94,7 +94,7 @@ class ContactController extends AbstractController
     /**
      * Handle quick registration form submission.
      */
-    #[Route('/inscription-rapide', name: 'app_contact_quick_registration', methods: ['POST'])]
+    #[Route('/inscription-rapide', name: 'public_contact_quick_registration', methods: ['POST'])]
     public function quickRegistration(Request $request): Response
     {
         $contactRequest = new ContactRequest();
@@ -106,7 +106,7 @@ class ContactController extends AbstractController
     /**
      * Display quote form for a specific formation.
      */
-    #[Route('/devis/formation/{slug}', name: 'app_contact_formation_quote', methods: ['GET'])]
+    #[Route('/devis/formation/{slug}', name: 'public_contact_formation_quote', methods: ['GET'])]
     public function formationQuote(string $slug): Response
     {
         $formation = $this->formationRepository->findBySlugWithCategory($slug);
@@ -123,7 +123,7 @@ class ContactController extends AbstractController
     /**
      * Handle formation-specific quote request.
      */
-    #[Route('/devis/formation/{slug}', name: 'app_contact_formation_quote_submit', methods: ['POST'])]
+    #[Route('/devis/formation/{slug}', name: 'public_contact_formation_quote_submit', methods: ['POST'])]
     public function formationQuoteSubmit(string $slug, Request $request): Response
     {
         $formation = $this->formationRepository->findBySlugWithCategory($slug);
@@ -142,7 +142,7 @@ class ContactController extends AbstractController
     /**
      * Handle accessibility request form submission.
      */
-    #[Route('/demande-accessibilite', name: 'app_contact_accessibility_request', methods: ['POST'])]
+    #[Route('/demande-accessibilite', name: 'public_contact_accessibility_request', methods: ['POST'])]
     public function accessibilityRequest(Request $request): Response
     {
         try {
@@ -172,7 +172,7 @@ class ContactController extends AbstractController
                     $this->addFlash('error', $error->getMessage());
                 }
 
-                return $this->redirectToRoute('app_contact_index');
+                return $this->redirectToRoute('public_contact_index');
             }
 
             // Save the contact request
@@ -222,11 +222,11 @@ class ContactController extends AbstractController
         if ($formationId) {
             $formation = $this->formationRepository->find($formationId);
             if ($formation) {
-                return $this->redirectToRoute('app_formation_show', ['slug' => $formation->getSlug()]);
+                return $this->redirectToRoute('public_formation_show', ['slug' => $formation->getSlug()]);
             }
         }
 
-        return $this->redirectToRoute('app_contact_index');
+        return $this->redirectToRoute('public_contact_index');
     }
 
     /**
@@ -279,7 +279,7 @@ class ContactController extends AbstractController
             }
             $this->addFlash('form_errors', $errorMessages);
 
-            return $this->redirectToRoute('app_contact_index');
+            return $this->redirectToRoute('public_contact_index');
         }
 
         try {
@@ -326,10 +326,10 @@ class ContactController extends AbstractController
 
         // Redirect based on context
         if ($formation) {
-            return $this->redirectToRoute('app_formation_show', ['slug' => $formation->getSlug()]);
+            return $this->redirectToRoute('public_formation_show', ['slug' => $formation->getSlug()]);
         }
 
-        return $this->redirectToRoute('app_contact_index');
+        return $this->redirectToRoute('public_contact_index');
     }
 
     /**

@@ -239,7 +239,7 @@
                             <h3 class="h4 fw-bold mb-0">Envoyez-nous un message</h3>
                         </div>
 
-                        <form action="{{ path('app_contact_information') }}" method="POST" id="mainContactForm">
+                        <form action="{{ path('public_contact_information') }}" method="POST" id="mainContactForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="firstName" class="form-label fw-semibold">Prénom *</label>
@@ -327,7 +327,7 @@
                                            required>
                                     <label class="form-check-label" for="consent">
                                         J'accepte que mes données soient utilisées pour traiter ma demande.
-                                        <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-primary">
+                                        <a href="{{ path('public_legal_privacy') }}" target="_blank" class="text-primary">
                                             Voir notre politique de confidentialité
                                         </a>
                                     </label>
@@ -479,7 +479,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ path('app_contact_accessibility_request') }}" method="POST" class="needs-validation" novalidate id="accessibilityRequestForm">
+                    <form action="{{ path('public_contact_accessibility_request') }}" method="POST" class="needs-validation" novalidate id="accessibilityRequestForm">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="accessibilityFirstName" class="form-label fw-semibold">Prénom *</label>
@@ -579,7 +579,7 @@
                                        required>
                                 <label class="form-check-label" for="accessibilityConsent">
                                     J'accepte que mes données soient utilisées pour traiter ma demande d'adaptation. 
-                                    <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-info">
+                                    <a href="{{ path('public_legal_privacy') }}" target="_blank" class="text-info">
                                         Voir notre politique de confidentialité
                                     </a>
                                 </label>
@@ -627,20 +627,20 @@
             // Update form action based on type
             switch(type) {
                 case 'quote':
-                    form.action = '{{ path('app_contact_information') }}'; // Using information route for now
+                    form.action = '{{ path('public_contact_information') }}'; // Using information route for now
                     subjectSelect.value = 'devis';
                     break;
                 case 'advice':
-                    form.action = '{{ path('app_contact_consultation') }}';
+                    form.action = '{{ path('public_contact_consultation') }}';
                     subjectSelect.value = 'conseil';
                     break;
                 case 'quick_registration':
-                    form.action = '{{ path('app_contact_information') }}'; // Using information route for now
+                    form.action = '{{ path('public_contact_information') }}'; // Using information route for now
                     subjectSelect.value = 'inscription';
                     break;
                 case 'information':
                 default:
-                    form.action = '{{ path('app_contact_information') }}';
+                    form.action = '{{ path('public_contact_information') }}';
                     subjectSelect.value = 'autre';
                     break;
             }

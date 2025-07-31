@@ -26,8 +26,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ session.name }}</li>
         </ol>
     </nav>
@@ -201,7 +201,7 @@
                     <div class="text-muted mb-3" style="line-height: 1.7;">
                         {{ session.formation.description|nl2br }}
                     </div>
-                    <a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}" 
+                    <a href="{{ path('public_formation_show', {slug: session.formation.slug}) }}" 
                        class="btn btn-outline-primary">
                         <i class="fas fa-arrow-right me-1"></i>Voir la formation complète
                     </a>
@@ -271,7 +271,7 @@
                         <!-- Action Buttons -->
                         <div class="d-grid gap-3">
                             {% if session.status == 'open' and not session.isFull %}
-                                <a href="{{ path('app_session_register', {id: session.id}) }}" 
+                                <a href="{{ path('public_session_register', {id: session.id}) }}" 
                                    class="btn btn-success btn-lg" style="border-radius: 20px; font-weight: 600;">
                                     <i class="fas fa-user-plus me-2"></i>S'inscrire à cette session
                                 </a>
@@ -279,12 +279,12 @@
                                 <button class="btn btn-warning btn-lg" disabled style="border-radius: 20px; font-weight: 600;">
                                     <i class="fas fa-users me-2"></i>Session complète
                                 </button>
-                                <a href="{{ path('app_contact_index') }}?formation={{ session.formation.id }}&type=session" 
+                                <a href="{{ path('public_contact_index') }}?formation={{ session.formation.id }}&type=session" 
                                    class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
                                     <i class="fas fa-calendar-plus me-2"></i>Demander une nouvelle session
                                 </a>
                             {% else %}
-                                <a href="{{ path('app_contact_index') }}?formation={{ session.formation.id }}&type=information" 
+                                <a href="{{ path('public_contact_index') }}?formation={{ session.formation.id }}&type=information" 
                                    class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
                                     <i class="fas fa-info-circle me-2"></i>Plus d'informations
                                 </a>
@@ -353,7 +353,7 @@
                     <div class="card-body p-4 text-center">
                         <h5 class="fw-bold mb-3">Besoin d'aide ?</h5>
                         <p class="text-muted mb-3">Notre équipe est là pour répondre à vos questions.</p>
-                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary w-100" style="border-radius: 15px;">
+                        <a href="{{ path('public_contact_index') }}" class="btn btn-outline-primary w-100" style="border-radius: 15px;">
                             <i class="fas fa-envelope me-2"></i>Nous contacter
                         </a>
                     </div>

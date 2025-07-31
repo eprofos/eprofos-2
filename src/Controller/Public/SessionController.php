@@ -41,7 +41,7 @@ class SessionController extends AbstractController
     /**
      * Display session details.
      */
-    #[Route('/{id}', name: 'app_session_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'public_session_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Session $session): Response
     {
         // Check if session is active and visible
@@ -62,14 +62,14 @@ class SessionController extends AbstractController
     /**
      * Register for a session.
      */
-    #[Route('/{id}/register', name: 'app_session_register', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}/register', name: 'public_session_register', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function register(Request $request, Session $session): Response
     {
         // Check if session is available for registration
         if (!$session->isRegistrationOpen()) {
             $this->addFlash('error', 'Les inscriptions pour cette session ne sont plus ouvertes.');
 
-            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+            return $this->redirectToRoute('public_session_show', ['id' => $session->getId()]);
         }
 
         $registration = new SessionRegistration();
@@ -84,14 +84,14 @@ class SessionController extends AbstractController
                 if ($this->registrationRepository->isEmailRegisteredForSession($registration->getEmail(), $session)) {
                     $this->addFlash('error', 'Cette adresse email est déjà inscrite pour cette session.');
 
-                    return $this->redirectToRoute('app_session_register', ['id' => $session->getId()]);
+                    return $this->redirectToRoute('public_session_register', ['id' => $session->getId()]);
                 }
 
                 // Check if session is still available
                 if ($session->isFull()) {
                     $this->addFlash('error', 'Cette session est maintenant complète.');
 
-                    return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+                    return $this->redirectToRoute('public_session_show', ['id' => $session->getId()]);
                 }
 
                 // Save registration
@@ -128,7 +128,7 @@ class SessionController extends AbstractController
                     'email' => $registration->getEmail(),
                 ]);
 
-                return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+                return $this->redirectToRoute('public_session_show', ['id' => $session->getId()]);
             } catch (Exception $e) {
                 $this->addFlash('error', 'Une erreur est survenue lors de votre inscription. Veuillez réessayer.');
                 $this->logger->error('Error creating session registration', [
@@ -147,7 +147,7 @@ class SessionController extends AbstractController
     /**
      * Cancel a registration (with token).
      */
-    #[Route('/registration/{id}/cancel/{token}', name: 'app_session_registration_cancel', methods: ['GET', 'POST'])]
+    #[Route('/registration/{id}/cancel/{token}', name: 'public_session_registration_cancel', methods: ['GET', 'POST'])]
     public function cancelRegistration(Request $request, SessionRegistration $registration, string $token): Response
     {
         // Simple token validation (in production, use a more secure approach)
@@ -211,7 +211,7 @@ class SessionController extends AbstractController
             $formation = $session->getFormation();
 
             $cancelToken = md5($registration->getEmail() . $registration->getId() . $registration->getCreatedAt()->getTimestamp());
-            $cancelUrl = $this->generateUrl('app_session_registration_cancel', [
+            $cancelUrl = $this->generateUrl('public_session_registration_cancel', [
                 'id' => $registration->getId(),
                 'token' => $cancelToken,
             ], UrlGeneratorInterface::ABSOLUTE_URL);

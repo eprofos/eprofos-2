@@ -25,9 +25,9 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_session_show', {id: session.id}) }}">{{ session.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formation_show', {slug: session.formation.slug}) }}">{{ session.formation.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_session_show', {id: session.id}) }}">{{ session.name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Inscription</li>
         </ol>
     </nav>
@@ -131,7 +131,7 @@
 
                     <!-- Submit Button -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{{ path('app_session_show', {id: session.id}) }}" 
+                        <a href="{{ path('public_session_show', {id: session.id}) }}" 
                            class="btn btn-outline-secondary btn-lg me-md-2" style="border-radius: 20px;">
                             <i class="fas fa-arrow-left me-2"></i>Retour
                         </a>
@@ -210,7 +210,7 @@
                             Des questions sur cette formation ou votre inscription ? 
                             Notre équipe est là pour vous accompagner.
                         </p>
-                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary btn-sm w-100" style="border-radius: 15px;">
+                        <a href="{{ path('public_contact_index') }}" class="btn btn-outline-primary btn-sm w-100" style="border-radius: 15px;">
                             <i class="fas fa-envelope me-1"></i>Nous contacter
                         </a>
                     </div>

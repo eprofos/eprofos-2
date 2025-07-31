@@ -37,7 +37,7 @@ class CertificateVerificationController extends AbstractController
      * Verify certificate by verification code.
      */
     #[Route('/verify/{code}', name: 'certificate_verify', methods: ['GET'])]
-    public function verify(string $code = null, Request $request): Response
+    public function verify(?string $code = null, Request $request): Response
     {
         // Get verification code from URL parameter or form submission
         $verificationCode = $code ?? $request->query->get('code');

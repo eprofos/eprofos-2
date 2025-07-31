@@ -1,7 +1,7 @@
 <nav class="modern-navbar navbar navbar-expand-lg navbar-light bg-white shadow-sm" data-controller="navbar">
     <div class="container">
         <!-- Modern Brand/Logo -->
-        <a class="modern-navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
+        <a class="modern-navbar-brand d-flex align-items-center" href="{{ path('public_home') }}">
             <div class="logo-container">
                 <div class="logo-text">
                     <span class="brand-name">EPROFOS</span>
@@ -29,16 +29,16 @@
             <ul class="navbar-nav mx-auto">
                 <!-- Home -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}"
-                       href="{{ path('app_home') }}">
+                    <a class="nav-link {{ app.request.get('_route') == 'public_home' ? 'active' : '' }}"
+                       href="{{ path('public_home') }}">
                         Accueil
                     </a>
                 </li>
 
                 <!-- About Us -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') starts with 'app_about' ? 'active' : '' }}"
-                       href="{{ path('app_about') }}">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'public_about' ? 'active' : '' }}"
+                       href="{{ path('public_about') }}">
                         À propos de nous
                     </a>
                 </li>
@@ -49,13 +49,13 @@
                         Pages
                     </a>
                     <ul class="dropdown-menu modern-dropdown" aria-labelledby="pagesDropdown">
-                        <li><a class="dropdown-item" href="{{ path('app_about') }}">
+                        <li><a class="dropdown-item" href="{{ path('public_about') }}">
                             <i class="fas fa-building me-2"></i>Notre organisme
                         </a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_about_approach') }}">
+                        <li><a class="dropdown-item" href="{{ path('public_about_approach') }}">
                             <i class="fas fa-cogs me-2"></i>Notre approche
                         </a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_services_index') }}">
+                        <li><a class="dropdown-item" href="{{ path('public_services_index') }}">
                             <i class="fas fa-handshake me-2"></i>Nos services
                         </a></li>
                     </ul>
@@ -63,20 +63,20 @@
 
                 <!-- Our Courses -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'app_formation' ? 'active' : '' }}"
+                    <a class="nav-link dropdown-toggle {{ app.request.get('_route') starts with 'public_formation' ? 'active' : '' }}"
                        href="#" id="coursesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Nos formations
                     </a>
                     <ul class="dropdown-menu modern-dropdown" aria-labelledby="coursesDropdown">
-                        <li><a class="dropdown-item" href="{{ path('app_formations_index') }}">
+                        <li><a class="dropdown-item" href="{{ path('public_formations_index') }}">
                             <i class="fas fa-list me-2"></i>All Courses
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><h6 class="dropdown-header">By Category</h6></li>
-                        <li><a class="dropdown-item" href="{{ path('app_formations_by_category', {slug: 'techniques'}) }}">
+                        <li><a class="dropdown-item" href="{{ path('public_formations_by_category', {slug: 'techniques'}) }}">
                             <i class="fas fa-laptop-code me-2"></i>Technical Training
                         </a></li>
-                        <li><a class="dropdown-item" href="{{ path('app_formations_by_category', {slug: 'transversales'}) }}">
+                        <li><a class="dropdown-item" href="{{ path('public_formations_by_category', {slug: 'transversales'}) }}">
                             <i class="fas fa-users me-2"></i>Soft Skills
                         </a></li>
                     </ul>
@@ -84,8 +84,8 @@
 
                 <!-- Contact -->
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.get('_route') starts with 'app_contact' ? 'active' : '' }}"
-                       href="{{ path('app_contact_index') }}">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'public_contact' ? 'active' : '' }}"
+                       href="{{ path('public_contact_index') }}">
                         Contact
                     </a>
                 </li>
@@ -93,7 +93,7 @@
 
             <!-- Join For Free Button -->
             <div class="navbar-cta d-flex align-items-center">
-                <a class="btn btn-join-free" href="{{ path('app_contact_index') }}#quote-form">
+                <a class="btn btn-join-free" href="{{ path('public_contact_index') }}#quote-form">
                     <i class="fas fa-user-plus me-2"></i>Rejoindre gratuitement
                 </a>
             </div>
@@ -104,7 +104,7 @@
 <!-- Modern Search bar -->
 <div class="modern-search-bar bg-light border-bottom collapse" id="search-bar">
     <div class="container py-3">
-        <form class="search-form" role="search" action="{{ path('app_formations_index') }}" method="GET">
+        <form class="search-form" role="search" action="{{ path('public_formations_index') }}" method="GET">
             <div class="search-input-group">
                 <input class="form-control search-input" type="search" name="search"
                        placeholder="Recherchez des cours, sujets ou formateurs..."

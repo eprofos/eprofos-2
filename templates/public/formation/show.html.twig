@@ -56,16 +56,16 @@
                     {# Quick Action Buttons #}
                     <div class="d-flex flex-wrap gap-3">
                         {% if formation.isActive %}
-                            <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=inscription"
+                            <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=inscription"
                                class="btn btn-primary btn-lg">
                                 <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
                             </a>
                         {% endif %}
-                        <a href="{{ path('app_contact_formation_quote', {slug: formation.slug}) }}"
+                        <a href="{{ path('public_contact_formation_quote', {slug: formation.slug}) }}"
                            class="btn btn-warning btn-lg">
                             <i class="fas fa-calculator me-2"></i>Demander un devis
                         </a>
-                        <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=information"
+                        <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=information"
                            class="btn btn-outline-warning btn-lg">
                             <i class="fas fa-info-circle me-2"></i>Plus d'informations
                         </a>
@@ -382,7 +382,7 @@
                                                     
                                                     <div class="d-grid">
                                                         {% if session.status == 'open' and not session.isFull %}
-                                                            <a href="{{ path('app_session_register', {id: session.id}) }}" 
+                                                            <a href="{{ path('public_session_register', {id: session.id}) }}" 
                                                                class="btn btn-success btn-sm" style="border-radius: 10px;">
                                                                 <i class="fas fa-user-plus me-1"></i>S'inscrire
                                                             </a>
@@ -391,7 +391,7 @@
                                                                 <i class="fas fa-users me-1"></i>Complet
                                                             </button>
                                                         {% else %}
-                                                            <a href="{{ path('app_session_show', {id: session.id}) }}" 
+                                                            <a href="{{ path('public_session_show', {id: session.id}) }}" 
                                                                class="btn btn-outline-primary btn-sm" style="border-radius: 10px;">
                                                                 <i class="fas fa-info-circle me-1"></i>Voir détails
                                                             </a>
@@ -404,7 +404,7 @@
                                 </div>
                                 
                                 <div class="text-center mt-3">
-                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=session" 
+                                    <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=session" 
                                        class="btn btn-outline-success" style="border-radius: 15px;">
                                         <i class="fas fa-calendar-plus me-2"></i>Demander une nouvelle session
                                     </a>
@@ -460,15 +460,15 @@
 
                             {% if formation.isActive %}
                                 <div class="d-grid gap-3">
-                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=inscription"
+                                    <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=inscription"
                                        class="btn btn-primary btn-lg" style="border-radius: 20px; font-weight: 600;">
                                         <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
                                     </a>
-                                    <a href="{{ path('app_contact_formation_quote', {slug: formation.slug}) }}"
+                                    <a href="{{ path('public_contact_formation_quote', {slug: formation.slug}) }}"
                                        class="btn btn-warning" style="border-radius: 20px; font-weight: 600;">
                                         <i class="fas fa-calculator me-2"></i>Demander un devis
                                     </a>
-                                    <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=information"
+                                    <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=information"
                                        class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 600;">
                                         <i class="fas fa-info-circle me-2"></i>Plus d'informations
                                     </a>
@@ -600,7 +600,7 @@
                                 Notre équipe d'experts est là pour vous accompagner dans votre parcours de formation.
                             </p>
                             <div class="d-grid gap-3">
-                                <a href="{{ path('app_contact_index') }}?formation={{ formation.id }}&type=conseil"
+                                <a href="{{ path('public_contact_index') }}?formation={{ formation.id }}&type=conseil"
                                    class="btn btn-light fw-semibold" style="border-radius: 20px;">
                                     <i class="fas fa-comments me-2"></i>Demander conseil
                                 </a>
@@ -643,7 +643,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ path('app_contact_accessibility_request') }}" method="POST" class="needs-validation" novalidate>
+                    <form action="{{ path('public_contact_accessibility_request') }}" method="POST" class="needs-validation" novalidate>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="accessibilityFirstName" class="form-label fw-semibold">Prénom *</label>
@@ -730,7 +730,7 @@
                                        required>
                                 <label class="form-check-label" for="accessibilityConsent">
                                     J'accepte que mes données soient utilisées pour traiter ma demande d'adaptation. 
-                                    <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-info">
+                                    <a href="{{ path('public_legal_privacy') }}" target="_blank" class="text-info">
                                         Voir notre politique de confidentialité
                                     </a>
                                 </label>
@@ -791,7 +791,7 @@
         "provider": {
             "@type": "Organization",
             "name": "EPROFOS",
-            "url": "{{ absolute_url(path('app_home')) }}"
+            "url": "{{ absolute_url(path('public_home')) }}"
         },
         {% if formation.price %}
         "offers": {
@@ -805,7 +805,7 @@
         {% if formation.durationHours %}
         "timeRequired": "{{ formation.formattedDuration }}",
         {% endif %}
-        "url": "{{ absolute_url(path('app_formation_show', {slug: formation.slug})) }}"
+        "url": "{{ absolute_url(path('public_formation_show', {slug: formation.slug})) }}"
     }
     </script>
 {% endblock %}

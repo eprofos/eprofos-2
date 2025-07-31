@@ -7,7 +7,7 @@
             <div class="card-body py-3 px-4">
                 <ol class="breadcrumb mb-0 d-flex align-items-center">
                     <li class="breadcrumb-item">
-                        <a href="{{ path('app_home') }}" class="breadcrumb-link d-flex align-items-center">
+                        <a href="{{ path('public_home') }}" class="breadcrumb-link d-flex align-items-center">
                             <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                 <i class="fas fa-home" style="font-size: 0.8rem;"></i>
                             </div>
@@ -15,16 +15,16 @@
                         </a>
                     </li>
 
-                    {% if route_name starts with 'app_about' %}
+                    {% if route_name starts with 'public_about' %}
                         <li class="breadcrumb-item">
-                            <a href="{{ path('app_about') }}" class="breadcrumb-link d-flex align-items-center">
+                            <a href="{{ path('public_about') }}" class="breadcrumb-link d-flex align-items-center">
                                 <div class="breadcrumb-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-info-circle" style="font-size: 0.8rem;"></i>
                                 </div>
                                 <span class="fw-semibold">À propos</span>
                             </a>
                         </li>
-                        {% if route_name == 'app_about_approach' %}
+                        {% if route_name == 'public_about_approach' %}
                             <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                                 <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-route" style="font-size: 0.8rem;"></i>
@@ -33,23 +33,23 @@
                             </li>
                         {% endif %}
 
-                    {% elseif route_name starts with 'app_formation' %}
+                    {% elseif route_name starts with 'public_formation' %}
                         <li class="breadcrumb-item">
-                            <a href="{{ path('app_formations_index') }}" class="breadcrumb-link d-flex align-items-center">
+                            <a href="{{ path('public_formations_index') }}" class="breadcrumb-link d-flex align-items-center">
                                 <div class="breadcrumb-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-graduation-cap" style="font-size: 0.8rem;"></i>
                                 </div>
                                 <span class="fw-semibold">Nos formations</span>
                             </a>
                         </li>
-                        {% if route_name == 'app_formation_show' %}
+                        {% if route_name == 'public_formation_show' %}
                             <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                                 <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-book" style="font-size: 0.8rem;"></i>
                                 </div>
                                 <span class="fw-bold text-primary">{{ formation.title ?? 'Formation' }}</span>
                             </li>
-                        {% elseif route_name == 'app_formations_by_category' %}
+                        {% elseif route_name == 'public_formations_by_category' %}
                             <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                                 <div class="breadcrumb-icon bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-tag" style="font-size: 0.8rem;"></i>
@@ -66,23 +66,23 @@
                             </li>
                         {% endif %}
 
-                    {% elseif route_name starts with 'app_service' %}
+                    {% elseif route_name starts with 'public_service' %}
                         <li class="breadcrumb-item">
-                            <a href="{{ path('app_services_index') }}" class="breadcrumb-link d-flex align-items-center">
+                            <a href="{{ path('public_services_index') }}" class="breadcrumb-link d-flex align-items-center">
                                 <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-cogs" style="font-size: 0.8rem;"></i>
                                 </div>
                                 <span class="fw-semibold">Services</span>
                             </a>
                         </li>
-                        {% if route_name == 'app_service_show' %}
+                        {% if route_name == 'public_service_show' %}
                             <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                                 <div class="breadcrumb-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-wrench" style="font-size: 0.8rem;"></i>
                                 </div>
                                 <span class="fw-bold text-success">{{ service.title ?? 'Service' }}</span>
                             </li>
-                        {% elseif route_name == 'app_services_by_category' %}
+                        {% elseif route_name == 'public_services_by_category' %}
                             <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                                 <div class="breadcrumb-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="fas fa-layer-group" style="font-size: 0.8rem;"></i>
@@ -103,7 +103,7 @@
                             </li>
                         {% endif %}
 
-                    {% elseif route_name starts with 'app_contact' %}
+                    {% elseif route_name starts with 'public_contact' %}
                         <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                             <div class="breadcrumb-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                 <i class="fas fa-envelope" style="font-size: 0.8rem;"></i>
@@ -111,19 +111,19 @@
                             <span class="fw-bold text-primary">Contact</span>
                         </li>
 
-                    {% elseif route_name starts with 'app_legal' %}
+                    {% elseif route_name starts with 'public_legal' %}
                         <li class="breadcrumb-item active d-flex align-items-center" aria-current="page">
                             <div class="breadcrumb-icon bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                 <i class="fas fa-gavel" style="font-size: 0.8rem;"></i>
                             </div>
                             <span class="fw-bold text-secondary">
-                                {% if route_name == 'app_legal_notices' %}
+                                {% if route_name == 'public_legal_notices' %}
                                     Mentions légales
-                                {% elseif route_name == 'app_legal_privacy' %}
+                                {% elseif route_name == 'public_legal_privacy' %}
                                     Politique de confidentialité
-                                {% elseif route_name == 'app_legal_terms' %}
+                                {% elseif route_name == 'public_legal_terms' %}
                                     Conditions générales
-                                {% elseif route_name == 'app_legal_cookies' %}
+                                {% elseif route_name == 'public_legal_cookies' %}
                                     Politique des cookies
                                 {% else %}
                                     Informations légales

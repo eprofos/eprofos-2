@@ -19,7 +19,7 @@ class AboutController extends AbstractController
     /**
      * Display the about page with EPROFOS presentation.
      */
-    #[Route('/a-propos', name: 'app_about', methods: ['GET'])]
+    #[Route('/a-propos', name: 'public_about', methods: ['GET'])]
     public function index(): Response
     {
         // Static content for EPROFOS presentation
@@ -79,7 +79,7 @@ class AboutController extends AbstractController
     /**
      * Display our methodology and approach.
      */
-    #[Route('/notre-approche', name: 'app_about_approach', methods: ['GET'])]
+    #[Route('/notre-approche', name: 'public_about_approach', methods: ['GET'])]
     public function approach(): Response
     {
         $methodology = [

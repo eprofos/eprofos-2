@@ -169,7 +169,7 @@
                                                 <div class="flex-fill">
                                                     <h4 class="mb-1">{{ certificate.title ?? 'Certificat de formation' }}</h4>
                                                     <div class="text-muted small">{{ certificate.formation_title ?? 'Formation complétée' }}</div>
-                                                    <div class="text-muted small">Obtenu le {{ certificate.earned_at|date('d/m/Y') ?? 'now'|date('d/m/Y') }}</div>
+                                                    <div class="text-muted small">Obtenu le {{ certificate.earned_at ? certificate.earned_at|date('d/m/Y') : 'now'|date('d/m/Y') }}</div>
                                                     {% if certificate.expiry_date is defined and certificate.expiry_date %}
                                                         <div class="text-muted small">Expire le {{ certificate.expiry_date|date('d/m/Y') }}</div>
                                                     {% endif %}

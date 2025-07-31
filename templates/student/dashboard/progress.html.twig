@@ -234,7 +234,7 @@
                                             <strong>Temps passé:</strong> {{ course.time_spent ?? '0h 0min' }}
                                         </div>
                                         <div class="col-sm-4">
-                                            <strong>Dernière activité:</strong> {{ course.last_activity|date('d/m/Y') ?? 'Jamais' }}
+                                            <strong>Dernière activité:</strong> {{ course.last_activity ? course.last_activity|date('d/m/Y') : 'Jamais' }}
                                         </div>
                                     </div>
                                     
@@ -342,7 +342,7 @@
                                     <div class="flex-fill">
                                         <div class="fw-bold">{{ achievement.title ?? 'Accomplissement' }}</div>
                                         <div class="text-muted small">{{ achievement.description ?? 'Nouveau succès débloqué!' }}</div>
-                                        <div class="text-muted small">{{ achievement.date|date('d/m/Y') ?? 'now'|date('d/m/Y') }}</div>
+                                        <div class="text-muted small">{{ achievement.date ? achievement.date|date('d/m/Y') : 'now'|date('d/m/Y') }}</div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -380,7 +380,7 @@
                             <span class="text-muted">Niveau d'engagement</span>
                             <div class="d-flex align-items-center">
                                 <div class="progress progress-sm me-2" style="width: 60px;">
-                                    <div class="progress-bar bg-{{ study_time_stats.engagement_level >= 80 ? 'success' : (study_time_stats.engagement_level >= 60 ? 'primary' : 'warning') }}" 
+                                    <div class="progress-bar bg-{{ (study_time_stats.engagement_level ?? 75) >= 80 ? 'success' : ((study_time_stats.engagement_level ?? 75) >= 60 ? 'primary' : 'warning') }}" 
                                          style="width: {{ study_time_stats.engagement_level ?? 75 }}%"></div>
                                 </div>
                                 <span class="fw-bold">{{ study_time_stats.engagement_level ?? 75 }}%</span>
@@ -391,7 +391,7 @@
                             <span class="text-muted">Régularité</span>
                             <div class="d-flex align-items-center">
                                 <div class="progress progress-sm me-2" style="width: 60px;">
-                                    <div class="progress-bar bg-{{ study_time_stats.consistency >= 80 ? 'success' : (study_time_stats.consistency >= 60 ? 'primary' : 'warning') }}" 
+                                    <div class="progress-bar bg-{{ (study_time_stats.consistency ?? 60) >= 80 ? 'success' : ((study_time_stats.consistency ?? 60) >= 60 ? 'primary' : 'warning') }}" 
                                          style="width: {{ study_time_stats.consistency ?? 60 }}%"></div>
                                 </div>
                                 <span class="fw-bold">{{ study_time_stats.consistency ?? 60 }}%</span>
@@ -402,7 +402,7 @@
                             <span class="text-muted">Rétention</span>
                             <div class="d-flex align-items-center">
                                 <div class="progress progress-sm me-2" style="width: 60px;">
-                                    <div class="progress-bar bg-{{ study_time_stats.retention_rate >= 80 ? 'success' : (study_time_stats.retention_rate >= 60 ? 'primary' : 'warning') }}" 
+                                    <div class="progress-bar bg-{{ (study_time_stats.retention_rate ?? 85) >= 80 ? 'success' : ((study_time_stats.retention_rate ?? 85) >= 60 ? 'primary' : 'warning') }}" 
                                          style="width: {{ study_time_stats.retention_rate ?? 85 }}%"></div>
                                 </div>
                                 <span class="fw-bold">{{ study_time_stats.retention_rate ?? 85 }}%</span>
@@ -414,7 +414,7 @@
                     
                     <div class="text-center">
                         <h4 class="mb-1">Score global</h4>
-                        <div class="h1 text-{{ study_time_stats.global_score >= 80 ? 'success' : (study_time_stats.global_score >= 60 ? 'primary' : 'warning') }}">
+                        <div class="h1 text-{{ (study_time_stats.global_score ?? 73) >= 80 ? 'success' : ((study_time_stats.global_score ?? 73) >= 60 ? 'primary' : 'warning') }}">
                             {{ study_time_stats.global_score ?? 73 }}/100
                         </div>
                         <div class="text-muted">

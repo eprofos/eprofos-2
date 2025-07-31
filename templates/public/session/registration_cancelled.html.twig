@@ -28,9 +28,9 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('app_formations_index') }}">Formations</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}">{{ registration.session.formation.title }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_session_show', {id: registration.session.id}) }}">{{ registration.session.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formations_index') }}">Formations</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_formation_show', {slug: registration.session.formation.slug}) }}">{{ registration.session.formation.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('public_session_show', {id: registration.session.id}) }}">{{ registration.session.name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Inscription annulée</li>
         </ol>
     </nav>
@@ -149,7 +149,7 @@
                                     <p class="text-muted mb-3">
                                         Trouvez d'autres sessions disponibles pour cette formation.
                                     </p>
-                                    <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                                    <a href="{{ path('public_formation_show', {slug: registration.session.formation.slug}) }}" 
                                        class="btn btn-primary" style="border-radius: 15px;">
                                         <i class="fas fa-search me-2"></i>Voir les sessions
                                     </a>
@@ -168,7 +168,7 @@
                                     <p class="text-muted mb-3">
                                         Découvrez notre catalogue complet de formations.
                                     </p>
-                                    <a href="{{ path('app_formations_index') }}" 
+                                    <a href="{{ path('public_formations_index') }}" 
                                        class="btn btn-success" style="border-radius: 15px;">
                                         <i class="fas fa-eye me-2"></i>Parcourir le catalogue
                                     </a>
@@ -187,7 +187,7 @@
                                     <p class="text-muted mb-3">
                                         Notre équipe peut vous aider à trouver une solution.
                                     </p>
-                                    <a href="{{ path('app_contact_index') }}?subject=Inscription annulée&formation={{ registration.session.formation.id }}" 
+                                    <a href="{{ path('public_contact_index') }}?subject=Inscription annulée&formation={{ registration.session.formation.id }}" 
                                        class="btn btn-info" style="border-radius: 15px;">
                                         <i class="fas fa-envelope me-2"></i>Demander de l'aide
                                     </a>
@@ -206,7 +206,7 @@
                                     <p class="text-muted mb-3">
                                         Créons une formation adaptée à vos besoins spécifiques.
                                     </p>
-                                    <a href="{{ path('app_contact_quote') }}?formation={{ registration.session.formation.id }}" 
+                                    <a href="{{ path('public_contact_quote') }}?formation={{ registration.session.formation.id }}" 
                                        class="btn btn-warning" style="border-radius: 15px;">
                                         <i class="fas fa-calculator me-2"></i>Demander un devis
                                     </a>
@@ -247,7 +247,7 @@
         setTimeout(function() {
             const redirect = confirm('Souhaitez-vous être redirigé vers la page de la formation ?');
             if (redirect) {
-                window.location.href = '{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}';
+                window.location.href = '{{ path('public_formation_show', {slug: registration.session.formation.slug}) }}';
             }
         }, 30000);
     </script>

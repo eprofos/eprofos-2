@@ -90,7 +90,7 @@
 
                         <p class="text-muted mb-4" style="line-height: 1.6;">{{ formation.description|slice(0, 150) }}...</p>
                         
-                        <a href="{{ path('app_formation_show', {slug: formation.slug}) }}"
+                        <a href="{{ path('public_formation_show', {slug: formation.slug}) }}"
                            class="btn btn-outline-primary w-100" style="border-radius: 15px; font-weight: 600;">
                             <i class="fas fa-eye me-2"></i>
                             Voir la formation complète
@@ -111,7 +111,7 @@
                         </div>
                     </div>
                     <div class="card-body p-4">
-                        <form action="{{ path('app_contact_formation_quote_submit', {slug: formation.slug}) }}" method="POST">
+                        <form action="{{ path('public_contact_formation_quote_submit', {slug: formation.slug}) }}" method="POST">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="first_name" class="form-label fw-semibold">Prénom *</label>
@@ -235,7 +235,7 @@
                                            required>
                                     <label class="form-check-label" for="consent">
                                         J'accepte que mes données soient utilisées pour traiter ma demande de devis.
-                                        <a href="{{ path('app_legal_privacy') }}" target="_blank" class="text-primary">
+                                        <a href="{{ path('public_legal_privacy') }}" target="_blank" class="text-primary">
                                             Voir notre politique de confidentialité
                                         </a>
                                     </label>

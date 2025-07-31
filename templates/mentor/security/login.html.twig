@@ -17,7 +17,7 @@
     <div class="page page-center">
         <div class="container container-tight py-4">
             <div class="text-center mb-4">
-                <a href="{{ path('app_home') }}" class="navbar-brand navbar-brand-autodark">
+                <a href="{{ path('public_home') }}" class="navbar-brand navbar-brand-autodark">
                     <img src="{{ asset('images/logo.svg') }}" height="36" alt="EPROFOS" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <span style="display: none; font-size: 1.5rem; font-weight: bold;">EPROFOS</span>
                 </a>
@@ -155,7 +155,7 @@
             </div>
             
             <div class="text-center text-muted mt-3">
-                <a href="{{ path('app_home') }}" class="text-muted">
+                <a href="{{ path('public_home') }}" class="text-muted">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                         <path d="M5 12l14 0"/>
@@ -186,7 +186,7 @@
                     <ul class="list-inline list-inline-dots mb-0">
                         <li class="list-inline-item">
                             © {{ 'now'|date('Y') }} 
-                            <a href="{{ path('app_home') }}" class="link-secondary">EPROFOS</a>
+                            <a href="{{ path('public_home') }}" class="link-secondary">EPROFOS</a>
                             Tous droits réservés.
                         </li>
                     </ul>

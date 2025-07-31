@@ -27,7 +27,7 @@ class ServiceController extends AbstractController
     /**
      * Display all services grouped by category.
      */
-    #[Route('', name: 'app_services_index', methods: ['GET'])]
+    #[Route('', name: 'public_services_index', methods: ['GET'])]
     public function index(): Response
     {
         // Get services grouped by category for organized display
@@ -52,7 +52,7 @@ class ServiceController extends AbstractController
     /**
      * Display services by category.
      */
-    #[Route('/categorie/{slug}', name: 'app_services_by_category', methods: ['GET'])]
+    #[Route('/categorie/{slug}', name: 'public_services_by_category', methods: ['GET'])]
     public function byCategory(string $slug): Response
     {
         $category = $this->serviceCategoryRepository->findBySlugWithActiveServices($slug);
@@ -74,7 +74,7 @@ class ServiceController extends AbstractController
     /**
      * Display detailed view of a specific service.
      */
-    #[Route('/{slug}', name: 'app_service_show', methods: ['GET'])]
+    #[Route('/{slug}', name: 'public_service_show', methods: ['GET'])]
     public function show(string $slug): Response
     {
         $service = $this->serviceRepository->findBySlugWithCategory($slug);

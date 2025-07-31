@@ -31,7 +31,7 @@ class FormationController extends AbstractController
     /**
      * Display the formation catalog with filtering capabilities.
      */
-    #[Route('', name: 'app_formations_index', methods: ['GET'])]
+    #[Route('', name: 'public_formations_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         // Get filter parameters from request
@@ -86,7 +86,7 @@ class FormationController extends AbstractController
     /**
      * Display formations by category.
      */
-    #[Route('/categorie/{slug}', name: 'app_formations_by_category', methods: ['GET'])]
+    #[Route('/categorie/{slug}', name: 'public_formations_by_category', methods: ['GET'])]
     public function byCategory(string $slug, Request $request): Response
     {
         $category = $this->categoryRepository->findBySlugWithActiveFormations($slug);
@@ -99,13 +99,13 @@ class FormationController extends AbstractController
         $queryParams = $request->query->all();
         $queryParams['category'] = $slug;
 
-        return $this->redirectToRoute('app_formations_index', $queryParams);
+        return $this->redirectToRoute('public_formations_index', $queryParams);
     }
 
     /**
      * Display detailed view of a formation.
      */
-    #[Route('/{slug}', name: 'app_formation_show', methods: ['GET'])]
+    #[Route('/{slug}', name: 'public_formation_show', methods: ['GET'])]
     public function show(string $slug): Response
     {
         $formation = $this->formationRepository->findBySlugWithCategory($slug);
@@ -144,7 +144,7 @@ class FormationController extends AbstractController
     /**
      * Ajax endpoint for formation filtering.
      */
-    #[Route('/api/filter', name: 'app_formations_ajax_filter', methods: ['GET'])]
+    #[Route('/api/filter', name: 'public_formations_ajax_filter', methods: ['GET'])]
     public function ajaxFilter(Request $request): Response
     {
         // Get filter parameters from request

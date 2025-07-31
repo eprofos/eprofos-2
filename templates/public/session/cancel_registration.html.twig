@@ -37,7 +37,7 @@
                         <p class="text-muted mb-4">
                             Votre inscription pour cette session a déjà été annulée le {{ registration.cancelledAt|date('d/m/Y à H:i') }}.
                         </p>
-                        <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                        <a href="{{ path('public_formation_show', {slug: registration.session.formation.slug}) }}" 
                            class="btn btn-primary" style="border-radius: 20px;">
                             <i class="fas fa-arrow-left me-2"></i>Retour à la formation
                         </a>
@@ -86,7 +86,7 @@
                         <!-- Cancellation Form -->
                         <form method="post" class="text-center">
                             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                <a href="{{ path('app_formation_show', {slug: registration.session.formation.slug}) }}" 
+                                <a href="{{ path('public_formation_show', {slug: registration.session.formation.slug}) }}" 
                                    class="btn btn-outline-secondary btn-lg me-md-2" style="border-radius: 20px;">
                                     <i class="fas fa-arrow-left me-2"></i>Retour sans annuler
                                 </a>
@@ -107,7 +107,7 @@
                             Si vous rencontrez des difficultés ou avez des questions concernant votre inscription, 
                             n'hésitez pas à nous contacter avant d'annuler.
                         </p>
-                        <a href="{{ path('app_contact_index') }}" class="btn btn-outline-primary" style="border-radius: 15px;">
+                        <a href="{{ path('public_contact_index') }}" class="btn btn-outline-primary" style="border-radius: 15px;">
                             <i class="fas fa-envelope me-2"></i>Nous contacter
                         </a>
                     </div>
