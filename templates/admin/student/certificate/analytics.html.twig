@@ -1,0 +1,408 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Analyses des certificats - Administration{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-chart-bar text-primary me-2"></i>
+        Analyses des certificats
+    </h1>
+    
+    <div>
+        <a href="{{ path('admin_certificate_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour à la liste
+        </a>
+    </div>
+</div>
+
+{# Overview Statistics Cards #}
+{% if statistics.total_stats is defined %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ statistics.total_stats.total_certificates }}</h3>
+                        <small>Total certificats</small>
+                    </div>
+                    <i class="fas fa-certificate fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ statistics.total_stats.issued_count }}</h3>
+                        <small>Certificats émis</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ statistics.total_stats.revoked_count }}</h3>
+                        <small>Certificats révoqués</small>
+                    </div>
+                    <i class="fas fa-times-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ statistics.total_stats.reissued_count }}</h3>
+                        <small>Certificats réémis</small>
+                    </div>
+                    <i class="fas fa-sync-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    {# Grade Distribution Chart #}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Répartition des mentions
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.grade_distribution is defined and statistics.grade_distribution|length > 0 %}
+                    <canvas id="gradeChart" width="400" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune donnée de mention disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Monthly Trends Chart #}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Évolution mensuelle
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if statistics.monthly_trends is defined and statistics.monthly_trends|length > 0 %}
+                    <canvas id="trendsChart" width="400" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune donnée d'évolution disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {# Certificates by Formation #}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Certificats par formation
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if formation_stats is defined and formation_stats|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Formation</th>
+                                    <th class="text-end">Certificats</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in formation_stats|slice(0, 10) %}
+                                    <tr>
+                                        <td>
+                                            <small>{{ stat.formation_title|length > 40 ? stat.formation_title|slice(0, 40) ~ '...' : stat.formation_title }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary">{{ stat.certificate_count }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if formation_stats|length > 10 %}
+                        <div class="text-center mt-3">
+                            <small class="text-muted">{{ formation_stats|length - 10 }} autres formations...</small>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun certificat par formation disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Average Scores by Formation #}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Scores moyens par formation
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if average_scores is defined and average_scores|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Formation</th>
+                                    <th class="text-end">Score moyen</th>
+                                    <th class="text-end">Nb certificats</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for score in average_scores|slice(0, 10) %}
+                                    <tr>
+                                        <td>
+                                            <small>{{ score.formation_title|length > 30 ? score.formation_title|slice(0, 30) ~ '...' : score.formation_title }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            {% set score_class = score.average_score >= 80 ? 'success' : (score.average_score >= 60 ? 'warning' : 'danger') %}
+                                            <span class="badge bg-{{ score_class }}">{{ score.average_score }}%</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <small class="text-muted">{{ score.certificate_count }}</small>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if average_scores|length > 10 %}
+                        <div class="text-center mt-3">
+                            <small class="text-muted">{{ average_scores|length - 10 }} autres formations...</small>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun score moyen disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Recent Certificates #}
+{% if statistics.recent_certificates is defined and statistics.recent_certificates|length > 0 %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Certificats récents
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Numéro</th>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Date d'émission</th>
+                                <th>Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for certificate in statistics.recent_certificates %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('admin_certificate_show', {id: certificate.id}) }}" class="text-decoration-none">
+                                            <strong>{{ certificate.certificateNumber }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ certificate.student.fullName }}<br>
+                                        <small class="text-muted">{{ certificate.student.email }}</small>
+                                    </td>
+                                    <td>
+                                        {{ certificate.formation.title|length > 50 ? certificate.formation.title|slice(0, 50) ~ '...' : certificate.formation.title }}
+                                        {% if certificate.formation.category %}
+                                            <br><small class="text-muted">{{ certificate.formation.category.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ certificate.issuedAt|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        {% if certificate.finalScore %}
+                                            {% set score_class = certificate.finalScore >= 80 ? 'success' : (certificate.finalScore >= 60 ? 'warning' : 'danger') %}
+                                            <span class="badge bg-{{ score_class }}">{{ certificate.finalScore }}%</span>
+                                            {% if certificate.grade %}
+                                                <br><small class="text-muted">{{ certificate.gradeLabel }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_certificate_show', {id: certificate.id}) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if certificate.canBeDownloaded %}
+                                                <a href="{{ path('admin_certificate_download', {id: certificate.id}) }}" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Grade Distribution Chart
+            {% if statistics.grade_distribution is defined and statistics.grade_distribution|length > 0 %}
+            const gradeCtx = document.getElementById('gradeChart');
+            if (gradeCtx) {
+                const gradeData = {{ statistics.grade_distribution|json_encode|raw }};
+                const gradeLabels = Object.keys(gradeData);
+                const gradeValues = Object.values(gradeData);
+                
+                new Chart(gradeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: gradeLabels.map(label => {
+                            const gradeLabels = {
+                                'A': 'Excellent (A)',
+                                'B': 'Très bien (B)',
+                                'C': 'Bien (C)',
+                                'D': 'Passable (D)',
+                                'F': 'Insuffisant (F)'
+                            };
+                            return gradeLabels[label] || label;
+                        }),
+                        datasets: [{
+                            data: gradeValues,
+                            backgroundColor: [
+                                '#28a745', // Green for A
+                                '#17a2b8', // Blue for B
+                                '#ffc107', // Yellow for C
+                                '#fd7e14', // Orange for D
+                                '#dc3545'  // Red for F
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+            
+            // Monthly Trends Chart
+            {% if statistics.monthly_trends is defined and statistics.monthly_trends|length > 0 %}
+            const trendsCtx = document.getElementById('trendsChart');
+            if (trendsCtx) {
+                const trendsData = {{ statistics.monthly_trends|json_encode|raw }};
+                const trendsLabels = Object.keys(trendsData);
+                const trendsValues = Object.values(trendsData);
+                
+                new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: trendsLabels.map(label => {
+                            const [year, month] = label.split('-');
+                            const date = new Date(year, month - 1);
+                            return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                        }),
+                        datasets: [{
+                            label: 'Certificats émis',
+                            data: trendsValues,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+        });
+    </script>
+{% endblock %}

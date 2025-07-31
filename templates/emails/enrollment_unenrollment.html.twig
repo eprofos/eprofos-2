@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Désinscription - {{ formation.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .unenrollment-box {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+            border-radius: 3px;
+        }
+        .formation-details {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-info {
+            background-color: #cce8f4;
+            border: 1px solid #b3d7ef;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+        .status-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Désinscription confirmée</h1>
+        <p>{{ formation.title }}</p>
+    </div>
+
+    <div class="content">
+        <h2>Bonjour {{ student.firstName }} {{ student.lastName }},</h2>
+        
+        <p>Nous vous confirmons que votre désinscription de la formation <strong>{{ formation.title }}</strong> a bien été prise en compte.</p>
+
+        <div class="unenrollment-box">
+            <h3><span class="icon">❌</span>Désinscription confirmée</h3>
+            <p><span class="status-badge">Abandon</span></p>
+            <p><strong>Date de désinscription :</strong> {{ "now"|date('d/m/Y à H:i') }}</p>
+            {% if reason %}
+                <p><strong>Motif :</strong> {{ reason }}</p>
+            {% endif %}
+        </div>
+
+        <div class="formation-details">
+            <h3><span class="icon">📚</span>Détails de la formation</h3>
+            <p><strong>Formation :</strong> {{ formation.title }}</p>
+            {% if enrollment.session %}
+                <p><strong>Session :</strong> {{ enrollment.session.name }}</p>
+                {% if enrollment.session.startDate %}
+                    <p><strong>Période :</strong> {{ enrollment.session.startDate|date('d/m/Y') }}
+                    {% if enrollment.session.endDate %} au {{ enrollment.session.endDate|date('d/m/Y') }}{% endif %}</p>
+                {% endif %}
+            {% endif %}
+            <p><strong>Date d'inscription initiale :</strong> {{ enrollment.enrolledAt|date('d/m/Y') }}</p>
+            <p><strong>Durée d'inscription :</strong> {{ enrollment.enrollmentDuration }} jour{{ enrollment.enrollmentDuration > 1 ? 's' : '' }}</p>
+        </div>
+
+        <div class="alert alert-info">
+            <h4><span class="icon">ℹ️</span>Ce qui se passe maintenant</h4>
+            <ul>
+                <li><strong>Accès au contenu :</strong> Votre accès à la formation est désormais désactivé</li>
+                <li><strong>Données conservées :</strong> Vos données de progression sont conservées dans notre système</li>
+                <li><strong>Certificat :</strong> Aucun certificat ne sera délivré pour cette formation</li>
+                <li><strong>Réinscription :</strong> Vous pouvez vous réinscrire à une session ultérieure si disponible</li>
+            </ul>
+        </div>
+
+        <h3><span class="icon">🔄</span>Vous souhaitez vous réinscrire ?</h3>
+        <p>Si vous changez d'avis et souhaitez reprendre cette formation ou vous inscrire à une autre session :</p>
+        <ul>
+            <li>Consultez notre catalogue de formations disponibles</li>
+            <li>Contactez notre équipe pédagogique pour discuter de vos besoins</li>
+            <li>Profitez de notre accompagnement personnalisé</li>
+        </ul>
+
+        <div style="text-align: center;">
+            <a href="{{ url('public_formation_index') }}" class="cta-button">
+                <span class="icon">📚</span>Consulter nos formations
+            </a>
+        </div>
+
+        <h3><span class="icon">🌟</span>Continuez votre développement</h3>
+        <p>Ne vous arrêtez pas là ! Découvrez nos autres opportunités de formation :</p>
+        <ul>
+            <li><strong>Formations courtes :</strong> Des modules spécialisés pour des compétences ciblées</li>
+            <li><strong>Parcours complets :</strong> Des cursus longs pour une expertise approfondie</li>
+            <li><strong>Formation à la carte :</strong> Des contenus adaptés à vos besoins spécifiques</li>
+            <li><strong>Accompagnement individuel :</strong> Un suivi personnalisé selon vos objectifs</li>
+        </ul>
+
+        <div class="alert alert-warning">
+            <h4><span class="icon">⚠️</span>Désinscription par erreur ?</h4>
+            <p>Si cette désinscription est une erreur ou si vous souhaitez discuter de votre situation, contactez-nous rapidement. Nous pourrons évaluer la possibilité de réactiver votre inscription.</p>
+        </div>
+
+        <h3><span class="icon">💬</span>Nous contacter</h3>
+        <p>Pour toute question ou pour discuter de nouvelles opportunités de formation :</p>
+        <ul>
+            <li>📧 Email : <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+            <li>🌐 Site web : <a href="{{ url('public_home') }}">www.eprofos.fr</a></li>
+            <li>💬 Chat en ligne sur notre site</li>
+        </ul>
+
+        <h3><span class="icon">📝</span>Votre avis nous intéresse</h3>
+        <p>Pour nous aider à améliorer nos services, n'hésitez pas à nous faire part de votre retour d'expérience :</p>
+        <ul>
+            <li>Qu'est-ce qui vous a plu dans notre approche ?</li>
+            <li>Quels points pourrions-nous améliorer ?</li>
+            <li>Quels types de formation vous intéresseraient à l'avenir ?</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p><strong>EPROFOS</strong> - Plateforme de formation professionnelle</p>
+        <p>Merci de nous avoir fait confiance pour votre développement professionnel.</p>
+        <p>Nous espérons avoir l'occasion de vous accompagner à nouveau dans vos projets de formation.</p>
+    </div>
+</body>
+</html>

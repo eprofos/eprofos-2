@@ -1,14 +1,14 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Résultats de la Liaison Automatique{% endblock %}
+{% block title %}Résultats de l'Inscription en Lot{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Résultats de la Liaison Automatique</h1>
-            <p class="text-muted">Traitement terminé - Voici les résultats</p>
+            <h1 class="h3 mb-0">Résultats de l'Inscription en Lot</h1>
+            <p class="text-muted">Session: {{ session.formation.title }} - {{ session.name }}</p>
         </div>
         <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-primary">
             <i class="fas fa-list"></i> Voir Toutes les Inscriptions
@@ -17,25 +17,16 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-cogs fa-3x mb-2"></i>
-                    <h3 class="mb-0">{{ results.processed }}</h3>
-                    <p class="mb-0">Correspondances traitées</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <i class="fas fa-check-circle fa-3x mb-2"></i>
                     <h3 class="mb-0">{{ results.success }}</h3>
-                    <p class="mb-0">Liaisons réussies</p>
+                    <p class="mb-0">Inscriptions réussies</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <i class="fas fa-times-circle fa-3x mb-2"></i>
@@ -44,18 +35,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
                 <div class="card-body text-center">
-                    <i class="fas fa-percentage fa-3x mb-2"></i>
-                    <h3 class="mb-0">
-                        {% if results.processed > 0 %}
-                            {{ ((results.success / results.processed) * 100)|round }}%
-                        {% else %}
-                            0%
-                        {% endif %}
-                    </h3>
-                    <p class="mb-0">Taux de réussite</p>
+                    <i class="fas fa-users fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.success + results.failed }}</h3>
+                    <p class="mb-0">Total traité</p>
                 </div>
             </div>
         </div>
@@ -66,17 +51,21 @@
         <div class="alert alert-success" role="alert">
             <i class="fas fa-check-circle"></i>
             <strong>Félicitations !</strong> 
-            {{ results.success }} liaison(s) automatique(s) créée(s) avec succès. 
-            Les étudiants ont reçu des emails de confirmation et peuvent maintenant accéder au contenu de formation.
+            {{ results.success }} inscription(s) créée(s) avec succès pour la session "{{ session.name }}".
+            {% if notifyStudents %}
+                Les étudiants ont reçu des emails de confirmation et peuvent maintenant accéder au contenu de formation.
+            {% else %}
+                Les étudiants n'ont pas été notifiés automatiquement.
+            {% endif %}
         </div>
     {% endif %}
 
-    <!-- Error Message -->
+    <!-- Warning Message -->
     {% if results.failed > 0 %}
         <div class="alert alert-warning" role="alert">
             <i class="fas fa-exclamation-triangle"></i>
             <strong>Attention !</strong> 
-            {{ results.failed }} liaison(s) ont échoué. Consultez les détails ci-dessous pour plus d'informations.
+            {{ results.failed }} inscription(s) ont échoué. Consultez les détails ci-dessous pour plus d'informations.
         </div>
     {% endif %}
 
@@ -104,7 +93,7 @@
                                         <strong>{{ detail.student }}</strong>
                                     </td>
                                     <td>
-                                        {{ detail.formation }}
+                                        {{ session.formation.title }}
                                     </td>
                                     <td>
                                         {% if detail.status is defined and detail.status == 'success' %}
@@ -122,7 +111,10 @@
                                             <span class="text-danger">{{ detail.error }}</span>
                                         {% else %}
                                             <span class="text-success">
-                                                <i class="fas fa-link"></i> Liaison créée automatiquement
+                                                <i class="fas fa-user-plus"></i> Inscription créée avec succès
+                                                {% if notifyStudents %}
+                                                    <br><small class="text-muted">Email de confirmation envoyé</small>
+                                                {% endif %}
                                             </span>
                                         {% endif %}
                                     </td>
@@ -136,15 +128,36 @@
     {% endif %}
 
     <!-- No Results -->
-    {% if results.processed == 0 %}
+    {% if results.success == 0 and results.failed == 0 %}
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
-                <h5 class="text-info">Aucune Correspondance à Traiter</h5>
+                <h5 class="text-info">Aucune Inscription à Traiter</h5>
                 <p class="text-muted">
-                    Aucune correspondance n'a été trouvée pour la liaison automatique. 
-                    Toutes les inscriptions confirmées sont peut-être déjà liées.
+                    Aucune inscription n'a été trouvée à traiter pour cette session.
                 </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Notification Info -->
+    {% if notifyStudents %}
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-envelope"></i> Notifications Envoyées
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Les étudiants inscrits avec succès ont reçu un email de confirmation contenant :
+                </p>
+                <ul class="mt-2">
+                    <li>Confirmation de leur inscription à la formation "{{ session.formation.title }}"</li>
+                    <li>Informations sur la session "{{ session.name }}"</li>
+                    <li>Instructions pour accéder au contenu de formation</li>
+                    <li>Coordonnées de l'équipe pédagogique</li>
+                </ul>
             </div>
         </div>
     {% endif %}
@@ -166,18 +179,25 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-grid">
-                        <a href="{{ path('admin_student_enrollment_link') }}" class="btn btn-outline-warning">
-                            <i class="fas fa-link"></i> Liaison Manuelle
+                        <a href="{{ path('admin_enrollment_bulk_enroll') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus"></i> Nouvelle Inscription en Lot
                         </a>
-                        <small class="text-muted mt-2">Lier manuellement les cas particuliers</small>
+                        <small class="text-muted mt-2">Procéder à une nouvelle inscription en lot</small>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="d-grid">
-                        <a href="{{ path('admin_student_enrollment_auto_link') }}" class="btn btn-outline-success">
-                            <i class="fas fa-magic"></i> Nouvelle Liaison Auto
-                        </a>
-                        <small class="text-muted mt-2">Relancer le processus automatique</small>
+                        {% if results.failed > 0 %}
+                            <a href="{{ path('admin_enrollment_bulk_enroll') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-redo"></i> Réessayer les Échecs
+                            </a>
+                            <small class="text-muted mt-2">Réessayer les inscriptions qui ont échoué</small>
+                        {% else %}
+                            <a href="{{ path('admin_student_enrollment_bulk_status_change') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-edit"></i> Gérer les Statuts
+                            </a>
+                            <small class="text-muted mt-2">Modifier les statuts d'inscription</small>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -190,14 +210,31 @@
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-redirect after 10 seconds if all successful
+    // Auto-redirect after 10 seconds if all successful and no failures
     {% if results.failed == 0 and results.success > 0 %}
-        setTimeout(function() {
+        let redirectTimer = setTimeout(function() {
             if (confirm('Redirection automatique vers la liste des inscriptions dans 5 secondes. Continuer ?')) {
                 window.location.href = '{{ path("admin_student_enrollment_index") }}';
             }
-        }, 5000);
+        }, 10000);
+
+        // Allow user to cancel auto-redirect
+        document.addEventListener('click', function() {
+            clearTimeout(redirectTimer);
+        });
     {% endif %}
+
+    // Highlight success and error rows with subtle animation
+    const successRows = document.querySelectorAll('tr.table-success');
+    const errorRows = document.querySelectorAll('tr.table-danger');
+    
+    successRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
+    
+    errorRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
 });
 </script>
 {% endblock %}

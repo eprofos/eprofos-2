@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification de certificat - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-certificate text-primary me-2"></i>
+                        Vérification de certificat
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Saisissez le code de vérification de votre certificat pour vérifier son authenticité.
+                    </p>
+
+                    {% if error is defined %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" action="{{ path('certificate_verify_submit') }}">
+                        <div class="mb-3">
+                            <label for="verification_code" class="form-label">Code de vérification *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="verification_code" 
+                                name="verification_code" 
+                                placeholder="Saisissez le code de vérification"
+                                required
+                                maxlength="64"
+                                autofocus
+                            >
+                            <div class="form-text">
+                                Le code de vérification se trouve sur votre certificat ou dans l'email de certification.
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>
+                                Vérifier le certificat
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Ce service de vérification garantit l'authenticité des certificats délivrés par EPROFOS.
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ path('app_contact_index') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-question-circle me-1"></i>
+                                Aide
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            Comment obtenir mon code de vérification ?
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Consultez votre certificat PDF - le code se trouve généralement en bas du document</li>
+                            <li>Vérifiez l'email de certification que vous avez reçu</li>
+                            <li>Connectez-vous à votre espace étudiant pour retrouver vos certificats</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

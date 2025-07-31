@@ -1,0 +1,453 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport de Completion - Inscriptions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Rapport de Completion</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_enrollment_reports_index') }}">Rapports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Completion</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportCompletionReport('csv')">
+                    <i class="fas fa-file-csv"></i> Format CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportCompletionReport('excel')">
+                    <i class="fas fa-file-excel"></i> Format Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportCompletionReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Format PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    {% if enrollments.totalItemCount > 0 %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ enrollments.totalItemCount }}</h4>
+                                <p class="mb-0">
+                                    {% if status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+                                        Formations Terminées
+                                    {% else %}
+                                        Inscriptions {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[status] }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-graduation-cap fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ (enrollments|length > 0 ? (enrollments|filter(e => e.completedAt)|length / enrollments|length * 100) : 0)|number_format(1) }}%</h4>
+                                <p class="mb-0">Taux de Réussite</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ selectedFormation ? formations|filter(f => f.id == selectedFormation)|first.title|slice(0, 20) ~ '...' : 'Toutes' }}</h4>
+                                <p class="mb-0">Formation Filtrée</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-filter fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">
+                                    {% set avgDuration = 0 %}
+                                    {% set completedCount = 0 %}
+                                    {% for enrollment in enrollments %}
+                                        {% if enrollment.completedAt and enrollment.enrolledAt %}
+                                            {% set duration = enrollment.completedAt.diff(enrollment.enrolledAt).days %}
+                                            {% set avgDuration = avgDuration + duration %}
+                                            {% set completedCount = completedCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ completedCount > 0 ? (avgDuration / completedCount)|number_format(0) : 0 }}j
+                                </h4>
+                                <p class="mb-0">Durée Moyenne</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ selectedFormation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status" name="status">
+                        {% for statusKey, statusLabel in constant('App\\Entity\\Core\\StudentEnrollment::STATUSES') %}
+                            <option value="{{ statusKey }}" {{ status == statusKey ? 'selected' : '' }}>
+                                {{ statusLabel }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_range" class="form-label">Période</label>
+                    <select class="form-select" id="date_range" name="date_range">
+                        <option value="">Toutes les périodes</option>
+                        <option value="last_week">Dernière semaine</option>
+                        <option value="last_month">Dernier mois</option>
+                        <option value="last_quarter">Dernier trimestre</option>
+                        <option value="last_year">Dernière année</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Completion Results -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                Résultats de Completion 
+                {% if status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+                    - Formations Terminées
+                {% else %}
+                    - {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[status] }}
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if enrollments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Session</th>
+                                <th>Date d'inscription</th>
+                                {% if status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+                                    <th>Date de completion</th>
+                                    <th>Durée</th>
+                                {% endif %}
+                                <th>Progression</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrollments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                                                <small class="text-muted">{{ enrollment.student.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ enrollment.sessionRegistration.session.formation.title }}</div>
+                                        <small class="text-muted">{{ enrollment.sessionRegistration.session.formation.category.name }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.sessionRegistration.session.name }}</div>
+                                        <small class="text-muted">
+                                            Du {{ enrollment.sessionRegistration.session.startDate|date('d/m/Y') }}
+                                            au {{ enrollment.sessionRegistration.session.endDate|date('d/m/Y') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.enrolledAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ enrollment.enrolledAt|date('H:i') }}</small>
+                                    </td>
+                                    {% if status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+                                        <td>
+                                            {% if enrollment.completedAt %}
+                                                <div class="text-success">{{ enrollment.completedAt|date('d/m/Y') }}</div>
+                                                <small class="text-muted">{{ enrollment.completedAt|date('H:i') }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if enrollment.completedAt and enrollment.enrolledAt %}
+                                                {% set duration = enrollment.completedAt.diff(enrollment.enrolledAt) %}
+                                                <span class="badge bg-info">
+                                                    {% if duration.days > 0 %}
+                                                        {{ duration.days }}j
+                                                    {% else %}
+                                                        {{ duration.h }}h
+                                                    {% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if enrollment.progress %}
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 60px;">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: {{ enrollment.progress.completionPercentage }}%" 
+                                                         aria-valuenow="{{ enrollment.progress.completionPercentage }}" 
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small>{{ enrollment.progress.completionPercentage }}%</small>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Non démarrée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ enrollment.status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') ? 'bg-success' : 
+                                                              (enrollment.status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_ENROLLED') ? 'bg-primary' : 
+                                                              (enrollment.status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_DROPPED_OUT') ? 'bg-danger' : 'bg-warning')) }}">
+                                            {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[enrollment.status] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" 
+                                               class="btn btn-outline-primary" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if enrollment.progress %}
+                                                <a href="#" class="btn btn-outline-info" title="Voir la progression"
+                                                   data-bs-toggle="modal" data-bs-target="#progressModal{{ enrollment.id }}">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if enrollment.status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+                                                <a href="#" class="btn btn-outline-success" title="Télécharger le certificat">
+                                                    <i class="fas fa-certificate"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card-footer">
+                    {{ knp_pagination_render(enrollments) }}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun résultat trouvé</h5>
+                    <p class="text-muted">
+                        {% if selectedFormation or status %}
+                            Aucune inscription ne correspond à vos critères de filtrage.
+                        {% else %}
+                            Aucune inscription n'a été trouvée pour le moment.
+                        {% endif %}
+                    </p>
+                    <a href="{{ path('admin_enrollment_reports_index') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Retour aux rapports
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Progress Detail Modals -->
+    {% for enrollment in enrollments %}
+        {% if enrollment.progress %}
+            <div class="modal fade" id="progressModal{{ enrollment.id }}" tabindex="-1" aria-labelledby="progressModalLabel{{ enrollment.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="progressModalLabel{{ enrollment.id }}">
+                                Progression - {{ enrollment.student.fullName }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Formation</h6>
+                                    <p>{{ enrollment.sessionRegistration.session.formation.title }}</p>
+                                    
+                                    <h6>Progression Globale</h6>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ enrollment.progress.completionPercentage }}%" 
+                                             aria-valuenow="{{ enrollment.progress.completionPercentage }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ enrollment.progress.completionPercentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Détails</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Date d'inscription:</strong> {{ enrollment.enrolledAt|date('d/m/Y') }}</li>
+                                        {% if enrollment.completedAt %}
+                                            <li><strong>Date de completion:</strong> {{ enrollment.completedAt|date('d/m/Y') }}</li>
+                                        {% endif %}
+                                        <li><strong>Temps écoulé:</strong> 
+                                            {% if enrollment.progress.lastActivityAt %}
+                                                {{ enrollment.progress.lastActivityAt.diff(enrollment.enrolledAt).days }} jours
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </li>
+                                        {% if enrollment.progress.atRiskOfDropout %}
+                                            <li><span class="badge bg-warning">Risque d'abandon</span></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            {% if enrollment.progress.lastActivityAt %}
+                                <div class="mt-3">
+                                    <h6>Dernière Activité</h6>
+                                    <p class="text-muted">{{ enrollment.progress.lastActivityAt|date('d/m/Y à H:i') }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" class="btn btn-primary">
+                                Voir les détails complets
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Export functionality
+    window.exportCompletionReport = function(format) {
+        const params = new URLSearchParams({
+            format: format,
+            formation: document.getElementById('formation').value,
+            status: document.getElementById('status').value,
+            date_range: document.getElementById('date_range').value
+        });
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
+        
+        // Add fields selection
+        const fields = ['student_name', 'student_email', 'formation_title', 'session_name', 'enrollment_status', 'enrolled_at'];
+        {% if status == constant('App\\Entity\\Core\\StudentEnrollment::STATUS_COMPLETED') %}
+            fields.push('completed_at', 'progress_percentage');
+        {% endif %}
+        
+        fields.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'fields[]';
+            input.value = field;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
+
+    // Auto-submit form on filter change
+    const filterSelects = document.querySelectorAll('#formation, #status, #date_range');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Add small delay for better UX
+            setTimeout(() => {
+                this.closest('form').submit();
+            }, 100);
+        });
+    });
+
+    // Tooltips for progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const percentage = bar.getAttribute('aria-valuenow');
+        bar.setAttribute('title', `Progression: ${percentage}%`);
+        bar.setAttribute('data-bs-toggle', 'tooltip');
+    });
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,686 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de Bord - Rapports d'Inscription{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Tableau de Bord - Rapports d'Inscription</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Rapports d'Inscription</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_enrollment_reports_custom') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Rapport Personnalisé
+            </a>
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('csv')">
+                    <i class="fas fa-file-csv"></i> Format CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('excel')">
+                    <i class="fas fa-file-excel"></i> Format Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('pdf')">
+                    <i class="fas fa-file-pdf"></i> Format PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Global Statistics -->
+    {% if stats %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ stats.total_enrollments ?? 0 }}</h4>
+                                <p class="mb-0">Total Inscriptions</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ stats.completed_enrollments ?? 0 }}</h4>
+                                <p class="mb-0">Formations Terminées</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-graduation-cap fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ stats.active_enrollments ?? 0 }}</h4>
+                                <p class="mb-0">Inscriptions Actives</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-play-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ stats.dropped_out_enrollments ?? 0 }}</h4>
+                                <p class="mb-0">Abandons</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-user-times fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter"></i> Filtres d'Analyse
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3" id="filtersForm">
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" 
+                           value="{{ filters.start_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" 
+                           value="{{ filters.end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Analyser
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Reports Navigation -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line text-success fa-3x mb-3"></i>
+                    <h5 class="card-title">Completion</h5>
+                    <p class="card-text">Analyse des formations terminées et taux de réussite</p>
+                    <a href="{{ path('admin_enrollment_reports_completion') }}" class="btn btn-success">
+                        <i class="fas fa-arrow-right"></i> Voir le Rapport
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-user-times text-danger fa-3x mb-3"></i>
+                    <h5 class="card-title">Abandons</h5>
+                    <p class="card-text">Analyse des abandons et identification des causes</p>
+                    <a href="{{ path('admin_enrollment_reports_dropout') }}" class="btn btn-danger">
+                        <i class="fas fa-arrow-right"></i> Voir le Rapport
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-bar text-info fa-3x mb-3"></i>
+                    <h5 class="card-title">Progression</h5>
+                    <p class="card-text">Suivi de la progression des étudiants actifs</p>
+                    <a href="{{ path('admin_enrollment_reports_progress') }}" class="btn btn-info">
+                        <i class="fas fa-arrow-right"></i> Voir le Rapport
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-award text-warning fa-3x mb-3"></i>
+                    <h5 class="card-title">Qualiopi</h5>
+                    <p class="card-text">Rapports de conformité et qualité</p>
+                    <a href="{{ path('admin_enrollment_reports_qualiopi') }}" class="btn btn-warning">
+                        <i class="fas fa-arrow-right"></i> Voir le Rapport
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="row mb-4">
+        <!-- Enrollment Trends Chart -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Tendances d'Inscription
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="enrollmentTrendsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completion Rates by Formation -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap"></i> Taux de Réussite
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if completionRates|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Formation</th>
+                                        <th>Taux</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rate in completionRates|slice(0, 5) %}
+                                        <tr>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 150px;" title="{{ rate.formation }}">
+                                                    {{ rate.formation }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 40px; height: 8px;">
+                                                        <div class="progress-bar bg-success" style="width: {{ rate.completion_rate }}%"></div>
+                                                    </div>
+                                                    <span class="text-muted small">{{ rate.completion_rate is defined ? rate.completion_rate|number_format(0) : 0 }}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucune donnée disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dropout Analysis & Risk Indicators -->
+    <div class="row mb-4">
+        <!-- Dropout Analysis -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Analyse des Abandons
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if dropoutAnalysis|length > 0 %}
+                        <canvas id="dropoutAnalysisChart" height="200"></canvas>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                            <p class="text-muted">Aucun abandon récent</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Indicators -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-warning"></i> Indicateurs de Risque
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if riskIndicators %}
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm bg-warning text-white me-3">
+                                        <i class="fas fa-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ riskIndicators.at_risk_students ?? 0 }}</div>
+                                        <small class="text-muted">Étudiants à risque</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm bg-danger text-white me-3">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ riskIndicators.overdue_enrollments ?? 0 }}</div>
+                                        <small class="text-muted">Retards</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm bg-info text-white me-3">
+                                        <i class="fas fa-question"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ riskIndicators.missing_progress ?? 0 }}</div>
+                                        <small class="text-muted">Sans progression</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm bg-secondary text-white me-3">
+                                        <i class="fas fa-trending-down"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ riskIndicators.high_dropout_formations is defined ? riskIndicators.high_dropout_formations|length : 0 }}</div>
+                                        <small class="text-muted">Formations à risque</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if riskIndicators.high_dropout_formations and riskIndicators.high_dropout_formations|length > 0 %}
+                            <div class="mt-3">
+                                <h6 class="text-danger">Formations avec taux d'abandon élevé :</h6>
+                                <ul class="list-unstyled">
+                                    {% for formation in riskIndicators.high_dropout_formations|slice(0, 3) %}
+                                        <li class="d-flex justify-content-between align-items-center">
+                                            <span class="text-truncate" title="{{ formation.formation }}">{{ formation.formation }}</span>
+                                            <span class="badge bg-danger">{{ formation.dropout_rate is defined ? formation.dropout_rate|number_format(1) : 0 }}%</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted text-center">Aucun indicateur de risque</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formation-Specific Analytics -->
+    {% if formationAnalytics and formationAnalytics.formation %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie"></i> Analyse Spécifique - {{ formationAnalytics.formation.title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <h4 class="text-primary mb-0">{{ formationAnalytics.totalEnrollments ?? 0 }}</h4>
+                            <small class="text-muted">Inscriptions totales</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <h4 class="text-success mb-0">{{ formationAnalytics.completionRate is defined ? formationAnalytics.completionRate|number_format(1) : 0 }}%</h4>
+                            <small class="text-muted">Taux de completion</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <h4 class="text-danger mb-0">{{ formationAnalytics.dropoutRate is defined ? formationAnalytics.dropoutRate|number_format(1) : 0 }}%</h4>
+                            <small class="text-muted">Taux d'abandon</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <h4 class="text-warning mb-0">{{ formationAnalytics.activeEnrollments ?? 0 }}</h4>
+                            <small class="text-muted">Actives</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <h4 class="text-info mb-0">{{ formationAnalytics.avgDuration ?? 0 }}j</h4>
+                            <small class="text-muted">Durée moyenne</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-center">
+                            <a href="{{ path('admin_enrollment_reports_completion', {formation: formationAnalytics.formation.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> Détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-tasks"></i> Actions Rapides
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group me-2" role="group">
+                    <a href="{{ path('admin_enrollment_reports_completion') }}" class="btn btn-outline-success">
+                        <i class="fas fa-graduation-cap"></i> Rapport de Completion
+                    </a>
+                    <a href="{{ path('admin_enrollment_reports_dropout') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-user-times"></i> Rapport d'Abandon
+                    </a>
+                    <a href="{{ path('admin_enrollment_reports_progress') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar"></i> Rapport de Progression
+                    </a>
+                </div>
+                <div class="btn-group me-2" role="group">
+                    <a href="{{ path('admin_enrollment_reports_qualiopi') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-award"></i> Conformité Qualiopi
+                    </a>
+                    <a href="{{ path('admin_enrollment_reports_custom') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Rapport Personnalisé
+                    </a>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary" onclick="refreshAnalytics()">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    initializeEnrollmentTrendsChart();
+    initializeDropoutAnalysisChart();
+
+    // Auto-refresh functionality
+    setupAutoRefresh();
+
+    // Filter form handlers
+    setupFilterHandlers();
+});
+
+function initializeEnrollmentTrendsChart() {
+    {% if enrollmentTrends|length > 0 %}
+        const ctx = document.getElementById('enrollmentTrendsChart').getContext('2d');
+        const trendsData = {
+            labels: [
+                {% for trend in enrollmentTrends %}
+                    '{{ trend.date|date('d/m') }}'{{ not loop.last ? ',' : '' }}
+                {% endfor %}
+            ],
+            datasets: [
+                {
+                    label: 'Inscriptions',
+                    data: [
+                        {% for trend in enrollmentTrends %}
+                            {{ trend.enrollments }}{{ not loop.last ? ',' : '' }}
+                        {% endfor %}
+                    ],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Completions',
+                    data: [
+                        {% for trend in enrollmentTrends %}
+                            {{ trend.completions }}{{ not loop.last ? ',' : '' }}
+                        {% endfor %}
+                    ],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Abandons',
+                    data: [
+                        {% for trend in enrollmentTrends %}
+                            {{ trend.dropouts }}{{ not loop.last ? ',' : '' }}
+                        {% endfor %}
+                    ],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        };
+
+        new Chart(ctx, {
+            type: 'line',
+            data: trendsData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    {% endif %}
+}
+
+function initializeDropoutAnalysisChart() {
+    {% if dropoutAnalysis|length > 0 %}
+        const ctx = document.getElementById('dropoutAnalysisChart').getContext('2d');
+        const dropoutData = {
+            labels: [
+                {% for analysis in dropoutAnalysis|slice(0, 5) %}
+                    '{{ analysis.dropout_reason ?: "Non spécifiée" }}'{{ not loop.last ? ',' : '' }}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for analysis in dropoutAnalysis|slice(0, 5) %}
+                        {{ analysis.count }}{{ not loop.last ? ',' : '' }}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: dropoutData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    {% endif %}
+}
+
+function setupFilterHandlers() {
+    const filterInputs = document.querySelectorAll('#formation, #start_date, #end_date');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Auto-submit form after a short delay
+            setTimeout(() => {
+                document.getElementById('filtersForm').submit();
+            }, 100);
+        });
+    });
+}
+
+function setupAutoRefresh() {
+    // Add refresh button functionality
+    window.refreshAnalytics = function() {
+        const btn = event.target.closest('button');
+        const icon = btn.querySelector('i');
+        
+        // Add spinner
+        icon.className = 'fas fa-spinner fa-spin';
+        btn.disabled = true;
+        
+        // Simulate refresh (in real implementation, this would reload the page or fetch new data)
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    };
+}
+
+// Export functionality
+window.exportAnalytics = function(format) {
+    const params = new URLSearchParams({
+        format: format,
+        formation: document.getElementById('formation').value,
+        start_date: document.getElementById('start_date').value,
+        end_date: document.getElementById('end_date').value
+    });
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
+    
+    // Add basic fields for general export
+    const fields = [
+        'student_name', 'student_email', 'formation_title', 'session_name',
+        'enrollment_status', 'enrolled_at', 'progress_percentage'
+    ];
+    
+    fields.forEach(field => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'fields[]';
+        input.value = field;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+};
+
+// Tooltips and interactivity
+const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+
+// Card hover effects
+const cards = document.querySelectorAll('.card');
+cards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        this.style.transition = 'all 0.3s ease';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '';
+    });
+});
+</script>
+{% endblock %}

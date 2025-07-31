@@ -1,0 +1,461 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Personnalisé - Inscriptions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Générateur de Rapport Personnalisé</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_enrollment_reports_index') }}">Rapports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Rapport Personnalisé</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_enrollment_reports_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Retour aux rapports
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Builder Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools"></i> Configuration du Rapport
+                    </h5>
+                </div>
+                <form method="POST" action="{{ path('admin_enrollment_reports_custom') }}" id="customReportForm">
+                    <div class="card-body">
+                        <!-- Report Title -->
+                        <div class="mb-4">
+                            <label for="report_title" class="form-label">
+                                <i class="fas fa-heading text-primary"></i> Titre du rapport
+                            </label>
+                            <input type="text" class="form-control" id="report_title" name="report_title" 
+                                   placeholder="Ex: Rapport d'inscription mensuel" required>
+                            <div class="form-text">Donnez un nom descriptif à votre rapport personnalisé</div>
+                        </div>
+
+                        <!-- Filters Section -->
+                        <div class="mb-4">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-filter text-primary"></i> Filtres
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="filter_formation" class="form-label">Formation</label>
+                                    <select class="form-select" id="filter_formation" name="filters[formation]">
+                                        <option value="">Toutes les formations</option>
+                                        {% for formation in formations %}
+                                            <option value="{{ formation.id }}">{{ formation.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filter_status" class="form-label">Statut d'inscription</label>
+                                    <select class="form-select" id="filter_status" name="filters[status]">
+                                        <option value="">Tous les statuts</option>
+                                        {% for statusKey, statusLabel in constant('App\\Entity\\Core\\StudentEnrollment::STATUSES') %}
+                                            <option value="{{ statusKey }}">{{ statusLabel }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filter_start_date" class="form-label">Date de début</label>
+                                    <input type="date" class="form-control" id="filter_start_date" name="filters[start_date]">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filter_end_date" class="form-label">Date de fin</label>
+                                    <input type="date" class="form-control" id="filter_end_date" name="filters[end_date]">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filter_enrollment_source" class="form-label">Source d'inscription</label>
+                                    <select class="form-select" id="filter_enrollment_source" name="filters[enrollment_source]">
+                                        <option value="">Toutes les sources</option>
+                                        <option value="web">Site web</option>
+                                        <option value="phone">Téléphone</option>
+                                        <option value="email">Email</option>
+                                        <option value="direct">Direct</option>
+                                        <option value="partner">Partenaire</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filter_progress" class="form-label">Niveau de progression</label>
+                                    <select class="form-select" id="filter_progress" name="filters[progress]">
+                                        <option value="">Tous les niveaux</option>
+                                        <option value="not_started">Non démarrée (0%)</option>
+                                        <option value="low">Faible (1-24%)</option>
+                                        <option value="medium">Moyenne (25-74%)</option>
+                                        <option value="high">Élevée (75-99%)</option>
+                                        <option value="completed">Terminée (100%)</option>
+                                        <option value="at_risk">À risque d'abandon</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fields Selection -->
+                        <div class="mb-4">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-columns text-primary"></i> Colonnes du rapport
+                            </h6>
+                            <div class="row g-3">
+                                {% for fieldKey, fieldLabel in availableFields %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="field_{{ fieldKey }}" name="fields[]" value="{{ fieldKey }}"
+                                                   {% if fieldKey in ['student_name', 'formation_title', 'enrollment_status', 'enrolled_at'] %}checked{% endif %}>
+                                            <label class="form-check-label" for="field_{{ fieldKey }}">
+                                                {{ fieldLabel }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="fas fa-info-circle"></i> 
+                                Sélectionnez les informations que vous souhaitez inclure dans votre rapport
+                            </div>
+                        </div>
+
+                        <!-- Grouping and Sorting -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="group_by" class="form-label">
+                                    <i class="fas fa-layer-group text-primary"></i> Grouper par
+                                </label>
+                                <select class="form-select" id="group_by" name="group_by">
+                                    <option value="">Aucun groupement</option>
+                                    <option value="formation">Formation</option>
+                                    <option value="status">Statut</option>
+                                    <option value="enrollment_month">Mois d'inscription</option>
+                                    <option value="enrollment_source">Source d'inscription</option>
+                                    <option value="progress_level">Niveau de progression</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="order_by" class="form-label">
+                                    <i class="fas fa-sort text-primary"></i> Trier par
+                                </label>
+                                <select class="form-select" id="order_by" name="order_by">
+                                    <option value="enrolled_at_desc">Date d'inscription (plus récent)</option>
+                                    <option value="enrolled_at_asc">Date d'inscription (plus ancien)</option>
+                                    <option value="student_name_asc">Nom étudiant (A-Z)</option>
+                                    <option value="student_name_desc">Nom étudiant (Z-A)</option>
+                                    <option value="formation_title_asc">Titre formation (A-Z)</option>
+                                    <option value="progress_desc">Progression (élevée à faible)</option>
+                                    <option value="progress_asc">Progression (faible à élevée)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Output Format -->
+                        <div class="mb-4">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-file-export text-primary"></i> Format de sortie
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" id="format_html" value="html" checked>
+                                        <label class="form-check-label" for="format_html">
+                                            <i class="fas fa-globe"></i> Afficher en ligne
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" id="format_export" value="export">
+                                        <label class="form-check-label" for="format_export">
+                                            <i class="fas fa-download"></i> Télécharger (CSV)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                <i class="fas fa-undo"></i> Réinitialiser
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Générer le rapport
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview/Help Panel -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb"></i> Aide et suggestions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Comment utiliser</h6>
+                        <ol class="mb-0 small">
+                            <li>Donnez un titre descriptif à votre rapport</li>
+                            <li>Sélectionnez les filtres pour cibler vos données</li>
+                            <li>Choisissez les colonnes à inclure</li>
+                            <li>Configurez le groupement et le tri</li>
+                            <li>Générez votre rapport personnalisé</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6><i class="fas fa-star"></i> Rapports suggérés</h6>
+                        <div class="list-group list-group-flush">
+                            <button type="button" class="list-group-item list-group-item-action p-2" 
+                                    onclick="loadPreset('monthly_enrollments')">
+                                <div class="fw-medium">Inscriptions mensuelles</div>
+                                <small class="text-muted">Suivi des nouvelles inscriptions par mois</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action p-2" 
+                                    onclick="loadPreset('completion_analysis')">
+                                <div class="fw-medium">Analyse des completions</div>
+                                <small class="text-muted">Taux de réussite par formation</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action p-2" 
+                                    onclick="loadPreset('at_risk_students')">
+                                <div class="fw-medium">Étudiants à risque</div>
+                                <small class="text-muted">Identification des abandons potentiels</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action p-2" 
+                                    onclick="loadPreset('source_analysis')">
+                                <div class="fw-medium">Analyse des sources</div>
+                                <small class="text-muted">Performance des canaux d'inscription</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6><i class="fas fa-chart-bar"></i> Statistiques</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div class="card bg-light">
+                                    <div class="card-body p-2">
+                                        <div class="h6 mb-0">{{ formations|length }}</div>
+                                        <small class="text-muted">Formations</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card bg-light">
+                                    <div class="card-body p-2">
+                                        <div class="h6 mb-0">{{ availableFields|length }}</div>
+                                        <small class="text-muted">Champs disponibles</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Field Preview -->
+            <div class="card mt-3" id="fieldPreview" style="display: none;">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-eye"></i> Aperçu des colonnes sélectionnées
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="selectedFieldsList" class="small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Field selection preview
+    const fieldCheckboxes = document.querySelectorAll('input[name="fields[]"]');
+    const fieldPreview = document.getElementById('fieldPreview');
+    const selectedFieldsList = document.getElementById('selectedFieldsList');
+
+    function updateFieldPreview() {
+        const selectedFields = Array.from(fieldCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.nextElementSibling.textContent.trim());
+
+        if (selectedFields.length > 0) {
+            fieldPreview.style.display = 'block';
+            selectedFieldsList.innerHTML = selectedFields.map(field => 
+                `<span class="badge bg-primary me-1 mb-1">${field}</span>`
+            ).join('');
+        } else {
+            fieldPreview.style.display = 'none';
+        }
+    }
+
+    fieldCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateFieldPreview);
+    });
+
+    // Initial preview update
+    updateFieldPreview();
+
+    // Form validation
+    const form = document.getElementById('customReportForm');
+    form.addEventListener('submit', function(e) {
+        const checkedFields = Array.from(fieldCheckboxes).some(cb => cb.checked);
+        const reportTitle = document.getElementById('report_title').value.trim();
+
+        if (!reportTitle) {
+            e.preventDefault();
+            alert('Veuillez saisir un titre pour votre rapport.');
+            document.getElementById('report_title').focus();
+            return;
+        }
+
+        if (!checkedFields) {
+            e.preventDefault();
+            alert('Veuillez sélectionner au moins une colonne pour votre rapport.');
+            fieldCheckboxes[0].focus();
+            return;
+        }
+    });
+
+    // Preset configurations
+    window.loadPreset = function(presetType) {
+        // Reset form first
+        resetForm();
+
+        const presets = {
+            'monthly_enrollments': {
+                title: 'Rapport d\'inscriptions mensuelles - ' + new Date().getFullYear(),
+                fields: ['student_name', 'student_email', 'formation_title', 'enrolled_at', 'enrollment_source'],
+                group_by: 'enrollment_month',
+                order_by: 'enrolled_at_desc',
+                filters: {
+                    start_date: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]
+                }
+            },
+            'completion_analysis': {
+                title: 'Analyse des taux de completion par formation',
+                fields: ['student_name', 'formation_title', 'enrollment_status', 'enrolled_at', 'completed_at', 'progress_percentage'],
+                group_by: 'formation',
+                order_by: 'progress_desc',
+                filters: {
+                    status: 'completed'
+                }
+            },
+            'at_risk_students': {
+                title: 'Étudiants à risque d\'abandon',
+                fields: ['student_name', 'student_email', 'formation_title', 'progress_percentage', 'enrolled_at'],
+                order_by: 'progress_asc',
+                filters: {
+                    progress: 'at_risk',
+                    status: 'enrolled'
+                }
+            },
+            'source_analysis': {
+                title: 'Analyse des sources d\'inscription',
+                fields: ['student_name', 'formation_title', 'enrollment_source', 'enrolled_at', 'enrollment_status'],
+                group_by: 'enrollment_source',
+                order_by: 'enrolled_at_desc'
+            }
+        };
+
+        const preset = presets[presetType];
+        if (!preset) return;
+
+        // Set title
+        document.getElementById('report_title').value = preset.title;
+
+        // Set fields
+        preset.fields.forEach(field => {
+            const checkbox = document.getElementById('field_' + field);
+            if (checkbox) checkbox.checked = true;
+        });
+
+        // Set grouping and sorting
+        if (preset.group_by) {
+            document.getElementById('group_by').value = preset.group_by;
+        }
+        if (preset.order_by) {
+            document.getElementById('order_by').value = preset.order_by;
+        }
+
+        // Set filters
+        if (preset.filters) {
+            Object.entries(preset.filters).forEach(([key, value]) => {
+                const filterField = document.getElementById('filter_' + key);
+                if (filterField) {
+                    filterField.value = value;
+                }
+            });
+        }
+
+        // Update preview
+        updateFieldPreview();
+
+        // Highlight the preset button temporarily
+        event.target.classList.add('active');
+        setTimeout(() => {
+            event.target.classList.remove('active');
+        }, 1000);
+    };
+
+    // Reset form function
+    window.resetForm = function() {
+        form.reset();
+        
+        // Re-check default fields
+        const defaultFields = ['student_name', 'formation_title', 'enrollment_status', 'enrolled_at'];
+        fieldCheckboxes.forEach(checkbox => {
+            checkbox.checked = defaultFields.includes(checkbox.value);
+        });
+        
+        updateFieldPreview();
+    };
+
+    // Smart date range suggestions
+    const startDateInput = document.getElementById('filter_start_date');
+    const endDateInput = document.getElementById('filter_end_date');
+
+    startDateInput.addEventListener('change', function() {
+        if (this.value && !endDateInput.value) {
+            // Auto-suggest end date (3 months later)
+            const startDate = new Date(this.value);
+            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 3, startDate.getDate());
+            endDateInput.value = endDate.toISOString().split('T')[0];
+        }
+    });
+
+    // Field dependencies
+    const statusFilter = document.getElementById('filter_status');
+    statusFilter.addEventListener('change', function() {
+        const completedAtField = document.getElementById('field_completed_at');
+        const dropoutReasonField = document.getElementById('field_dropout_reason');
+        
+        if (this.value === 'completed') {
+            if (completedAtField) completedAtField.checked = true;
+        } else if (this.value === 'dropped_out') {
+            if (dropoutReasonField) dropoutReasonField.checked = true;
+        }
+        
+        updateFieldPreview();
+    });
+});
+</script>
+{% endblock %}

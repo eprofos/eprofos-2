@@ -1,0 +1,730 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport de Progression - Inscriptions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Rapport de Progression</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_enrollment_reports_index') }}">Rapports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Progression</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('csv')">
+                    <i class="fas fa-file-csv"></i> Format CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('excel')">
+                    <i class="fas fa-file-excel"></i> Format Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Format PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    {% if enrollments.totalItemCount > 0 %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ enrollments.totalItemCount }}</h4>
+                                <p class="mb-0">Étudiants Actifs</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">
+                                    {% set totalProgress = 0 %}
+                                    {% set validProgressCount = 0 %}
+                                    {% for enrollment in enrollments %}
+                                        {% if enrollment.progress and enrollment.progress.completionPercentage is defined %}
+                                            {% set totalProgress = totalProgress + enrollment.progress.completionPercentage %}
+                                            {% set validProgressCount = validProgressCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ validProgressCount > 0 ? (totalProgress / validProgressCount)|number_format(1) : 0 }}%
+                                </h4>
+                                <p class="mb-0">Progression Moyenne</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">
+                                    {% set atRiskCount = 0 %}
+                                    {% for enrollment in enrollments %}
+                                        {% if enrollment.progress and enrollment.progress.atRiskOfDropout %}
+                                            {% set atRiskCount = atRiskCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ atRiskCount }}
+                                </h4>
+                                <p class="mb-0">Étudiants à Risque</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ selectedFormation ? formations|filter(f => f.id == selectedFormation)|first.title|slice(0, 15) ~ '...' : 'Toutes' }}</h4>
+                                <p class="mb-0">Formation Filtrée</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-filter fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Progress Distribution -->
+    {% if progressDistribution|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Répartition des Niveaux de Progression</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Niveau de progression</th>
+                                        <th>Nombre d'étudiants</th>
+                                        <th>Pourcentage</th>
+                                        <th>Graphique</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set totalStudents = progressDistribution|reduce((carry, distribution) => carry + distribution.count, 0) %}
+                                    {% for distribution in progressDistribution %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">{{ distribution.progress_range }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if distribution.progress_range starts with 'Low' %}bg-danger
+                                                    {% elseif distribution.progress_range starts with 'Medium' %}bg-warning
+                                                    {% elseif distribution.progress_range starts with 'Good' %}bg-info
+                                                    {% else %}bg-success
+                                                    {% endif %}">
+                                                    {{ distribution.count }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">{{ (distribution.count / totalStudents * 100)|number_format(1) }}%</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="width: 100px; height: 8px;">
+                                                    <div class="progress-bar 
+                                                        {% if distribution.progress_range starts with 'Low' %}bg-danger
+                                                        {% elseif distribution.progress_range starts with 'Medium' %}bg-warning
+                                                        {% elseif distribution.progress_range starts with 'Good' %}bg-info
+                                                        {% else %}bg-success
+                                                        {% endif %}" 
+                                                        style="width: {{ (distribution.count / totalStudents * 100)|number_format(1) }}%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Répartition Visuelle</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="progressDistributionChart" width="300" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ selectedFormation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="progress" class="form-label">Niveau de progression</label>
+                    <select class="form-select" id="progress" name="progress">
+                        <option value="all" {{ progressFilter == 'all' ? 'selected' : '' }}>Tous les niveaux</option>
+                        <option value="low" {{ progressFilter == 'low' ? 'selected' : '' }}>Faible (0-24%)</option>
+                        <option value="medium" {{ progressFilter == 'medium' ? 'selected' : '' }}>Moyen (25-75%)</option>
+                        <option value="high" {{ progressFilter == 'high' ? 'selected' : '' }}>Élevé (75-100%)</option>
+                        <option value="at_risk" {{ progressFilter == 'at_risk' ? 'selected' : '' }}>À risque d'abandon</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_range" class="form-label">Période</label>
+                    <select class="form-select" id="date_range" name="date_range">
+                        <option value="">Toutes les périodes</option>
+                        <option value="last_week">Dernière semaine</option>
+                        <option value="last_month">Dernier mois</option>
+                        <option value="last_quarter">Dernier trimestre</option>
+                        <option value="last_year">Dernière année</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Progress Enrollments List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                Suivi de Progression des Étudiants
+                {% if selectedFormation or progressFilter != 'all' %}
+                    <small class="text-muted">(Filtrée)</small>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if enrollments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Session</th>
+                                <th>Date d'inscription</th>
+                                <th>Progression</th>
+                                <th>Dernière activité</th>
+                                <th>Statut</th>
+                                <th>Risque</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrollments %}
+                                <tr {% if enrollment.progress and enrollment.progress.atRiskOfDropout %}class="table-warning"{% endif %}>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                                                <small class="text-muted">{{ enrollment.student.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ enrollment.sessionRegistration.session.formation.title }}</div>
+                                        <small class="text-muted">{{ enrollment.sessionRegistration.session.formation.category.name }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.sessionRegistration.session.name }}</div>
+                                        <small class="text-muted">
+                                            Du {{ enrollment.sessionRegistration.session.startDate|date('d/m/Y') }}
+                                            au {{ enrollment.sessionRegistration.session.endDate|date('d/m/Y') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.enrolledAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ enrollment.enrolledAt|date('H:i') }}</small>
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress %}
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 80px;">
+                                                    <div class="progress-bar 
+                                                        {% if enrollment.progress.completionPercentage < 25 %}bg-danger
+                                                        {% elseif enrollment.progress.completionPercentage < 50 %}bg-warning
+                                                        {% elseif enrollment.progress.completionPercentage < 75 %}bg-info
+                                                        {% else %}bg-success
+                                                        {% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ enrollment.progress.completionPercentage }}%" 
+                                                        aria-valuenow="{{ enrollment.progress.completionPercentage }}" 
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="fw-medium">{{ enrollment.progress.completionPercentage }}%</small>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Non démarrée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress and enrollment.progress.lastActivityAt %}
+                                            <div>{{ enrollment.progress.lastActivityAt|date('d/m/Y') }}</div>
+                                            <small class="text-muted">{{ enrollment.progress.lastActivityAt|date('H:i') }}</small>
+                                            {% set daysSinceActivity = 'now'|date('U') - enrollment.progress.lastActivityAt.timestamp %}
+                                            {% set daysSinceActivity = (daysSinceActivity / 86400)|round %}
+                                            {% if daysSinceActivity > 7 %}
+                                                <div><small class="text-warning">Il y a {{ daysSinceActivity }} jours</small></div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Aucune activité</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[enrollment.status] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress and enrollment.progress.atRiskOfDropout %}
+                                            <span class="badge bg-danger" title="Risque élevé d'abandon">
+                                                <i class="fas fa-exclamation-triangle"></i> À risque
+                                            </span>
+                                        {% elseif enrollment.progress and enrollment.progress.completionPercentage < 10 %}
+                                            {% set daysSinceEnrollment = 'now'|date('U') - enrollment.enrolledAt.timestamp %}
+                                            {% set daysSinceEnrollment = (daysSinceEnrollment / 86400)|round %}
+                                            {% if daysSinceEnrollment > 14 %}
+                                                <span class="badge bg-warning" title="Progression très lente">
+                                                    <i class="fas fa-clock"></i> Lent
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-success" title="Dans les temps">
+                                                    <i class="fas fa-check"></i> OK
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-success" title="Progression normale">
+                                                <i class="fas fa-check"></i> OK
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" 
+                                               class="btn btn-outline-primary" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if enrollment.progress %}
+                                                <button type="button" class="btn btn-outline-info" 
+                                                        title="Voir la progression détaillée"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#progressModal{{ enrollment.id }}">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if enrollment.progress and enrollment.progress.atRiskOfDropout %}
+                                                <button type="button" class="btn btn-outline-warning" 
+                                                        title="Actions de suivi"
+                                                        onclick="showFollowUpActions({{ enrollment.id }})">
+                                                    <i class="fas fa-hand-holding-heart"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card-footer">
+                    {{ knp_pagination_render(enrollments) }}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun étudiant trouvé</h5>
+                    <p class="text-muted">
+                        {% if selectedFormation or progressFilter != 'all' %}
+                            Aucun étudiant ne correspond à vos critères de filtrage.
+                        {% else %}
+                            Aucun étudiant actif n'a été trouvé pour le moment.
+                        {% endif %}
+                    </p>
+                    <a href="{{ path('admin_enrollment_reports_index') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Retour aux rapports
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Progress Detail Modals -->
+    {% for enrollment in enrollments %}
+        {% if enrollment.progress %}
+            <div class="modal fade" id="progressModal{{ enrollment.id }}" tabindex="-1" aria-labelledby="progressModalLabel{{ enrollment.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="progressModalLabel{{ enrollment.id }}">
+                                Progression Détaillée - {{ enrollment.student.fullName }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-user"></i> Informations étudiant</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Nom:</strong> {{ enrollment.student.fullName }}</li>
+                                        <li><strong>Email:</strong> {{ enrollment.student.email }}</li>
+                                        <li><strong>Formation:</strong> {{ enrollment.sessionRegistration.session.formation.title }}</li>
+                                        <li><strong>Session:</strong> {{ enrollment.sessionRegistration.session.name }}</li>
+                                    </ul>
+                                    
+                                    <h6 class="mt-3"><i class="fas fa-calendar"></i> Chronologie</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Inscription:</strong> {{ enrollment.enrolledAt|date('d/m/Y à H:i') }}</li>
+                                        {% if enrollment.progress.lastActivityAt %}
+                                            <li><strong>Dernière activité:</strong> {{ enrollment.progress.lastActivityAt|date('d/m/Y à H:i') }}</li>
+                                        {% endif %}
+                                        <li><strong>Temps écoulé:</strong> 
+                                            {% set daysSinceEnrollment = 'now'|date('U') - enrollment.enrolledAt.timestamp %}
+                                            {{ (daysSinceEnrollment / 86400)|round }} jours
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-chart-line"></i> Progression</h6>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Progression globale</span>
+                                            <span>{{ enrollment.progress.completionPercentage }}%</span>
+                                        </div>
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar 
+                                                {% if enrollment.progress.completionPercentage < 25 %}bg-danger
+                                                {% elseif enrollment.progress.completionPercentage < 50 %}bg-warning
+                                                {% elseif enrollment.progress.completionPercentage < 75 %}bg-info
+                                                {% else %}bg-success
+                                                {% endif %}" 
+                                                style="width: {{ enrollment.progress.completionPercentage }}%">
+                                            </div>
+                                        </div>
+                                        
+                                        {% if enrollment.progress.completionPercentage < 25 %}
+                                            <small class="text-danger">Progression faible</small>
+                                        {% elseif enrollment.progress.completionPercentage < 50 %}
+                                            <small class="text-warning">Progression modérée</small>
+                                        {% elseif enrollment.progress.completionPercentage < 75 %}
+                                            <small class="text-info">Bonne progression</small>
+                                        {% else %}
+                                            <small class="text-success">Excellente progression</small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <h6><i class="fas fa-exclamation-triangle"></i> Indicateurs de risque</h6>
+                                    {% if enrollment.progress.atRiskOfDropout %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i> Cet étudiant est identifié comme à risque d'abandon.
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle"></i> Aucun risque d'abandon détecté.
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% set daysSinceActivity = enrollment.progress.lastActivityAt ? ('now'|date('U') - enrollment.progress.lastActivityAt.timestamp) / 86400 : null %}
+                                    {% if daysSinceActivity and daysSinceActivity > 7 %}
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-clock"></i> Aucune activité depuis {{ daysSinceActivity|round }} jours.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            {% if enrollment.progress.atRiskOfDropout %}
+                                <button type="button" class="btn btn-warning" onclick="showFollowUpActions({{ enrollment.id }})">
+                                    <i class="fas fa-hand-holding-heart"></i> Actions de suivi
+                                </button>
+                            {% endif %}
+                            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" class="btn btn-primary">
+                                Voir les détails complets
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Progress Distribution Chart
+    {% if progressDistribution|length > 0 %}
+        const ctx = document.getElementById('progressDistributionChart').getContext('2d');
+        const progressData = {
+            labels: [
+                {% for distribution in progressDistribution %}
+                    '{{ distribution.progress_range }}'{{ not loop.last ? ',' : '' }}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for distribution in progressDistribution %}
+                        {{ distribution.count }}{{ not loop.last ? ',' : '' }}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#dc3545', // Low (red)
+                    '#ffc107', // Medium (yellow) 
+                    '#17a2b8', // Good (teal)
+                    '#28a745'  // Excellent (green)
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: progressData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return {
+                                        text: `${label}: ${value} (${percentage}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        pointStyle: 'circle'
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} étudiants (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    {% endif %}
+
+    // Export functionality
+    window.exportProgressReport = function(format) {
+        const params = new URLSearchParams({
+            format: format,
+            formation: document.getElementById('formation').value,
+            progress: document.getElementById('progress').value,
+            date_range: document.getElementById('date_range').value
+        });
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
+        
+        // Add fields selection for progress report
+        const fields = [
+            'student_name', 'student_email', 'formation_title', 'session_name',
+            'enrolled_at', 'progress_percentage', 'enrollment_status'
+        ];
+        
+        fields.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'fields[]';
+            input.value = field;
+            form.appendChild(input);
+        });
+        
+        // Add filter for enrolled status
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'filters[status]';
+        statusInput.value = 'enrolled';
+        form.appendChild(statusInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
+
+    // Auto-submit form on filter change
+    const filterInputs = document.querySelectorAll('#formation, #progress, #date_range');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Add small delay for better UX
+            setTimeout(() => {
+                this.closest('form').submit();
+            }, 100);
+        });
+    });
+
+    // Follow-up actions for at-risk students
+    window.showFollowUpActions = function(enrollmentId) {
+        // This could open a modal with follow-up options
+        // For now, show an alert with suggested actions
+        alert(`Actions de suivi pour l'inscription ${enrollmentId}:\n\n` +
+              '• Envoyer un email de motivation\n' +
+              '• Programmer un entretien individuel\n' +
+              '• Proposer un accompagnement personnalisé\n' +
+              '• Adapter le rythme de formation\n' +
+              '• Organiser une session de rattrapage\n' +
+              '• Contacter le tuteur/mentor');
+    };
+
+    // Tooltips for progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const percentage = bar.getAttribute('aria-valuenow');
+        if (percentage) {
+            bar.setAttribute('title', `Progression: ${percentage}%`);
+            bar.setAttribute('data-bs-toggle', 'tooltip');
+        }
+    });
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Enhanced table row highlighting for at-risk students
+    const atRiskRows = document.querySelectorAll('tr.table-warning');
+    atRiskRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#fff3cd';
+            this.style.boxShadow = '0 2px 4px rgba(255, 193, 7, 0.3)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Auto-refresh for real-time progress tracking
+    let autoRefreshInterval;
+    
+    function startAutoRefresh() {
+        autoRefreshInterval = setInterval(() => {
+            // In a real implementation, this would fetch updated progress data
+            console.log('Auto-refreshing progress data...');
+        }, 60000); // Refresh every minute
+    }
+    
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    }
+    
+    // Start auto-refresh when page loads
+    startAutoRefresh();
+    
+    // Stop auto-refresh when page is hidden/user navigates away
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    });
+
+    // Progress alert notifications for new at-risk students
+    {% if enrollments|length > 0 %}
+        const atRiskCount = {{ enrollments|filter(e => e.progress and e.progress.atRiskOfDropout)|length }};
+        if (atRiskCount > 0) {
+            // Show notification about at-risk students
+            const alertContainer = document.createElement('div');
+            alertContainer.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+            alertContainer.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertContainer.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Attention!</strong> ${atRiskCount} étudiant(s) à risque d'abandon détecté(s).
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertContainer);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertContainer.parentNode) {
+                    alertContainer.remove();
+                }
+            }, 5000);
+        }
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -691,6 +691,26 @@ class Session
     }
 
     /**
+     * Get confirmed registrations only.
+     *
+     * @return Collection<int, SessionRegistration>
+     */
+    public function getConfirmedRegistrations(): Collection
+    {
+        return $this->registrations->filter(function(SessionRegistration $registration) {
+            return $registration->getStatus() === 'confirmed';
+        });
+    }
+
+    /**
+     * Get the count of confirmed registrations.
+     */
+    public function getConfirmedRegistrationsCount(): int
+    {
+        return $this->getConfirmedRegistrations()->count();
+    }
+
+    /**
      * Get alternance type label for display.
      */
     public function getAlternanceTypeLabel(): string

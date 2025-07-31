@@ -1,0 +1,305 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de Bord - Suivi des Progressions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-chart-dashboard text-primary me-2"></i>
+                Tableau de Bord - Suivi des Progressions
+            </h1>
+            <p class="text-muted">
+                Vue d'ensemble de la progression et du suivi des étudiants
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_progress_monitoring_detailed') }}" class="btn btn-primary">
+                <i class="fas fa-list me-1"></i> Vue détaillée
+            </a>
+            <a href="{{ path('admin_progress_monitoring_at_risk') }}" class="btn btn-outline-warning">
+                <i class="fas fa-exclamation-triangle me-1"></i> Étudiants à risque
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Total Actifs</h6>
+                            <h3 class="mb-0">{{ stats.total_active }}</h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">À Risque</h6>
+                            <h3 class="mb-0">{{ stats.at_risk }}</h3>
+                            <small>{{ stats.at_risk_percentage }}% du total</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Progression Faible</h6>
+                            <h3 class="mb-0">{{ stats.low_progress }}</h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Progression Élevée</h6>
+                            <h3 class="mb-0">{{ stats.high_progress }}</h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-trophy fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Progress Trends -->
+            {% if progressTrends|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Tendances de Progression (30 derniers jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Simple trends display - could be enhanced with Chart.js -->
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Progression Moyenne</th>
+                                    <th>Étudiants à Risque</th>
+                                    <th>Total Étudiants</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trend in progressTrends|slice(0, 10) %}
+                                <tr>
+                                    <td>{{ trend.date|date('d/m/Y') }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar" style="width: {{ trend.avg_progress }}%"></div>
+                                        </div>
+                                        {{ trend.avg_progress|round(1) }}%
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ trend.at_risk_count }}</span>
+                                    </td>
+                                    <td>{{ trend.total_students }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Low Progress Students -->
+            {% if lowProgressStudents|length > 0 %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Étudiants avec Progression Faible (&lt;25%)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Formation</th>
+                                    <th>Progression</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for enrollment in lowProgressStudents %}
+                                <tr>
+                                    <td>{{ enrollment.student.fullName }}</td>
+                                    <td>{{ enrollment.formation.title }}</td>
+                                    <td>
+                                        {% set progress = enrollment.progress.completionPercentage ?? 0 %}
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-danger" style="width: {{ progress }}%"></div>
+                                        </div>
+                                        {{ progress }}%
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_progress_monitoring_show', {id: enrollment.id}) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- At-Risk Students Summary -->
+            {% if atRiskStudents|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Étudiants à Risque
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for enrollment in atRiskStudents|slice(0, 5) %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar avatar-sm me-3">
+                            <div class="avatar-initial bg-warning text-white">
+                                {{ enrollment.student.firstName|first }}{{ enrollment.student.lastName|first }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                            <small class="text-muted">{{ enrollment.formation.title }}</small>
+                        </div>
+                        <a href="{{ path('admin_progress_monitoring_show', {id: enrollment.id}) }}" 
+                           class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                    {% if atRiskStudents|length > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ path('admin_progress_monitoring_at_risk') }}" class="btn btn-warning">
+                            Voir tous ({{ atRiskStudents|length }})
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Overdue Enrollments -->
+            {% if overdueEnrollments|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock text-danger me-2"></i>
+                        Inscriptions en Retard
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for enrollment in overdueEnrollments|slice(0, 5) %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                            <small class="text-muted">{{ enrollment.formation.title }}</small>
+                        </div>
+                        <span class="badge bg-danger">En retard</span>
+                    </div>
+                    {% endfor %}
+                    {% if overdueEnrollments|length > 5 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            ... et {{ overdueEnrollments|length - 5 }} autres
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Filters -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtres
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="mb-3">
+                            <label for="formation" class="form-label">Formation</label>
+                            <select class="form-select" id="formation" name="formation">
+                                <option value="">Toutes les formations</option>
+                                {% for formation in formations %}
+                                    <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                        {{ formation.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="risk_level" class="form-label">Niveau de Risque</label>
+                            <select class="form-select" id="risk_level" name="risk_level">
+                                <option value="">Tous les niveaux</option>
+                                <option value="high" {{ filters.risk_level == 'high' ? 'selected' : '' }}>Élevé</option>
+                                <option value="medium" {{ filters.risk_level == 'medium' ? 'selected' : '' }}>Modéré</option>
+                                <option value="low" {{ filters.risk_level == 'low' ? 'selected' : '' }}>Faible</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="progress_range" class="form-label">Plage de Progression</label>
+                            <select class="form-select" id="progress_range" name="progress_range">
+                                <option value="">Toutes les progressions</option>
+                                <option value="0-25" {{ filters.progress_range == '0-25' ? 'selected' : '' }}>0-25%</option>
+                                <option value="25-50" {{ filters.progress_range == '25-50' ? 'selected' : '' }}>25-50%</option>
+                                <option value="50-75" {{ filters.progress_range == '50-75' ? 'selected' : '' }}>50-75%</option>
+                                <option value="75-100" {{ filters.progress_range == '75-100' ? 'selected' : '' }}>75-100%</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i> Filtrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

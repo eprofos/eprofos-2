@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changement de statut d'inscription - {{ formation.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .status-change-box {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 3px;
+        }
+        .status-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .status-enrolled { background-color: #28a745; color: white; }
+        .status-completed { background-color: #007bff; color: white; }
+        .status-dropped_out { background-color: #dc3545; color: white; }
+        .status-suspended { background-color: #ffc107; color: #212529; }
+        .arrow {
+            margin: 0 15px;
+            font-size: 20px;
+            color: #007bff;
+        }
+        .formation-details {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .alert-info {
+            background-color: #cce8f4;
+            border: 1px solid #b3d7ef;
+            color: #0c5460;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Changement de statut d'inscription</h1>
+        <p>{{ formation.title }}</p>
+    </div>
+
+    <div class="content">
+        <h2>Bonjour {{ student.firstName }} {{ student.lastName }},</h2>
+        
+        <p>Nous vous informons que le statut de votre inscription à la formation <strong>{{ formation.title }}</strong> a été modifié.</p>
+
+        <div class="status-change-box">
+            <h3><span class="icon">🔄</span>Changement de statut</h3>
+            <div class="status-comparison">
+                <span class="status-badge status-{{ oldStatus }}">
+                    {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[oldStatus] ?? oldStatus }}
+                </span>
+                <span class="arrow">→</span>
+                <span class="status-badge status-{{ newStatus }}">
+                    {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[newStatus] ?? newStatus }}
+                </span>
+            </div>
+            <p><strong>Date du changement :</strong> {{ "now"|date('d/m/Y à H:i') }}</p>
+        </div>
+
+        {% if newStatus == 'completed' %}
+            <div class="alert alert-success">
+                <h4><span class="icon">🎉</span>Félicitations !</h4>
+                <p>Vous avez terminé avec succès la formation <strong>{{ formation.title }}</strong>.</p>
+                <ul>
+                    <li>Votre certificat de formation sera bientôt disponible</li>
+                    <li>Vous pouvez consulter votre progression finale dans votre espace étudiant</li>
+                    <li>N'hésitez pas à consulter nos autres formations pour continuer votre parcours</li>
+                </ul>
+            </div>
+        {% elseif newStatus == 'enrolled' %}
+            <div class="alert alert-success">
+                <h4><span class="icon">✅</span>Inscription confirmée</h4>
+                <p>Votre inscription à la formation est maintenant active.</p>
+                <ul>
+                    <li>Vous pouvez accéder au contenu de formation</li>
+                    <li>Commencez dès maintenant votre parcours d'apprentissage</li>
+                    <li>Suivez votre progression dans votre tableau de bord</li>
+                </ul>
+            </div>
+        {% elseif newStatus == 'suspended' %}
+            <div class="alert alert-warning">
+                <h4><span class="icon">⏸️</span>Inscription suspendue</h4>
+                <p>Votre inscription à cette formation a été temporairement suspendue.</p>
+                <ul>
+                    <li>L'accès au contenu de formation est temporairement indisponible</li>
+                    <li>Contactez-nous pour plus d'informations sur la réactivation</li>
+                    <li>Vos données de progression sont conservées</li>
+                </ul>
+            </div>
+        {% elseif newStatus == 'dropped_out' %}
+            <div class="alert alert-danger">
+                <h4><span class="icon">❌</span>Désinscription</h4>
+                <p>Votre inscription à cette formation a été annulée.</p>
+                {% if enrollment.dropoutReason %}
+                    <p><strong>Motif :</strong> {{ enrollment.dropoutReason }}</p>
+                {% endif %}
+                <ul>
+                    <li>L'accès au contenu de formation n'est plus disponible</li>
+                    <li>Vos données de progression sont conservées</li>
+                    <li>Vous pouvez vous réinscrire à une session ultérieure si disponible</li>
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="formation-details">
+            <h3><span class="icon">📚</span>Détails de la formation</h3>
+            <p><strong>Formation :</strong> {{ formation.title }}</p>
+            {% if enrollment.session %}
+                <p><strong>Session :</strong> {{ enrollment.session.name }}</p>
+                {% if enrollment.session.startDate %}
+                    <p><strong>Période :</strong> {{ enrollment.session.startDate|date('d/m/Y') }}
+                    {% if enrollment.session.endDate %} au {{ enrollment.session.endDate|date('d/m/Y') }}{% endif %}</p>
+                {% endif %}
+            {% endif %}
+            <p><strong>Date d'inscription initiale :</strong> {{ enrollment.enrolledAt|date('d/m/Y') }}</p>
+            {% if enrollment.completedAt %}
+                <p><strong>Date de completion :</strong> {{ enrollment.completedAt|date('d/m/Y') }}</p>
+            {% endif %}
+        </div>
+
+        {% if newStatus in ['enrolled', 'completed'] %}
+            <div style="text-align: center;">
+                <a href="{{ url('student_dashboard') }}" class="cta-button">
+                    <span class="icon">🎯</span>Accéder à mon espace formation
+                </a>
+            </div>
+        {% endif %}
+
+        {% if newStatus == 'completed' %}
+            <h3><span class="icon">🎓</span>Prochaines étapes</h3>
+            <ul>
+                <li><strong>Consultez votre certificat</strong> dans votre espace personnel</li>
+                <li><strong>Téléchargez vos documents</strong> de formation</li>
+                <li><strong>Explorez nos autres formations</strong> pour continuer votre développement</li>
+                <li><strong>Partagez votre réussite</strong> sur vos réseaux professionnels</li>
+            </ul>
+        {% elseif newStatus == 'enrolled' %}
+            <h3><span class="icon">🎯</span>Continuez votre formation</h3>
+            <ul>
+                <li>Connectez-vous régulièrement pour suivre les nouveaux contenus</li>
+                <li>Participez aux exercices et évaluations</li>
+                <li>N'hésitez pas à poser des questions via la plateforme</li>
+            </ul>
+        {% endif %}
+
+        <h3><span class="icon">💬</span>Besoin d'aide ?</h3>
+        <p>Pour toute question concernant ce changement de statut ou votre formation :</p>
+        <ul>
+            <li>📧 Email : <a href="mailto:support@eprofos.fr">support@eprofos.fr</a></li>
+            <li>📞 Téléphone : 01 23 45 67 89</li>
+            <li>💬 Support en ligne via votre espace étudiant</li>
+        </ul>
+
+        {% if newStatus in ['suspended', 'dropped_out'] %}
+            <div class="alert alert-info">
+                <h4><span class="icon">ℹ️</span>Information importante</h4>
+                <p>Si vous pensez que ce changement de statut est une erreur ou si vous souhaitez discuter de votre situation, n'hésitez pas à nous contacter rapidement.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p><strong>EPROFOS</strong> - Plateforme de formation professionnelle</p>
+        <p>Cet email a été envoyé automatiquement suite à la modification de votre statut d'inscription.</p>
+        <p>Pour vous désinscrire de ces notifications ou modifier vos préférences, connectez-vous à votre espace personnel.</p>
+    </div>
+</body>
+</html>

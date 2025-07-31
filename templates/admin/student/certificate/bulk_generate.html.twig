@@ -1,0 +1,262 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Génération de certificats en lot - Administration{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-magic text-primary me-2"></i>
+        Génération de certificats en lot
+    </h1>
+    
+    <div>
+        <a href="{{ path('admin_certificate_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour aux certificats
+        </a>
+    </div>
+</div>
+
+{% if eligible_enrollments|length > 0 %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users me-2"></i>
+                Inscriptions éligibles pour la génération de certificats
+            </h5>
+            <div class="card-subtitle text-muted">
+                {{ eligible_enrollments|length }} inscription(s) terminée(s) sans certificat
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" id="bulk-generate-form">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label fw-bold" for="select-all">
+                            Sélectionner tout
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <i class="fas fa-check"></i>
+                                </th>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Session</th>
+                                <th>Date de fin</th>
+                                <th>Note finale</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in eligible_enrollments %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input 
+                                                class="form-check-input enrollment-checkbox" 
+                                                type="checkbox" 
+                                                name="enrollment_ids[]" 
+                                                value="{{ enrollment.id }}"
+                                                id="enrollment_{{ enrollment.id }}"
+                                            >
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ enrollment.student.fullName }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ enrollment.student.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ enrollment.sessionRegistration.session.formation.title }}
+                                            {% if enrollment.sessionRegistration.session.formation.category %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ enrollment.sessionRegistration.session.formation.category.name }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ enrollment.sessionRegistration.session.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                Du {{ enrollment.sessionRegistration.session.startDate|date('d/m/Y') }}
+                                                au {{ enrollment.sessionRegistration.session.endDate|date('d/m/Y') }}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if enrollment.completedAt %}
+                                            {{ enrollment.completedAt|date('d/m/Y H:i') }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress and enrollment.progress.completionPercentage %}
+                                            <span class="badge bg-primary">
+                                                {{ enrollment.progress.completionPercentage|number_format(1) }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Score à calculer</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        <span id="selected-count">0</span> inscription(s) sélectionnée(s)
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="btn btn-success" id="generate-btn" disabled>
+                            <i class="fas fa-magic me-2"></i>
+                            Générer les certificats
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Aucune inscription éligible</h5>
+            <p class="text-muted">
+                Toutes les inscriptions terminées ont déjà un certificat généré<br>
+                ou aucune inscription n'est terminée actuellement.
+            </p>
+            <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-users me-2"></i>
+                Voir les inscriptions
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+{# Info card about bulk generation #}
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            Informations sur la génération en lot
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Critères d'éligibilité :</h6>
+                <ul class="list-unstyled text-muted">
+                    <li><i class="fas fa-check text-success me-2"></i>Statut : Terminé</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Aucun certificat existant</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Formation active</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Processus de génération :</h6>
+                <ul class="list-unstyled text-muted">
+                    <li><i class="fas fa-cogs text-info me-2"></i>Génération automatique du numéro</li>
+                    <li><i class="fas fa-file-pdf text-danger me-2"></i>Création du fichier PDF</li>
+                    <li><i class="fas fa-envelope text-primary me-2"></i>Envoi automatique par email</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Conseil :</strong> La génération en lot traite les certificats de manière séquentielle. 
+            Pour de gros volumes, il est recommandé de traiter par petits groupes.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const enrollmentCheckboxes = document.querySelectorAll('.enrollment-checkbox');
+            const selectedCountSpan = document.getElementById('selected-count');
+            const generateBtn = document.getElementById('generate-btn');
+            const form = document.getElementById('bulk-generate-form');
+            
+            // Function to update selected count and button state
+            function updateSelectionState() {
+                const checkedBoxes = document.querySelectorAll('.enrollment-checkbox:checked');
+                const count = checkedBoxes.length;
+                
+                selectedCountSpan.textContent = count;
+                generateBtn.disabled = count === 0;
+                
+                // Update select all checkbox state
+                if (count === 0) {
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllCheckbox.checked = false;
+                } else if (count === enrollmentCheckboxes.length) {
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllCheckbox.checked = true;
+                } else {
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+            
+            // Select all functionality
+            selectAllCheckbox.addEventListener('change', function() {
+                enrollmentCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateSelectionState();
+            });
+            
+            // Individual checkbox functionality
+            enrollmentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectionState);
+            });
+            
+            // Form submission confirmation
+            form.addEventListener('submit', function(e) {
+                const checkedBoxes = document.querySelectorAll('.enrollment-checkbox:checked');
+                const count = checkedBoxes.length;
+                
+                if (count === 0) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner au moins une inscription.');
+                    return;
+                }
+                
+                const confirmMessage = `Êtes-vous sûr de vouloir générer ${count} certificat(s) ?
+                
+Cette action va :
+- Créer les certificats PDF
+- Envoyer les emails automatiquement
+- Marquer les certificats comme émis
+
+Cette action ne peut pas être annulée.`;
+                
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Initial state update
+            updateSelectionState();
+        });
+    </script>
+{% endblock %}

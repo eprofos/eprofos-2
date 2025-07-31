@@ -1,0 +1,285 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Résultats du Changement de Statut en Lot{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Résultats du Changement de Statut en Lot</h1>
+            <p class="text-muted">Nouveau statut appliqué: <strong>{{ statusLabel }}</strong></p>
+        </div>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-primary">
+            <i class="fas fa-list"></i> Voir Toutes les Inscriptions
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.success }}</h3>
+                    <p class="mb-0">Modifications réussies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.failed }}</h3>
+                    <p class="mb-0">Échecs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-edit fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.success + results.failed }}</h3>
+                    <p class="mb-0">Total traité</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    {% if results.success > 0 %}
+        <div class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <strong>Félicitations !</strong> 
+            {{ results.success }} inscription(s) mise(s) à jour avec succès vers le statut "{{ statusLabel }}".
+        </div>
+    {% endif %}
+
+    <!-- Warning Message -->
+    {% if results.failed > 0 %}
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Attention !</strong> 
+            {{ results.failed }} modification(s) ont échoué. Consultez les détails ci-dessous pour plus d'informations.
+        </div>
+    {% endif %}
+
+    <!-- Detailed Results -->
+    {% if results.details is not empty %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Détails des Résultats</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Ancien Statut</th>
+                                <th>Nouveau Statut</th>
+                                <th>Résultat</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in results.details %}
+                                <tr class="{{ detail.status is defined and detail.status == 'success' ? 'table-success' : 'table-danger' }}">
+                                    <td>
+                                        <strong>{{ detail.student }}</strong>
+                                    </td>
+                                    <td>
+                                        {{ detail.formation ?? 'N/A' }}
+                                    </td>
+                                    <td>
+                                        {% if detail.old_status is defined %}
+                                            <span class="badge bg-secondary">
+                                                {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[detail.old_status] ?? detail.old_status }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if detail.new_status is defined %}
+                                            {% set statusClass = detail.new_status == 'completed' ? 'bg-success' : (detail.new_status == 'dropped_out' ? 'bg-warning' : (detail.new_status == 'suspended' ? 'bg-danger' : 'bg-primary')) %}
+                                            <span class="badge {{ statusClass }}">
+                                                {{ constant('App\\Entity\\Core\\StudentEnrollment::STATUSES')[detail.new_status] ?? detail.new_status }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if detail.status is defined and detail.status == 'success' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Réussi
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times"></i> Échec
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if detail.error is defined %}
+                                            <span class="text-danger">{{ detail.error }}</span>
+                                        {% else %}
+                                            <span class="text-success">
+                                                <i class="fas fa-edit"></i> Statut mis à jour avec succès
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- No Results -->
+    {% if results.success == 0 and results.failed == 0 %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                <h5 class="text-info">Aucune Modification à Traiter</h5>
+                <p class="text-muted">
+                    Aucune inscription n'a été trouvée à modifier.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Status Change Information -->
+    {% if results.success > 0 %}
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> Informations sur le Changement de Statut
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Statut Appliqué</h6>
+                        <p class="mb-0">
+                            {% set statusClass = newStatus == 'completed' ? 'bg-success' : (newStatus == 'dropped_out' ? 'bg-warning' : (newStatus == 'suspended' ? 'bg-danger' : 'bg-primary')) %}
+                            <span class="badge {{ statusClass }} fs-6">{{ statusLabel }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Implications</h6>
+                        <ul class="mb-0">
+                            {% if newStatus == 'completed' %}
+                                <li>Les étudiants peuvent obtenir leur certificat</li>
+                                <li>La formation est marquée comme terminée</li>
+                            {% elseif newStatus == 'dropped_out' %}
+                                <li>L'accès au contenu reste disponible</li>
+                                <li>Les étudiants peuvent reprendre plus tard</li>
+                            {% elseif newStatus == 'suspended' %}
+                                <li>L'accès au contenu est temporairement bloqué</li>
+                                <li>Aucune progression n'est possible</li>
+                            {% else %}
+                                <li>Les étudiants ont accès au contenu de formation</li>
+                                <li>La progression peut continuer normalement</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Next Actions -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Actions Suivantes</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> Voir Toutes les Inscriptions
+                        </a>
+                        <small class="text-muted mt-2">Consulter la liste complète des inscriptions</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        <a href="{{ path('admin_enrollment_bulk_status_change') }}" class="btn btn-outline-success">
+                            <i class="fas fa-edit"></i> Nouveau Changement de Statut
+                        </a>
+                        <small class="text-muted mt-2">Procéder à un nouveau changement en lot</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        {% if results.failed > 0 %}
+                            <a href="{{ path('admin_enrollment_bulk_status_change') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-redo"></i> Réessayer les Échecs
+                            </a>
+                            <small class="text-muted mt-2">Réessayer les modifications qui ont échoué</small>
+                        {% else %}
+                            <a href="{{ path('admin_enrollment_bulk_export') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-download"></i> Exporter les Données
+                            </a>
+                            <small class="text-muted mt-2">Exporter les inscriptions mises à jour</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-redirect after 15 seconds if all successful and no failures
+    {% if results.failed == 0 and results.success > 0 %}
+        let redirectTimer = setTimeout(function() {
+            if (confirm('Redirection automatique vers la liste des inscriptions dans 5 secondes. Continuer ?')) {
+                window.location.href = '{{ path("admin_student_enrollment_index") }}';
+            }
+        }, 15000);
+
+        // Allow user to cancel auto-redirect
+        document.addEventListener('click', function() {
+            clearTimeout(redirectTimer);
+        });
+    {% endif %}
+
+    // Highlight success and error rows with subtle animation
+    const successRows = document.querySelectorAll('tr.table-success');
+    const errorRows = document.querySelectorAll('tr.table-danger');
+    
+    successRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
+    
+    errorRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
+
+    // Add tooltips for status badges
+    const statusBadges = document.querySelectorAll('.badge');
+    statusBadges.forEach(badge => {
+        if (badge.textContent.includes('Terminé')) {
+            badge.title = 'Formation terminée avec succès';
+        } else if (badge.textContent.includes('Abandon')) {
+            badge.title = 'Étudiant ayant abandonné la formation';
+        } else if (badge.textContent.includes('Suspendu')) {
+            badge.title = 'Inscription temporairement suspendue';
+        } else if (badge.textContent.includes('Inscrit')) {
+            badge.title = 'Inscription active';
+        }
+    });
+});
+</script>
+{% endblock %}

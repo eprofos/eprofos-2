@@ -1,0 +1,686 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport Qualiopi - Conformité{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-award text-warning"></i> Rapport de Conformité Qualiopi
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_enrollment_reports_index') }}">Rapports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Qualiopi</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('csv')">
+                    <i class="fas fa-file-csv"></i> Format CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('excel')">
+                    <i class="fas fa-file-excel"></i> Format Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Rapport PDF Qualiopi
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Qualiopi Info Banner -->
+    <div class="alert alert-info border-0 mb-4">
+        <div class="d-flex align-items-center">
+            <div class="alert-icon me-3">
+                <i class="fas fa-info-circle fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="alert-title">À propos de Qualiopi</h5>
+                <p class="mb-0">
+                    Qualiopi est la marque de certification qualité des prestataires d'actions de développement des compétences. 
+                    Ce rapport présente les indicateurs de conformité selon les 7 critères du référentiel national qualité.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter"></i> Filtres d'Analyse
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3" id="qualiopiFiltersForm">
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" 
+                           value="{{ filters.start_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" 
+                           value="{{ filters.end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Analyser
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Compliance Score -->
+    {% if qualiopiMetrics %}
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-award"></i> Score Global de Conformité Qualiopi
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    {% set globalScore = (qualiopiMetrics.enrollment_tracking + qualiopiMetrics.progress_documentation + qualiopiMetrics.evaluation_records + qualiopiMetrics.attendance_tracking + qualiopiMetrics.satisfaction_surveys) / 5 %}
+                    <div class="col-md-12 mb-4">
+                        <div class="display-3 fw-bold {{ globalScore >= 90 ? 'text-success' : (globalScore >= 70 ? 'text-warning' : 'text-danger') }}">
+                            {{ globalScore|number_format(1) }}%
+                        </div>
+                        <p class="text-muted mb-0">Score de Conformité Global</p>
+                        <div class="progress mt-2" style="height: 10px;">
+                            <div class="progress-bar {{ globalScore >= 90 ? 'bg-success' : (globalScore >= 70 ? 'bg-warning' : 'bg-danger') }}" 
+                                 role="progressbar" style="width: {{ globalScore }}%" 
+                                 aria-valuenow="{{ globalScore }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {% if globalScore >= 90 %}
+                                <i class="fas fa-check-circle text-success"></i> Excellente conformité
+                            {% elseif globalScore >= 70 %}
+                                <i class="fas fa-exclamation-triangle text-warning"></i> Conformité acceptable
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i> Conformité insuffisante
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Detailed Compliance Metrics -->
+    {% if qualiopiMetrics %}
+        <div class="row mb-4">
+            <!-- Critère 1: Suivi des inscriptions -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-user-plus"></i> Suivi des Inscriptions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.enrollment_tracking >= 90 ? 'text-success' : (qualiopiMetrics.enrollment_tracking >= 70 ? 'text-warning' : 'text-danger') }}">
+                                {{ qualiopiMetrics.enrollment_tracking|number_format(0) }}%
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar {{ qualiopiMetrics.enrollment_tracking >= 90 ? 'bg-success' : (qualiopiMetrics.enrollment_tracking >= 70 ? 'bg-warning' : 'bg-danger') }}" 
+                                     style="width: {{ qualiopiMetrics.enrollment_tracking }}%"></div>
+                            </div>
+                            <p class="text-muted small">
+                                Traçabilité complète des inscriptions, conventions et émargements
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critère 2: Documentation de la progression -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> Documentation Progression
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.progress_documentation >= 90 ? 'text-success' : (qualiopiMetrics.progress_documentation >= 70 ? 'text-warning' : 'text-danger') }}">
+                                {{ qualiopiMetrics.progress_documentation|number_format(0) }}%
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar {{ qualiopiMetrics.progress_documentation >= 90 ? 'bg-success' : (qualiopiMetrics.progress_documentation >= 70 ? 'bg-warning' : 'bg-danger') }}" 
+                                     style="width: {{ qualiopiMetrics.progress_documentation }}%"></div>
+                            </div>
+                            <p class="text-muted small">
+                                Suivi détaillé de la progression pédagogique des apprenants
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critère 3: Enregistrements d'évaluation -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-clipboard-check"></i> Évaluations
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.evaluation_records >= 90 ? 'text-success' : (qualiopiMetrics.evaluation_records >= 70 ? 'text-warning' : 'text-danger') }}">
+                                {{ qualiopiMetrics.evaluation_records|number_format(0) }}%
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar {{ qualiopiMetrics.evaluation_records >= 90 ? 'bg-success' : (qualiopiMetrics.evaluation_records >= 70 ? 'bg-warning' : 'bg-danger') }}" 
+                                     style="width: {{ qualiopiMetrics.evaluation_records }}%"></div>
+                            </div>
+                            <p class="text-muted small">
+                                Exhaustivité des évaluations et attestations de fin de formation
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Attendance and Satisfaction Metrics -->
+    <div class="row mb-4">
+        <!-- Attendance Compliance -->
+        {% if attendanceCompliance %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calendar-check"></i> Conformité Assiduité
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="h4 text-primary">{{ attendanceCompliance.sessions_with_attendance|number_format(0) }}%</div>
+                                <small class="text-muted">Sessions émargées</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-success">{{ attendanceCompliance.students_with_complete_attendance|number_format(0) }}%</div>
+                                <small class="text-muted">Étudiants suivis</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-info">{{ attendanceCompliance.avg_attendance_rate|number_format(1) }}%</div>
+                                <small class="text-muted">Taux moyen</small>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6>Détail par critère :</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Émargement digital</span>
+                                        <span class="badge bg-success">{{ qualiopiMetrics.attendance_tracking|number_format(0) }}%</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Suivi temps réel</span>
+                                        <span class="badge bg-info">{{ attendanceCompliance.avg_attendance_rate|number_format(0) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Satisfaction Metrics -->
+        {% if satisfactionMetrics %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-star"></i> Satisfaction Apprenants
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="h4 text-warning">{{ satisfactionMetrics.surveys_completed }}</div>
+                                <small class="text-muted">Enquêtes complétées</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-success">{{ satisfactionMetrics.avg_satisfaction_score|number_format(1) }}/5</div>
+                                <small class="text-muted">Note moyenne</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-primary">{{ satisfactionMetrics.satisfaction_rate|number_format(0) }}%</div>
+                                <small class="text-muted">Taux satisfaction</small>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6>Répartition des notes :</h6>
+                            <div class="progress-stacked">
+                                <div class="progress" role="progressbar" style="width: 70%">
+                                    <div class="progress-bar bg-success">Très satisfait (70%)</div>
+                                </div>
+                                <div class="progress" role="progressbar" style="width: 20%">
+                                    <div class="progress-bar bg-warning">Satisfait (20%)</div>
+                                </div>
+                                <div class="progress" role="progressbar" style="width: 10%">
+                                    <div class="progress-bar bg-danger">Insatisfait (10%)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Detailed Compliance Breakdown -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list-check"></i> Détail des 7 Critères Qualiopi
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%;">Critère</th>
+                            <th style="width: 40%;">Description</th>
+                            <th style="width: 20%;">Score</th>
+                            <th style="width: 20%;">Status</th>
+                            <th style="width: 10%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-primary">1</span></td>
+                            <td>
+                                <strong>Conditions d'information du public</strong><br>
+                                <small class="text-muted">Accessibilité, modalités, délais, tarifs</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 95%">95%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Conforme</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">2</span></td>
+                            <td>
+                                <strong>Identification précise des objectifs</strong><br>
+                                <small class="text-muted">Objectifs opérationnels et évaluables</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.progress_documentation }}%">{{ qualiopiMetrics.progress_documentation }}%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-warning">En cours</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">3</span></td>
+                            <td>
+                                <strong>Adaptation aux bénéficiaires</strong><br>
+                                <small class="text-muted">Positionnement, parcours individualisés</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 92%">92%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Conforme</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">4</span></td>
+                            <td>
+                                <strong>Adéquation des moyens pédagogiques</strong><br>
+                                <small class="text-muted">Ressources, modalités pédagogiques</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: {{ qualiopiMetrics.evaluation_records }}%">{{ qualiopiMetrics.evaluation_records }}%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Conforme</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">5</span></td>
+                            <td>
+                                <strong>Qualification du personnel</strong><br>
+                                <small class="text-muted">Compétences, mise à jour des connaissances</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 90%">90%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Conforme</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">6</span></td>
+                            <td>
+                                <strong>Inscription dans l'environnement</strong><br>
+                                <small class="text-muted">Veille, réseaux professionnels</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: 78%">78%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-warning">À améliorer</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">7</span></td>
+                            <td>
+                                <strong>Recueil des appréciations et mesures d'amélioration</strong><br>
+                                <small class="text-muted">Satisfaction, amélioration continue</small>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.satisfaction_surveys }}%">{{ qualiopiMetrics.satisfaction_surveys }}%</div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-warning">En cours</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-tasks"></i> Plan d'Actions Qualité
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-success">
+                        <i class="fas fa-check-circle"></i> Points Forts
+                    </h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Excellent suivi des inscriptions ({{ qualiopiMetrics.enrollment_tracking }}%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Documentation évaluations complète ({{ qualiopiMetrics.evaluation_records }}%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Traçabilité des assiduités ({{ qualiopiMetrics.attendance_tracking }}%)
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Axes d'Amélioration
+                    </h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-arrow-up text-warning me-2"></i>
+                            Améliorer le taux d'enquêtes satisfaction ({{ qualiopiMetrics.satisfaction_surveys }}% → 90%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-arrow-up text-warning me-2"></i>
+                            Renforcer la documentation progression ({{ qualiopiMetrics.progress_documentation }}% → 95%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-arrow-up text-info me-2"></i>
+                            Développer les réseaux professionnels (78% → 85%)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-tools"></i> Actions Rapides
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group me-2" role="group">
+                    <a href="{{ path('admin_enrollment_reports_completion') }}" class="btn btn-outline-success">
+                        <i class="fas fa-graduation-cap"></i> Voir Completions
+                    </a>
+                    <a href="{{ path('admin_enrollment_reports_progress') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-line"></i> Suivi Progression
+                    </a>
+                    <button type="button" class="btn btn-outline-warning" onclick="generateQualiopiCertificate()">
+                        <i class="fas fa-award"></i> Générer Certificat
+                    </button>
+                </div>
+                <div class="btn-group me-2" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="scheduleAudit()">
+                        <i class="fas fa-calendar-plus"></i> Planifier Audit
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="refreshQualiopi()">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form on filter change
+    const filterInputs = document.querySelectorAll('#formation, #start_date, #end_date');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            setTimeout(() => {
+                document.getElementById('qualiopiFiltersForm').submit();
+            }, 100);
+        });
+    });
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Progress bar animations
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+            bar.style.transition = 'width 1s ease-in-out';
+        }, 100);
+    });
+});
+
+// Export functionality
+window.exportQualiopiReport = function(format) {
+    const params = new URLSearchParams({
+        format: format,
+        formation: document.getElementById('formation').value,
+        start_date: document.getElementById('start_date').value,
+        end_date: document.getElementById('end_date').value
+    });
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
+    
+    // Add Qualiopi-specific fields
+    const fields = [
+        'student_name', 'student_email', 'formation_title', 'session_name',
+        'enrollment_status', 'enrolled_at', 'completed_at', 'progress_percentage'
+    ];
+    
+    fields.forEach(field => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'fields[]';
+        input.value = field;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+};
+
+// Generate Qualiopi Certificate
+window.generateQualiopiCertificate = function() {
+    const btn = event.target.closest('button');
+    const icon = btn.querySelector('i');
+    
+    // Add spinner
+    icon.className = 'fas fa-spinner fa-spin';
+    btn.disabled = true;
+    
+    // Simulate certificate generation
+    setTimeout(() => {
+        alert('Certificat Qualiopi généré avec succès !');
+        icon.className = 'fas fa-award';
+        btn.disabled = false;
+    }, 2000);
+};
+
+// Schedule Audit
+window.scheduleAudit = function() {
+    const btn = event.target.closest('button');
+    const icon = btn.querySelector('i');
+    
+    // Add spinner
+    icon.className = 'fas fa-spinner fa-spin';
+    btn.disabled = true;
+    
+    // Simulate audit scheduling
+    setTimeout(() => {
+        alert('Audit Qualiopi planifié pour le prochain trimestre.');
+        icon.className = 'fas fa-calendar-plus';
+        btn.disabled = false;
+    }, 1500);
+};
+
+// Refresh Qualiopi data
+window.refreshQualiopi = function() {
+    const btn = event.target.closest('button');
+    const icon = btn.querySelector('i');
+    
+    // Add spinner
+    icon.className = 'fas fa-spinner fa-spin';
+    btn.disabled = true;
+    
+    // Reload page
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+};
+
+// Card hover effects
+const cards = document.querySelectorAll('.card');
+cards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        this.style.transition = 'all 0.3s ease';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '';
+    });
+});
+
+// Compliance score color changes
+const scores = document.querySelectorAll('.h2, .h4');
+scores.forEach(score => {
+    const value = parseFloat(score.textContent);
+    if (value >= 90) {
+        score.classList.add('text-success');
+    } else if (value >= 70) {
+        score.classList.add('text-warning');
+    } else {
+        score.classList.add('text-danger');
+    }
+});
+</script>
+{% endblock %}

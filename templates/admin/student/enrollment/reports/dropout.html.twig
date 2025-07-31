@@ -1,0 +1,621 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Rapport d'Abandon - Inscriptions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Rapport d'Abandon</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_enrollment_reports_index') }}">Rapports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Abandon</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportDropoutReport('csv')">
+                    <i class="fas fa-file-csv"></i> Format CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportDropoutReport('excel')">
+                    <i class="fas fa-file-excel"></i> Format Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportDropoutReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Format PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    {% if enrollments.totalItemCount > 0 %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ enrollments.totalItemCount }}</h4>
+                                <p class="mb-0">Abandons Totaux</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-user-times fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">
+                                    {% set avgDaysToDropout = 0 %}
+                                    {% set validDropouts = 0 %}
+                                    {% for enrollment in enrollments %}
+                                        {% if enrollment.updatedAt and enrollment.enrolledAt %}
+                                            {% set daysToDropout = enrollment.updatedAt.diff(enrollment.enrolledAt).days %}
+                                            {% set avgDaysToDropout = avgDaysToDropout + daysToDropout %}
+                                            {% set validDropouts = validDropouts + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ validDropouts > 0 ? (avgDaysToDropout / validDropouts)|number_format(0) : 0 }}j
+                                </h4>
+                                <p class="mb-0">Délai Moyen d'Abandon</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ selectedFormation ? formations|filter(f => f.id == selectedFormation)|first.title|slice(0, 15) ~ '...' : 'Toutes' }}</h4>
+                                <p class="mb-0">Formation Filtrée</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-filter fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0">{{ dropoutReasons|length }}</h4>
+                                <p class="mb-0">Raisons Différentes</p>
+                            </div>
+                            <div class="text-white-50">
+                                <i class="fas fa-list-ul fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Dropout Reasons Analysis -->
+    {% if dropoutReasons|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Analyse des Raisons d'Abandon</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Raison d'abandon</th>
+                                        <th>Nombre d'étudiants</th>
+                                        <th>Pourcentage</th>
+                                        <th>Délai moyen (jours)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set totalDropouts = dropoutReasons|reduce((carry, reason) => carry + reason.count, 0) %}
+                                    {% for reason in dropoutReasons %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">{{ reason.dropout_reason ?: 'Non spécifiée' }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-danger">{{ reason.count }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px; height: 8px;">
+                                                        <div class="progress-bar bg-danger" style="width: {{ (reason.count / totalDropouts * 100)|number_format(1) }}%"></div>
+                                                    </div>
+                                                    <span class="text-muted small">{{ (reason.count / totalDropouts * 100)|number_format(1) }}%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">{{ reason.avg_days_to_dropout ? reason.avg_days_to_dropout|number_format(0) : '-' }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Répartition des Abandons</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dropoutReasonsChart" width="300" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ selectedFormation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="reason" class="form-label">Raison d'abandon</label>
+                    <input type="text" class="form-control" id="reason" name="reason" 
+                           value="{{ reasonFilter }}" placeholder="Rechercher une raison...">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_range" class="form-label">Période</label>
+                    <select class="form-select" id="date_range" name="date_range">
+                        <option value="">Toutes les périodes</option>
+                        <option value="last_week">Dernière semaine</option>
+                        <option value="last_month">Dernier mois</option>
+                        <option value="last_quarter">Dernier trimestre</option>
+                        <option value="last_year">Dernière année</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dropout Enrollments List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                Liste des Abandons
+                {% if selectedFormation or reasonFilter %}
+                    <small class="text-muted">(Filtrée)</small>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if enrollments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Session</th>
+                                <th>Date d'inscription</th>
+                                <th>Date d'abandon</th>
+                                <th>Durée avant abandon</th>
+                                <th>Progression au moment de l'abandon</th>
+                                <th>Raison d'abandon</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrollments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                                                <small class="text-muted">{{ enrollment.student.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ enrollment.sessionRegistration.session.formation.title }}</div>
+                                        <small class="text-muted">{{ enrollment.sessionRegistration.session.formation.category.name }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.sessionRegistration.session.name }}</div>
+                                        <small class="text-muted">
+                                            Du {{ enrollment.sessionRegistration.session.startDate|date('d/m/Y') }}
+                                            au {{ enrollment.sessionRegistration.session.endDate|date('d/m/Y') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div>{{ enrollment.enrolledAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ enrollment.enrolledAt|date('H:i') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-danger">{{ enrollment.updatedAt|date('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ enrollment.updatedAt|date('H:i') }}</small>
+                                    </td>
+                                    <td>
+                                        {% if enrollment.updatedAt and enrollment.enrolledAt %}
+                                            {% set duration = enrollment.updatedAt.diff(enrollment.enrolledAt) %}
+                                            <span class="badge bg-warning">
+                                                {% if duration.days > 0 %}
+                                                    {{ duration.days }}j
+                                                {% else %}
+                                                    {{ duration.h }}h {{ duration.i }}min
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if enrollment.progress %}
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 60px;">
+                                                    <div class="progress-bar bg-danger" role="progressbar" 
+                                                         style="width: {{ enrollment.progress.completionPercentage }}%" 
+                                                         aria-valuenow="{{ enrollment.progress.completionPercentage }}" 
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small>{{ enrollment.progress.completionPercentage }}%</small>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Non démarrée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if enrollment.dropoutReason %}
+                                            <div class="text-wrap" style="max-width: 200px;" title="{{ enrollment.dropoutReason }}">
+                                                {{ enrollment.dropoutReason|slice(0, 50) }}{% if enrollment.dropoutReason|length > 50 %}...{% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">Non spécifiée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" 
+                                               class="btn btn-outline-primary" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    title="Voir les détails de l'abandon"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#dropoutModal{{ enrollment.id }}">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" 
+                                                    title="Actions de reconquête"
+                                                    onclick="showReengagementActions({{ enrollment.id }})">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card-footer">
+                    {{ knp_pagination_render(enrollments) }}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                    <h5 class="text-muted">Aucun abandon trouvé</h5>
+                    <p class="text-muted">
+                        {% if selectedFormation or reasonFilter %}
+                            Aucun abandon ne correspond à vos critères de filtrage.
+                        {% else %}
+                            Excellente nouvelle ! Aucun étudiant n'a abandonné sa formation.
+                        {% endif %}
+                    </p>
+                    <a href="{{ path('admin_enrollment_reports_index') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Retour aux rapports
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Dropout Detail Modals -->
+    {% for enrollment in enrollments %}
+        <div class="modal fade" id="dropoutModal{{ enrollment.id }}" tabindex="-1" aria-labelledby="dropoutModalLabel{{ enrollment.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dropoutModalLabel{{ enrollment.id }}">
+                            Détails de l'abandon - {{ enrollment.student.fullName }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-user"></i> Informations étudiant</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Nom:</strong> {{ enrollment.student.fullName }}</li>
+                                    <li><strong>Email:</strong> {{ enrollment.student.email }}</li>
+                                    <li><strong>Formation:</strong> {{ enrollment.sessionRegistration.session.formation.title }}</li>
+                                    <li><strong>Session:</strong> {{ enrollment.sessionRegistration.session.name }}</li>
+                                </ul>
+                                
+                                <h6 class="mt-3"><i class="fas fa-calendar"></i> Chronologie</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Inscription:</strong> {{ enrollment.enrolledAt|date('d/m/Y à H:i') }}</li>
+                                    <li><strong>Abandon:</strong> {{ enrollment.updatedAt|date('d/m/Y à H:i') }}</li>
+                                    <li><strong>Durée:</strong> 
+                                        {% if enrollment.updatedAt and enrollment.enrolledAt %}
+                                            {% set duration = enrollment.updatedAt.diff(enrollment.enrolledAt) %}
+                                            {{ duration.days }} jours, {{ duration.h }} heures
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-chart-line"></i> Progression au moment de l'abandon</h6>
+                                {% if enrollment.progress %}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Progression globale</span>
+                                            <span>{{ enrollment.progress.completionPercentage }}%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" style="width: {{ enrollment.progress.completionPercentage }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if enrollment.progress.lastActivityAt %}
+                                        <p><strong>Dernière activité:</strong> {{ enrollment.progress.lastActivityAt|date('d/m/Y à H:i') }}</p>
+                                    {% endif %}
+                                    
+                                    {% if enrollment.progress.atRiskOfDropout %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i> Cet étudiant était identifié comme à risque d'abandon.
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="text-muted">Aucune progression enregistrée</p>
+                                {% endif %}
+                                
+                                <h6 class="mt-3"><i class="fas fa-comment"></i> Raison d'abandon</h6>
+                                {% if enrollment.dropoutReason %}
+                                    <div class="alert alert-info">
+                                        {{ enrollment.dropoutReason }}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted fst-italic">Aucune raison spécifiée</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-warning" onclick="showReengagementActions({{ enrollment.id }})">
+                            <i class="fas fa-undo"></i> Actions de reconquête
+                        </button>
+                        <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" class="btn btn-primary">
+                            Voir les détails complets
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dropout Reasons Chart
+    {% if dropoutReasons|length > 0 %}
+        const ctx = document.getElementById('dropoutReasonsChart').getContext('2d');
+        const dropoutData = {
+            labels: [
+                {% for reason in dropoutReasons %}
+                    '{{ reason.dropout_reason ?: "Non spécifiée" }}'{{ not loop.last ? ',' : '' }}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for reason in dropoutReasons %}
+                        {{ reason.count }}{{ not loop.last ? ',' : '' }}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0', 
+                    '#6f42c1', '#d63384', '#6c757d', '#495057', '#212529'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: dropoutData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return {
+                                        text: `${label} (${percentage}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        pointStyle: 'circle'
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    {% endif %}
+
+    // Export functionality
+    window.exportDropoutReport = function(format) {
+        const params = new URLSearchParams({
+            format: format,
+            formation: document.getElementById('formation').value,
+            reason: document.getElementById('reason').value,
+            date_range: document.getElementById('date_range').value
+        });
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
+        
+        // Add fields selection for dropout report
+        const fields = [
+            'student_name', 'student_email', 'formation_title', 'session_name',
+            'enrolled_at', 'dropout_reason', 'progress_percentage'
+        ];
+        
+        fields.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'fields[]';
+            input.value = field;
+            form.appendChild(input);
+        });
+        
+        // Add filter for dropout status
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'filters[status]';
+        statusInput.value = 'dropped_out';
+        form.appendChild(statusInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
+
+    // Auto-submit form on filter change
+    const filterInputs = document.querySelectorAll('#formation, #reason, #date_range');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Add small delay for better UX
+            setTimeout(() => {
+                this.closest('form').submit();
+            }, 100);
+        });
+    });
+
+    // Search reason input debounce
+    const reasonInput = document.getElementById('reason');
+    let searchTimeout;
+    reasonInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            this.closest('form').submit();
+        }, 500);
+    });
+
+    // Reengagement actions
+    window.showReengagementActions = function(enrollmentId) {
+        // This could open a modal with reengagement options
+        // For now, just show an alert
+        alert(`Actions de reconquête pour l'inscription ${enrollmentId}:\n\n` +
+              '• Envoyer un email de reconquête\n' +
+              '• Proposer un entretien de motivation\n' +
+              '• Offrir un accompagnement personnalisé\n' +
+              '• Adapter le parcours de formation');
+    };
+
+    // Tooltips for progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const percentage = bar.getAttribute('aria-valuenow');
+        if (percentage) {
+            bar.setAttribute('title', `Progression: ${percentage}%`);
+            bar.setAttribute('data-bs-toggle', 'tooltip');
+        }
+    });
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Table row hover effects for better UX
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+</script>
+{% endblock %}

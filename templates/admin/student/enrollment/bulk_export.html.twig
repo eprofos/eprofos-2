@@ -1,0 +1,507 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Export en Lot des Inscriptions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Export en Lot des Inscriptions</h1>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Export Configuration -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Configuration de l'export</h5>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <!-- Current Selection Info -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>{{ enrollmentsCount }}</strong> inscription(s) correspondant aux critères actuels seront exportées.
+                        </div>
+
+                        <!-- Export Format -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Format d'export <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="format" 
+                                                   id="format_csv" value="csv" checked>
+                                            <label class="form-check-label" for="format_csv">
+                                                <i class="fas fa-file-csv text-success"></i> CSV
+                                                <small class="text-muted d-block">Compatible Excel, LibreOffice</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="format" 
+                                                   id="format_xlsx" value="xlsx" disabled>
+                                            <label class="form-check-label" for="format_xlsx">
+                                                <i class="fas fa-file-excel text-success"></i> Excel (XLSX)
+                                                <small class="text-muted d-block">Prochainement disponible</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filters Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h6>Filtres d'export</h6>
+                                <p class="text-muted small">Affinez votre sélection avec les filtres ci-dessous</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Statut d'inscription</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="enrolled" {{ filters.status == 'enrolled' ? 'selected' : '' }}>Inscrit</option>
+                                    <option value="completed" {{ filters.status == 'completed' ? 'selected' : '' }}>Terminé</option>
+                                    <option value="dropped_out" {{ filters.status == 'dropped_out' ? 'selected' : '' }}>Abandon</option>
+                                    <option value="suspended" {{ filters.status == 'suspended' ? 'selected' : '' }}>Suspendu</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="enrollment_source" class="form-label">Source d'inscription</label>
+                                <select class="form-select" id="enrollment_source" name="enrollment_source">
+                                    <option value="">Toutes les sources</option>
+                                    <option value="manual" {{ filters.enrollment_source == 'manual' ? 'selected' : '' }}>Manuelle</option>
+                                    <option value="auto_email_match" {{ filters.enrollment_source == 'auto_email_match' ? 'selected' : '' }}>Email automatique</option>
+                                    <option value="bulk_admin" {{ filters.enrollment_source == 'bulk_admin' ? 'selected' : '' }}>Lot administrateur</option>
+                                    <option value="manual_link" {{ filters.enrollment_source == 'manual_link' ? 'selected' : '' }}>Liaison manuelle</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Formation and Session Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="formation" class="form-label">Formation</label>
+                                <select class="form-select" id="formation" name="formation">
+                                    <option value="">Toutes les formations</option>
+                                    {% for formation in formations %}
+                                        <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                            {{ formation.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="session" class="form-label">Session</label>
+                                <select class="form-select" id="session" name="session">
+                                    <option value="">Toutes les sessions</option>
+                                    {% for session in sessions %}
+                                        <option value="{{ session.id }}" 
+                                                data-formation="{{ session.formation_id ?? '' }}"
+                                                {{ filters.session == session.id ? 'selected' : '' }}>
+                                            {% if session.formationTitle %}{{ session.formationTitle }} - {% endif %}{{ session.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Date Range Filters -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="enrolled_after" class="form-label">Inscrit après le</label>
+                                <input type="date" class="form-control" id="enrolled_after" name="enrolled_after" 
+                                       value="{{ filters.enrolled_after ? filters.enrolled_after|date('Y-m-d') : '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="enrolled_before" class="form-label">Inscrit avant le</label>
+                                <input type="date" class="form-control" id="enrolled_before" name="enrolled_before" 
+                                       value="{{ filters.enrolled_before ? filters.enrolled_before|date('Y-m-d') : '' }}">
+                            </div>
+                        </div>
+
+                        <!-- Additional Data Options -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h6>Données supplémentaires</h6>
+                                <p class="text-muted small">Sélectionnez les informations additionnelles à inclure dans l'export</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_progress" 
+                                           name="include_progress" value="1">
+                                    <label class="form-check-label" for="include_progress">
+                                        <i class="fas fa-chart-line text-primary"></i> Inclure la progression
+                                        <small class="text-muted d-block">Pourcentage et modules complétés</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_attendance" 
+                                           name="include_attendance" value="1">
+                                    <label class="form-check-label" for="include_attendance">
+                                        <i class="fas fa-calendar-check text-success"></i> Inclure l'assiduité
+                                        <small class="text-muted d-block">Présences et absences</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Search -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label for="student_search" class="form-label">Recherche d'étudiant</label>
+                                <input type="text" class="form-control" id="student_search" name="student_search" 
+                                       placeholder="Nom, prénom ou email d'étudiant..."
+                                       value="{{ filters.student_search ?? '' }}">
+                                <div class="form-text">
+                                    Laissez vide pour exporter tous les étudiants correspondant aux autres critères
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview and Update Filters -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-outline-primary" id="update_preview">
+                                    <i class="fas fa-sync-alt"></i> Mettre à jour l'aperçu
+                                </button>
+                                <span class="text-muted ms-2">
+                                    <span id="preview_count">{{ enrollmentsCount }}</span> inscription(s) seront exportées
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" id="reset_filters">
+                                    <i class="fas fa-undo"></i> Réinitialiser les filtres
+                                </button>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary" id="export_button">
+                                    <i class="fas fa-download"></i> Lancer l'export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Informations sur l'export
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="small fw-bold">Colonnes de base :</h6>
+                        <ul class="small mb-0">
+                            <li>ID d'inscription</li>
+                            <li>Nom et prénom de l'étudiant</li>
+                            <li>Adresse email</li>
+                            <li>Formation et session</li>
+                            <li>Statut d'inscription</li>
+                            <li>Dates d'inscription et de fin</li>
+                            <li>Source d'inscription</li>
+                            <li>Notes administratives</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="small fw-bold">Données de progression :</h6>
+                        <ul class="small mb-0">
+                            <li>Pourcentage de progression</li>
+                            <li>Nombre de modules complétés</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="small fw-bold">Données d'assiduité :</h6>
+                        <ul class="small mb-0">
+                            <li>Nombre de présences</li>
+                            <li>Nombre d'absences</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb"></i> Conseils d'utilisation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Performance :</strong> Pour de gros volumes d'export, 
+                            utilisez les filtres pour limiter les résultats.
+                        </small>
+                    </div>
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>Données sensibles :</strong> Les exports contiennent 
+                            des données personnelles. Respectez la RGPD.
+                        </small>
+                    </div>
+                    <div class="alert alert-success">
+                        <small>
+                            <strong>Format CSV :</strong> Compatible avec Excel, 
+                            LibreOffice Calc, et la plupart des outils d'analyse.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Statistics -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="display-6 text-primary" id="total_enrollments">{{ enrollmentsCount }}</div>
+                            <small class="text-muted">Total inscriptions</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-6 text-success" id="exportable_count">{{ enrollmentsCount }}</div>
+                            <small class="text-muted">À exporter</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Progress Modal -->
+<div class="modal fade" id="exportProgressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export en cours</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mb-0">Génération de votre export en cours...</p>
+                <small class="text-muted">Veuillez patienter, cela peut prendre quelques instants.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const updatePreviewButton = document.getElementById('update_preview');
+    const resetFiltersButton = document.getElementById('reset_filters');
+    const exportButton = document.getElementById('export_button');
+    const previewCount = document.getElementById('preview_count');
+    const exportableCount = document.getElementById('exportable_count');
+
+    // Update preview when filters change
+    updatePreviewButton.addEventListener('click', function() {
+        updatePreview();
+    });
+
+    // Reset all filters
+    resetFiltersButton.addEventListener('click', function() {
+        // Reset all form fields
+        document.querySelectorAll('select, input[type="date"], input[type="text"]').forEach(field => {
+            if (field.type === 'checkbox') {
+                field.checked = false;
+            } else {
+                field.value = '';
+            }
+        });
+        
+        // Reset format to CSV
+        document.getElementById('format_csv').checked = true;
+        
+        // Update preview
+        updatePreview();
+    });
+
+    // Handle export form submission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show progress modal
+        const progressModal = new bootstrap.Modal(document.getElementById('exportProgressModal'));
+        progressModal.show();
+        
+        // Submit form normally after showing modal
+        setTimeout(() => {
+            // Create a temporary form to submit the data
+            const tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = form.action;
+            
+            // Copy all form data
+            const formData = new FormData(form);
+            for (const [key, value] of formData.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                tempForm.appendChild(input);
+            }
+            
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+            
+            // Hide modal after a delay
+            setTimeout(() => {
+                progressModal.hide();
+                document.body.removeChild(tempForm);
+            }, 2000);
+        }, 100);
+    });
+
+    // Auto-update preview when certain filters change
+    const autoUpdateFields = ['status', 'enrollment_source', 'enrolled_after', 'enrolled_before'];
+    autoUpdateFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (field) {
+            field.addEventListener('change', function() {
+                updatePreview();
+            });
+        }
+    });
+
+    // Update preview function
+    function updatePreview() {
+        const formData = new FormData(document.querySelector('form'));
+        
+        updatePreviewButton.disabled = true;
+        updatePreviewButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mise à jour...';
+
+        fetch(`{{ path('admin_enrollment_bulk_export') }}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const count = data.count || 0;
+                previewCount.textContent = count;
+                exportableCount.textContent = count;
+                
+                // Update alert message
+                const alertInfo = document.querySelector('.alert-info');
+                alertInfo.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    <strong>${count}</strong> inscription(s) correspondant aux critères actuels seront exportées.
+                `;
+                
+                // Enable/disable export button
+                exportButton.disabled = count === 0;
+                if (count === 0) {
+                    exportButton.innerHTML = '<i class="fas fa-download"></i> Aucune donnée à exporter';
+                } else {
+                    exportButton.innerHTML = '<i class="fas fa-download"></i> Lancer l\'export';
+                }
+            } else {
+                console.error('Error updating preview:', data.error || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Preview update error:', error);
+        })
+        .finally(() => {
+            updatePreviewButton.disabled = false;
+            updatePreviewButton.innerHTML = '<i class="fas fa-sync-alt"></i> Mettre à jour l\'aperçu';
+        });
+    }
+
+    // Formation/Session cascade loading
+    const formationSelect = document.getElementById('formation');
+    const sessionSelect = document.getElementById('session');
+    
+    if (formationSelect && sessionSelect) {
+        // Store all sessions for filtering
+        const allSessions = Array.from(sessionSelect.querySelectorAll('option')).slice(1); // Skip first option
+        
+        formationSelect.addEventListener('change', function() {
+            const formationId = this.value;
+            
+            // Clear and rebuild sessions
+            sessionSelect.innerHTML = '<option value="">Toutes les sessions</option>';
+            
+            if (formationId) {
+                // Filter sessions by formation
+                const filteredSessions = allSessions.filter(option => 
+                    option.dataset.formation === formationId || option.dataset.formation === ''
+                );
+                
+                filteredSessions.forEach(option => {
+                    sessionSelect.appendChild(option.cloneNode(true));
+                });
+            } else {
+                // Show all sessions
+                allSessions.forEach(option => {
+                    sessionSelect.appendChild(option.cloneNode(true));
+                });
+            }
+            
+            updatePreview();
+        });
+    }
+
+    // Student search with debounce
+    const studentSearch = document.getElementById('student_search');
+    if (studentSearch) {
+        let searchTimeout;
+        studentSearch.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                updatePreview();
+            }, 500);
+        });
+    }
+
+    // Include progress/attendance checkboxes
+    const includeProgress = document.getElementById('include_progress');
+    const includeAttendance = document.getElementById('include_attendance');
+    
+    [includeProgress, includeAttendance].forEach(checkbox => {
+        if (checkbox) {
+            checkbox.addEventListener('change', function() {
+                updatePreview();
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -181,6 +181,18 @@ class EnrollmentBulkController extends AbstractController
     public function bulkExport(Request $request): Response
     {
         if ($request->isMethod('POST')) {
+            // Handle AJAX preview requests
+            if ($request->isXmlHttpRequest()) {
+                $filters = $this->buildFiltersFromRequest($request);
+                $enrollmentsCount = $this->enrollmentRepository->countEnrollmentsWithFilters($filters);
+                
+                return new JsonResponse([
+                    'success' => true,
+                    'count' => $enrollmentsCount,
+                ]);
+            }
+
+            // Handle actual export requests
             $format = $request->request->get('format', 'csv');
             $filters = $this->buildFiltersFromRequest($request);
             $includeProgress = $request->request->getBoolean('include_progress', false);
@@ -193,9 +205,31 @@ class EnrollmentBulkController extends AbstractController
         $filters = $this->buildFiltersFromRequest($request);
         $enrollmentsCount = $this->enrollmentRepository->countEnrollmentsWithFilters($filters);
 
+        // Get formations for the dropdown
+        $formations = $this->entityManager->getRepository(\App\Entity\Training\Formation::class)
+            ->createQueryBuilder('f')
+            ->select('f.id, f.title')
+            ->where('f.isActive = :active')
+            ->setParameter('active', true)
+            ->orderBy('f.title', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        // Get sessions for the dropdown  
+        $sessions = $this->sessionRepository->createQueryBuilder('s')
+            ->select('s.id, s.name, f.id as formation_id, f.title as formationTitle')
+            ->leftJoin('s.formation', 'f')
+            ->where('s.isActive = :active')
+            ->setParameter('active', true)
+            ->orderBy('f.title, s.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
         return $this->render('admin/student/enrollment/bulk_export.html.twig', [
             'enrollmentsCount' => $enrollmentsCount,
             'filters' => $filters,
+            'formations' => $formations,
+            'sessions' => $sessions,
         ]);
     }
 
@@ -410,6 +444,10 @@ class EnrollmentBulkController extends AbstractController
 
         if ($enrolledBefore = $request->get('enrolled_before')) {
             $filters['enrolled_before'] = new \DateTime($enrolledBefore);
+        }
+
+        if ($studentSearch = $request->get('student_search')) {
+            $filters['student_search'] = $studentSearch;
         }
 
         return $filters;

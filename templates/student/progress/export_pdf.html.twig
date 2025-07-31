@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport de Progression - {{ report.student.name ?? 'Étudiant' }}</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .meta-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .meta-info h2 {
+            color: #495057;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .student-info div {
+            flex: 1;
+        }
+        
+        .stats-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            flex: 1;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .stat-box h3 {
+            color: #007bff;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .stat-box p {
+            color: #666;
+            font-size: 11px;
+            margin: 5px 0 0 0;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #495057;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-bar.success {
+            background-color: #28a745;
+        }
+        
+        .progress-bar.primary {
+            background-color: #007bff;
+        }
+        
+        .progress-bar.warning {
+            background-color: #ffc107;
+        }
+        
+        .progress-bar.danger {
+            background-color: #dc3545;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .table th {
+            background-color: #007bff;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 10px;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .milestone-badge {
+            display: inline-block;
+            background-color: #ffc107;
+            color: #212529;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .milestone-badge.achieved {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .analytics-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .analytics-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        .no-break {
+            page-break-inside: avoid;
+        }
+        
+        .text-success {
+            color: #28a745;
+        }
+        
+        .text-warning {
+            color: #ffc107;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+        }
+        
+        .text-info {
+            color: #17a2b8;
+        }
+        
+        .small {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Rapport de Progression Individuel</h1>
+        <p class="subtitle">{{ report.student.name ?? 'Étudiant' }} - {{ report.formation.title ?? 'Formation' }}</p>
+        <p class="subtitle">Rapport généré le {{ 'now'|date('d/m/Y à H:i') }}</p>
+    </div>
+
+    <div class="meta-info">
+        <h2>Informations Générales</h2>
+        <div class="student-info">
+            <div>
+                <p><strong>Nom :</strong> {{ report.student.name ?? 'Non défini' }}</p>
+                <p><strong>Email :</strong> {{ report.student.email ?? 'Non défini' }}</p>
+            </div>
+            <div>
+                <p><strong>Formation :</strong> {{ report.formation.title ?? 'Non définie' }}</p>
+                <p><strong>Niveau :</strong> {{ report.formation.level ?? 'Non défini' }}</p>
+            </div>
+            <div>
+                <p><strong>Date d'inscription :</strong> {{ report.enrollment.enrolledAt ?? 'Non définie' }}</p>
+                <p><strong>Statut :</strong> {{ report.enrollment.status ?? 'Actif' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h3>{{ (report.progress.completion_percentage ?? 0)|round(1) }}%</h3>
+            <p>Progression Globale</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ (report.progress.engagement_score ?? 0)|round(1) }}/100</h3>
+            <p>Score d'Engagement</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ ((report.progress.total_time_spent ?? 0) / 60)|round(1) }}h</h3>
+            <p>Temps d'Étude Total</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ report.progress.login_count ?? 0 }}</h3>
+            <p>Connexions</p>
+        </div>
+    </div>
+
+    {% if report.progress.completion_percentage is defined %}
+    <div class="section no-break">
+        <h2>Progression Détaillée</h2>
+        <div class="analytics-card">
+            <div class="analytics-row">
+                <span>Progression générale</span>
+                <span><strong>{{ (report.progress.completion_percentage ?? 0)|round(1) }}%</strong></span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar {{ (report.progress.completion_percentage ?? 0) >= 80 ? 'success' : ((report.progress.completion_percentage ?? 0) >= 60 ? 'primary' : ((report.progress.completion_percentage ?? 0) >= 40 ? 'warning' : 'danger')) }}" 
+                     style="width: {{ report.progress.completion_percentage ?? 0 }}%"></div>
+            </div>
+            
+            <div class="analytics-row">
+                <span>Score d'engagement</span>
+                <span class="{{ (report.progress.engagement_score ?? 0) >= 80 ? 'text-success' : ((report.progress.engagement_score ?? 0) >= 60 ? 'text-info' : 'text-warning') }}">
+                    <strong>{{ (report.progress.engagement_score ?? 0)|round(1) }}/100</strong>
+                </span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar {{ (report.progress.engagement_score ?? 0) >= 80 ? 'success' : ((report.progress.engagement_score ?? 0) >= 60 ? 'primary' : 'warning') }}" 
+                     style="width: {{ report.progress.engagement_score ?? 0 }}%"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report.content_progress is defined %}
+    <div class="section no-break">
+        <h2>Progression par Type de Contenu</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Type de Contenu</th>
+                    <th style="width: 15%;">Total</th>
+                    <th style="width: 15%;">Terminé</th>
+                    <th style="width: 15%;">En Cours</th>
+                    <th style="width: 15%;">Non Commencé</th>
+                    <th style="width: 15%;">Taux de Réussite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if report.content_progress.courses is defined %}
+                <tr>
+                    <td><strong>Cours</strong></td>
+                    <td>{{ report.content_progress.courses.total ?? 0 }}</td>
+                    <td class="text-success">{{ report.content_progress.courses.completed ?? 0 }}</td>
+                    <td class="text-warning">{{ report.content_progress.courses.in_progress ?? 0 }}</td>
+                    <td>{{ report.content_progress.courses.not_started ?? 0 }}</td>
+                    <td>{{ (report.content_progress.courses.total ?? 0) > 0 ? (((report.content_progress.courses.completed ?? 0) / (report.content_progress.courses.total ?? 1)) * 100)|round(1) : 0 }}%</td>
+                </tr>
+                {% endif %}
+                {% if report.content_progress.exercises is defined %}
+                <tr>
+                    <td><strong>Exercices</strong></td>
+                    <td>{{ report.content_progress.exercises.total ?? 0 }}</td>
+                    <td class="text-success">{{ report.content_progress.exercises.submitted ?? 0 }}</td>
+                    <td class="text-warning">{{ report.content_progress.exercises.attempted ?? 0 }}</td>
+                    <td>{{ report.content_progress.exercises.not_started ?? 0 }}</td>
+                    <td>{{ (report.content_progress.exercises.total ?? 0) > 0 ? (((report.content_progress.exercises.submitted ?? 0) / (report.content_progress.exercises.total ?? 1)) * 100)|round(1) : 0 }}%</td>
+                </tr>
+                {% endif %}
+                {% if report.content_progress.qcms is defined %}
+                <tr>
+                    <td><strong>QCM</strong></td>
+                    <td>{{ report.content_progress.qcms.total ?? 0 }}</td>
+                    <td class="text-success">{{ report.content_progress.qcms.passed ?? 0 }}</td>
+                    <td class="text-danger">{{ report.content_progress.qcms.failed ?? 0 }}</td>
+                    <td>{{ report.content_progress.qcms.not_attempted ?? 0 }}</td>
+                    <td>{{ report.content_progress.qcms.average_score ?? 0 }}/100 (moyenne)</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if report.milestones is defined and report.milestones is not empty %}
+    <div class="section no-break">
+        <h2>Accomplissements et Jalons</h2>
+        <div class="analytics-card">
+            <p><strong>Jalons atteints :</strong></p>
+            <div>
+                {% for key, milestone in report.milestones %}
+                    {% if milestone.achieved_at is defined %}
+                        <span class="milestone-badge achieved">✓ {{ milestone.title ?? key }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report.learning_analytics is defined %}
+    <div class="section no-break">
+        <h2>Analytiques d'Apprentissage</h2>
+        <div class="analytics-card">
+            <div class="analytics-row">
+                <span>Durée moyenne de session</span>
+                <span><strong>{{ report.learning_analytics.average_session_duration ?? 0 }} minutes</strong></span>
+            </div>
+            
+            <div class="analytics-row">
+                <span>Tendance d'engagement</span>
+                <span class="{{ report.learning_analytics.engagement_trend == 'high' ? 'text-success' : (report.learning_analytics.engagement_trend == 'moderate' ? 'text-info' : 'text-warning') }}">
+                    <strong>
+                        {% if report.learning_analytics.engagement_trend == 'high' %}
+                            Élevé
+                        {% elseif report.learning_analytics.engagement_trend == 'moderate' %}
+                            Modéré
+                        {% else %}
+                            Faible
+                        {% endif %}
+                    </strong>
+                </span>
+            </div>
+            
+            <div class="analytics-row">
+                <span>Vélocité d'apprentissage</span>
+                <span><strong>{{ report.learning_analytics.learning_velocity ?? 0 }}% par jour</strong></span>
+            </div>
+            
+            {% if report.learning_analytics.difficulty_areas is defined and report.learning_analytics.difficulty_areas is not empty %}
+            <div style="margin-top: 15px;">
+                <p><strong>Signaux de difficulté détectés :</strong></p>
+                <div class="small">
+                    {% for signal in report.learning_analytics.difficulty_areas %}
+                        <span class="milestone-badge">{{ signal }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report.progress.at_risk_of_dropout is defined and report.progress.at_risk_of_dropout %}
+    <div class="section no-break">
+        <h2 style="color: #dc3545;">⚠️ Alerte de Suivi Pédagogique</h2>
+        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px;">
+            <p><strong>Score de risque :</strong> {{ report.progress.risk_score ?? 0 }}/100</p>
+            <p><strong>Statut :</strong> Étudiant à risque de décrochage</p>
+            <p><strong>Dernière activité :</strong> {{ report.progress.last_activity ?? 'Non définie' }}</p>
+            
+            <div style="margin-top: 10px;">
+                <p><strong>Recommandations :</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px; font-size: 11px;">
+                    {% if report.progress.engagement_score < 50 %}
+                        <li>Contacter l'étudiant pour évaluer sa motivation et ses difficultés</li>
+                    {% endif %}
+                    {% if report.progress.completion_percentage < 25 %}
+                        <li>Proposer un accompagnement personnalisé</li>
+                    {% endif %}
+                    {% if report.progress.last_activity %}
+                        <li>Vérifier les causes d'absence prolongée</li>
+                    {% endif %}
+                    <li>Organiser un entretien de régulation</li>
+                    <li>Adapter le rythme ou la méthode pédagogique si nécessaire</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section no-break">
+        <h2>Résumé et Recommandations</h2>
+        <div class="analytics-card">
+            {% set completion = report.progress.completion_percentage ?? 0 %}
+            {% set engagement = report.progress.engagement_score ?? 0 %}
+            
+            <p><strong>Évaluation générale :</strong></p>
+            <p>
+                {% if completion >= 80 and engagement >= 80 %}
+                    <span class="text-success">Excellent parcours ! L'étudiant démontre un excellent niveau d'engagement et progresse remarquablement bien.</span>
+                {% elseif completion >= 60 and engagement >= 60 %}
+                    <span class="text-info">Bon parcours. L'étudiant progresse bien avec un bon niveau d'engagement. Quelques améliorations possibles.</span>
+                {% elseif completion >= 40 or engagement >= 40 %}
+                    <span class="text-warning">Parcours satisfaisant mais nécessite une attention particulière pour maintenir la motivation.</span>
+                {% else %}
+                    <span class="text-danger">Parcours nécessitant un accompagnement renforcé et un suivi individualisé.</span>
+                {% endif %}
+            </p>
+            
+            <p><strong>Points forts :</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px; font-size: 11px;">
+                {% if engagement >= 70 %}
+                    <li>Bon niveau d'engagement et d'implication</li>
+                {% endif %}
+                {% if completion >= 50 %}
+                    <li>Progression régulière dans le contenu</li>
+                {% endif %}
+                {% if report.progress.login_count >= 10 %}
+                    <li>Assiduité et régularité dans les connexions</li>
+                {% endif %}
+                {% if report.content_progress.qcms.average_score is defined and report.content_progress.qcms.average_score >= 70 %}
+                    <li>Bons résultats aux évaluations ({{ report.content_progress.qcms.average_score }}/100)</li>
+                {% endif %}
+            </ul>
+            
+            <p><strong>Axes d'amélioration :</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px; font-size: 11px;">
+                {% if engagement < 60 %}
+                    <li>Améliorer l'engagement et la participation active</li>
+                {% endif %}
+                {% if completion < 50 %}
+                    <li>Accélérer la progression dans le contenu pédagogique</li>
+                {% endif %}
+                {% if report.learning_analytics.average_session_duration is defined and report.learning_analytics.average_session_duration < 30 %}
+                    <li>Augmenter la durée des sessions d'apprentissage</li>
+                {% endif %}
+                {% if report.content_progress.exercises.submitted is defined and report.content_progress.exercises.total is defined and (report.content_progress.exercises.submitted / report.content_progress.exercises.total) < 0.5 %}
+                    <li>Compléter davantage d'exercices pratiques</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Ce rapport a été généré automatiquement par le système EPROFOS</p>
+        <p>Rapport individuel de progression - Conforme aux exigences de suivi pédagogique</p>
+        <p><strong>Date de génération :</strong> {{ 'now'|date('d/m/Y à H:i:s') }}</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,412 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Étudiants à Risque{% endblock %}
+
+{% block body %}
+<div class="container-fluid" 
+     data-controller="at-risk" 
+     data-at-risk-export-url-value="{{ path('admin_progress_monitoring_api_stats') }}"
+     data-at-risk-analyze-url-value="{{ path('admin_progress_monitoring_api_stats') }}"
+     data-at-risk-recommendations-value="[]">
+     
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            Étudiants à Risque de Décrochage
+        </h1>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary" data-action="click->at-risk#refreshRiskAnalysis" data-at-risk-target="refreshButton">
+                <i class="fas fa-sync-alt me-1"></i> Actualiser l'analyse
+            </button>
+            <button type="button" class="btn btn-success" data-action="click->at-risk#exportAtRiskStudents">
+                <i class="fas fa-download me-1"></i> Exporter
+            </button>
+        </div>
+    </div>
+
+    <!-- Risk Overview Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Risque Élevé</h6>
+                            <h3 class="mb-0">
+                                {{ atRiskEnrollments|filter(e => e.progress and e.progress.riskScore >= 70)|length }}
+                            </h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Risque Modéré</h6>
+                            <h3 class="mb-0">
+                                {{ atRiskEnrollments|filter(e => e.progress and e.progress.riskScore >= 40 and e.progress.riskScore < 70)|length }}
+                            </h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Risque Faible</h6>
+                            <h3 class="mb-0">
+                                {{ atRiskEnrollments|filter(e => e.progress and e.progress.riskScore < 40)|length }}
+                            </h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Total à Risque</h6>
+                            <h3 class="mb-0">{{ atRiskEnrollments.getTotalItemCount }}</h3>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Factors Analysis -->
+    {% if riskFactors is not empty %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Analyse des Facteurs de Risque
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for factor, count in riskFactors %}
+                            <div class="col-md-4 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="text-muted small">{{ factor|title }}</div>
+                                        <div class="h5 mb-0">{{ count }} étudiants</div>
+                                    </div>
+                                    <div class="text-muted">
+                                        <i class="fas fa-chart-bar fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="formation" class="form-label">Formation</label>
+                    <select class="form-select" id="formation" name="formation">
+                        <option value="">Toutes les formations</option>
+                        {% for formation in formations %}
+                            <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
+                                {{ formation.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="risk_level" class="form-label">Niveau de Risque</label>
+                    <select class="form-select" id="risk_level" name="risk_level">
+                        <option value="">Tous les niveaux</option>
+                        <option value="high" {{ filters.risk_level == 'high' ? 'selected' : '' }}>Élevé (≥70%)</option>
+                        <option value="medium" {{ filters.risk_level == 'medium' ? 'selected' : '' }}>Modéré (40-69%)</option>
+                        <option value="low" {{ filters.risk_level == 'low' ? 'selected' : '' }}>Faible (&lt;40%)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="dropdown d-grid">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-action="click->at-risk#filterByRisk" data-risk-level="all">Tous</a></li>
+                            <li><a class="dropdown-item" href="#" data-action="click->at-risk#filterByRisk" data-risk-level="high">Risque élevé</a></li>
+                            <li><a class="dropdown-item" href="#" data-action="click->at-risk#filterByRisk" data-risk-level="medium">Risque modéré</a></li>
+                            <li><a class="dropdown-item" href="#" data-action="click->at-risk#filterByRisk" data-risk-level="low">Risque faible</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- At-Risk Students Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Étudiants à Risque
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if atRiskEnrollments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Progression</th>
+                                <th>Score de Risque</th>
+                                <th>Engagement</th>
+                                <th>Dernière Activité</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in atRiskEnrollments %}
+                                {% set progress = enrollment.progress %}
+                                {% set riskScore = progress ? progress.riskScore ?? 0 : 0 %}
+                                {% set riskLevel = riskScore >= 70 ? 'high' : (riskScore >= 40 ? 'medium' : 'low') %}
+                                
+                                <tr data-at-risk-target="riskRow" data-risk-level="{{ riskLevel }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-3">
+                                                <div class="avatar-initial bg-{{ riskLevel == 'high' ? 'danger' : (riskLevel == 'medium' ? 'warning' : 'info') }} text-white">
+                                                    {{ enrollment.student.firstName|first }}{{ enrollment.student.lastName|first }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ enrollment.student.fullName }}</div>
+                                                <small class="text-muted">{{ enrollment.student.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ enrollment.formation.title }}</div>
+                                        <small class="text-muted">{{ enrollment.formation.category.name }}</small>
+                                    </td>
+                                    <td>
+                                        {% set completionPercent = progress ? progress.completionPercentage ?? 0 : 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-{{ completionPercent < 25 ? 'danger' : (completionPercent < 75 ? 'warning' : 'success') }}" 
+                                                     style="width: {{ completionPercent }}%"></div>
+                                            </div>
+                                            <small class="text-muted">{{ completionPercent }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-{{ riskLevel == 'high' ? 'danger' : (riskLevel == 'medium' ? 'warning' : 'info') }} me-2">
+                                                {{ riskScore }}%
+                                            </span>
+                                            <small class="text-muted">
+                                                {% if riskLevel == 'high' %}
+                                                    Élevé
+                                                {% elseif riskLevel == 'medium' %}
+                                                    Modéré
+                                                {% else %}
+                                                    Faible
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set engagementLevel = progress ? progress.engagementLevel ?? 0 : 0 %}
+                                        <div class="d-flex align-items-center">
+                                            {% for i in 1..5 %}
+                                                <i class="fas fa-star {{ i <= engagementLevel ? 'text-warning' : 'text-muted' }} me-1"></i>
+                                            {% endfor %}
+                                            <small class="text-muted ms-1">{{ engagementLevel }}/5</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if progress and progress.lastActivity %}
+                                            {% set daysSince = date().diff(progress.lastActivity).days %}
+                                            <div class="text-{{ daysSince > 7 ? 'danger' : (daysSince > 3 ? 'warning' : 'success') }}">
+                                                {{ progress.lastActivity|date('d/m/Y') }}
+                                            </div>
+                                            <small class="text-muted">
+                                                Il y a {{ daysSince }} jour{{ daysSince > 1 ? 's' : '' }}
+                                            </small>
+                                        {% else %}
+                                            <span class="text-muted">
+                                                <i class="fas fa-minus"></i> Non renseigné
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('admin_progress_monitoring_show', {id: enrollment.id}) }}" 
+                                               class="btn btn-outline-primary" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    data-action="click->at-risk#contactStudent"
+                                                    data-student-id="{{ enrollment.student.id }}"
+                                                    title="Contacter l'étudiant">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" 
+                                                    data-action="click->at-risk#createIntervention"
+                                                    data-student-id="{{ enrollment.student.id }}"
+                                                    title="Planifier une intervention">
+                                                <i class="fas fa-user-md"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#recommendationsModal"
+                                                    data-action="click->at-risk#showAllRecommendations"
+                                                    data-index="0"
+                                                    title="Voir les recommandations">
+                                                <i class="fas fa-lightbulb"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card-footer">
+                    {{ knp_pagination_render(atRiskEnrollments) }}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Aucun étudiant à risque détecté</h5>
+                    <p class="text-muted">
+                        {% if filters.formation or filters.risk_level %}
+                            Aucun étudiant ne correspond à vos critères de filtrage, ou tous les étudiants ont un bon niveau de progression.
+                        {% else %}
+                            Excellente nouvelle ! Aucun étudiant n'est actuellement identifié comme étant à risque de décrochage.
+                        {% endif %}
+                    </p>
+                    <div class="mt-3">
+                        <a href="{{ path('admin_progress_monitoring_index') }}" class="btn btn-primary">
+                            <i class="fas fa-chart-line me-1"></i> Voir le tableau de bord général
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" data-action="click->at-risk#refreshRiskAnalysis">
+                            <i class="fas fa-sync-alt me-1"></i> Actualiser l'analyse
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    {% if atRiskEnrollments|length > 0 %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="card-title mb-0">
+                <i class="fas fa-layer-group me-2"></i>
+                Actions en Lot
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ path('admin_progress_monitoring_bulk_intervention') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="intervention_type" class="form-label">Type d'intervention</label>
+                        <select class="form-select" id="intervention_type" name="intervention_type" required>
+                            <option value="">Sélectionner le type</option>
+                            <option value="email">Envoi d'email de motivation</option>
+                            <option value="call">Appel téléphonique</option>
+                            <option value="meeting">Planifier un entretien</option>
+                            <option value="support">Support pédagogique supplémentaire</option>
+                            <option value="reminder">Rappel des échéances</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="notes" class="form-label">Notes</label>
+                        <input type="text" class="form-control" id="notes" name="notes" 
+                               placeholder="Notes sur l'intervention..." required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-warning d-grid">
+                            <i class="fas fa-play me-1"></i> Appliquer
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hidden inputs for selected students (would be populated by JavaScript) -->
+                <input type="hidden" name="enrollment_ids[]" value="">
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recommendations Modal -->
+<div class="modal fade" id="recommendationsModal" tabindex="-1" data-at-risk-target="recommendationsModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>
+                    Recommandations d'Intervention
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" data-at-risk-target="modalContent">
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Chargement des recommandations...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Fermer
+                </button>
+                <button type="button" class="btn btn-primary" data-action="click->at-risk#implementRecommendations">
+                    <i class="fas fa-check me-1"></i> Mettre en œuvre
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,562 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Désinscription en Lot{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Désinscription en Lot</h1>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Unenrollment Form -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sélectionner les inscriptions à annuler</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="formation_filter" class="form-label">Formation</label>
+                            <select class="form-select" id="formation_filter" name="formation_filter">
+                                <option value="">Toutes les formations</option>
+                                {% for enrollment in enrollments %}
+                                    {% set formation = enrollment.formation %}
+                                    <option value="{{ formation.id }}" 
+                                            {% if filters.formation == formation.id %}selected{% endif %}>
+                                        {{ formation.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="session_filter" class="form-label">Session</label>
+                            <select class="form-select" id="session_filter" name="session_filter">
+                                <option value="">Toutes les sessions</option>
+                                {% for enrollment in enrollments %}
+                                    {% set session = enrollment.session %}
+                                    <option value="{{ session.id }}" 
+                                            {% if filters.session == session.id %}selected{% endif %}>
+                                        {{ session.name }} - {{ session.startDate|date('d/m/Y') }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label for="student_search" class="form-label">Rechercher un étudiant</label>
+                            <input type="text" class="form-control" id="student_search" name="student_search" 
+                                   placeholder="Nom, prénom ou email de l'étudiant..."
+                                   value="{{ filters.student_search ?? '' }}">
+                        </div>
+                    </div>
+
+                    <!-- Load Enrollments Button -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-outline-primary" id="load_enrollments">
+                                <i class="fas fa-search"></i> Charger les inscriptions correspondantes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enrollments List -->
+            <div class="card mt-4" id="enrollments_card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            Inscriptions actives 
+                            <span class="badge bg-primary" id="enrollment_count">{{ enrollments|length }}</span>
+                        </h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="select_all">
+                                <i class="fas fa-check-square"></i> Tout sélectionner
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect_all">
+                                <i class="far fa-square"></i> Tout désélectionner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if enrollments is empty %}
+                        <div class="alert alert-info m-3">
+                            <i class="fas fa-info-circle"></i>
+                            Aucune inscription active trouvée. Seules les inscriptions avec le statut "Inscrit" peuvent être annulées.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">
+                                            <input type="checkbox" id="select_all_checkbox" class="form-check-input">
+                                        </th>
+                                        <th>Étudiant</th>
+                                        <th>Formation</th>
+                                        <th>Session</th>
+                                        <th>Date d'inscription</th>
+                                        <th>Progression</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enrollments_tbody">
+                                    {% for enrollment in enrollments %}
+                                        <tr class="enrollment-row" data-enrollment-id="{{ enrollment.id }}">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input enrollment-checkbox" 
+                                                       value="{{ enrollment.id }}">
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ enrollment.student.fullName }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ enrollment.student.email }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    {{ enrollment.formation.title }}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        {{ enrollment.formation.category.name }}
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    {{ enrollment.session.name }}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        {{ enrollment.session.startDate|date('d/m/Y') }} - 
+                                                        {{ enrollment.session.endDate|date('d/m/Y') }}
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small>{{ enrollment.enrolledAt|date('d/m/Y H:i') }}</small>
+                                            </td>
+                                            <td>
+                                                {% if enrollment.progress %}
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" 
+                                                             style="width: {{ enrollment.progress.completionPercentage }}%">
+                                                            {{ enrollment.progress.completionPercentage }}%
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <small class="text-muted">Aucune progression</small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Unenrollment Options -->
+            {% if enrollments is not empty %}
+                <div class="card mt-4" id="unenroll_options_card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Options de désinscription</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="unenroll_form">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="unenroll_reason" class="form-label">Raison de la désinscription <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="unenroll_reason" name="unenroll_reason" required>
+                                        <option value="">Sélectionner une raison</option>
+                                        <option value="administrative">Décision administrative</option>
+                                        <option value="student_request">Demande de l'étudiant</option>
+                                        <option value="capacity_issue">Problème de capacité</option>
+                                        <option value="prerequisite_missing">Prérequis non remplis</option>
+                                        <option value="payment_issue">Problème de paiement</option>
+                                        <option value="duplicate_registration">Inscription en double</option>
+                                        <option value="session_cancelled">Session annulée</option>
+                                        <option value="technical_issue">Problème technique</option>
+                                        <option value="other">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3" id="custom_reason_container" style="display: none;">
+                                <div class="col-md-12">
+                                    <label for="custom_reason" class="form-label">Raison personnalisée</label>
+                                    <textarea class="form-control" id="custom_reason" name="custom_reason" rows="3" 
+                                              placeholder="Veuillez préciser la raison de la désinscription..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notify_students" 
+                                               name="notify_students" value="1" checked>
+                                        <label class="form-check-label" for="notify_students">
+                                            Notifier les étudiants par email de leur désinscription
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-danger" id="process_unenrollment" disabled>
+                                        <i class="fas fa-user-times"></i> Procéder à la désinscription
+                                    </button>
+                                    <span class="text-muted ms-3" id="selected_count">0 inscription(s) sélectionnée(s)</span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> À propos des Désinscriptions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> Qu'est-ce que la désinscription ?</h6>
+                        <p class="small mb-0">
+                            La désinscription retire définitivement l'étudiant de la session sélectionnée. 
+                            Cette action est irréversible.
+                        </p>
+                    </div>
+
+                    <h6>Conséquences de la désinscription :</h6>
+                    <ul class="small">
+                        <li>L'accès au contenu de formation sera retiré</li>
+                        <li>La progression sera conservée mais inaccessible</li>
+                        <li>L'étudiant devra se réinscrire pour reprendre</li>
+                        <li>Les certificats obtenus restent valides</li>
+                    </ul>
+
+                    <h6>Statuts concernés :</h6>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Inscrit</span>
+                        <p class="small mt-1 mb-0">Seules les inscriptions actives peuvent être annulées</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Attention
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>Action irréversible :</strong> Une fois la désinscription effectuée, 
+                            elle ne peut pas être annulée. L'étudiant devra effectuer une nouvelle inscription.
+                        </small>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Notifications :</strong> Si l'option est activée, 
+                            les étudiants recevront un email les informant de leur désinscription 
+                            avec la raison spécifiée.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="text-primary">
+                                <i class="fas fa-users fa-2x"></i>
+                                <div class="mt-1">
+                                    <strong>{{ enrollments|length }}</strong>
+                                    <br>
+                                    <small class="text-muted">Inscriptions actives</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-success">
+                                <i class="fas fa-graduation-cap fa-2x"></i>
+                                <div class="mt-1">
+                                    <strong id="avg_progress">
+                                        {% set total_progress = 0 %}
+                                        {% set count_with_progress = 0 %}
+                                        {% for enrollment in enrollments %}
+                                            {% if enrollment.progress %}
+                                                {% set total_progress = total_progress + enrollment.progress.completionPercentage %}
+                                                {% set count_with_progress = count_with_progress + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ count_with_progress > 0 ? (total_progress / count_with_progress)|round : 0 }}%
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">Progression moyenne</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer les désinscriptions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Attention !</strong> Vous êtes sur le point de désinscrire <strong id="confirm_count">0</strong> étudiant(s).
+                    <br>
+                    <small>Cette action est irréversible et retirera l'accès au contenu de formation.</small>
+                </div>
+                <div id="confirm_details">
+                    <!-- Confirmation details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirm_unenroll">
+                    <i class="fas fa-user-times"></i> Confirmer les désinscriptions
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reasonSelect = document.getElementById('unenroll_reason');
+    const customReasonContainer = document.getElementById('custom_reason_container');
+    const processButton = document.getElementById('process_unenrollment');
+    const selectAllCheckbox = document.getElementById('select_all_checkbox');
+    const selectedCountSpan = document.getElementById('selected_count');
+    const enrollmentCheckboxes = document.querySelectorAll('.enrollment-checkbox');
+    
+    // Show/hide custom reason field
+    reasonSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            customReasonContainer.style.display = 'block';
+        } else {
+            customReasonContainer.style.display = 'none';
+        }
+    });
+
+    // Handle select all functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        enrollmentCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+
+    // Handle individual checkbox changes
+    enrollmentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectedCount();
+            updateSelectAllState();
+        });
+    });
+
+    // Select/Deselect all buttons
+    document.getElementById('select_all').addEventListener('click', function() {
+        enrollmentCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        selectAllCheckbox.checked = true;
+        updateSelectedCount();
+    });
+
+    document.getElementById('deselect_all').addEventListener('click', function() {
+        enrollmentCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        selectAllCheckbox.checked = false;
+        updateSelectedCount();
+    });
+
+    function updateSelectedCount() {
+        const selectedCount = Array.from(enrollmentCheckboxes).filter(cb => cb.checked).length;
+        selectedCountSpan.textContent = `${selectedCount} inscription(s) sélectionnée(s)`;
+        
+        // Enable/disable process button
+        const reasonSelected = reasonSelect.value !== '';
+        processButton.disabled = selectedCount === 0 || !reasonSelected;
+    }
+
+    function updateSelectAllState() {
+        const checkedBoxes = Array.from(enrollmentCheckboxes).filter(cb => cb.checked);
+        const allChecked = checkedBoxes.length === enrollmentCheckboxes.length;
+        const noneChecked = checkedBoxes.length === 0;
+        
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = !allChecked && !noneChecked;
+    }
+
+    // Enable/disable process button when reason changes
+    reasonSelect.addEventListener('change', updateSelectedCount);
+
+    // Process unenrollment
+    processButton.addEventListener('click', function() {
+        const selectedIds = Array.from(enrollmentCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        if (selectedIds.length === 0) {
+            alert('Veuillez sélectionner au moins une inscription');
+            return;
+        }
+
+        const reason = reasonSelect.value;
+        const customReason = document.getElementById('custom_reason').value;
+        const finalReason = reason === 'other' ? customReason : getReasonLabel(reason);
+        const notifyStudents = document.getElementById('notify_students').checked;
+
+        // Show confirmation modal
+        document.getElementById('confirm_count').textContent = selectedIds.length;
+        document.getElementById('confirm_details').innerHTML = `
+            <div class="mb-3">
+                <strong>Raison de la désinscription :</strong>
+                <br>
+                <span class="badge bg-warning">${finalReason}</span>
+            </div>
+            <div class="mb-3">
+                <strong>Options :</strong>
+                <ul class="mb-0">
+                    <li>Notification par email : ${notifyStudents ? 'Oui' : 'Non'}</li>
+                </ul>
+            </div>
+            <div class="mb-0">
+                <strong>Étudiants concernés :</strong>
+                <div class="mt-2" style="max-height: 200px; overflow-y: auto;">
+                    ${selectedIds.map(id => {
+                        const row = document.querySelector(`tr[data-enrollment-id="${id}"]`);
+                        const studentName = row.querySelector('strong').textContent;
+                        const formationTitle = row.querySelectorAll('td')[2].querySelector('div').textContent.trim();
+                        return `<small class="d-block">• ${studentName} - ${formationTitle}</small>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        modal.show();
+
+        // Handle confirmation
+        document.getElementById('confirm_unenroll').onclick = function() {
+            modal.hide();
+            performUnenrollment(selectedIds);
+        };
+    });
+
+    function getReasonLabel(reason) {
+        const labels = {
+            'administrative': 'Décision administrative',
+            'student_request': 'Demande de l\'étudiant',
+            'capacity_issue': 'Problème de capacité',
+            'prerequisite_missing': 'Prérequis non remplis',
+            'payment_issue': 'Problème de paiement',
+            'duplicate_registration': 'Inscription en double',
+            'session_cancelled': 'Session annulée',
+            'technical_issue': 'Problème technique'
+        };
+        return labels[reason] || reason;
+    }
+
+    function performUnenrollment(enrollmentIds) {
+        const formData = new FormData();
+        enrollmentIds.forEach(id => {
+            formData.append('enrollment_ids[]', id);
+        });
+        
+        const reason = reasonSelect.value;
+        const finalReason = reason === 'other' ? 
+            document.getElementById('custom_reason').value : 
+            getReasonLabel(reason);
+            
+        formData.append('unenroll_reason', finalReason);
+        formData.append('notify_students', document.getElementById('notify_students').checked ? '1' : '0');
+
+        processButton.disabled = true;
+        processButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Désinscription en cours...';
+
+        fetch('{{ path("admin_enrollment_bulk_unenroll") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Erreur lors de la désinscription');
+        })
+        .then(html => {
+            // If response is HTML, it means we got the results page
+            document.body.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Unenrollment error:', error);
+            alert('Erreur lors de la désinscription : ' + error.message);
+        })
+        .finally(() => {
+            processButton.disabled = false;
+            processButton.innerHTML = '<i class="fas fa-user-times"></i> Procéder à la désinscription';
+        });
+    }
+
+    // Load enrollments with filters (if needed for AJAX functionality)
+    document.getElementById('load_enrollments').addEventListener('click', function() {
+        const formationFilter = document.getElementById('formation_filter').value;
+        const sessionFilter = document.getElementById('session_filter').value;
+        const studentSearch = document.getElementById('student_search').value;
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (formationFilter) params.append('formation', formationFilter);
+        if (sessionFilter) params.append('session', sessionFilter);
+        if (studentSearch) params.append('student_search', studentSearch);
+
+        // Reload page with filters
+        window.location.href = '{{ path("admin_enrollment_bulk_unenroll") }}?' + params.toString();
+    });
+
+    // Initialize the selected count
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

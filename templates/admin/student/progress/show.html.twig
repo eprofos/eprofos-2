@@ -1,0 +1,436 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails de Progression - {{ enrollment.student.fullName }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-user-chart text-primary me-2"></i>
+                Détails de Progression
+            </h1>
+            <p class="text-muted">
+                {{ enrollment.student.fullName }} - {{ enrollment.formation.title }}
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ path('admin_progress_monitoring_detailed') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+            </a>
+            <a href="{{ path('admin_student_enrollment_show', {id: enrollment.id}) }}" class="btn btn-outline-info">
+                <i class="fas fa-file-alt me-1"></i> Fiche d'inscription
+            </a>
+            <button type="button" class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print me-1"></i> Imprimer
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Progress Overview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie text-success me-2"></i>
+                        Vue d'Ensemble de la Progression
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center mb-4">
+                                <div class="progress mx-auto mb-3" style="height: 20px; width: 200px;">
+                                    <div class="progress-bar 
+                                        {% if progressBreakdown.overall < 25 %}bg-danger
+                                        {% elseif progressBreakdown.overall < 75 %}bg-warning
+                                        {% else %}bg-success
+                                        {% endif %}" 
+                                         style="width: {{ progressBreakdown.overall }}%">
+                                        {{ progressBreakdown.overall }}%
+                                    </div>
+                                </div>
+                                <h3 class="text-{{ progressBreakdown.overall < 25 ? 'danger' : (progressBreakdown.overall < 75 ? 'warning' : 'success') }}">
+                                    {{ progressBreakdown.overall }}%
+                                </h3>
+                                <p class="text-muted">Progression Globale</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-6">Temps passé:</dt>
+                                <dd class="col-sm-6">
+                                    {% if progressBreakdown.total_time_spent > 0 %}
+                                        {{ (progressBreakdown.total_time_spent / 60)|round(1) }} heures
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-6">Niveau d'engagement:</dt>
+                                <dd class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        {% for i in 1..5 %}
+                                            <i class="fas fa-star {{ i <= progressBreakdown.engagement_level ? 'text-warning' : 'text-muted' }} me-1"></i>
+                                        {% endfor %}
+                                        <span class="ms-2">{{ progressBreakdown.engagement_level }}/5</span>
+                                    </div>
+                                </dd>
+                                
+                                <dt class="col-sm-6">Dernière activité:</dt>
+                                <dd class="col-sm-6">
+                                    {% if progressBreakdown.last_activity %}
+                                        {% set daysSince = date().diff(progressBreakdown.last_activity).days %}
+                                        <div class="text-{{ daysSince > 7 ? 'danger' : (daysSince > 3 ? 'warning' : 'success') }}">
+                                            {{ progressBreakdown.last_activity|date('d/m/Y H:i') }}
+                                        </div>
+                                        <small class="text-muted">Il y a {{ daysSince }} jour{{ daysSince > 1 ? 's' : '' }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Aucune activité</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Breakdown by Modules -->
+            {% if progressBreakdown.modules|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list-alt text-info me-2"></i>
+                        Progression par Module
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for moduleId, moduleData in progressBreakdown.modules %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>Module {{ loop.index }}</strong>
+                                    {% if moduleData.title is defined %}
+                                        <small class="text-muted">- {{ moduleData.title }}</small>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-{{ moduleData.completion >= 100 ? 'success' : (moduleData.completion >= 50 ? 'warning' : 'danger') }}">
+                                    {{ moduleData.completion|default(0) }}%
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar 
+                                    {% if moduleData.completion >= 100 %}bg-success
+                                    {% elseif moduleData.completion >= 50 %}bg-warning
+                                    {% else %}bg-danger
+                                    {% endif %}" 
+                                     style="width: {{ moduleData.completion|default(0) }}%"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Activity Timeline -->
+            {% if activityTimeline|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        Chronologie d'Activité
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for activity in activityTimeline %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas 
+                                    {% if activity.type == 'progress' %}fa-chart-line text-success
+                                    {% elseif activity.type == 'login' %}fa-sign-in-alt text-info
+                                    {% elseif activity.type == 'exercise' %}fa-tasks text-primary
+                                    {% else %}fa-dot-circle text-muted
+                                    {% endif %}"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-medium">{{ activity.description }}</div>
+                                        <small class="text-muted">{{ activity.date|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                    {% if activity.progress_change > 0 %}
+                                        <span class="badge bg-success">+{{ activity.progress_change }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Risk Assessment -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt text-{{ riskAssessment.is_at_risk ? 'warning' : 'success' }} me-2"></i>
+                        Évaluation des Risques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if riskAssessment.is_at_risk %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Étudiant à risque</strong>
+                            </div>
+                            <div class="h4 text-warning">{{ riskAssessment.risk_score }}%</div>
+                            <small class="text-muted">Score de risque</small>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Étudiant en bonne voie</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <dl class="row small">
+                        <dt class="col-6">Dernière activité:</dt>
+                        <dd class="col-6">
+                            <span class="text-{{ riskAssessment.last_activity_days > 7 ? 'danger' : (riskAssessment.last_activity_days > 3 ? 'warning' : 'success') }}">
+                                {{ riskAssessment.last_activity_days }} jour{{ riskAssessment.last_activity_days > 1 ? 's' : '' }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-6">Tendance engagement:</dt>
+                        <dd class="col-6">
+                            <span class="badge 
+                                {% if riskAssessment.engagement_trend == 'improving' %}bg-success
+                                {% elseif riskAssessment.engagement_trend == 'declining' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {% if riskAssessment.engagement_trend == 'improving' %}
+                                    En hausse
+                                {% elseif riskAssessment.engagement_trend == 'declining' %}
+                                    En baisse
+                                {% else %}
+                                    Stable
+                                {% endif %}
+                            </span>
+                        </dd>
+                    </dl>
+
+                    <!-- Update Risk Status -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-warning btn-sm w-100" 
+                                data-bs-toggle="modal" data-bs-target="#riskStatusModal">
+                            <i class="fas fa-edit me-1"></i> Modifier le statut de risque
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention History -->
+            {% if interventionHistory|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info me-2"></i>
+                        Historique des Interventions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for intervention in interventionHistory %}
+                    <div class="border-start border-info ps-3 mb-3">
+                        <div class="fw-medium text-capitalize">{{ intervention.type }}</div>
+                        <div class="text-muted small">{{ intervention.date }}</div>
+                        <div class="mt-1">{{ intervention.notes }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools text-secondary me-2"></i>
+                        Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" 
+                                data-bs-toggle="modal" data-bs-target="#interventionModal">
+                            <i class="fas fa-user-md me-1"></i> Enregistrer une intervention
+                        </button>
+                        
+                        <a href="mailto:{{ enrollment.student.email }}" class="btn btn-outline-info">
+                            <i class="fas fa-envelope me-1"></i> Envoyer un email
+                        </a>
+                        
+                        {% if enrollment.student.phone %}
+                        <a href="tel:{{ enrollment.student.phone }}" class="btn btn-outline-success">
+                            <i class="fas fa-phone me-1"></i> Appeler
+                        </a>
+                        {% endif %}
+
+                        <a href="{{ path('admin_student_enrollment_edit', {id: enrollment.id}) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-1"></i> Modifier l'inscription
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Status Modal -->
+<div class="modal fade" id="riskStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ path('admin_progress_monitoring_risk_status', {id: enrollment.id}) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Modifier le Statut de Risque
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Statut de risque</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="at_risk" value="1" 
+                                   id="atRiskYes" {{ riskAssessment.is_at_risk ? 'checked' : '' }}>
+                            <label class="form-check-label" for="atRiskYes">
+                                À risque de décrochage
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="at_risk" value="0" 
+                                   id="atRiskNo" {{ not riskAssessment.is_at_risk ? 'checked' : '' }}>
+                            <label class="form-check-label" for="atRiskNo">
+                                Pas à risque
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="risk_reason" class="form-label">Raison (si à risque)</label>
+                        <textarea class="form-control" id="risk_reason" name="risk_reason" rows="3" 
+                                  placeholder="Expliquez pourquoi cet étudiant est considéré à risque..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Intervention Modal -->
+<div class="modal fade" id="interventionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ path('admin_progress_monitoring_intervention', {id: enrollment.id}) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-md me-2"></i>
+                        Enregistrer une Intervention
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="intervention_type" class="form-label">Type d'intervention</label>
+                        <select class="form-select" id="intervention_type" name="intervention_type" required>
+                            <option value="">Sélectionner le type</option>
+                            <option value="email">Envoi d'email de motivation</option>
+                            <option value="call">Appel téléphonique</option>
+                            <option value="meeting">Entretien individuel</option>
+                            <option value="support">Support pédagogique</option>
+                            <option value="reminder">Rappel des échéances</option>
+                            <option value="extension">Extension de délai</option>
+                            <option value="resource">Ressources supplémentaires</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes sur l'intervention</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" 
+                                  placeholder="Décrivez l'intervention effectuée..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="follow_up_date" class="form-label">Date de suivi (optionnel)</label>
+                        <input type="date" class="form-control" id="follow_up_date" name="follow_up_date">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Enregistrer l'intervention
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: -21px;
+    top: 25px;
+    height: calc(100% - 25px);
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.timeline-content {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+</style>
+{% endblock %}

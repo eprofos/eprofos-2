@@ -1,0 +1,395 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Résultats de Désinscription en Lot{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Résultats de Désinscription en Lot</h1>
+            <p class="text-muted">Raison : <strong>{{ reason }}</strong></p>
+        </div>
+        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-primary">
+            <i class="fas fa-list"></i> Voir Toutes les Inscriptions
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.success }}</h3>
+                    <p class="mb-0">Désinscriptions réussies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.failed }}</h3>
+                    <p class="mb-0">Échecs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-times fa-3x mb-2"></i>
+                    <h3 class="mb-0">{{ results.success + results.failed }}</h3>
+                    <p class="mb-0">Total traité</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    {% if results.success > 0 %}
+        <div class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <strong>Félicitations !</strong> 
+            {{ results.success }} désinscription(s) effectuée(s) avec succès.
+        </div>
+    {% endif %}
+
+    <!-- Warning Message -->
+    {% if results.failed > 0 %}
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Attention !</strong> 
+            {{ results.failed }} désinscription(s) ont échoué. Consultez les détails ci-dessous pour plus d'informations.
+        </div>
+    {% endif %}
+
+    <!-- Detailed Results -->
+    {% if results.details is not empty %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Détails des Résultats</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Formation</th>
+                                <th>Session</th>
+                                <th>Progression</th>
+                                <th>Résultat</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in results.details %}
+                                <tr class="{{ detail.status is defined and detail.status == 'success' ? 'table-success' : 'table-danger' }}">
+                                    <td>
+                                        <div>
+                                            <strong>{{ detail.student }}</strong>
+                                            {% if detail.student_email is defined %}
+                                                <br>
+                                                <small class="text-muted">{{ detail.student_email }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ detail.formation ?? 'N/A' }}
+                                            {% if detail.formation_category is defined %}
+                                                <br>
+                                                <small class="text-muted">{{ detail.formation_category }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ detail.session ?? 'N/A' }}
+                                            {% if detail.session_dates is defined %}
+                                                <br>
+                                                <small class="text-muted">{{ detail.session_dates }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if detail.progress is defined and detail.progress is not null %}
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                     style="width: {{ detail.progress }}%">
+                                                    {{ detail.progress }}%
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Aucune progression</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if detail.status is defined and detail.status == 'success' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Réussi
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times"></i> Échec
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if detail.error is defined %}
+                                            <span class="text-danger">{{ detail.error }}</span>
+                                        {% else %}
+                                            <span class="text-success">
+                                                <i class="fas fa-user-times"></i> Désinscription effectuée avec succès
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- No Results -->
+    {% if results.success == 0 and results.failed == 0 %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                <h5 class="text-info">Aucune Désinscription à Traiter</h5>
+                <p class="text-muted">
+                    Aucune inscription n'a été trouvée à désinscrire.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Unenrollment Information -->
+    {% if results.success > 0 %}
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> Informations sur les Désinscriptions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Raison de la Désinscription</h6>
+                        <p class="mb-0">
+                            <span class="badge bg-warning fs-6">{{ reason }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Conséquences</h6>
+                        <ul class="mb-0">
+                            <li>L'accès au contenu de formation est retiré</li>
+                            <li>La progression est conservée mais inaccessible</li>
+                            <li>Les étudiants peuvent se réinscrire ultérieurement</li>
+                            <li>Les certificats obtenus restent valides</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Important Notice -->
+    {% if results.success > 0 %}
+        <div class="alert alert-warning mt-4">
+            <div class="row align-items-center">
+                <div class="col-md-1 text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <div class="col-md-11">
+                    <h6 class="alert-heading mb-2">Important à retenir</h6>
+                    <p class="mb-0">
+                        Les désinscriptions sont <strong>définitives</strong>. Les étudiants désinscris :
+                    </p>
+                    <ul class="mb-0 mt-2">
+                        <li>N'ont plus accès au contenu de la formation</li>
+                        <li>Ne recevront plus de notifications liées à cette session</li>
+                        <li>Devront effectuer une nouvelle inscription pour reprendre la formation</li>
+                        <li>Conservent leur historique de progression dans leurs données personnelles</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Next Actions -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Actions Suivantes</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        <a href="{{ path('admin_student_enrollment_index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> Voir Toutes les Inscriptions
+                        </a>
+                        <small class="text-muted mt-2">Consulter la liste complète des inscriptions</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        <a href="{{ path('admin_enrollment_bulk_unenroll') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-user-times"></i> Nouvelle Désinscription en Lot
+                        </a>
+                        <small class="text-muted mt-2">Procéder à de nouvelles désinscriptions</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        {% if results.failed > 0 %}
+                            <a href="{{ path('admin_enrollment_bulk_unenroll') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-redo"></i> Réessayer les Échecs
+                            </a>
+                            <small class="text-muted mt-2">Réessayer les désinscriptions qui ont échoué</small>
+                        {% else %}
+                            <a href="{{ path('admin_enrollment_bulk_enroll') }}" class="btn btn-outline-success">
+                                <i class="fas fa-user-plus"></i> Inscription en Lot
+                            </a>
+                            <small class="text-muted mt-2">Procéder à de nouvelles inscriptions</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Recovery Information -->
+    {% if results.success > 0 %}
+        <div class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-database"></i> Récupération des Données
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <h6><i class="fas fa-shield-alt"></i> Sécurité des Données</h6>
+                    <p class="mb-2">
+                        Conformément au RGPD et à notre politique de conservation des données :
+                    </p>
+                    <ul class="mb-0">
+                        <li><strong>Progression conservée :</strong> Les données de progression sont archivées et peuvent être restaurées sur demande</li>
+                        <li><strong>Historique d'inscription :</strong> L'historique complet est maintenu pour audit</li>
+                        <li><strong>Réinscription facilitée :</strong> Les étudiants peuvent reprendre là où ils se sont arrêtés</li>
+                        <li><strong>Support technique :</strong> Contactez l'équipe technique pour toute demande de restauration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-redirect after 20 seconds if all successful and no failures
+    {% if results.failed == 0 and results.success > 0 %}
+        let redirectTimer = setTimeout(function() {
+            if (confirm('Redirection automatique vers la liste des inscriptions dans 5 secondes. Continuer ?')) {
+                window.location.href = '{{ path("admin_student_enrollment_index") }}';
+            }
+        }, 20000);
+
+        // Allow user to cancel auto-redirect
+        document.addEventListener('click', function() {
+            clearTimeout(redirectTimer);
+        });
+    {% endif %}
+
+    // Highlight success and error rows with subtle animation
+    const successRows = document.querySelectorAll('tr.table-success');
+    const errorRows = document.querySelectorAll('tr.table-danger');
+    
+    successRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
+    
+    errorRows.forEach(row => {
+        row.style.transition = 'background-color 0.3s ease';
+    });
+
+    // Add progress bar animations
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.transition = 'width 1s ease-in-out';
+            bar.style.width = width;
+        }, 500);
+    });
+
+    // Add tooltips for badges
+    const badges = document.querySelectorAll('.badge');
+    badges.forEach(badge => {
+        if (badge.textContent.includes('Réussi')) {
+            badge.title = 'Désinscription effectuée avec succès';
+        } else if (badge.textContent.includes('Échec')) {
+            badge.title = 'Erreur lors de la désinscription';
+        }
+    });
+
+    // Add copy functionality for results
+    if ({{ results.success + results.failed }} > 0) {
+        const copyButton = document.createElement('button');
+        copyButton.className = 'btn btn-outline-secondary btn-sm float-end';
+        copyButton.innerHTML = '<i class="fas fa-copy"></i> Copier les résultats';
+        copyButton.onclick = function() {
+            const resultsText = generateResultsText();
+            navigator.clipboard.writeText(resultsText).then(() => {
+                this.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i> Copier les résultats';
+                }, 2000);
+            });
+        };
+        
+        const cardHeader = document.querySelector('.card-header h5');
+        if (cardHeader) {
+            cardHeader.parentElement.appendChild(copyButton);
+        }
+    }
+
+    function generateResultsText() {
+        let text = `Résultats de désinscription en lot\n`;
+        text += `Raison: {{ reason }}\n`;
+        text += `Réussies: {{ results.success }}\n`;
+        text += `Échecs: {{ results.failed }}\n`;
+        text += `Total: {{ results.success + results.failed }}\n\n`;
+        
+        {% if results.details is not empty %}
+            text += `Détails:\n`;
+            {% for detail in results.details %}
+                text += `- {{ detail.student }} ({{ detail.formation ?? 'N/A' }})`;
+                text += `: {{ detail.status is defined and detail.status == 'success' ? 'Réussi' : 'Échec' }}`;
+                {% if detail.error is defined %}
+                    text += ` - {{ detail.error }}`;
+                {% endif %}
+                text += `\n`;
+            {% endfor %}
+        {% endif %}
+        
+        return text;
+    }
+
+    // Add confirmation before leaving page if there are failed unenrollments
+    {% if results.failed > 0 %}
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault();
+            e.returnValue = 'Des désinscriptions ont échoué. Êtes-vous sûr de vouloir quitter cette page ?';
+        });
+    {% endif %}
+});
+</script>
+{% endblock %}
