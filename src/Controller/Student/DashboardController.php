@@ -34,7 +34,7 @@ class DashboardController extends AbstractController
      * Displays an overview of the student's training progress, upcoming sessions,
      * recent activities, and quick access to learning resources.
      */
-    #[Route('/dashboard', name: 'student_dashboard', methods: ['GET'])]
+    #[Route('/', name: 'student_dashboard', methods: ['GET'])]
     public function index(): Response
     {
         /** @var Student $student */
