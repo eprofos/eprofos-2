@@ -130,6 +130,12 @@ export default class extends Controller {
         if (this.hasProgressBarTarget) {
             this.updateProgressDisplay()
         }
+        
+        // Set initial state based on completion status
+        if (this.completedValue) {
+            this.updateCompletionStatus()
+        }
+        
         this.loadMilestones()
     }
 
@@ -212,6 +218,21 @@ export default class extends Controller {
                 <i class="fas fa-check-circle text-success me-1"></i>
                 <span class="text-success">Terminé</span>
             `
+        }
+        
+        // Update the mark complete button
+        const markCompleteButton = this.element.querySelector('[data-action*="markComplete"]')
+        if (markCompleteButton) {
+            markCompleteButton.style.display = 'none'
+            
+            // Add completed indicator
+            const completedIndicator = document.createElement('div')
+            completedIndicator.className = 'd-flex align-items-center mb-2'
+            completedIndicator.innerHTML = `
+                <i class="fas fa-check-circle text-success me-2"></i>
+                <span class="text-success">Cours terminé</span>
+            `
+            markCompleteButton.parentNode.insertBefore(completedIndicator, markCompleteButton)
         }
     }
 
