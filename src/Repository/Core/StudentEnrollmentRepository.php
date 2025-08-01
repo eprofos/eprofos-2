@@ -78,6 +78,40 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Count enrollments for a formation.
+     */
+    public function countEnrollmentsByFormation(Formation $formation): int
+    {
+        return (int) $this->createQueryBuilder('se')
+            ->select('COUNT(se.id)')
+            ->leftJoin('se.sessionRegistration', 'sr')
+            ->leftJoin('sr.session', 's')
+            ->where('s.formation = :formation')
+            ->setParameter('formation', $formation)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
+    /**
+     * Count enrollments for a formation by status.
+     */
+    public function countEnrollmentsByFormationAndStatus(Formation $formation, string $status): int
+    {
+        return (int) $this->createQueryBuilder('se')
+            ->select('COUNT(se.id)')
+            ->leftJoin('se.sessionRegistration', 'sr')
+            ->leftJoin('sr.session', 's')
+            ->where('s.formation = :formation')
+            ->andWhere('se.status = :status')
+            ->setParameter('formation', $formation)
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
+    /**
      * Find enrollments for a formation.
      *
      * @return StudentEnrollment[]
@@ -150,24 +184,30 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Check if student has access to formation.
+     * Find enrollment by student and formation.
      */
-    public function hasStudentAccessToFormation(Student $student, Formation $formation): bool
+    public function findEnrollmentByStudentAndFormation(Student $student, Formation $formation): ?StudentEnrollment
     {
-        $enrollment = $this->createQueryBuilder('se')
+        return $this->createQueryBuilder('se')
             ->leftJoin('se.sessionRegistration', 'sr')
             ->leftJoin('sr.session', 's')
             ->where('se.student = :student')
             ->andWhere('s.formation = :formation')
-            ->andWhere('se.status = :status')
             ->setParameter('student', $student)
             ->setParameter('formation', $formation)
-            ->setParameter('status', StudentEnrollment::STATUS_ENROLLED)
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
 
-        return $enrollment !== null;
+    /**
+     * Check if student has access to formation.
+     */
+    public function hasStudentAccessToFormation(Student $student, Formation $formation): bool
+    {
+        $enrollment = $this->findEnrollmentByStudentAndFormation($student, $formation);
+
+        return $enrollment !== null && $enrollment->getStatus() === StudentEnrollment::STATUS_ENROLLED;
     }
 
     /**

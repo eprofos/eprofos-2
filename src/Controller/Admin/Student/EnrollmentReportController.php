@@ -340,14 +340,11 @@ class EnrollmentReportController extends AbstractController
 
         return [
             'formation' => $formation,
-            'totalEnrollments' => $this->enrollmentRepository->count(['sessionRegistration.session.formation' => $formation]),
+            'totalEnrollments' => $this->enrollmentRepository->countEnrollmentsByFormation($formation),
             'completionRate' => $this->enrollmentRepository->getFormationCompletionRate($formation),
             'dropoutRate' => $this->enrollmentRepository->getFormationDropoutRate($formation),
             'avgDuration' => $this->getAverageCompletionDuration($formation),
-            'activeEnrollments' => $this->enrollmentRepository->count([
-                'sessionRegistration.session.formation' => $formation,
-                'status' => StudentEnrollment::STATUS_ENROLLED
-            ]),
+            'activeEnrollments' => $this->enrollmentRepository->countEnrollmentsByFormationAndStatus($formation, StudentEnrollment::STATUS_ENROLLED),
         ];
     }
 
@@ -391,7 +388,7 @@ class EnrollmentReportController extends AbstractController
                 'formation' => $formation->getTitle(),
                 'completion_rate' => $this->enrollmentRepository->getFormationCompletionRate($formation),
                 'dropout_rate' => $this->enrollmentRepository->getFormationDropoutRate($formation),
-                'total_enrollments' => $this->enrollmentRepository->count(['sessionRegistration.session.formation' => $formation]),
+                'total_enrollments' => $this->enrollmentRepository->countEnrollmentsByFormation($formation),
             ];
         }
 

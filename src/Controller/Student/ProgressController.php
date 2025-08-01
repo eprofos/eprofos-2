@@ -12,6 +12,7 @@ use App\Entity\User\Student;
 use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Training\CourseRepository;
 use App\Repository\Training\ExerciseRepository;
+use App\Repository\Training\FormationRepository;
 use App\Repository\Training\QCMRepository;
 use App\Service\Student\ProgressTrackingService;
 use Psr\Log\LoggerInterface;
@@ -35,6 +36,7 @@ class ProgressController extends AbstractController
     public function __construct(
         private readonly ProgressTrackingService $progressService,
         private readonly StudentEnrollmentRepository $enrollmentRepository,
+        private readonly FormationRepository $formationRepository,
         private readonly CourseRepository $courseRepository,
         private readonly ExerciseRepository $exerciseRepository,
         private readonly QCMRepository $qcmRepository,
@@ -257,10 +259,19 @@ class ProgressController extends AbstractController
                 'student_id' => $student->getId()
             ]);
 
-            $enrollment = $this->enrollmentRepository->findOneBy([
-                'student' => $student,
-                'sessionRegistration.session.formation' => $formationId
-            ]);
+            // Find the formation first
+            $formation = $this->formationRepository->find($formationId);
+            if (!$formation) {
+                $this->logger->warning('Formation not found for progress stats', [
+                    'request_id' => $requestId,
+                    'student_id' => $student->getId(),
+                    'formation_id' => $formationId
+                ]);
+                return new JsonResponse(['error' => 'Formation not found'], 404);
+            }
+
+            // Find enrollment using the proper repository method
+            $enrollment = $this->enrollmentRepository->findEnrollmentByStudentAndFormation($student, $formation);
 
             if (!$enrollment) {
                 $this->logger->warning('Enrollment not found for progress stats', [
@@ -410,10 +421,19 @@ class ProgressController extends AbstractController
                 'student_id' => $student->getId()
             ]);
 
-            $enrollment = $this->enrollmentRepository->findOneBy([
-                'student' => $student,
-                'sessionRegistration.session.formation' => $formationId
-            ]);
+            // Find the formation first
+            $formation = $this->formationRepository->find($formationId);
+            if (!$formation) {
+                $this->logger->warning('Formation not found for milestones', [
+                    'request_id' => $requestId,
+                    'student_id' => $student->getId(),
+                    'formation_id' => $formationId
+                ]);
+                return new JsonResponse(['error' => 'Formation not found'], 404);
+            }
+
+            // Find enrollment using the proper repository method
+            $enrollment = $this->enrollmentRepository->findEnrollmentByStudentAndFormation($student, $formation);
 
             if (!$enrollment) {
                 $this->logger->warning('Enrollment not found for milestones', [
@@ -558,10 +578,19 @@ class ProgressController extends AbstractController
                 'student_id' => $student->getId()
             ]);
 
-            $enrollment = $this->enrollmentRepository->findOneBy([
-                'student' => $student,
-                'sessionRegistration.session.formation' => $formationId
-            ]);
+            // Find the formation first
+            $formation = $this->formationRepository->find($formationId);
+            if (!$formation) {
+                $this->logger->warning('Formation not found for export', [
+                    'request_id' => $requestId,
+                    'student_id' => $student->getId(),
+                    'formation_id' => $formationId
+                ]);
+                throw $this->createNotFoundException('Formation not found');
+            }
+
+            // Find enrollment using the proper repository method
+            $enrollment = $this->enrollmentRepository->findEnrollmentByStudentAndFormation($student, $formation);
 
             if (!$enrollment) {
                 $this->logger->warning('Enrollment not found for export', [
@@ -968,10 +997,7 @@ class ProgressController extends AbstractController
                 return null;
             }
 
-            $enrollment = $this->enrollmentRepository->findOneBy([
-                'student' => $student,
-                'sessionRegistration.session.formation' => $formation
-            ]);
+            $enrollment = $this->enrollmentRepository->findEnrollmentByStudentAndFormation($student, $formation);
 
             if ($enrollment) {
                 $this->logger->debug('Enrollment found', [
