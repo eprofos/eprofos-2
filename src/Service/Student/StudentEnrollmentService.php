@@ -1159,7 +1159,7 @@ class StudentEnrollmentService
             $formation = $enrollment->getFormation();
 
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($student->getEmail())
                 ->subject('Changement de statut d\'inscription - ' . $formation->getTitle())
                 ->html($this->twig->render('emails/enrollment_status_change.html.twig', [
@@ -1189,7 +1189,7 @@ class StudentEnrollmentService
             $formation = $enrollment->getFormation();
 
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($student->getEmail())
                 ->subject('Désinscription - ' . $formation->getTitle())
                 ->html($this->twig->render('emails/enrollment_unenrollment.html.twig', [
@@ -1347,7 +1347,7 @@ class StudentEnrollmentService
             ]);
 
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($student->getEmail())
                 ->subject('Confirmation d\'inscription - ' . $formation->getTitle())
                 ->html($this->twig->render('emails/enrollment_confirmation.html.twig', [

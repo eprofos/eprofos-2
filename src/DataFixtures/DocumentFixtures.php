@@ -365,10 +365,10 @@ EOF;
 
     <section class="document-section">
         <h2>Déclaration d'accessibilité</h2>
-        <p>Cette déclaration s'applique au site web <strong>eprofos.fr</strong> et à notre plateforme de formation en ligne.</p>
+        <p>Cette déclaration s'applique au site web <strong>eprofos.com</strong> et à notre plateforme de formation en ligne.</p>
 
         <h3>État de conformité</h3>
-        <p>Le site eprofos.fr est <span class="badge bg-warning">partiellement conforme</span> avec le RGAA 4.1.</p>
+        <p>Le site eprofos.com est <span class="badge bg-warning">partiellement conforme</span> avec le RGAA 4.1.</p>
 
         <h3>Contenus non accessibles</h3>
         <p>Les contenus listés ci-dessous ne sont pas accessibles pour les raisons suivantes :</p>
@@ -397,7 +397,7 @@ EOF;
         <h3>Nous contacter</h3>
         <p>Si vous rencontrez un défaut d'accessibilité :</p>
         <div class="contact-info">
-            <p><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:accessibilite@eprofos.fr">accessibilite@eprofos.fr</a></p>
+            <p><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:accessibilite@eprofos.com">accessibilite@eprofos.com</a></p>
             <p><i class="fas fa-phone"></i> <strong>Téléphone</strong> : <a href="tel:0123456789">01 23 45 67 89</a></p>
             <p><i class="fas fa-map-marker-alt"></i> <strong>Courrier</strong> : EPROFOS - Accessibilité, 123 Rue de la Formation, 75001 Paris</p>
         </div>
@@ -678,7 +678,7 @@ EOF;
                 <h3>📞 Contacts utiles</h3>
                 <div class="contact-info">
                     <p><i class="fas fa-phone"></i> <strong>Accueil</strong> : <a href="tel:0123456789">01 23 45 67 89</a></p>
-                    <p><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:contact@eprofos.fr">contact@eprofos.fr</a></p>
+                    <p><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:contact@eprofos.com">contact@eprofos.com</a></p>
                     <p><i class="fas fa-exclamation-triangle"></i> <strong>Urgences</strong> : <a href="tel:0612345678">06 12 34 56 78</a></p>
                 </div>
             </div>
@@ -961,7 +961,7 @@ EOF;
             <address>
                 123 Rue de la Formation<br>
                 75001 Paris<br>
-                <strong>Email DPO</strong> : <a href="mailto:dpo@eprofos.fr">dpo@eprofos.fr</a>
+                <strong>Email DPO</strong> : <a href="mailto:dpo@eprofos.com">dpo@eprofos.com</a>
             </address>
         </div>
     </section>
@@ -1131,7 +1131,7 @@ EOF;
         <div class="contact-rights">
             <p><strong>Pour exercer vos droits :</strong></p>
             <ul>
-                <li><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:dpo@eprofos.fr">dpo@eprofos.fr</a></li>
+                <li><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:dpo@eprofos.com">dpo@eprofos.com</a></li>
                 <li><i class="fas fa-mail-bulk"></i> <strong>Courrier</strong> : EPROFOS - DPO, 123 Rue de la Formation, 75001 Paris</li>
             </ul>
             <div class="alert alert-info">
@@ -1418,8 +1418,8 @@ EOF;
                 <h3>📞 Contactez-nous</h3>
                 <ul>
                     <li><i class="fas fa-phone"></i> <strong>Téléphone</strong> : <a href="tel:0123456789">01 23 45 67 89</a></li>
-                    <li><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:info@eprofos.fr">info@eprofos.fr</a></li>
-                    <li><i class="fas fa-globe"></i> <strong>Site web</strong> : <a href="https://www.eprofos.fr" target="_blank">www.eprofos.fr</a></li>
+                    <li><i class="fas fa-envelope"></i> <strong>Email</strong> : <a href="mailto:info@eprofos.com">info@eprofos.com</a></li>
+                    <li><i class="fas fa-globe"></i> <strong>Site web</strong> : <a href="https://www.eprofos.com" target="_blank">www.eprofos.com</a></li>
                 </ul>
             </div>
 

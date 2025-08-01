@@ -72,7 +72,7 @@ class DocumentUITemplateFixtures extends Fixture implements DependentFixtureInte
                     'company_name' => ['type' => 'text', 'default' => 'EPROFOS', 'description' => 'Nom de l\'entreprise'],
                     'company_address' => ['type' => 'text', 'default' => '123 Rue de la Formation, 75000 Paris', 'description' => 'Adresse de l\'entreprise'],
                     'company_phone' => ['type' => 'text', 'default' => '01 23 45 67 89', 'description' => 'Téléphone'],
-                    'company_email' => ['type' => 'email', 'default' => 'contact@eprofos.fr', 'description' => 'Email de contact'],
+                    'company_email' => ['type' => 'email', 'default' => 'contact@eprofos.com', 'description' => 'Email de contact'],
                 ],
                 'reference' => self::STANDARD_TEMPLATE_REFERENCE,
                 'sortOrder' => 1,

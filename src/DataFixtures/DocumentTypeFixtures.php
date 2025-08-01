@@ -48,7 +48,7 @@ class DocumentTypeFixtures extends Fixture
                     'approval_workflow' => true,
                     'version_control' => true,
                     'automatic_archiving' => true,
-                    'notification_recipients' => ['legal@eprofos.fr', 'direction@eprofos.fr'],
+                    'notification_recipients' => ['legal@eprofos.com', 'direction@eprofos.com'],
                 ],
                 'reference' => self::LEGAL_TYPE_REFERENCE,
                 'sortOrder' => 1,

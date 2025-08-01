@@ -219,7 +219,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
             [
                 'document' => DocumentFixtures::STUDENT_HANDBOOK_REFERENCE,
                 'metaKey' => 'digital_version_url',
-                'metaValue' => 'https://eprofos.fr/documents/livret-accueil-2025.pdf',
+                'metaValue' => 'https://eprofos.com/documents/livret-accueil-2025.pdf',
                 'dataType' => DocumentMetadata::TYPE_URL,
                 'displayName' => 'Version numérique',
                 'description' => 'URL de téléchargement',
@@ -248,7 +248,7 @@ class DocumentMetadataFixtures extends Fixture implements DependentFixtureInterf
             [
                 'document' => DocumentFixtures::PRIVACY_POLICY_REFERENCE,
                 'metaKey' => 'dpo_contact',
-                'metaValue' => 'dpo@eprofos.fr',
+                'metaValue' => 'dpo@eprofos.com',
                 'dataType' => DocumentMetadata::TYPE_STRING,
                 'displayName' => 'Contact DPO',
                 'description' => 'Email du délégué à la protection des données',

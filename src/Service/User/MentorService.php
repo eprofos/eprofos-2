@@ -30,9 +30,9 @@ class MentorService
         private MailerInterface $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private LoggerInterface $logger,
-        private string $fromEmail = 'noreply@eprofos.fr',
+        private string $fromEmail = 'noreply@eprofos.com',
         private string $fromName = 'EPROFOS - École Professionnelle de Formation Spécialisée',
-        private string $adminEmail = 'admin@eprofos.fr',
+        private string $adminEmail = 'admin@eprofos.com',
     ) {}
 
     /**

@@ -36,7 +36,7 @@ class LegalController extends AbstractController
                 'country' => 'France',
             ],
             'phone' => '+33 1 23 45 67 89',
-            'email' => 'contact@eprofos.fr',
+            'email' => 'contact@eprofos.com',
             'director' => 'Marie Dubois',
             'hosting' => [
                 'provider' => 'OVH',

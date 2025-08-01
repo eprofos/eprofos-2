@@ -19,7 +19,7 @@ class QuestionnaireEmailService
         private MailerInterface $mailer,
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
-        private string $fromEmail = 'noreply@eprofos.fr',
+        private string $fromEmail = 'noreply@eprofos.com',
     ) {}
 
     /**
@@ -160,7 +160,7 @@ class QuestionnaireEmailService
 
         $email = (new Email())
             ->from($this->fromEmail)
-            ->to('admin@eprofos.fr') // Configure this as needed
+            ->to('admin@eprofos.com') // Configure this as needed
             ->subject($subject)
             ->text($textBody)
             ->html($htmlBody)

@@ -217,7 +217,7 @@ class SessionController extends AbstractController
             ], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $email = (new Email())
-                ->from('contact@eprofos.fr')
+                ->from('contact@eprofos.com')
                 ->to($registration->getEmail())
                 ->subject('Confirmation d\'inscription - ' . $formation->getTitle())
                 ->html($this->renderView('emails/session_registration_confirmation.html.twig', [
@@ -247,7 +247,7 @@ class SessionController extends AbstractController
             $formation = $session->getFormation();
 
             $email = (new Email())
-                ->from('contact@eprofos.fr')
+                ->from('contact@eprofos.com')
                 ->to($registration->getEmail())
                 ->subject('Annulation d\'inscription - ' . $formation->getTitle())
                 ->html($this->renderView('emails/session_registration_cancellation.html.twig', [

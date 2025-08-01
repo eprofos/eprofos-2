@@ -34,8 +34,8 @@ class MissionAssignmentFixtures extends Fixture implements DependentFixtureInter
             return;
         }
 
-        // Ensure mentor@eprofos.fr gets assignments by creating specific assignments for this mentor's missions
-        $mentorEprofos = $manager->getRepository(Mentor::class)->findOneBy(['email' => 'mentor@eprofos.fr']);
+        // Ensure mentor@eprofos.com gets assignments by creating specific assignments for this mentor's missions
+        $mentorEprofos = $manager->getRepository(Mentor::class)->findOneBy(['email' => 'mentor@eprofos.com']);
         if ($mentorEprofos) {
             $this->createAssignmentsForSpecificMentor($manager, $mentorEprofos, $students, $faker);
         }

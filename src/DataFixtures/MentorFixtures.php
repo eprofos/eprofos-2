@@ -119,7 +119,7 @@ class MentorFixtures extends Fixture
         $testMentor = new Mentor();
         $testMentor->setFirstName('Jean')
             ->setLastName('Dupont')
-            ->setEmail('mentor@eprofos.fr')
+            ->setEmail('mentor@eprofos.com')
             ->setPhone('+33 6 12 34 56 78')
             ->setPosition('Directeur Technique')
             ->setCompanyName('EPROFOS Corp')

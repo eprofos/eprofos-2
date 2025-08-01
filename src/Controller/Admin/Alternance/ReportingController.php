@@ -542,7 +542,7 @@ class ReportingController extends AbstractController
                 'report_type' => 'overview',
                 'frequency' => 'weekly',
                 'next_execution' => new DateTime('+3 days'),
-                'recipients' => ['admin@eprofos.fr', 'direction@eprofos.fr'],
+                'recipients' => ['admin@eprofos.com', 'direction@eprofos.com'],
                 'status' => 'active',
             ],
             [
@@ -550,7 +550,7 @@ class ReportingController extends AbstractController
                 'report_type' => 'qualiopi',
                 'frequency' => 'monthly',
                 'next_execution' => new DateTime('+15 days'),
-                'recipients' => ['qualite@eprofos.fr'],
+                'recipients' => ['qualite@eprofos.com'],
                 'status' => 'active',
             ],
         ];

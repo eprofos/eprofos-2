@@ -123,10 +123,6 @@ class CertificateFixtures extends Fixture implements DependentFixtureInterface
         }
 
         $manager->flush();
-
-        if ($generatedCount > 0) {
-            echo sprintf("Generated %d certificates for testing\n", $generatedCount);
-        }
     }
 
     public function getDependencies(): array

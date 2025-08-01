@@ -45,7 +45,7 @@ class TeacherService
 
             // Create email
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($teacher->getEmail())
                 ->subject('Réinitialisation de votre mot de passe - EPROFOS')
                 ->html(
@@ -93,7 +93,7 @@ class TeacherService
 
             // Create email
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($teacher->getEmail())
                 ->subject('Vérifiez votre adresse email - EPROFOS')
                 ->html(
@@ -134,7 +134,7 @@ class TeacherService
     {
         try {
             $email = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->to($teacher->getEmail())
                 ->subject('Bienvenue chez EPROFOS - Accès formateur')
                 ->html(

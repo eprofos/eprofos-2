@@ -325,7 +325,7 @@ class CertificateService
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
-            ->from('formation@eprofos.fr')
+            ->from('formation@eprofos.com')
             ->to($student->getEmail())
             ->subject('Certificat de formation - ' . $formation->getTitle())
             ->html($this->twig->render('emails/certificate_delivery.html.twig', [

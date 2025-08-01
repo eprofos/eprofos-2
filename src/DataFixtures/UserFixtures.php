@@ -30,7 +30,7 @@ class UserFixtures extends Fixture
     {
         // Create default admin user
         $admin = new Admin();
-        $admin->setEmail('admin@eprofos.fr');
+        $admin->setEmail('admin@eprofos.com');
         $admin->setFirstName('Admin');
         $admin->setLastName('EPROFOS');
         $admin->setRoles(['ROLE_ADMIN']);
@@ -50,7 +50,7 @@ class UserFixtures extends Fixture
 
         // Create a second admin user for testing
         $testAdmin = new Admin();
-        $testAdmin->setEmail('test@eprofos.fr');
+        $testAdmin->setEmail('test@eprofos.com');
         $testAdmin->setFirstName('Test');
         $testAdmin->setLastName('Administrator');
         $testAdmin->setRoles(['ROLE_ADMIN']);

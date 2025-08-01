@@ -340,9 +340,9 @@ class ContactController extends AbstractController
         try {
             // Email to EPROFOS team
             $adminEmail = (new Email())
-                ->from('noreply@eprofos.fr')
+                ->from('noreply@eprofos.com')
                 ->replyTo($contactRequest->getEmail())
-                ->to('contact@eprofos.fr') // Replace with actual EPROFOS email
+                ->to('contact@eprofos.com') // Replace with actual EPROFOS email
                 ->subject('Nouvelle demande: ' . $contactRequest->getTypeLabel())
                 ->text($this->generateEmailContent($contactRequest))
             ;
@@ -351,7 +351,7 @@ class ContactController extends AbstractController
 
             // Confirmation email to user
             $confirmationEmail = (new Email())
-                ->from('contact@eprofos.fr')
+                ->from('contact@eprofos.com')
                 ->to($contactRequest->getEmail())
                 ->subject('Confirmation de votre demande - EPROFOS')
                 ->text($this->generateConfirmationEmailContent($contactRequest))
@@ -413,8 +413,8 @@ class ContactController extends AbstractController
         $content .= "Cordialement,\n";
         $content .= "L'équipe EPROFOS\n";
         $content .= "École Professionnelle de Formation Spécialisée\n\n";
-        $content .= "Email: contact@eprofos.fr\n";
-        $content .= 'Site web: https://www.eprofos.fr';
+        $content .= "Email: contact@eprofos.com\n";
+        $content .= 'Site web: https://www.eprofos.com';
 
         return $content;
     }
@@ -425,9 +425,9 @@ class ContactController extends AbstractController
     private function sendAccessibilityNotificationEmail(ContactRequest $contactRequest): void
     {
         $email = (new Email())
-            ->from('noreply@eprofos.fr')
-            ->to('handicap@eprofos.fr')
-            ->cc('contact@eprofos.fr')
+            ->from('noreply@eprofos.com')
+            ->to('handicap@eprofos.com')
+            ->cc('contact@eprofos.com')
             ->subject('Nouvelle demande d\'adaptation - Accessibilité')
             ->text($this->generateAccessibilityNotificationContent($contactRequest))
         ;
