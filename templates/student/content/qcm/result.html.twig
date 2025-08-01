@@ -218,15 +218,15 @@
                                     <span class="badge bg-secondary me-2">{{ loop.index }}</span>
                                     Question {{ loop.index }}
                                 </h6>
-                                <div class="question-text">{{ question.questionText|raw }}</div>
+                                <div class="question-text">{{ question.question|raw }}</div>
                             </div>
                             <div class="text-end">
-                                {% if question.id in correct_question_ids %}
+                                {% if loop.index0 in correct_question_ids %}
                                     <span class="badge bg-success">
                                         <i class="fas fa-check me-1"></i>
                                         Correct
                                     </span>
-                                {% elseif question.id in answered_question_ids %}
+                                {% elseif loop.index0 in answered_question_ids %}
                                     <span class="badge bg-danger">
                                         <i class="fas fa-times me-1"></i>
                                         Incorrect
@@ -240,60 +240,42 @@
                             </div>
                         </div>
 
-                        {% if question.image %}
-                            <div class="mb-3 text-center">
-                                <img src="{{ asset('uploads/qcm/questions/' ~ question.image) }}" 
-                                     alt="Image de la question" 
-                                     class="img-fluid rounded border" 
-                                     style="max-height: 200px;">
-                            </div>
-                        {% endif %}
-
                         <div class="options-review">
-                            {% for option in question.questionOptions %}
+                            {% for answer in question.answers %}
                             <div class="form-check mb-2">
                                 <div class="d-flex align-items-start">
                                     <div class="me-3 mt-1">
-                                        {% if question.questionType == 'multiple_choice' or question.questionType == 'true_false' %}
-                                            <i class="fas fa-circle 
-                                                {% if option.isCorrect %}text-success
-                                                {% elseif option.id in (student_answers[question.id] ?? []) %}text-danger
+                                        {% if question.type == 'multiple' %}
+                                            <i class="fas fa-square 
+                                                {% if loop.index0 in (question.correct_answers ?? []) %}text-success
+                                                {% elseif loop.index0 in (student_answers[loop.parent.loop.index0] ?? []) %}text-danger
                                                 {% else %}text-muted
                                                 {% endif %}"></i>
                                         {% else %}
-                                            <i class="fas fa-square 
-                                                {% if option.isCorrect %}text-success
-                                                {% elseif option.id in (student_answers[question.id] ?? []) %}text-danger
+                                            <i class="fas fa-circle 
+                                                {% if loop.index0 in (question.correct_answers ?? []) %}text-success
+                                                {% elseif loop.index0 in (student_answers[loop.parent.loop.index0] ?? []) %}text-danger
                                                 {% else %}text-muted
                                                 {% endif %}"></i>
                                         {% endif %}
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="option-content p-2 rounded
-                                            {% if option.isCorrect %}border border-success bg-success bg-opacity-10
-                                            {% elseif option.id in (student_answers[question.id] ?? []) %}border border-danger bg-danger bg-opacity-10
+                                            {% if loop.index0 in (question.correct_answers ?? []) %}border border-success bg-success bg-opacity-10
+                                            {% elseif loop.index0 in (student_answers[loop.parent.loop.index0] ?? []) %}border border-danger bg-danger bg-opacity-10
                                             {% else %}border border-light
                                             {% endif %}">
                                             
-                                            {% if option.image %}
-                                                <div class="mb-2">
-                                                    <img src="{{ asset('uploads/qcm/options/' ~ option.image) }}" 
-                                                         alt="Option image" 
-                                                         class="img-fluid rounded" 
-                                                         style="max-height: 80px;">
-                                                </div>
-                                            {% endif %}
-                                            
                                             <div class="d-flex justify-content-between align-items-start">
-                                                <div>{{ option.optionText|raw }}</div>
+                                                <div>{{ answer|raw }}</div>
                                                 <div class="ms-3">
-                                                    {% if option.isCorrect %}
+                                                    {% if loop.index0 in (question.correct_answers ?? []) %}
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-check me-1"></i>
                                                             Bonne réponse
                                                         </span>
                                                     {% endif %}
-                                                    {% if option.id in (student_answers[question.id] ?? []) %}
+                                                    {% if loop.index0 in (student_answers[loop.parent.loop.index0] ?? []) %}
                                                         <span class="badge bg-primary">
                                                             <i class="fas fa-user me-1"></i>
                                                             Votre réponse

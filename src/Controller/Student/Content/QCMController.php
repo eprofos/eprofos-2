@@ -800,6 +800,80 @@ class QCMController extends AbstractController
             $showCorrectAnswers = $qcm->isShowCorrectAnswers();
             $showExplanations = $qcm->isShowExplanations();
 
+            // Get additional data needed for the template
+            try {
+                $questions = $this->attemptService->getRandomizedQuestions($qcm);
+                $canRetry = $this->attemptService->canStudentAttempt($student, $qcm);
+                
+                // Get other attempts for the sidebar
+                $otherAttempts = array_filter($attempts, fn($a) => $a->getId() !== $attemptId);
+                
+                // Calculate statistics
+                $correctAnswers = 0;
+                $incorrectAnswers = 0;
+                $unansweredCount = 0;
+                $correctQuestionIds = [];
+                $answeredQuestionIds = [];
+                $studentAnswers = [];
+                
+                foreach ($questions as $index => $question) {
+                    $userAnswer = $attempt->getAnswerForQuestion($index);
+                    $studentAnswers[$index] = $userAnswer ?? [];
+                    
+                    if (empty($userAnswer)) {
+                        $unansweredCount++;
+                    } else {
+                        $answeredQuestionIds[] = $index;
+                        
+                        // Check if answer is correct
+                        $correctOptions = $question['correct_answers'] ?? [];
+                        
+                        // Compare user answer with correct options
+                        sort($correctOptions);
+                        sort($userAnswer);
+                        
+                        if ($correctOptions === $userAnswer) {
+                            $correctAnswers++;
+                            $correctQuestionIds[] = $index;
+                        } else {
+                            $incorrectAnswers++;
+                        }
+                    }
+                }
+                
+                $this->logger->debug('Result template data calculated', [
+                    'qcm_id' => $qcm->getId(),
+                    'student_id' => $student->getId(),
+                    'attempt_id' => $attemptId,
+                    'questions_count' => count($questions),
+                    'correct_answers' => $correctAnswers,
+                    'incorrect_answers' => $incorrectAnswers,
+                    'unanswered_count' => $unansweredCount,
+                    'can_retry' => $canRetry,
+                    'other_attempts_count' => count($otherAttempts),
+                ]);
+                
+            } catch (\Exception $dataException) {
+                $this->logger->error('Failed to calculate result template data', [
+                    'qcm_id' => $qcm->getId(),
+                    'student_id' => $student->getId(),
+                    'attempt_id' => $attemptId,
+                    'error' => $dataException->getMessage(),
+                    'trace' => $dataException->getTraceAsString(),
+                ]);
+                
+                // Set default values to prevent template errors
+                $questions = [];
+                $canRetry = false;
+                $otherAttempts = [];
+                $correctAnswers = 0;
+                $incorrectAnswers = 0;
+                $unansweredCount = 0;
+                $correctQuestionIds = [];
+                $answeredQuestionIds = [];
+                $studentAnswers = [];
+            }
+
             $this->logger->info('QCM result view successful', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $student->getId(),
@@ -814,10 +888,23 @@ class QCMController extends AbstractController
 
             return $this->render('student/content/qcm/result.html.twig', [
                 'qcm' => $qcm,
+                'course' => $qcm->getCourse(),
+                'chapter' => $qcm->getCourse()?->getChapter(),
+                'module' => $qcm->getCourse()?->getChapter()?->getModule(),
+                'formation' => $qcm->getCourse()?->getChapter()?->getModule()?->getFormation(),
                 'attempt' => $attempt,
                 'student' => $student,
+                'questions' => $questions,
                 'show_correct_answers' => $showCorrectAnswers,
                 'show_explanations' => $showExplanations,
+                'can_retry' => $canRetry,
+                'other_attempts' => $otherAttempts,
+                'correct_answers' => $correctAnswers,
+                'incorrect_answers' => $incorrectAnswers,
+                'unanswered_count' => $unansweredCount,
+                'correct_question_ids' => $correctQuestionIds,
+                'answered_question_ids' => $answeredQuestionIds,
+                'student_answers' => $studentAnswers,
                 'page_title' => 'Résultat: ' . $qcm->getTitle(),
             ]);
 
