@@ -611,6 +611,6 @@ class CertificateService
     private function getDefaultTemplate(Formation $formation): string
     {
         // For now, use a default template. In the future, this could be customized per formation
-        return 'formation_completion_2024';
+        return 'formation_completion_2025';
     }
 }
