@@ -243,22 +243,37 @@ class QCMController extends AbstractController
                 'timestamp' => new \DateTime(),
             ]);
 
-            // Check eligibility
-            $this->logger->debug('Checking student eligibility for QCM attempt', [
+            // Check if student has an active attempt or can start a new one
+            $this->logger->debug('Checking student access to QCM', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
             ]);
 
             try {
+                $activeAttempt = $this->attemptService->getActiveAttempt($student, $qcm);
                 $canAttempt = $this->attemptService->canStudentAttempt($student, $qcm);
                 
-                $this->logger->debug('Student QCM attempt eligibility checked', [
+                $this->logger->debug('Student QCM access checked', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
-                    'can_attempt' => $canAttempt,
+                    'has_active_attempt' => $activeAttempt !== null,
+                    'can_start_new_attempt' => $canAttempt,
                 ]);
+                
+                // Allow access if student has active attempt OR can start a new one
+                if (!$activeAttempt && !$canAttempt) {
+                    $this->logger->warning('Student cannot access QCM - no active attempt and cannot start new', [
+                        'student_id' => $student->getId(),
+                        'qcm_id' => $qcm->getId(),
+                        'reason' => 'No active attempt and cannot start new attempt',
+                    ]);
+                    
+                    $this->addFlash('error', 'Vous ne pouvez plus commencer ce QCM.');
+                    return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+                }
+                
             } catch (\Exception $eligibilityException) {
-                $this->logger->error('Failed to check QCM attempt eligibility', [
+                $this->logger->error('Failed to check QCM access', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'error' => $eligibilityException->getMessage(),
@@ -269,25 +284,19 @@ class QCMController extends AbstractController
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
-            if (!$canAttempt) {
-                $this->logger->warning('Student cannot attempt QCM', [
-                    'student_id' => $student->getId(),
-                    'qcm_id' => $qcm->getId(),
-                    'reason' => 'Eligibility check failed',
-                ]);
-                
-                $this->addFlash('error', 'Vous ne pouvez plus commencer ce QCM.');
-                return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
-            }
-
             // Get or create active attempt
             $this->logger->debug('Getting or creating active QCM attempt', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
+                'has_existing_active' => $activeAttempt !== null,
             ]);
 
             try {
-                $attempt = $this->attemptService->getOrCreateActiveAttempt($student, $qcm);
+                if (!$activeAttempt) {
+                    $attempt = $this->attemptService->getOrCreateActiveAttempt($student, $qcm);
+                } else {
+                    $attempt = $activeAttempt;
+                }
                 
                 $this->logger->info('QCM attempt retrieved/created', [
                     'student_id' => $student->getId(),
@@ -296,6 +305,7 @@ class QCMController extends AbstractController
                     'attempt_number' => $attempt->getAttemptNumber(),
                     'attempt_status' => $attempt->getStatus(),
                     'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
+                    'was_existing' => $activeAttempt !== null,
                 ]);
             } catch (\Exception $attemptException) {
                 $this->logger->error('Failed to get or create QCM attempt', [

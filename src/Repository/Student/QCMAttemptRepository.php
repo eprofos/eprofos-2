@@ -130,6 +130,11 @@ class QCMAttemptRepository extends ServiceEntityRepository
         $completedAttempts = $this->countCompletedAttempts($student, $qcm);
         $activeAttempt = $this->findActiveAttempt($student, $qcm);
         
+        // Check if active attempt has expired
+        if ($activeAttempt && $activeAttempt->hasExpired()) {
+            $activeAttempt = null; // Treat expired attempts as inactive
+        }
+        
         return $completedAttempts < $qcm->getMaxAttempts() && $activeAttempt === null;
     }
 
