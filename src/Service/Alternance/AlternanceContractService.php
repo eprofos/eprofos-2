@@ -11,6 +11,9 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Psr\Log\LoggerInterface;
+use Exception;
+use RuntimeException;
 
 /**
  * Service for managing alternance contracts.
@@ -24,46 +27,209 @@ class AlternanceContractService
         private EntityManagerInterface $entityManager,
         private AlternanceContractRepository $contractRepository,
         private ValidatorInterface $validator,
+        private LoggerInterface $logger,
     ) {}
 
     /**
      * Create a new alternance contract.
      *
      * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function createContract(array $data): AlternanceContract
     {
-        $contract = new AlternanceContract();
-        $this->populateContract($contract, $data);
+        $this->logger->info('Starting creation of new alternance contract', [
+            'data_keys' => array_keys($data),
+            'student_id' => $data['student']?->getId() ?? null,
+            'session_id' => $data['session']?->getId() ?? null,
+            'company_name' => $data['companyName'] ?? null,
+            'contract_type' => $data['contractType'] ?? null,
+        ]);
 
-        $errors = $this->validator->validate($contract);
-        if (count($errors) > 0) {
-            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
+        try {
+            $contract = new AlternanceContract();
+            
+            $this->logger->debug('Populating new contract with provided data', [
+                'contract_temp_id' => spl_object_hash($contract),
+            ]);
+
+            $this->populateContract($contract, $data);
+
+            $this->logger->debug('Validating new contract', [
+                'contract_temp_id' => spl_object_hash($contract),
+                'contract_type' => $contract->getContractType(),
+                'company_siret' => $contract->getCompanySiret(),
+            ]);
+
+            $errors = $this->validator->validate($contract);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getMessage();
+                }
+                
+                $this->logger->error('Contract validation failed during creation', [
+                    'contract_temp_id' => spl_object_hash($contract),
+                    'validation_errors' => $errorMessages,
+                    'errors_count' => count($errors),
+                ]);
+
+                throw new InvalidArgumentException('Validation failed: ' . implode(', ', $errorMessages));
+            }
+
+            $this->logger->debug('Persisting new contract to database', [
+                'contract_temp_id' => spl_object_hash($contract),
+            ]);
+
+            $this->entityManager->persist($contract);
+            $this->entityManager->flush();
+
+            $this->logger->info('Alternance contract created successfully', [
+                'contract_id' => $contract->getId(),
+                'contract_type' => $contract->getContractType(),
+                'student_id' => $contract->getStudent()?->getId(),
+                'session_id' => $contract->getSession()?->getId(),
+                'company_name' => $contract->getCompanyName(),
+                'status' => $contract->getStatus(),
+            ]);
+
+            return $contract;
+
+        } catch (InvalidArgumentException $e) {
+            // Re-throw validation exceptions as-is
+            throw $e;
+        } catch (Exception $e) {
+            $this->logger->critical('Unexpected error during contract creation', [
+                'error' => $e->getMessage(),
+                'exception_class' => get_class($e),
+                'data_keys' => array_keys($data),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new RuntimeException(
+                sprintf('Erreur inattendue lors de la création du contrat: %s', $e->getMessage()),
+                0,
+                $e
+            );
         }
-
-        $this->entityManager->persist($contract);
-        $this->entityManager->flush();
-
-        return $contract;
     }
 
     /**
      * Update an existing alternance contract.
      *
      * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function updateContract(AlternanceContract $contract, array $data): AlternanceContract
     {
-        $this->populateContract($contract, $data);
+        $this->logger->info('Starting update of alternance contract', [
+            'contract_id' => $contract->getId(),
+            'current_status' => $contract->getStatus(),
+            'data_keys' => array_keys($data),
+            'company_name' => $contract->getCompanyName(),
+        ]);
 
-        $errors = $this->validator->validate($contract);
-        if (count($errors) > 0) {
-            throw new InvalidArgumentException('Validation failed: ' . (string) $errors);
+        try {
+            // Store original values for logging
+            $originalData = [
+                'status' => $contract->getStatus(),
+                'contract_type' => $contract->getContractType(),
+                'company_name' => $contract->getCompanyName(),
+                'total_weekly_hours' => null,
+            ];
+
+            try {
+                $originalData['total_weekly_hours'] = $contract->getTotalWeeklyHours();
+            } catch (Exception $e) {
+                $this->logger->debug('Could not calculate original weekly hours', [
+                    'contract_id' => $contract->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $this->logger->debug('Populating contract with updated data', [
+                'contract_id' => $contract->getId(),
+                'original_data' => $originalData,
+            ]);
+
+            $this->populateContract($contract, $data);
+
+            $this->logger->debug('Validating updated contract', [
+                'contract_id' => $contract->getId(),
+                'contract_type' => $contract->getContractType(),
+                'status' => $contract->getStatus(),
+            ]);
+
+            $errors = $this->validator->validate($contract);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getMessage();
+                }
+                
+                $this->logger->error('Contract validation failed during update', [
+                    'contract_id' => $contract->getId(),
+                    'validation_errors' => $errorMessages,
+                    'errors_count' => count($errors),
+                    'original_data' => $originalData,
+                ]);
+
+                throw new InvalidArgumentException('Validation failed: ' . implode(', ', $errorMessages));
+            }
+
+            $this->logger->debug('Persisting contract updates to database', [
+                'contract_id' => $contract->getId(),
+            ]);
+
+            $this->entityManager->flush();
+
+            // Log the changes
+            $updatedData = [
+                'status' => $contract->getStatus(),
+                'contract_type' => $contract->getContractType(),
+                'company_name' => $contract->getCompanyName(),
+                'total_weekly_hours' => null,
+            ];
+
+            try {
+                $updatedData['total_weekly_hours'] = $contract->getTotalWeeklyHours();
+            } catch (Exception $e) {
+                $this->logger->debug('Could not calculate updated weekly hours', [
+                    'contract_id' => $contract->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $this->logger->info('Alternance contract updated successfully', [
+                'contract_id' => $contract->getId(),
+                'original_data' => $originalData,
+                'updated_data' => $updatedData,
+                'changed_fields' => array_keys($data),
+            ]);
+
+            return $contract;
+
+        } catch (InvalidArgumentException $e) {
+            // Re-throw validation exceptions as-is
+            throw $e;
+        } catch (Exception $e) {
+            $this->logger->critical('Unexpected error during contract update', [
+                'contract_id' => $contract->getId(),
+                'error' => $e->getMessage(),
+                'exception_class' => get_class($e),
+                'data_keys' => array_keys($data),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new RuntimeException(
+                sprintf('Erreur inattendue lors de la mise à jour du contrat %s: %s', 
+                    $contract->getId(), 
+                    $e->getMessage()
+                ),
+                0,
+                $e
+            );
         }
-
-        $this->entityManager->flush();
-
-        return $contract;
     }
 
     /**
@@ -79,19 +245,72 @@ class AlternanceContractService
      * Validate a contract.
      *
      * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function validateContract(AlternanceContract $contract): AlternanceContract
     {
-        if ($contract->getStatus() !== 'pending_validation') {
-            throw new InvalidArgumentException('Contract must be in pending_validation status to be validated.');
+        $this->logger->info('Starting contract validation process', [
+            'contract_id' => $contract->getId(),
+            'current_status' => $contract->getStatus(),
+            'contract_type' => $contract->getContractType(),
+            'company_name' => $contract->getCompanyName(),
+        ]);
+
+        try {
+            if ($contract->getStatus() !== 'pending_validation') {
+                $error = 'Contract must be in pending_validation status to be validated.';
+                $this->logger->warning('Contract validation failed: Invalid status', [
+                    'contract_id' => $contract->getId(),
+                    'current_status' => $contract->getStatus(),
+                    'required_status' => 'pending_validation',
+                    'error' => $error,
+                ]);
+                throw new InvalidArgumentException($error);
+            }
+
+            $this->logger->debug('Updating contract status to validated', [
+                'contract_id' => $contract->getId(),
+                'previous_status' => $contract->getStatus(),
+            ]);
+
+            $contract->setStatus('validated');
+            $contract->setValidatedAt(new DateTimeImmutable());
+
+            $this->logger->debug('Persisting contract validation to database', [
+                'contract_id' => $contract->getId(),
+                'validated_at' => $contract->getValidatedAt()?->format('Y-m-d H:i:s'),
+            ]);
+
+            $this->entityManager->flush();
+
+            $this->logger->info('Contract validated successfully', [
+                'contract_id' => $contract->getId(),
+                'new_status' => $contract->getStatus(),
+                'validated_at' => $contract->getValidatedAt()?->format('Y-m-d H:i:s'),
+            ]);
+
+            return $contract;
+
+        } catch (InvalidArgumentException $e) {
+            // Re-throw business logic exceptions as-is
+            throw $e;
+        } catch (Exception $e) {
+            $this->logger->critical('Unexpected error during contract validation', [
+                'contract_id' => $contract->getId(),
+                'error' => $e->getMessage(),
+                'exception_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new RuntimeException(
+                sprintf('Erreur inattendue lors de la validation du contrat %s: %s', 
+                    $contract->getId(), 
+                    $e->getMessage()
+                ),
+                0,
+                $e
+            );
         }
-
-        $contract->setStatus('validated');
-        $contract->setValidatedAt(new DateTimeImmutable());
-
-        $this->entityManager->flush();
-
-        return $contract;
     }
 
     /**
@@ -234,14 +453,54 @@ class AlternanceContractService
 
     /**
      * Get contract statistics.
+     *
+     * @throws RuntimeException
      */
     public function getContractStatistics(): array
     {
-        return [
-            'by_status' => $this->contractRepository->getStatusStatistics(),
-            'by_contract_type' => $this->contractRepository->getContractTypeStatistics(),
-            'monthly_creation' => $this->contractRepository->getMonthlyCreationStatistics(),
-        ];
+        $this->logger->info('Generating contract statistics');
+
+        try {
+            $this->logger->debug('Fetching status statistics from repository');
+            $statusStats = $this->contractRepository->getStatusStatistics();
+
+            $this->logger->debug('Fetching contract type statistics from repository');
+            $typeStats = $this->contractRepository->getContractTypeStatistics();
+
+            $this->logger->debug('Fetching monthly creation statistics from repository');
+            $monthlyStats = $this->contractRepository->getMonthlyCreationStatistics();
+
+            $statistics = [
+                'by_status' => $statusStats,
+                'by_contract_type' => $typeStats,
+                'monthly_creation' => $monthlyStats,
+            ];
+
+            $this->logger->info('Contract statistics generated successfully', [
+                'status_entries' => count($statusStats),
+                'type_entries' => count($typeStats),
+                'monthly_entries' => count($monthlyStats),
+                'statistics_summary' => [
+                    'total_statuses' => array_sum(array_column($statusStats, 'count')),
+                    'total_by_types' => array_sum(array_column($typeStats, 'count')),
+                ],
+            ]);
+
+            return $statistics;
+
+        } catch (Exception $e) {
+            $this->logger->error('Error generating contract statistics', [
+                'error' => $e->getMessage(),
+                'exception_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new RuntimeException(
+                sprintf('Erreur lors de la génération des statistiques de contrats: %s', $e->getMessage()),
+                0,
+                $e
+            );
+        }
     }
 
     /**

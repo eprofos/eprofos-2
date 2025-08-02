@@ -14,6 +14,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,98 +30,173 @@ class PlanningController extends AbstractController
         private AlternanceProgramRepository $programRepository,
         private EntityManagerInterface $entityManager,
         private PlanningAnalyticsService $analyticsService,
+        private LoggerInterface $logger,
     ) {}
 
     #[Route('', name: 'admin_alternance_planning_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $view = $request->query->get('view', 'calendar'); // calendar, list, gantt
-        $period = $request->query->get('period', 'month'); // week, month, semester, year
-        $formation = $request->query->get('formation');
-        $mentor = $request->query->get('mentor');
-
-        $filters = [
-            'formation' => $formation,
-            'mentor' => $mentor,
-            'period' => $period,
-        ];
-
-        // Get contracts with pagination for planning view
-        $page = $request->query->getInt('page', 1);
-        $perPage = 20;
-
-        $qb = $this->contractRepository->createQueryBuilder('c')
-            ->leftJoin('c.student', 's')
-            ->leftJoin('c.session', 'session')
-            ->leftJoin('session.formation', 'f')
-            ->leftJoin('c.mentor', 'm')
-            ->orderBy('c.startDate', 'DESC')
-        ;
-
-        if ($formation) {
-            $qb->andWhere('f.id = :formation')
-                ->setParameter('formation', $formation)
-            ;
-        }
-
-        if ($mentor) {
-            $qb->andWhere('m.id = :mentor')
-                ->setParameter('mentor', $mentor)
-            ;
-        }
-
-        $contracts = $qb->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage)
-            ->getQuery()
-            ->getResult()
-        ;
-
-        // Create count query with same filters
-        $countQb = $this->contractRepository->createQueryBuilder('c2')
-            ->select('COUNT(c2.id)')
-            ->leftJoin('c2.session', 'session2')
-            ->leftJoin('session2.formation', 'f2')
-            ->leftJoin('c2.mentor', 'm2')
-        ;
-
-        if ($formation) {
-            $countQb->andWhere('f2.id = :formation')
-                ->setParameter('formation', $formation)
-            ;
-        }
-
-        if ($mentor) {
-            $countQb->andWhere('m2.id = :mentor')
-                ->setParameter('mentor', $mentor)
-            ;
-        }
-
-        $totalContracts = (int) $countQb->getQuery()->getSingleScalarResult();
-        $totalPages = ceil($totalContracts / $perPage);
-
-        $statistics = $this->analyticsService->getPlanningStatistics();
-
-        // Get formations for filter dropdown
-        $formations = $this->entityManager->getRepository(Formation::class)
-            ->findActiveFormations()
-        ;
-
-        // Get mentors for filter dropdown
-        $mentors = $this->entityManager->getRepository(Mentor::class)
-            ->findAll()
-        ;
-
-        return $this->render('admin/alternance/planning/index.html.twig', [
-            'view' => $view,
-            'period' => $period,
-            'filters' => $filters,
-            'contracts' => $contracts,
-            'current_page' => $page,
-            'total_pages' => $totalPages,
-            'statistics' => $statistics,
-            'formations' => $formations,
-            'mentors' => $mentors,
+        $this->logger->info('Accessing alternance planning index', [
+            'user_id' => $this->getUser()?->getUserIdentifier(),
+            'ip' => $request->getClientIp(),
+            'user_agent' => $request->headers->get('User-Agent'),
         ]);
+
+        try {
+            $view = $request->query->get('view', 'calendar'); // calendar, list, gantt
+            $period = $request->query->get('period', 'month'); // week, month, semester, year
+            $formation = $request->query->get('formation');
+            $mentor = $request->query->get('mentor');
+
+            $this->logger->info('Planning filters applied', [
+                'view' => $view,
+                'period' => $period,
+                'formation' => $formation,
+                'mentor' => $mentor,
+            ]);
+
+            $filters = [
+                'formation' => $formation,
+                'mentor' => $mentor,
+                'period' => $period,
+            ];
+
+            // Get contracts with pagination for planning view
+            $page = $request->query->getInt('page', 1);
+            $perPage = 20;
+
+            $this->logger->debug('Building contracts query', [
+                'page' => $page,
+                'per_page' => $perPage,
+                'filters' => $filters,
+            ]);
+
+            $qb = $this->contractRepository->createQueryBuilder('c')
+                ->leftJoin('c.student', 's')
+                ->leftJoin('c.session', 'session')
+                ->leftJoin('session.formation', 'f')
+                ->leftJoin('c.mentor', 'm')
+                ->orderBy('c.startDate', 'DESC')
+            ;
+
+            if ($formation) {
+                $qb->andWhere('f.id = :formation')
+                    ->setParameter('formation', $formation)
+                ;
+                $this->logger->debug('Applied formation filter', ['formation_id' => $formation]);
+            }
+
+            if ($mentor) {
+                $qb->andWhere('m.id = :mentor')
+                    ->setParameter('mentor', $mentor)
+                ;
+                $this->logger->debug('Applied mentor filter', ['mentor_id' => $mentor]);
+            }
+
+            $contracts = $qb->setFirstResult(($page - 1) * $perPage)
+                ->setMaxResults($perPage)
+                ->getQuery()
+                ->getResult()
+            ;
+
+            $this->logger->debug('Contracts query executed', [
+                'contracts_found' => count($contracts),
+                'page' => $page,
+            ]);
+
+            // Create count query with same filters
+            $countQb = $this->contractRepository->createQueryBuilder('c2')
+                ->select('COUNT(c2.id)')
+                ->leftJoin('c2.session', 'session2')
+                ->leftJoin('session2.formation', 'f2')
+                ->leftJoin('c2.mentor', 'm2')
+            ;
+
+            if ($formation) {
+                $countQb->andWhere('f2.id = :formation')
+                    ->setParameter('formation', $formation)
+                ;
+            }
+
+            if ($mentor) {
+                $countQb->andWhere('m2.id = :mentor')
+                    ->setParameter('mentor', $mentor)
+                ;
+            }
+
+            $totalContracts = (int) $countQb->getQuery()->getSingleScalarResult();
+            $totalPages = ceil($totalContracts / $perPage);
+
+            $this->logger->debug('Pagination calculated', [
+                'total_contracts' => $totalContracts,
+                'total_pages' => $totalPages,
+                'current_page' => $page,
+            ]);
+
+            $statistics = $this->analyticsService->getPlanningStatistics();
+
+            $this->logger->debug('Planning statistics retrieved', [
+                'statistics_keys' => array_keys($statistics),
+            ]);
+
+            // Get formations for filter dropdown
+            $formations = $this->entityManager->getRepository(Formation::class)
+                ->findActiveFormations()
+            ;
+
+            // Get mentors for filter dropdown
+            $mentors = $this->entityManager->getRepository(Mentor::class)
+                ->findAll()
+            ;
+
+            $this->logger->info('Planning index data prepared successfully', [
+                'view' => $view,
+                'period' => $period,
+                'contracts_count' => count($contracts),
+                'total_contracts' => $totalContracts,
+                'formations_count' => count($formations),
+                'mentors_count' => count($mentors),
+            ]);
+
+            return $this->render('admin/alternance/planning/index.html.twig', [
+                'view' => $view,
+                'period' => $period,
+                'filters' => $filters,
+                'contracts' => $contracts,
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'statistics' => $statistics,
+                'formations' => $formations,
+                'mentors' => $mentors,
+            ]);
+        } catch (Exception $e) {
+            $this->logger->error('Error loading planning index', [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'stack_trace' => $e->getTraceAsString(),
+                'user_id' => $this->getUser()?->getUserIdentifier(),
+                'request_params' => $request->query->all(),
+            ]);
+
+            $this->addFlash('error', 'Une erreur est survenue lors du chargement du planning. Veuillez réessayer.');
+
+            // Return with minimal data to prevent template errors
+            return $this->render('admin/alternance/planning/index.html.twig', [
+                'view' => $request->query->get('view', 'calendar'),
+                'period' => $request->query->get('period', 'month'),
+                'filters' => [
+                    'formation' => null,
+                    'mentor' => null,
+                    'period' => $request->query->get('period', 'month'),
+                ],
+                'contracts' => [],
+                'current_page' => 1,
+                'total_pages' => 0,
+                'statistics' => [],
+                'formations' => [],
+                'mentors' => [],
+            ]);
+        }
     }
 
     #[Route('/calendar', name: 'admin_alternance_planning_calendar', methods: ['GET'])]

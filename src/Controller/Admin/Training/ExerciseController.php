@@ -8,6 +8,7 @@ use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
 use App\Repository\Training\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,7 @@ class ExerciseController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SluggerInterface $slugger,
+        private LoggerInterface $logger,
     ) {}
 
     #[Route('/', name: 'admin_exercise_index', methods: ['GET'])]
@@ -63,48 +65,210 @@ class ExerciseController extends AbstractController
         $courses = $this->entityManager->getRepository(Course::class)->findBy(['isActive' => true]);
 
         if ($request->isMethod('POST')) {
-            $data = $request->request->all();
+            try {
+                $this->logger->info('Starting exercise creation process', [
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'request_data_keys' => array_keys($request->request->all())
+                ]);
 
-            $exercise->setTitle($data['title']);
-            $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
-            $exercise->setDescription($data['description']);
-            $exercise->setType($data['type']);
-            $exercise->setDifficulty($data['difficulty']);
-            $exercise->setInstructions($data['instructions']);
-            $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
-            $exercise->setMaxPoints((int) $data['max_points']);
-            $exercise->setPassingPoints((int) $data['passing_points']);
-            $exercise->setOrderIndex((int) $data['order_index']);
+                $data = $request->request->all();
 
-            $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
-            $exercise->setCourse($course);
+                // Validate required fields
+                $requiredFields = ['title', 'description', 'type', 'difficulty', 'instructions', 'course_id'];
+                foreach ($requiredFields as $field) {
+                    if (empty($data[$field])) {
+                        $this->logger->warning('Missing required field during exercise creation', [
+                            'field' => $field,
+                            'user_id' => $this->getUser()?->getUserIdentifier()
+                        ]);
+                        throw new \InvalidArgumentException("Le champ '{$field}' est requis");
+                    }
+                }
 
-            // Handle JSON arrays
-            if (!empty($data['expected_outcomes'])) {
-                $exercise->setExpectedOutcomes(array_filter(explode("\n", $data['expected_outcomes'])));
+                $this->logger->debug('Exercise creation data validation passed', [
+                    'title' => $data['title'],
+                    'type' => $data['type'],
+                    'difficulty' => $data['difficulty'],
+                    'course_id' => $data['course_id']
+                ]);
+
+                $exercise->setTitle($data['title']);
+                $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
+                $exercise->setDescription($data['description']);
+                $exercise->setType($data['type']);
+                $exercise->setDifficulty($data['difficulty']);
+
+                // Enhanced logging for instructions processing
+                $this->logger->info('Processing exercise instructions', [
+                    'exercise_title' => $data['title'],
+                    'instructions_length' => strlen($data['instructions']),
+                    'instructions_preview' => substr($data['instructions'], 0, 100) . '...',
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                try {
+                    $exercise->setInstructions($data['instructions']);
+                    $this->logger->debug('Instructions successfully set for exercise', [
+                        'exercise_title' => $data['title'],
+                        'instructions_final_length' => strlen($exercise->getInstructions())
+                    ]);
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to set instructions for exercise', [
+                        'exercise_title' => $data['title'],
+                        'error_message' => $e->getMessage(),
+                        'error_code' => $e->getCode(),
+                        'instructions_length' => strlen($data['instructions']),
+                        'user_id' => $this->getUser()?->getUserIdentifier()
+                    ]);
+                    throw new \RuntimeException('Erreur lors de la sauvegarde des instructions: ' . $e->getMessage());
+                }
+
+                $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
+                $exercise->setMaxPoints((int) $data['max_points']);
+                $exercise->setPassingPoints((int) $data['passing_points']);
+                $exercise->setOrderIndex((int) $data['order_index']);
+
+                $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
+                if (!$course) {
+                    $this->logger->error('Course not found during exercise creation', [
+                        'course_id' => $data['course_id'],
+                        'exercise_title' => $data['title'],
+                        'user_id' => $this->getUser()?->getUserIdentifier()
+                    ]);
+                    throw new \InvalidArgumentException('Le cours spécifié n\'existe pas');
+                }
+                $exercise->setCourse($course);
+
+                // Handle JSON arrays with detailed logging
+                $this->logger->debug('Processing JSON array fields for exercise', [
+                    'exercise_title' => $data['title'],
+                    'has_expected_outcomes' => !empty($data['expected_outcomes']),
+                    'has_evaluation_criteria' => !empty($data['evaluation_criteria']),
+                    'has_resources' => !empty($data['resources']),
+                    'has_success_criteria' => !empty($data['success_criteria'])
+                ]);
+
+                if (!empty($data['expected_outcomes'])) {
+                    try {
+                        $expectedOutcomes = array_filter(explode("\n", $data['expected_outcomes']));
+                        $exercise->setExpectedOutcomes($expectedOutcomes);
+                        $this->logger->debug('Expected outcomes processed successfully', [
+                            'exercise_title' => $data['title'],
+                            'outcomes_count' => count($expectedOutcomes)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to process expected outcomes', [
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['expected_outcomes']
+                        ]);
+                        throw new \RuntimeException('Erreur lors du traitement des résultats attendus: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['evaluation_criteria'])) {
+                    try {
+                        $evaluationCriteria = array_filter(explode("\n", $data['evaluation_criteria']));
+                        $exercise->setEvaluationCriteria($evaluationCriteria);
+                        $this->logger->debug('Evaluation criteria processed successfully', [
+                            'exercise_title' => $data['title'],
+                            'criteria_count' => count($evaluationCriteria)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to process evaluation criteria', [
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['evaluation_criteria']
+                        ]);
+                        throw new \RuntimeException('Erreur lors du traitement des critères d\'évaluation: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['resources'])) {
+                    try {
+                        $resources = array_filter(explode("\n", $data['resources']));
+                        $exercise->setResources($resources);
+                        $this->logger->debug('Resources processed successfully', [
+                            'exercise_title' => $data['title'],
+                            'resources_count' => count($resources)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to process resources', [
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['resources']
+                        ]);
+                        throw new \RuntimeException('Erreur lors du traitement des ressources: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['success_criteria'])) {
+                    try {
+                        $successCriteria = array_filter(explode("\n", $data['success_criteria']));
+                        $exercise->setSuccessCriteria($successCriteria);
+                        $this->logger->debug('Success criteria processed successfully', [
+                            'exercise_title' => $data['title'],
+                            'criteria_count' => count($successCriteria)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to process success criteria', [
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['success_criteria']
+                        ]);
+                        throw new \RuntimeException('Erreur lors du traitement des critères de succès: ' . $e->getMessage());
+                    }
+                }
+
+                $exercise->setPrerequisites($data['prerequisites'] ?? null);
+                $exercise->setIsActive(isset($data['is_active']));
+
+                $this->logger->info('Persisting new exercise to database', [
+                    'exercise_title' => $exercise->getTitle(),
+                    'exercise_slug' => $exercise->getSlug(),
+                    'course_id' => $exercise->getCourse()->getId(),
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                $this->entityManager->persist($exercise);
+                $this->entityManager->flush();
+
+                $this->logger->info('Exercise created successfully', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $exercise->getTitle(),
+                    'course_id' => $exercise->getCourse()->getId(),
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                $this->addFlash('success', 'Exercice créé avec succès.');
+
+                return $this->redirectToRoute('admin_exercise_index');
+
+            } catch (\InvalidArgumentException $e) {
+                $this->logger->warning('Validation error during exercise creation', [
+                    'error_message' => $e->getMessage(),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'request_data' => $request->request->all()
+                ]);
+                $this->addFlash('error', $e->getMessage());
+            } catch (\RuntimeException $e) {
+                $this->logger->error('Runtime error during exercise creation', [
+                    'error_message' => $e->getMessage(),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->logger->critical('Unexpected error during exercise creation', [
+                    'error_message' => $e->getMessage(),
+                    'error_class' => get_class($e),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer.');
             }
-
-            if (!empty($data['evaluation_criteria'])) {
-                $exercise->setEvaluationCriteria(array_filter(explode("\n", $data['evaluation_criteria'])));
-            }
-
-            if (!empty($data['resources'])) {
-                $exercise->setResources(array_filter(explode("\n", $data['resources'])));
-            }
-
-            if (!empty($data['success_criteria'])) {
-                $exercise->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
-            }
-
-            $exercise->setPrerequisites($data['prerequisites'] ?? null);
-            $exercise->setIsActive(isset($data['is_active']));
-
-            $this->entityManager->persist($exercise);
-            $this->entityManager->flush();
-
-            $this->addFlash('success', 'Exercice créé avec succès.');
-
-            return $this->redirectToRoute('admin_exercise_index');
         }
 
         return $this->render('admin/exercise/new.html.twig', [
@@ -129,47 +293,232 @@ class ExerciseController extends AbstractController
         $courses = $this->entityManager->getRepository(Course::class)->findBy(['isActive' => true]);
 
         if ($request->isMethod('POST')) {
-            $data = $request->request->all();
+            try {
+                $this->logger->info('Starting exercise edit process', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $exercise->getTitle(),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'request_data_keys' => array_keys($request->request->all())
+                ]);
 
-            $exercise->setTitle($data['title']);
-            $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
-            $exercise->setDescription($data['description']);
-            $exercise->setType($data['type']);
-            $exercise->setDifficulty($data['difficulty']);
-            $exercise->setInstructions($data['instructions']);
-            $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
-            $exercise->setMaxPoints((int) $data['max_points']);
-            $exercise->setPassingPoints((int) $data['passing_points']);
-            $exercise->setOrderIndex((int) $data['order_index']);
+                $data = $request->request->all();
 
-            $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
-            $exercise->setCourse($course);
+                // Validate required fields
+                $requiredFields = ['title', 'description', 'type', 'difficulty', 'instructions', 'course_id'];
+                foreach ($requiredFields as $field) {
+                    if (empty($data[$field])) {
+                        $this->logger->warning('Missing required field during exercise edit', [
+                            'field' => $field,
+                            'exercise_id' => $exercise->getId(),
+                            'user_id' => $this->getUser()?->getUserIdentifier()
+                        ]);
+                        throw new \InvalidArgumentException("Le champ '{$field}' est requis");
+                    }
+                }
 
-            // Handle JSON arrays
-            if (!empty($data['expected_outcomes'])) {
-                $exercise->setExpectedOutcomes(array_filter(explode("\n", $data['expected_outcomes'])));
+                $this->logger->debug('Exercise edit data validation passed', [
+                    'exercise_id' => $exercise->getId(),
+                    'old_title' => $exercise->getTitle(),
+                    'new_title' => $data['title'],
+                    'type' => $data['type'],
+                    'difficulty' => $data['difficulty'],
+                    'course_id' => $data['course_id']
+                ]);
+
+                $exercise->setTitle($data['title']);
+                $exercise->setSlug($this->slugger->slug($data['title'])->lower()->toString());
+                $exercise->setDescription($data['description']);
+                $exercise->setType($data['type']);
+                $exercise->setDifficulty($data['difficulty']);
+
+                // Enhanced logging for instructions processing
+                $this->logger->info('Processing exercise instructions update', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $data['title'],
+                    'old_instructions_length' => strlen($exercise->getInstructions() ?? ''),
+                    'new_instructions_length' => strlen($data['instructions']),
+                    'instructions_preview' => substr($data['instructions'], 0, 100) . '...',
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                try {
+                    $exercise->setInstructions($data['instructions']);
+                    $this->logger->debug('Instructions successfully updated for exercise', [
+                        'exercise_id' => $exercise->getId(),
+                        'exercise_title' => $data['title'],
+                        'instructions_final_length' => strlen($exercise->getInstructions())
+                    ]);
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to update instructions for exercise', [
+                        'exercise_id' => $exercise->getId(),
+                        'exercise_title' => $data['title'],
+                        'error_message' => $e->getMessage(),
+                        'error_code' => $e->getCode(),
+                        'new_instructions_length' => strlen($data['instructions']),
+                        'user_id' => $this->getUser()?->getUserIdentifier()
+                    ]);
+                    throw new \RuntimeException('Erreur lors de la mise à jour des instructions: ' . $e->getMessage());
+                }
+
+                $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
+                $exercise->setMaxPoints((int) $data['max_points']);
+                $exercise->setPassingPoints((int) $data['passing_points']);
+                $exercise->setOrderIndex((int) $data['order_index']);
+
+                $course = $this->entityManager->getRepository(Course::class)->find($data['course_id']);
+                if (!$course) {
+                    $this->logger->error('Course not found during exercise edit', [
+                        'course_id' => $data['course_id'],
+                        'exercise_id' => $exercise->getId(),
+                        'exercise_title' => $data['title'],
+                        'user_id' => $this->getUser()?->getUserIdentifier()
+                    ]);
+                    throw new \InvalidArgumentException('Le cours spécifié n\'existe pas');
+                }
+                $exercise->setCourse($course);
+
+                // Handle JSON arrays with detailed logging
+                $this->logger->debug('Processing JSON array fields for exercise update', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $data['title'],
+                    'has_expected_outcomes' => !empty($data['expected_outcomes']),
+                    'has_evaluation_criteria' => !empty($data['evaluation_criteria']),
+                    'has_resources' => !empty($data['resources']),
+                    'has_success_criteria' => !empty($data['success_criteria'])
+                ]);
+
+                if (!empty($data['expected_outcomes'])) {
+                    try {
+                        $expectedOutcomes = array_filter(explode("\n", $data['expected_outcomes']));
+                        $exercise->setExpectedOutcomes($expectedOutcomes);
+                        $this->logger->debug('Expected outcomes updated successfully', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'outcomes_count' => count($expectedOutcomes)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to update expected outcomes', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['expected_outcomes']
+                        ]);
+                        throw new \RuntimeException('Erreur lors de la mise à jour des résultats attendus: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['evaluation_criteria'])) {
+                    try {
+                        $evaluationCriteria = array_filter(explode("\n", $data['evaluation_criteria']));
+                        $exercise->setEvaluationCriteria($evaluationCriteria);
+                        $this->logger->debug('Evaluation criteria updated successfully', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'criteria_count' => count($evaluationCriteria)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to update evaluation criteria', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['evaluation_criteria']
+                        ]);
+                        throw new \RuntimeException('Erreur lors de la mise à jour des critères d\'évaluation: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['resources'])) {
+                    try {
+                        $resources = array_filter(explode("\n", $data['resources']));
+                        $exercise->setResources($resources);
+                        $this->logger->debug('Resources updated successfully', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'resources_count' => count($resources)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to update resources', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['resources']
+                        ]);
+                        throw new \RuntimeException('Erreur lors de la mise à jour des ressources: ' . $e->getMessage());
+                    }
+                }
+
+                if (!empty($data['success_criteria'])) {
+                    try {
+                        $successCriteria = array_filter(explode("\n", $data['success_criteria']));
+                        $exercise->setSuccessCriteria($successCriteria);
+                        $this->logger->debug('Success criteria updated successfully', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'criteria_count' => count($successCriteria)
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to update success criteria', [
+                            'exercise_id' => $exercise->getId(),
+                            'exercise_title' => $data['title'],
+                            'error_message' => $e->getMessage(),
+                            'raw_data' => $data['success_criteria']
+                        ]);
+                        throw new \RuntimeException('Erreur lors de la mise à jour des critères de succès: ' . $e->getMessage());
+                    }
+                }
+
+                $exercise->setPrerequisites($data['prerequisites'] ?? null);
+                $exercise->setIsActive(isset($data['is_active']));
+
+                $this->logger->info('Saving exercise updates to database', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $exercise->getTitle(),
+                    'exercise_slug' => $exercise->getSlug(),
+                    'course_id' => $exercise->getCourse()->getId(),
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                $this->entityManager->flush();
+
+                $this->logger->info('Exercise updated successfully', [
+                    'exercise_id' => $exercise->getId(),
+                    'exercise_title' => $exercise->getTitle(),
+                    'course_id' => $exercise->getCourse()->getId(),
+                    'user_id' => $this->getUser()?->getUserIdentifier()
+                ]);
+
+                $this->addFlash('success', 'Exercice modifié avec succès.');
+
+                return $this->redirectToRoute('admin_exercise_index');
+
+            } catch (\InvalidArgumentException $e) {
+                $this->logger->warning('Validation error during exercise edit', [
+                    'exercise_id' => $exercise->getId(),
+                    'error_message' => $e->getMessage(),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'request_data' => $request->request->all()
+                ]);
+                $this->addFlash('error', $e->getMessage());
+            } catch (\RuntimeException $e) {
+                $this->logger->error('Runtime error during exercise edit', [
+                    'exercise_id' => $exercise->getId(),
+                    'error_message' => $e->getMessage(),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->logger->critical('Unexpected error during exercise edit', [
+                    'exercise_id' => $exercise->getId(),
+                    'error_message' => $e->getMessage(),
+                    'error_class' => get_class($e),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer.');
             }
-
-            if (!empty($data['evaluation_criteria'])) {
-                $exercise->setEvaluationCriteria(array_filter(explode("\n", $data['evaluation_criteria'])));
-            }
-
-            if (!empty($data['resources'])) {
-                $exercise->setResources(array_filter(explode("\n", $data['resources'])));
-            }
-
-            if (!empty($data['success_criteria'])) {
-                $exercise->setSuccessCriteria(array_filter(explode("\n", $data['success_criteria'])));
-            }
-
-            $exercise->setPrerequisites($data['prerequisites'] ?? null);
-            $exercise->setIsActive(isset($data['is_active']));
-
-            $this->entityManager->flush();
-
-            $this->addFlash('success', 'Exercice modifié avec succès.');
-
-            return $this->redirectToRoute('admin_exercise_index');
         }
 
         return $this->render('admin/exercise/edit.html.twig', [

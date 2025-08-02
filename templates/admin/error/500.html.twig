@@ -1,0 +1,80 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Erreur serveur - Administration{% endblock %}
+
+{% block body %}
+<div class="page-wrapper">
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M12 9v2m0 4v.01"></path>
+                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                        </svg>
+                        Erreur serveur
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card">
+                        <div class="card-status-top bg-danger"></div>
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M12 9v2m0 4v.01"></path>
+                                    <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                                </svg>
+                                Erreur 500 - Erreur interne du serveur
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="empty">
+                                <div class="empty-img">
+                                    <img src="{{ asset('images/undraw_server_down.svg') }}" height="128" alt="Erreur serveur">
+                                </div>
+                                <p class="empty-title">{{ error_message|default('Une erreur inattendue s\'est produite.') }}</p>
+                                <p class="empty-subtitle text-muted">
+                                    Notre équipe technique a été notifiée de ce problème. 
+                                    Veuillez réessayer dans quelques instants.
+                                </p>
+                                {% if error_code is defined %}
+                                    <p class="text-muted small">
+                                        Code d'erreur: <code>{{ error_code }}</code>
+                                    </p>
+                                {% endif %}
+                                <div class="empty-action">
+                                    <a href="{{ path('admin_dashboard') }}" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M5 12l5 5l10 -10"></path>
+                                        </svg>
+                                        Retour au tableau de bord
+                                    </a>
+                                    <a href="javascript:history.back()" class="btn btn-secondary ms-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M9 14l-4 -4l4 -4"></path>
+                                            <path d="M5 10h11a4 4 0 1 1 0 8h-1"></path>
+                                        </svg>
+                                        Retour
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

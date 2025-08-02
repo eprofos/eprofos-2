@@ -41,45 +41,170 @@ class CompanyMissionService
      */
     public function createMission(array $data, Mentor $supervisor): CompanyMission
     {
-        $mission = new CompanyMission();
-        $mission->setSupervisor($supervisor);
-
-        // Set basic properties
-        $mission->setTitle($data['title']);
-        $mission->setDescription($data['description']);
-        $mission->setContext($data['context']);
-        $mission->setDuration($data['duration']);
-        $mission->setComplexity($data['complexity']);
-        $mission->setTerm($data['term']);
-        $mission->setDepartment($data['department']);
-
-        // Set arrays
-        $mission->setObjectives($data['objectives'] ?? []);
-        $mission->setRequiredSkills($data['requiredSkills'] ?? []);
-        $mission->setSkillsToAcquire($data['skillsToAcquire'] ?? []);
-        $mission->setPrerequisites($data['prerequisites'] ?? []);
-        $mission->setEvaluationCriteria($data['evaluationCriteria'] ?? []);
-
-        // Auto-calculate order index
-        if (!isset($data['orderIndex'])) {
-            $orderIndex = $this->missionRepository->getNextOrderIndex($data['term'], $data['complexity']);
-            $mission->setOrderIndex($orderIndex);
-        } else {
-            $mission->setOrderIndex($data['orderIndex']);
-        }
-
-        $this->entityManager->persist($mission);
-        $this->entityManager->flush();
-
-        $this->logger->info('Company mission created', [
-            'mission_id' => $mission->getId(),
-            'title' => $mission->getTitle(),
+        $this->logger->info('Starting mission creation process', [
             'supervisor_id' => $supervisor->getId(),
-            'complexity' => $mission->getComplexity(),
-            'term' => $mission->getTerm(),
+            'supervisor_name' => $supervisor->getFullName(),
+            'data_keys' => array_keys($data),
+            'data_size' => count($data),
         ]);
 
-        return $mission;
+        try {
+            // Validate input data first
+            $this->logger->debug('Validating mission data', [
+                'title' => $data['title'] ?? 'not_provided',
+                'complexity' => $data['complexity'] ?? 'not_provided',
+                'term' => $data['term'] ?? 'not_provided',
+                'department' => $data['department'] ?? 'not_provided',
+            ]);
+
+            $validationErrors = $this->validateMissionData($data);
+            if (!empty($validationErrors)) {
+                $this->logger->error('Mission data validation failed', [
+                    'errors' => $validationErrors,
+                    'provided_data' => array_keys($data),
+                    'supervisor_id' => $supervisor->getId(),
+                ]);
+                throw new RuntimeException('Validation failed: ' . implode(', ', $validationErrors));
+            }
+
+            $this->logger->debug('Mission data validation successful');
+
+            $mission = new CompanyMission();
+            $this->logger->debug('Created new CompanyMission entity', [
+                'entity_id' => spl_object_id($mission),
+            ]);
+
+            // Set supervisor
+            $mission->setSupervisor($supervisor);
+            $this->logger->debug('Set mission supervisor', [
+                'supervisor_id' => $supervisor->getId(),
+                'supervisor_name' => $supervisor->getFullName(),
+            ]);
+
+            // Set basic properties with detailed logging
+            $mission->setTitle($data['title']);
+            $this->logger->debug('Set mission title', ['title' => $data['title']]);
+
+            $mission->setDescription($data['description']);
+            $this->logger->debug('Set mission description', ['description_length' => strlen($data['description'])]);
+
+            $mission->setContext($data['context']);
+            $this->logger->debug('Set mission context', ['context_length' => strlen($data['context'])]);
+
+            $mission->setDuration($data['duration']);
+            $this->logger->debug('Set mission duration', ['duration' => $data['duration']]);
+
+            $mission->setComplexity($data['complexity']);
+            $this->logger->debug('Set mission complexity', ['complexity' => $data['complexity']]);
+
+            $mission->setTerm($data['term']);
+            $this->logger->debug('Set mission term', ['term' => $data['term']]);
+
+            $mission->setDepartment($data['department']);
+            $this->logger->debug('Set mission department', ['department' => $data['department']]);
+
+            // Set arrays with detailed logging
+            $objectives = $data['objectives'] ?? [];
+            $mission->setObjectives($objectives);
+            $this->logger->debug('Set mission objectives', [
+                'objectives_count' => count($objectives),
+                'objectives' => $objectives,
+            ]);
+
+            $requiredSkills = $data['requiredSkills'] ?? [];
+            $mission->setRequiredSkills($requiredSkills);
+            $this->logger->debug('Set required skills', [
+                'required_skills_count' => count($requiredSkills),
+                'required_skills' => $requiredSkills,
+            ]);
+
+            $skillsToAcquire = $data['skillsToAcquire'] ?? [];
+            $mission->setSkillsToAcquire($skillsToAcquire);
+            $this->logger->debug('Set skills to acquire', [
+                'skills_to_acquire_count' => count($skillsToAcquire),
+                'skills_to_acquire' => $skillsToAcquire,
+            ]);
+
+            $prerequisites = $data['prerequisites'] ?? [];
+            $mission->setPrerequisites($prerequisites);
+            $this->logger->debug('Set prerequisites', [
+                'prerequisites_count' => count($prerequisites),
+                'prerequisites' => $prerequisites,
+            ]);
+
+            $evaluationCriteria = $data['evaluationCriteria'] ?? [];
+            $mission->setEvaluationCriteria($evaluationCriteria);
+            $this->logger->debug('Set evaluation criteria', [
+                'evaluation_criteria_count' => count($evaluationCriteria),
+                'evaluation_criteria' => $evaluationCriteria,
+            ]);
+
+            // Auto-calculate order index
+            if (!isset($data['orderIndex'])) {
+                $this->logger->debug('Calculating next order index', [
+                    'term' => $data['term'],
+                    'complexity' => $data['complexity'],
+                ]);
+
+                $orderIndex = $this->missionRepository->getNextOrderIndex($data['term'], $data['complexity']);
+                $mission->setOrderIndex($orderIndex);
+
+                $this->logger->debug('Set auto-calculated order index', [
+                    'order_index' => $orderIndex,
+                    'term' => $data['term'],
+                    'complexity' => $data['complexity'],
+                ]);
+            } else {
+                $mission->setOrderIndex($data['orderIndex']);
+                $this->logger->debug('Set provided order index', [
+                    'order_index' => $data['orderIndex'],
+                ]);
+            }
+
+            // Persist and flush
+            $this->logger->debug('Persisting mission entity');
+            $this->entityManager->persist($mission);
+
+            $this->logger->debug('Flushing entity manager');
+            $this->entityManager->flush();
+
+            $this->logger->info('Company mission created successfully', [
+                'mission_id' => $mission->getId(),
+                'title' => $mission->getTitle(),
+                'supervisor_id' => $supervisor->getId(),
+                'supervisor_name' => $supervisor->getFullName(),
+                'complexity' => $mission->getComplexity(),
+                'term' => $mission->getTerm(),
+                'department' => $mission->getDepartment(),
+                'order_index' => $mission->getOrderIndex(),
+                'objectives_count' => count($mission->getObjectives()),
+                'skills_count' => count($mission->getSkillsToAcquire()),
+                'duration' => $mission->getDuration(),
+                'created_at' => $mission->getCreatedAt()->format('Y-m-d H:i:s'),
+            ]);
+
+            return $mission;
+
+        } catch (RuntimeException $e) {
+            $this->logger->error('Runtime exception during mission creation', [
+                'error_message' => $e->getMessage(),
+                'supervisor_id' => $supervisor->getId(),
+                'data_provided' => array_keys($data),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            $this->logger->error('Unexpected exception during mission creation', [
+                'error_message' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'supervisor_id' => $supervisor->getId(),
+                'data_provided' => array_keys($data),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new RuntimeException('Failed to create mission: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -87,74 +212,240 @@ class CompanyMissionService
      */
     public function updateMission(CompanyMission $mission, array $data): CompanyMission
     {
-        $originalData = [
-            'title' => $mission->getTitle(),
-            'complexity' => $mission->getComplexity(),
-            'term' => $mission->getTerm(),
-        ];
-
-        // Update basic properties
-        if (isset($data['title'])) {
-            $mission->setTitle($data['title']);
-        }
-        if (isset($data['description'])) {
-            $mission->setDescription($data['description']);
-        }
-        if (isset($data['context'])) {
-            $mission->setContext($data['context']);
-        }
-        if (isset($data['duration'])) {
-            $mission->setDuration($data['duration']);
-        }
-        if (isset($data['department'])) {
-            $mission->setDepartment($data['department']);
-        }
-
-        // Handle complexity/term changes that might affect order
-        $needsReordering = false;
-        if (isset($data['complexity']) && $data['complexity'] !== $mission->getComplexity()) {
-            $mission->setComplexity($data['complexity']);
-            $needsReordering = true;
-        }
-        if (isset($data['term']) && $data['term'] !== $mission->getTerm()) {
-            $mission->setTerm($data['term']);
-            $needsReordering = true;
-        }
-
-        // Recalculate order index if needed
-        if ($needsReordering && !isset($data['orderIndex'])) {
-            $orderIndex = $this->missionRepository->getNextOrderIndex($mission->getTerm(), $mission->getComplexity());
-            $mission->setOrderIndex($orderIndex);
-        } elseif (isset($data['orderIndex'])) {
-            $mission->setOrderIndex($data['orderIndex']);
-        }
-
-        // Update arrays
-        if (isset($data['objectives'])) {
-            $mission->setObjectives($data['objectives']);
-        }
-        if (isset($data['requiredSkills'])) {
-            $mission->setRequiredSkills($data['requiredSkills']);
-        }
-        if (isset($data['skillsToAcquire'])) {
-            $mission->setSkillsToAcquire($data['skillsToAcquire']);
-        }
-        if (isset($data['prerequisites'])) {
-            $mission->setPrerequisites($data['prerequisites']);
-        }
-        if (isset($data['evaluationCriteria'])) {
-            $mission->setEvaluationCriteria($data['evaluationCriteria']);
-        }
-
-        $this->entityManager->flush();
-
-        $this->logger->info('Company mission updated', [
+        $this->logger->info('Starting mission update process', [
             'mission_id' => $mission->getId(),
-            'original_data' => $originalData,
-            'updated_fields' => array_keys($data),
+            'mission_title' => $mission->getTitle(),
+            'data_keys' => array_keys($data),
+            'data_size' => count($data),
         ]);
 
-        return $mission;
+        try {
+            $originalData = [
+                'title' => $mission->getTitle(),
+                'complexity' => $mission->getComplexity(),
+                'term' => $mission->getTerm(),
+                'department' => $mission->getDepartment(),
+                'duration' => $mission->getDuration(),
+            ];
+
+            $this->logger->debug('Captured original mission data', [
+                'mission_id' => $mission->getId(),
+                'original_data' => $originalData,
+            ]);
+
+            // Validate input data if significant changes
+            if (isset($data['title']) || isset($data['complexity']) || isset($data['term'])) {
+                $this->logger->debug('Validating updated mission data');
+                $validationData = array_merge($originalData, $data);
+                $validationErrors = $this->validateMissionData($validationData);
+                
+                if (!empty($validationErrors)) {
+                    $this->logger->error('Mission update validation failed', [
+                        'mission_id' => $mission->getId(),
+                        'errors' => $validationErrors,
+                        'provided_updates' => array_keys($data),
+                    ]);
+                    throw new RuntimeException('Validation failed: ' . implode(', ', $validationErrors));
+                }
+                $this->logger->debug('Mission update validation successful');
+            }
+
+            // Update basic properties with detailed logging
+            if (isset($data['title'])) {
+                $oldTitle = $mission->getTitle();
+                $mission->setTitle($data['title']);
+                $this->logger->debug('Updated mission title', [
+                    'mission_id' => $mission->getId(),
+                    'old_title' => $oldTitle,
+                    'new_title' => $data['title'],
+                ]);
+            }
+
+            if (isset($data['description'])) {
+                $oldDescriptionLength = strlen($mission->getDescription());
+                $mission->setDescription($data['description']);
+                $this->logger->debug('Updated mission description', [
+                    'mission_id' => $mission->getId(),
+                    'old_description_length' => $oldDescriptionLength,
+                    'new_description_length' => strlen($data['description']),
+                ]);
+            }
+
+            if (isset($data['context'])) {
+                $oldContextLength = strlen($mission->getContext());
+                $mission->setContext($data['context']);
+                $this->logger->debug('Updated mission context', [
+                    'mission_id' => $mission->getId(),
+                    'old_context_length' => $oldContextLength,
+                    'new_context_length' => strlen($data['context']),
+                ]);
+            }
+
+            if (isset($data['duration'])) {
+                $oldDuration = $mission->getDuration();
+                $mission->setDuration($data['duration']);
+                $this->logger->debug('Updated mission duration', [
+                    'mission_id' => $mission->getId(),
+                    'old_duration' => $oldDuration,
+                    'new_duration' => $data['duration'],
+                ]);
+            }
+
+            if (isset($data['department'])) {
+                $oldDepartment = $mission->getDepartment();
+                $mission->setDepartment($data['department']);
+                $this->logger->debug('Updated mission department', [
+                    'mission_id' => $mission->getId(),
+                    'old_department' => $oldDepartment,
+                    'new_department' => $data['department'],
+                ]);
+            }
+
+            // Handle complexity/term changes that might affect order
+            $needsReordering = false;
+            if (isset($data['complexity']) && $data['complexity'] !== $mission->getComplexity()) {
+                $oldComplexity = $mission->getComplexity();
+                $mission->setComplexity($data['complexity']);
+                $needsReordering = true;
+                $this->logger->debug('Updated mission complexity', [
+                    'mission_id' => $mission->getId(),
+                    'old_complexity' => $oldComplexity,
+                    'new_complexity' => $data['complexity'],
+                    'needs_reordering' => true,
+                ]);
+            }
+
+            if (isset($data['term']) && $data['term'] !== $mission->getTerm()) {
+                $oldTerm = $mission->getTerm();
+                $mission->setTerm($data['term']);
+                $needsReordering = true;
+                $this->logger->debug('Updated mission term', [
+                    'mission_id' => $mission->getId(),
+                    'old_term' => $oldTerm,
+                    'new_term' => $data['term'],
+                    'needs_reordering' => true,
+                ]);
+            }
+
+            // Recalculate order index if needed
+            if ($needsReordering && !isset($data['orderIndex'])) {
+                $this->logger->debug('Recalculating order index due to complexity/term change', [
+                    'mission_id' => $mission->getId(),
+                    'term' => $mission->getTerm(),
+                    'complexity' => $mission->getComplexity(),
+                ]);
+                
+                $orderIndex = $this->missionRepository->getNextOrderIndex($mission->getTerm(), $mission->getComplexity());
+                $oldOrderIndex = $mission->getOrderIndex();
+                $mission->setOrderIndex($orderIndex);
+                
+                $this->logger->debug('Order index recalculated', [
+                    'mission_id' => $mission->getId(),
+                    'old_order_index' => $oldOrderIndex,
+                    'new_order_index' => $orderIndex,
+                ]);
+            } elseif (isset($data['orderIndex'])) {
+                $oldOrderIndex = $mission->getOrderIndex();
+                $mission->setOrderIndex($data['orderIndex']);
+                $this->logger->debug('Order index manually updated', [
+                    'mission_id' => $mission->getId(),
+                    'old_order_index' => $oldOrderIndex,
+                    'new_order_index' => $data['orderIndex'],
+                ]);
+            }
+
+            // Update arrays with detailed logging
+            if (isset($data['objectives'])) {
+                $oldObjectivesCount = count($mission->getObjectives());
+                $mission->setObjectives($data['objectives']);
+                $this->logger->debug('Updated mission objectives', [
+                    'mission_id' => $mission->getId(),
+                    'old_objectives_count' => $oldObjectivesCount,
+                    'new_objectives_count' => count($data['objectives']),
+                    'new_objectives' => $data['objectives'],
+                ]);
+            }
+
+            if (isset($data['requiredSkills'])) {
+                $oldSkillsCount = count($mission->getRequiredSkills());
+                $mission->setRequiredSkills($data['requiredSkills']);
+                $this->logger->debug('Updated required skills', [
+                    'mission_id' => $mission->getId(),
+                    'old_skills_count' => $oldSkillsCount,
+                    'new_skills_count' => count($data['requiredSkills']),
+                    'new_skills' => $data['requiredSkills'],
+                ]);
+            }
+
+            if (isset($data['skillsToAcquire'])) {
+                $oldSkillsToAcquireCount = count($mission->getSkillsToAcquire());
+                $mission->setSkillsToAcquire($data['skillsToAcquire']);
+                $this->logger->debug('Updated skills to acquire', [
+                    'mission_id' => $mission->getId(),
+                    'old_skills_to_acquire_count' => $oldSkillsToAcquireCount,
+                    'new_skills_to_acquire_count' => count($data['skillsToAcquire']),
+                    'new_skills_to_acquire' => $data['skillsToAcquire'],
+                ]);
+            }
+
+            if (isset($data['prerequisites'])) {
+                $oldPrerequisitesCount = count($mission->getPrerequisites());
+                $mission->setPrerequisites($data['prerequisites']);
+                $this->logger->debug('Updated prerequisites', [
+                    'mission_id' => $mission->getId(),
+                    'old_prerequisites_count' => $oldPrerequisitesCount,
+                    'new_prerequisites_count' => count($data['prerequisites']),
+                    'new_prerequisites' => $data['prerequisites'],
+                ]);
+            }
+
+            if (isset($data['evaluationCriteria'])) {
+                $oldCriteriaCount = count($mission->getEvaluationCriteria());
+                $mission->setEvaluationCriteria($data['evaluationCriteria']);
+                $this->logger->debug('Updated evaluation criteria', [
+                    'mission_id' => $mission->getId(),
+                    'old_criteria_count' => $oldCriteriaCount,
+                    'new_criteria_count' => count($data['evaluationCriteria']),
+                    'new_criteria' => $data['evaluationCriteria'],
+                ]);
+            }
+
+            $this->logger->debug('Flushing entity manager for mission update');
+            $this->entityManager->flush();
+
+            $this->logger->info('Company mission updated successfully', [
+                'mission_id' => $mission->getId(),
+                'mission_title' => $mission->getTitle(),
+                'original_data' => $originalData,
+                'updated_fields' => array_keys($data),
+                'needs_reordering' => $needsReordering,
+                'final_complexity' => $mission->getComplexity(),
+                'final_term' => $mission->getTerm(),
+                'final_order_index' => $mission->getOrderIndex(),
+            ]);
+
+            return $mission;
+
+        } catch (RuntimeException $e) {
+            $this->logger->error('Runtime exception during mission update', [
+                'mission_id' => $mission->getId(),
+                'error_message' => $e->getMessage(),
+                'data_provided' => array_keys($data),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            $this->logger->error('Unexpected exception during mission update', [
+                'mission_id' => $mission->getId(),
+                'error_message' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'data_provided' => array_keys($data),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new RuntimeException('Failed to update mission: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -162,20 +453,69 @@ class CompanyMissionService
      */
     public function deleteMission(CompanyMission $mission): void
     {
-        // Check if mission has active assignments
-        $activeAssignments = $mission->getActiveAssignmentsCount();
-
-        if ($activeAssignments > 0) {
-            throw new RuntimeException('Cannot delete mission with active assignments. Complete or suspend assignments first.');
-        }
-
-        $mission->setIsActive(false);
-        $this->entityManager->flush();
-
-        $this->logger->info('Company mission deactivated', [
+        $this->logger->info('Starting mission deletion process', [
             'mission_id' => $mission->getId(),
-            'title' => $mission->getTitle(),
+            'mission_title' => $mission->getTitle(),
+            'current_status' => $mission->isActive() ? 'active' : 'inactive',
         ]);
+
+        try {
+            // Check if mission has active assignments
+            $this->logger->debug('Checking for active assignments', [
+                'mission_id' => $mission->getId(),
+            ]);
+
+            $activeAssignments = $mission->getActiveAssignmentsCount();
+
+            $this->logger->debug('Active assignments check result', [
+                'mission_id' => $mission->getId(),
+                'active_assignments_count' => $activeAssignments,
+            ]);
+
+            if ($activeAssignments > 0) {
+                $this->logger->warning('Mission deletion blocked - has active assignments', [
+                    'mission_id' => $mission->getId(),
+                    'mission_title' => $mission->getTitle(),
+                    'active_assignments_count' => $activeAssignments,
+                ]);
+                throw new RuntimeException('Cannot delete mission with active assignments. Complete or suspend assignments first.');
+            }
+
+            $this->logger->debug('Setting mission as inactive', [
+                'mission_id' => $mission->getId(),
+            ]);
+
+            $mission->setIsActive(false);
+
+            $this->logger->debug('Flushing entity manager for mission deletion');
+            $this->entityManager->flush();
+
+            $this->logger->info('Company mission deactivated successfully', [
+                'mission_id' => $mission->getId(),
+                'title' => $mission->getTitle(),
+                'supervisor_id' => $mission->getSupervisor()->getId(),
+                'supervisor_name' => $mission->getSupervisor()->getFullName(),
+                'deactivated_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+            ]);
+
+        } catch (RuntimeException $e) {
+            $this->logger->error('Runtime exception during mission deletion', [
+                'mission_id' => $mission->getId(),
+                'error_message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            $this->logger->error('Unexpected exception during mission deletion', [
+                'mission_id' => $mission->getId(),
+                'error_message' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new RuntimeException('Failed to delete mission: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -276,39 +616,157 @@ class CompanyMissionService
      */
     public function cloneMission(CompanyMission $originalMission, array $overrides = []): CompanyMission
     {
-        $clonedMission = new CompanyMission();
-
-        // Copy basic properties
-        $clonedMission->setTitle($overrides['title'] ?? $originalMission->getTitle() . ' (Copie)');
-        $clonedMission->setDescription($originalMission->getDescription());
-        $clonedMission->setContext($originalMission->getContext());
-        $clonedMission->setDuration($originalMission->getDuration());
-        $clonedMission->setComplexity($overrides['complexity'] ?? $originalMission->getComplexity());
-        $clonedMission->setTerm($overrides['term'] ?? $originalMission->getTerm());
-        $clonedMission->setDepartment($overrides['department'] ?? $originalMission->getDepartment());
-        $clonedMission->setSupervisor($overrides['supervisor'] ?? $originalMission->getSupervisor());
-
-        // Copy arrays
-        $clonedMission->setObjectives($originalMission->getObjectives());
-        $clonedMission->setRequiredSkills($originalMission->getRequiredSkills());
-        $clonedMission->setSkillsToAcquire($originalMission->getSkillsToAcquire());
-        $clonedMission->setPrerequisites($originalMission->getPrerequisites());
-        $clonedMission->setEvaluationCriteria($originalMission->getEvaluationCriteria());
-
-        // Set new order index
-        $orderIndex = $this->missionRepository->getNextOrderIndex($clonedMission->getTerm(), $clonedMission->getComplexity());
-        $clonedMission->setOrderIndex($orderIndex);
-
-        $this->entityManager->persist($clonedMission);
-        $this->entityManager->flush();
-
-        $this->logger->info('Company mission cloned', [
+        $this->logger->info('Starting mission cloning process', [
             'original_mission_id' => $originalMission->getId(),
-            'cloned_mission_id' => $clonedMission->getId(),
-            'overrides' => array_keys($overrides),
+            'original_title' => $originalMission->getTitle(),
+            'overrides_provided' => array_keys($overrides),
+            'overrides_count' => count($overrides),
         ]);
 
-        return $clonedMission;
+        try {
+            $clonedMission = new CompanyMission();
+            $this->logger->debug('Created new CompanyMission entity for cloning', [
+                'entity_id' => spl_object_id($clonedMission),
+                'original_mission_id' => $originalMission->getId(),
+            ]);
+
+            // Copy basic properties with overrides
+            $newTitle = $overrides['title'] ?? $originalMission->getTitle() . ' (Copie)';
+            $clonedMission->setTitle($newTitle);
+            $this->logger->debug('Set cloned mission title', [
+                'original_title' => $originalMission->getTitle(),
+                'new_title' => $newTitle,
+                'title_overridden' => isset($overrides['title']),
+            ]);
+
+            $clonedMission->setDescription($originalMission->getDescription());
+            $this->logger->debug('Copied mission description', [
+                'description_length' => strlen($originalMission->getDescription()),
+            ]);
+
+            $clonedMission->setContext($originalMission->getContext());
+            $this->logger->debug('Copied mission context', [
+                'context_length' => strlen($originalMission->getContext()),
+            ]);
+
+            $clonedMission->setDuration($originalMission->getDuration());
+            $this->logger->debug('Copied mission duration', [
+                'duration' => $originalMission->getDuration(),
+            ]);
+
+            $newComplexity = $overrides['complexity'] ?? $originalMission->getComplexity();
+            $clonedMission->setComplexity($newComplexity);
+            $this->logger->debug('Set cloned mission complexity', [
+                'original_complexity' => $originalMission->getComplexity(),
+                'new_complexity' => $newComplexity,
+                'complexity_overridden' => isset($overrides['complexity']),
+            ]);
+
+            $newTerm = $overrides['term'] ?? $originalMission->getTerm();
+            $clonedMission->setTerm($newTerm);
+            $this->logger->debug('Set cloned mission term', [
+                'original_term' => $originalMission->getTerm(),
+                'new_term' => $newTerm,
+                'term_overridden' => isset($overrides['term']),
+            ]);
+
+            $newDepartment = $overrides['department'] ?? $originalMission->getDepartment();
+            $clonedMission->setDepartment($newDepartment);
+            $this->logger->debug('Set cloned mission department', [
+                'original_department' => $originalMission->getDepartment(),
+                'new_department' => $newDepartment,
+                'department_overridden' => isset($overrides['department']),
+            ]);
+
+            $newSupervisor = $overrides['supervisor'] ?? $originalMission->getSupervisor();
+            $clonedMission->setSupervisor($newSupervisor);
+            $this->logger->debug('Set cloned mission supervisor', [
+                'original_supervisor_id' => $originalMission->getSupervisor()->getId(),
+                'new_supervisor_id' => $newSupervisor->getId(),
+                'supervisor_overridden' => isset($overrides['supervisor']),
+            ]);
+
+            // Copy arrays
+            $objectives = $originalMission->getObjectives();
+            $clonedMission->setObjectives($objectives);
+            $this->logger->debug('Copied mission objectives', [
+                'objectives_count' => count($objectives),
+                'objectives' => $objectives,
+            ]);
+
+            $requiredSkills = $originalMission->getRequiredSkills();
+            $clonedMission->setRequiredSkills($requiredSkills);
+            $this->logger->debug('Copied required skills', [
+                'required_skills_count' => count($requiredSkills),
+                'required_skills' => $requiredSkills,
+            ]);
+
+            $skillsToAcquire = $originalMission->getSkillsToAcquire();
+            $clonedMission->setSkillsToAcquire($skillsToAcquire);
+            $this->logger->debug('Copied skills to acquire', [
+                'skills_to_acquire_count' => count($skillsToAcquire),
+                'skills_to_acquire' => $skillsToAcquire,
+            ]);
+
+            $prerequisites = $originalMission->getPrerequisites();
+            $clonedMission->setPrerequisites($prerequisites);
+            $this->logger->debug('Copied prerequisites', [
+                'prerequisites_count' => count($prerequisites),
+                'prerequisites' => $prerequisites,
+            ]);
+
+            $evaluationCriteria = $originalMission->getEvaluationCriteria();
+            $clonedMission->setEvaluationCriteria($evaluationCriteria);
+            $this->logger->debug('Copied evaluation criteria', [
+                'evaluation_criteria_count' => count($evaluationCriteria),
+                'evaluation_criteria' => $evaluationCriteria,
+            ]);
+
+            // Set new order index
+            $this->logger->debug('Calculating order index for cloned mission', [
+                'term' => $clonedMission->getTerm(),
+                'complexity' => $clonedMission->getComplexity(),
+            ]);
+
+            $orderIndex = $this->missionRepository->getNextOrderIndex($clonedMission->getTerm(), $clonedMission->getComplexity());
+            $clonedMission->setOrderIndex($orderIndex);
+
+            $this->logger->debug('Set order index for cloned mission', [
+                'order_index' => $orderIndex,
+            ]);
+
+            $this->logger->debug('Persisting cloned mission');
+            $this->entityManager->persist($clonedMission);
+
+            $this->logger->debug('Flushing entity manager for mission cloning');
+            $this->entityManager->flush();
+
+            $this->logger->info('Company mission cloned successfully', [
+                'original_mission_id' => $originalMission->getId(),
+                'original_title' => $originalMission->getTitle(),
+                'cloned_mission_id' => $clonedMission->getId(),
+                'cloned_title' => $clonedMission->getTitle(),
+                'overrides' => array_keys($overrides),
+                'cloned_complexity' => $clonedMission->getComplexity(),
+                'cloned_term' => $clonedMission->getTerm(),
+                'cloned_order_index' => $clonedMission->getOrderIndex(),
+                'cloned_at' => $clonedMission->getCreatedAt()->format('Y-m-d H:i:s'),
+            ]);
+
+            return $clonedMission;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Exception during mission cloning', [
+                'original_mission_id' => $originalMission->getId(),
+                'error_message' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'overrides_provided' => array_keys($overrides),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new RuntimeException('Failed to clone mission: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
