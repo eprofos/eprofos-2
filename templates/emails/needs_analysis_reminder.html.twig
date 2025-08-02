@@ -210,7 +210,7 @@
                 <div class="info-item">
                     <div class="info-label">Référence</div>
                     <div class="info-value">
-                        #{{ request.id|str_pad(6, '0', 'left') }}
+                        #{{ ('%06d'|format(request.id)) }}
                     </div>
                 </div>
                 <div class="info-item">
@@ -287,7 +287,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
                         <strong>📧 Email :</strong><br>
-                        <a href="mailto:contact@eprofos.com?subject=Aide formulaire #{{ request.id|str_pad(6, '0', 'left') }}" 
+                        <a href="mailto:contact@eprofos.com?subject=Aide formulaire #{{ ('%06d'|format(request.id)) }}" 
                            style="color: #0d6efd; text-decoration: none;">
                             contact@eprofos.com
                         </a>
