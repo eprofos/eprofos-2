@@ -3,7 +3,7 @@
 {% block title %}Rapport Qualiopi - Conformité{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
+<div class="container-fluid" data-controller="qualiopi-report" data-qualiopi-report-export-url-value="{{ path('admin_enrollment_reports_export') }}">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,13 +22,13 @@
                 <i class="fas fa-download"></i> Exporter
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('csv')">
+                <li><a class="dropdown-item" href="#" data-action="click->qualiopi-report#exportReport" data-format="csv">
                     <i class="fas fa-file-csv"></i> Format CSV
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('excel')">
+                <li><a class="dropdown-item" href="#" data-action="click->qualiopi-report#exportReport" data-format="excel">
                     <i class="fas fa-file-excel"></i> Format Excel
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportQualiopiReport('pdf')">
+                <li><a class="dropdown-item" href="#" data-action="click->qualiopi-report#exportReport" data-format="pdf">
                     <i class="fas fa-file-pdf"></i> Rapport PDF Qualiopi
                 </a></li>
             </ul>
@@ -59,7 +59,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <form method="GET" class="row g-3" id="qualiopiFiltersForm">
+            <form method="GET" class="row g-3" id="qualiopiFiltersForm" data-qualiopi-report-target="filterForm">
                 <div class="col-md-4">
                     <label for="formation" class="form-label">Formation</label>
                     <select class="form-select" id="formation" name="formation">
@@ -105,14 +105,15 @@
                 <div class="row text-center">
                     {% set globalScore = (qualiopiMetrics.enrollment_tracking + qualiopiMetrics.progress_documentation + qualiopiMetrics.evaluation_records + qualiopiMetrics.attendance_tracking + qualiopiMetrics.satisfaction_surveys) / 5 %}
                     <div class="col-md-12 mb-4">
-                        <div class="display-3 fw-bold {{ globalScore >= 90 ? 'text-success' : (globalScore >= 70 ? 'text-warning' : 'text-danger') }}">
+                        <div class="display-3 fw-bold {{ globalScore >= 90 ? 'text-success' : (globalScore >= 70 ? 'text-warning' : 'text-danger') }}" data-qualiopi-report-target="score">
                             {{ globalScore|number_format(1) }}%
                         </div>
                         <p class="text-muted mb-0">Score de Conformité Global</p>
                         <div class="progress mt-2" style="height: 10px;">
                             <div class="progress-bar {{ globalScore >= 90 ? 'bg-success' : (globalScore >= 70 ? 'bg-warning' : 'bg-danger') }}" 
                                  role="progressbar" style="width: {{ globalScore }}%" 
-                                 aria-valuenow="{{ globalScore }}" aria-valuemin="0" aria-valuemax="100">
+                                 aria-valuenow="{{ globalScore }}" aria-valuemin="0" aria-valuemax="100"
+                                 data-qualiopi-report-target="progressBar">
                             </div>
                         </div>
                         <small class="text-muted">
@@ -143,12 +144,12 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="h2 mb-2 {{ qualiopiMetrics.enrollment_tracking >= 90 ? 'text-success' : (qualiopiMetrics.enrollment_tracking >= 70 ? 'text-warning' : 'text-danger') }}">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.enrollment_tracking >= 90 ? 'text-success' : (qualiopiMetrics.enrollment_tracking >= 70 ? 'text-warning' : 'text-danger') }}" data-qualiopi-report-target="score">
                                 {{ qualiopiMetrics.enrollment_tracking|number_format(0) }}%
                             </div>
                             <div class="progress mb-3">
                                 <div class="progress-bar {{ qualiopiMetrics.enrollment_tracking >= 90 ? 'bg-success' : (qualiopiMetrics.enrollment_tracking >= 70 ? 'bg-warning' : 'bg-danger') }}" 
-                                     style="width: {{ qualiopiMetrics.enrollment_tracking }}%"></div>
+                                     style="width: {{ qualiopiMetrics.enrollment_tracking }}%" data-qualiopi-report-target="progressBar"></div>
                             </div>
                             <p class="text-muted small">
                                 Traçabilité complète des inscriptions, conventions et émargements
@@ -168,12 +169,12 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="h2 mb-2 {{ qualiopiMetrics.progress_documentation >= 90 ? 'text-success' : (qualiopiMetrics.progress_documentation >= 70 ? 'text-warning' : 'text-danger') }}">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.progress_documentation >= 90 ? 'text-success' : (qualiopiMetrics.progress_documentation >= 70 ? 'text-warning' : 'text-danger') }}" data-qualiopi-report-target="score">
                                 {{ qualiopiMetrics.progress_documentation|number_format(0) }}%
                             </div>
                             <div class="progress mb-3">
                                 <div class="progress-bar {{ qualiopiMetrics.progress_documentation >= 90 ? 'bg-success' : (qualiopiMetrics.progress_documentation >= 70 ? 'bg-warning' : 'bg-danger') }}" 
-                                     style="width: {{ qualiopiMetrics.progress_documentation }}%"></div>
+                                     style="width: {{ qualiopiMetrics.progress_documentation }}%" data-qualiopi-report-target="progressBar"></div>
                             </div>
                             <p class="text-muted small">
                                 Suivi détaillé de la progression pédagogique des apprenants
@@ -193,12 +194,12 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="h2 mb-2 {{ qualiopiMetrics.evaluation_records >= 90 ? 'text-success' : (qualiopiMetrics.evaluation_records >= 70 ? 'text-warning' : 'text-danger') }}">
+                            <div class="h2 mb-2 {{ qualiopiMetrics.evaluation_records >= 90 ? 'text-success' : (qualiopiMetrics.evaluation_records >= 70 ? 'text-warning' : 'text-danger') }}" data-qualiopi-report-target="score">
                                 {{ qualiopiMetrics.evaluation_records|number_format(0) }}%
                             </div>
                             <div class="progress mb-3">
                                 <div class="progress-bar {{ qualiopiMetrics.evaluation_records >= 90 ? 'bg-success' : (qualiopiMetrics.evaluation_records >= 70 ? 'bg-warning' : 'bg-danger') }}" 
-                                     style="width: {{ qualiopiMetrics.evaluation_records }}%"></div>
+                                     style="width: {{ qualiopiMetrics.evaluation_records }}%" data-qualiopi-report-target="progressBar"></div>
                             </div>
                             <p class="text-muted small">
                                 Exhaustivité des évaluations et attestations de fin de formation
@@ -332,7 +333,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: 95%">95%</div>
+                                    <div class="progress-bar bg-success" style="width: 95%" data-qualiopi-report-target="progressBar">95%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-success">Conforme</span></td>
@@ -350,7 +351,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.progress_documentation }}%">{{ qualiopiMetrics.progress_documentation }}%</div>
+                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.progress_documentation }}%" data-qualiopi-report-target="progressBar">{{ qualiopiMetrics.progress_documentation }}%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-warning">En cours</span></td>
@@ -368,7 +369,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: 92%">92%</div>
+                                    <div class="progress-bar bg-success" style="width: 92%" data-qualiopi-report-target="progressBar">92%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-success">Conforme</span></td>
@@ -386,7 +387,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: {{ qualiopiMetrics.evaluation_records }}%">{{ qualiopiMetrics.evaluation_records }}%</div>
+                                    <div class="progress-bar bg-success" style="width: {{ qualiopiMetrics.evaluation_records }}%" data-qualiopi-report-target="progressBar">{{ qualiopiMetrics.evaluation_records }}%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-success">Conforme</span></td>
@@ -404,7 +405,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: 90%">90%</div>
+                                    <div class="progress-bar bg-success" style="width: 90%" data-qualiopi-report-target="progressBar">90%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-success">Conforme</span></td>
@@ -422,7 +423,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: 78%">78%</div>
+                                    <div class="progress-bar bg-warning" style="width: 78%" data-qualiopi-report-target="progressBar">78%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-warning">À améliorer</span></td>
@@ -440,7 +441,7 @@
                             </td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.satisfaction_surveys }}%">{{ qualiopiMetrics.satisfaction_surveys }}%</div>
+                                    <div class="progress-bar bg-warning" style="width: {{ qualiopiMetrics.satisfaction_surveys }}%" data-qualiopi-report-target="progressBar">{{ qualiopiMetrics.satisfaction_surveys }}%</div>
                                 </div>
                             </td>
                             <td><span class="badge bg-warning">En cours</span></td>
@@ -523,15 +524,15 @@
                     <a href="{{ path('admin_enrollment_reports_progress') }}" class="btn btn-outline-info">
                         <i class="fas fa-chart-line"></i> Suivi Progression
                     </a>
-                    <button type="button" class="btn btn-outline-warning" onclick="generateQualiopiCertificate()">
+                    <button type="button" class="btn btn-outline-warning" data-action="click->qualiopi-report#generateCertificate">
                         <i class="fas fa-award"></i> Générer Certificat
                     </button>
                 </div>
                 <div class="btn-group me-2" role="group">
-                    <button type="button" class="btn btn-outline-primary" onclick="scheduleAudit()">
+                    <button type="button" class="btn btn-outline-primary" data-action="click->qualiopi-report#scheduleAudit">
                         <i class="fas fa-calendar-plus"></i> Planifier Audit
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="refreshQualiopi()">
+                    <button type="button" class="btn btn-outline-secondary" data-action="click->qualiopi-report#refreshData">
                         <i class="fas fa-sync-alt"></i> Actualiser
                     </button>
                 </div>
@@ -543,144 +544,5 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form on filter change
-    const filterInputs = document.querySelectorAll('#formation, #start_date, #end_date');
-    filterInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            setTimeout(() => {
-                document.getElementById('qualiopiFiltersForm').submit();
-            }, 100);
-        });
-    });
-
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Progress bar animations
-    const progressBars = document.querySelectorAll('.progress-bar');
-    progressBars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.width = width;
-            bar.style.transition = 'width 1s ease-in-out';
-        }, 100);
-    });
-});
-
-// Export functionality
-window.exportQualiopiReport = function(format) {
-    const params = new URLSearchParams({
-        format: format,
-        formation: document.getElementById('formation').value,
-        start_date: document.getElementById('start_date').value,
-        end_date: document.getElementById('end_date').value
-    });
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
-    
-    // Add Qualiopi-specific fields
-    const fields = [
-        'student_name', 'student_email', 'formation_title', 'session_name',
-        'enrollment_status', 'enrolled_at', 'completed_at', 'progress_percentage'
-    ];
-    
-    fields.forEach(field => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'fields[]';
-        input.value = field;
-        form.appendChild(input);
-    });
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-};
-
-// Generate Qualiopi Certificate
-window.generateQualiopiCertificate = function() {
-    const btn = event.target.closest('button');
-    const icon = btn.querySelector('i');
-    
-    // Add spinner
-    icon.className = 'fas fa-spinner fa-spin';
-    btn.disabled = true;
-    
-    // Simulate certificate generation
-    setTimeout(() => {
-        alert('Certificat Qualiopi généré avec succès !');
-        icon.className = 'fas fa-award';
-        btn.disabled = false;
-    }, 2000);
-};
-
-// Schedule Audit
-window.scheduleAudit = function() {
-    const btn = event.target.closest('button');
-    const icon = btn.querySelector('i');
-    
-    // Add spinner
-    icon.className = 'fas fa-spinner fa-spin';
-    btn.disabled = true;
-    
-    // Simulate audit scheduling
-    setTimeout(() => {
-        alert('Audit Qualiopi planifié pour le prochain trimestre.');
-        icon.className = 'fas fa-calendar-plus';
-        btn.disabled = false;
-    }, 1500);
-};
-
-// Refresh Qualiopi data
-window.refreshQualiopi = function() {
-    const btn = event.target.closest('button');
-    const icon = btn.querySelector('i');
-    
-    // Add spinner
-    icon.className = 'fas fa-spinner fa-spin';
-    btn.disabled = true;
-    
-    // Reload page
-    setTimeout(() => {
-        window.location.reload();
-    }, 1000);
-};
-
-// Card hover effects
-const cards = document.querySelectorAll('.card');
-cards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-        this.style.transition = 'all 0.3s ease';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '';
-    });
-});
-
-// Compliance score color changes
-const scores = document.querySelectorAll('.h2, .h4');
-scores.forEach(score => {
-    const value = parseFloat(score.textContent);
-    if (value >= 90) {
-        score.classList.add('text-success');
-    } else if (value >= 70) {
-        score.classList.add('text-warning');
-    } else {
-        score.classList.add('text-danger');
-    }
-});
-</script>
+{# Chart.js is already loaded through the Stimulus controller #}
 {% endblock %}

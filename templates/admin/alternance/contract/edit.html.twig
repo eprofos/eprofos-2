@@ -25,7 +25,7 @@
                         <span class="badge bg-{{ contract.statusBadgeClass }} text-white">{{ contract.statusLabel }}</span>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" data-controller="alternance-contract" data-alternance-contract-form-target="form">
                     {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
                     
                     <div class="row">
@@ -63,14 +63,14 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             {{ form_label(form.startDate, 'Date de début') }}
-                                            {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_widget(form.startDate, {'attr': {'class': 'form-control', 'data-alternance-contract-target': 'startDate'}}) }}
                                             {{ form_errors(form.startDate) }}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             {{ form_label(form.endDate, 'Date de fin') }}
-                                            {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_widget(form.endDate, {'attr': {'class': 'form-control', 'data-alternance-contract-target': 'endDate'}}) }}
                                             {{ form_errors(form.endDate) }}
                                         </div>
                                     </div>
@@ -78,7 +78,7 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Durée (en mois)</label>
-                                    <div class="form-control-plaintext">
+                                    <div class="form-control-plaintext" data-alternance-contract-target="durationDisplay">
                                         {% if contract.duration %}
                                             {{ contract.duration }} mois
                                         {% elseif contract.startDate and contract.endDate %}
@@ -286,42 +286,4 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-calculate duration when dates change
-            const startDateInput = document.querySelector('input[name*="[startDate]"]');
-            const endDateInput = document.querySelector('input[name*="[endDate]"]');
-            const durationInput = document.querySelector('input[name*="[duration]"]');
-            
-            if (startDateInput && endDateInput && durationInput) {
-                function calculateDuration() {
-                    const startDate = new Date(startDateInput.value);
-                    const endDate = new Date(endDateInput.value);
-                    
-                    if (startDate && endDate && endDate > startDate) {
-                        const diffTime = Math.abs(endDate - startDate);
-                        const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
-                        durationInput.value = diffMonths;
-                    }
-                }
-                
-                startDateInput.addEventListener('change', calculateDuration);
-                endDateInput.addEventListener('change', calculateDuration);
-            }
-            
-            // Form validation
-            const form = document.querySelector('.needs-validation');
-            if (form) {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                });
-            }
-        });
-    </script>
 {% endblock %}

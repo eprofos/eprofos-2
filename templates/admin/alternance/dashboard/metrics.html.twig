@@ -19,9 +19,9 @@
                     <i class="fas fa-download me-2"></i>Exporter
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="exportToExcel()">Excel</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="exportToPDF()">PDF</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="exportToCSV()">CSV</a></li>
+                    <li><a class="dropdown-item" href="#" data-action="click->metrics#exportToExcel">Excel</a></li>
+                    <li><a class="dropdown-item" href="#" data-action="click->metrics#exportToPDF">PDF</a></li>
+                    <li><a class="dropdown-item" href="#" data-action="click->metrics#exportToCSV">CSV</a></li>
                 </ul>
             </div>
         </div>
@@ -29,6 +29,8 @@
 {% endblock %}
 
 {% block body %}
+<div data-controller="metrics" 
+     data-metrics-duration-analysis-value="{{ metrics.duration_analysis|json_encode|e('html_attr') }}">
     <!-- Filters -->
     <div class="row mb-4">
         <div class="col-12">
@@ -167,7 +169,10 @@
                     <h5 class="card-title mb-0">Analyse des Durées</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="durationAnalysisChart" width="400" height="200"></canvas>
+                    <canvas id="durationAnalysisChart" 
+                            data-metrics-target="durationAnalysisChart" 
+                            width="400" 
+                            height="200"></canvas>
                 </div>
             </div>
         </div>
@@ -308,58 +313,9 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Duration Analysis Chart
-        const durationCtx = document.getElementById('durationAnalysisChart').getContext('2d');
-        const durationChart = new Chart(durationCtx, {
-            type: 'bar',
-            data: {
-                labels: ['6-12 mois', '12-18 mois', '18-24 mois', '24+ mois'],
-                datasets: [{
-                    label: 'Nombre de Contrats',
-                    data: [
-                        {{ metrics.duration_analysis.short_duration ?? 0 }},
-                        {{ metrics.duration_analysis.medium_duration ?? 0 }},
-                        {{ metrics.duration_analysis.long_duration ?? 0 }},
-                        {{ metrics.duration_analysis.extended_duration ?? 0 }}
-                    ],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 205, 86, 0.8)',
-                        'rgba(255, 99, 132, 0.8)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        function exportToExcel() {
-            // Implementation for Excel export
-            alert('Export Excel en cours de développement');
-        }
-
-        function exportToPDF() {
-            // Implementation for PDF export
-            alert('Export PDF en cours de développement');
-        }
-
-        function exportToCSV() {
-            // Implementation for CSV export
-            alert('Export CSV en cours de développement');
-        }
-    </script>
 {% endblock %}

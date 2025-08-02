@@ -3,7 +3,11 @@
 {% block title %}Tableau de Bord - Rapports d'Inscription{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
+<div class="container-fluid" 
+     data-controller="enrollment-reports"
+     data-enrollment-reports-enrollment-trends-value="{{ enrollmentTrends|default([])|json_encode|e('html_attr') }}"
+     data-enrollment-reports-dropout-analysis-value="{{ dropoutAnalysis|default([])|json_encode|e('html_attr') }}"
+     data-enrollment-reports-export-url-value="{{ path('admin_enrollment_reports_export') }}">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -23,13 +27,19 @@
                 <i class="fas fa-download"></i> Exporter
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('csv')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->enrollment-reports#exportAnalytics" 
+                       data-enrollment-reports-format-param="csv">
                     <i class="fas fa-file-csv"></i> Format CSV
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('excel')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->enrollment-reports#exportAnalytics" 
+                       data-enrollment-reports-format-param="excel">
                     <i class="fas fa-file-excel"></i> Format Excel
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportAnalytics('pdf')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->enrollment-reports#exportAnalytics" 
+                       data-enrollment-reports-format-param="pdf">
                     <i class="fas fa-file-pdf"></i> Format PDF
                 </a></li>
             </ul>
@@ -110,10 +120,10 @@
             </h5>
         </div>
         <div class="card-body">
-            <form method="GET" class="row g-3" id="filtersForm">
+            <form method="GET" class="row g-3" data-enrollment-reports-target="filtersForm">
                 <div class="col-md-4">
                     <label for="formation" class="form-label">Formation</label>
-                    <select class="form-select" id="formation" name="formation">
+                    <select class="form-select" id="formation" name="formation" data-enrollment-reports-target="formationSelect">
                         <option value="">Toutes les formations</option>
                         {% for formation in formations %}
                             <option value="{{ formation.id }}" {{ filters.formation == formation.id ? 'selected' : '' }}>
@@ -125,12 +135,12 @@
                 <div class="col-md-3">
                     <label for="start_date" class="form-label">Date de début</label>
                     <input type="date" class="form-control" id="start_date" name="start_date" 
-                           value="{{ filters.start_date }}">
+                           value="{{ filters.start_date }}" data-enrollment-reports-target="startDateInput">
                 </div>
                 <div class="col-md-3">
                     <label for="end_date" class="form-label">Date de fin</label>
                     <input type="date" class="form-control" id="end_date" name="end_date" 
-                           value="{{ filters.end_date }}">
+                           value="{{ filters.end_date }}" data-enrollment-reports-target="endDateInput">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
@@ -207,7 +217,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="enrollmentTrendsChart" height="300"></canvas>
+                    <canvas id="enrollmentTrendsChart" data-enrollment-reports-target="enrollmentTrendsChart" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -271,7 +281,7 @@
                 </div>
                 <div class="card-body">
                     {% if dropoutAnalysis|length > 0 %}
-                        <canvas id="dropoutAnalysisChart" height="200"></canvas>
+                        <canvas id="dropoutAnalysisChart" data-enrollment-reports-target="dropoutAnalysisChart" height="200"></canvas>
                     {% else %}
                         <div class="text-center py-3">
                             <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
@@ -441,7 +451,9 @@
                     </a>
                 </div>
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-secondary" onclick="refreshAnalytics()">
+                    <button type="button" class="btn btn-outline-secondary" 
+                            data-action="click->enrollment-reports#refreshAnalytics"
+                            data-enrollment-reports-target="refreshButton">
                         <i class="fas fa-sync-alt"></i> Actualiser
                     </button>
                 </div>
@@ -453,234 +465,4 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts
-    initializeEnrollmentTrendsChart();
-    initializeDropoutAnalysisChart();
-
-    // Auto-refresh functionality
-    setupAutoRefresh();
-
-    // Filter form handlers
-    setupFilterHandlers();
-});
-
-function initializeEnrollmentTrendsChart() {
-    {% if enrollmentTrends|length > 0 %}
-        const ctx = document.getElementById('enrollmentTrendsChart').getContext('2d');
-        const trendsData = {
-            labels: [
-                {% for trend in enrollmentTrends %}
-                    '{{ trend.date|date('d/m') }}'{{ not loop.last ? ',' : '' }}
-                {% endfor %}
-            ],
-            datasets: [
-                {
-                    label: 'Inscriptions',
-                    data: [
-                        {% for trend in enrollmentTrends %}
-                            {{ trend.enrollments }}{{ not loop.last ? ',' : '' }}
-                        {% endfor %}
-                    ],
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                },
-                {
-                    label: 'Completions',
-                    data: [
-                        {% for trend in enrollmentTrends %}
-                            {{ trend.completions }}{{ not loop.last ? ',' : '' }}
-                        {% endfor %}
-                    ],
-                    borderColor: '#28a745',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                },
-                {
-                    label: 'Abandons',
-                    data: [
-                        {% for trend in enrollmentTrends %}
-                            {{ trend.dropouts }}{{ not loop.last ? ',' : '' }}
-                        {% endfor %}
-                    ],
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }
-            ]
-        };
-
-        new Chart(ctx, {
-            type: 'line',
-            data: trendsData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                }
-            }
-        });
-    {% endif %}
-}
-
-function initializeDropoutAnalysisChart() {
-    {% if dropoutAnalysis|length > 0 %}
-        const ctx = document.getElementById('dropoutAnalysisChart').getContext('2d');
-        const dropoutData = {
-            labels: [
-                {% for analysis in dropoutAnalysis|slice(0, 5) %}
-                    '{{ analysis.dropout_reason ?: "Non spécifiée" }}'{{ not loop.last ? ',' : '' }}
-                {% endfor %}
-            ],
-            datasets: [{
-                data: [
-                    {% for analysis in dropoutAnalysis|slice(0, 5) %}
-                        {{ analysis.count }}{{ not loop.last ? ',' : '' }}
-                    {% endfor %}
-                ],
-                backgroundColor: [
-                    '#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0'
-                ],
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        };
-
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: dropoutData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.parsed} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    {% endif %}
-}
-
-function setupFilterHandlers() {
-    const filterInputs = document.querySelectorAll('#formation, #start_date, #end_date');
-    filterInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Auto-submit form after a short delay
-            setTimeout(() => {
-                document.getElementById('filtersForm').submit();
-            }, 100);
-        });
-    });
-}
-
-function setupAutoRefresh() {
-    // Add refresh button functionality
-    window.refreshAnalytics = function() {
-        const btn = event.target.closest('button');
-        const icon = btn.querySelector('i');
-        
-        // Add spinner
-        icon.className = 'fas fa-spinner fa-spin';
-        btn.disabled = true;
-        
-        // Simulate refresh (in real implementation, this would reload the page or fetch new data)
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-    };
-}
-
-// Export functionality
-window.exportAnalytics = function(format) {
-    const params = new URLSearchParams({
-        format: format,
-        formation: document.getElementById('formation').value,
-        start_date: document.getElementById('start_date').value,
-        end_date: document.getElementById('end_date').value
-    });
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
-    
-    // Add basic fields for general export
-    const fields = [
-        'student_name', 'student_email', 'formation_title', 'session_name',
-        'enrollment_status', 'enrolled_at', 'progress_percentage'
-    ];
-    
-    fields.forEach(field => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'fields[]';
-        input.value = field;
-        form.appendChild(input);
-    });
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-};
-
-// Tooltips and interactivity
-const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
-});
-
-// Card hover effects
-const cards = document.querySelectorAll('.card');
-cards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-        this.style.transition = 'all 0.3s ease';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '';
-    });
-});
-</script>
 {% endblock %}

@@ -3,7 +3,11 @@
 {% block title %}Rapport de Progression - Inscriptions{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
+<div class="container-fluid" 
+     data-controller="progress-report"
+     data-progress-report-progress-distribution-value="{{ progressDistribution|json_encode|e('html_attr') }}"
+     data-progress-report-export-url-value="{{ path('admin_enrollment_reports_export') }}"
+     data-progress-report-at-risk-count-value="{{ enrollments|filter(e => e.progress and e.progress.atRiskOfDropout)|length }}">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -20,13 +24,19 @@
                 <i class="fas fa-download"></i> Exporter
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('csv')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->progress-report#exportReport"
+                       data-progress-report-format-param="csv">
                     <i class="fas fa-file-csv"></i> Format CSV
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('excel')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->progress-report#exportReport"
+                       data-progress-report-format-param="excel">
                     <i class="fas fa-file-excel"></i> Format Excel
                 </a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportProgressReport('pdf')">
+                <li><a class="dropdown-item" href="#" 
+                       data-action="click->progress-report#exportReport"
+                       data-progress-report-format-param="pdf">
                     <i class="fas fa-file-pdf"></i> Format PDF
                 </a></li>
             </ul>
@@ -182,7 +192,9 @@
                         <h5 class="card-title mb-0">Répartition Visuelle</h5>
                     </div>
                     <div class="card-body">
-                        <canvas id="progressDistributionChart" width="300" height="200"></canvas>
+                        <canvas id="progressDistributionChart" 
+                                data-progress-report-target="progressChart" 
+                                width="300" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -195,10 +207,10 @@
             <h5 class="card-title mb-0">Filtres</h5>
         </div>
         <div class="card-body">
-            <form method="GET" class="row g-3">
+            <form method="GET" class="row g-3" data-progress-report-target="filtersForm">
                 <div class="col-md-3">
                     <label for="formation" class="form-label">Formation</label>
-                    <select class="form-select" id="formation" name="formation">
+                    <select class="form-select" id="formation" name="formation" data-progress-report-target="formationSelect">
                         <option value="">Toutes les formations</option>
                         {% for formation in formations %}
                             <option value="{{ formation.id }}" {{ selectedFormation == formation.id ? 'selected' : '' }}>
@@ -209,7 +221,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="progress" class="form-label">Niveau de progression</label>
-                    <select class="form-select" id="progress" name="progress">
+                    <select class="form-select" id="progress" name="progress" data-progress-report-target="progressSelect">
                         <option value="all" {{ progressFilter == 'all' ? 'selected' : '' }}>Tous les niveaux</option>
                         <option value="low" {{ progressFilter == 'low' ? 'selected' : '' }}>Faible (0-24%)</option>
                         <option value="medium" {{ progressFilter == 'medium' ? 'selected' : '' }}>Moyen (25-75%)</option>
@@ -219,7 +231,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="date_range" class="form-label">Période</label>
-                    <select class="form-select" id="date_range" name="date_range">
+                    <select class="form-select" id="date_range" name="date_range" data-progress-report-target="dateRangeSelect">
                         <option value="">Toutes les périodes</option>
                         <option value="last_week">Dernière semaine</option>
                         <option value="last_month">Dernier mois</option>
@@ -494,7 +506,9 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                             {% if enrollment.progress.atRiskOfDropout %}
-                                <button type="button" class="btn btn-warning" onclick="showFollowUpActions({{ enrollment.id }})">
+                                <button type="button" class="btn btn-warning" 
+                                        data-action="click->progress-report#showFollowUpActions"
+                                        data-progress-report-enrollment-id-param="{{ enrollment.id }}">
                                     <i class="fas fa-hand-holding-heart"></i> Actions de suivi
                                 </button>
                             {% endif %}
@@ -512,219 +526,4 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Progress Distribution Chart
-    {% if progressDistribution|length > 0 %}
-        const ctx = document.getElementById('progressDistributionChart').getContext('2d');
-        const progressData = {
-            labels: [
-                {% for distribution in progressDistribution %}
-                    '{{ distribution.progress_range }}'{{ not loop.last ? ',' : '' }}
-                {% endfor %}
-            ],
-            datasets: [{
-                data: [
-                    {% for distribution in progressDistribution %}
-                        {{ distribution.count }}{{ not loop.last ? ',' : '' }}
-                    {% endfor %}
-                ],
-                backgroundColor: [
-                    '#dc3545', // Low (red)
-                    '#ffc107', // Medium (yellow) 
-                    '#17a2b8', // Good (teal)
-                    '#28a745'  // Excellent (green)
-                ],
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        };
-
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: progressData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15,
-                            generateLabels: function(chart) {
-                                const data = chart.data;
-                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                return data.labels.map((label, i) => {
-                                    const value = data.datasets[0].data[i];
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return {
-                                        text: `${label}: ${value} (${percentage}%)`,
-                                        fillStyle: data.datasets[0].backgroundColor[i],
-                                        pointStyle: 'circle'
-                                    };
-                                });
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.parsed} étudiants (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    {% endif %}
-
-    // Export functionality
-    window.exportProgressReport = function(format) {
-        const params = new URLSearchParams({
-            format: format,
-            formation: document.getElementById('formation').value,
-            progress: document.getElementById('progress').value,
-            date_range: document.getElementById('date_range').value
-        });
-        
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ path('admin_enrollment_reports_export') }}?' + params.toString();
-        
-        // Add fields selection for progress report
-        const fields = [
-            'student_name', 'student_email', 'formation_title', 'session_name',
-            'enrolled_at', 'progress_percentage', 'enrollment_status'
-        ];
-        
-        fields.forEach(field => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'fields[]';
-            input.value = field;
-            form.appendChild(input);
-        });
-        
-        // Add filter for enrolled status
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'filters[status]';
-        statusInput.value = 'enrolled';
-        form.appendChild(statusInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-    };
-
-    // Auto-submit form on filter change
-    const filterInputs = document.querySelectorAll('#formation, #progress, #date_range');
-    filterInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Add small delay for better UX
-            setTimeout(() => {
-                this.closest('form').submit();
-            }, 100);
-        });
-    });
-
-    // Follow-up actions for at-risk students
-    window.showFollowUpActions = function(enrollmentId) {
-        // This could open a modal with follow-up options
-        // For now, show an alert with suggested actions
-        alert(`Actions de suivi pour l'inscription ${enrollmentId}:\n\n` +
-              '• Envoyer un email de motivation\n' +
-              '• Programmer un entretien individuel\n' +
-              '• Proposer un accompagnement personnalisé\n' +
-              '• Adapter le rythme de formation\n' +
-              '• Organiser une session de rattrapage\n' +
-              '• Contacter le tuteur/mentor');
-    };
-
-    // Tooltips for progress bars
-    const progressBars = document.querySelectorAll('.progress-bar');
-    progressBars.forEach(bar => {
-        const percentage = bar.getAttribute('aria-valuenow');
-        if (percentage) {
-            bar.setAttribute('title', `Progression: ${percentage}%`);
-            bar.setAttribute('data-bs-toggle', 'tooltip');
-        }
-    });
-
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Enhanced table row highlighting for at-risk students
-    const atRiskRows = document.querySelectorAll('tr.table-warning');
-    atRiskRows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#fff3cd';
-            this.style.boxShadow = '0 2px 4px rgba(255, 193, 7, 0.3)';
-        });
-        row.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '';
-            this.style.boxShadow = '';
-        });
-    });
-
-    // Auto-refresh for real-time progress tracking
-    let autoRefreshInterval;
-    
-    function startAutoRefresh() {
-        autoRefreshInterval = setInterval(() => {
-            // In a real implementation, this would fetch updated progress data
-            console.log('Auto-refreshing progress data...');
-        }, 60000); // Refresh every minute
-    }
-    
-    function stopAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-    }
-    
-    // Start auto-refresh when page loads
-    startAutoRefresh();
-    
-    // Stop auto-refresh when page is hidden/user navigates away
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            stopAutoRefresh();
-        } else {
-            startAutoRefresh();
-        }
-    });
-
-    // Progress alert notifications for new at-risk students
-    {% if enrollments|length > 0 %}
-        const atRiskCount = {{ enrollments|filter(e => e.progress and e.progress.atRiskOfDropout)|length }};
-        if (atRiskCount > 0) {
-            // Show notification about at-risk students
-            const alertContainer = document.createElement('div');
-            alertContainer.className = 'alert alert-warning alert-dismissible fade show position-fixed';
-            alertContainer.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alertContainer.innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>Attention!</strong> ${atRiskCount} étudiant(s) à risque d'abandon détecté(s).
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alertContainer);
-            
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => {
-                if (alertContainer.parentNode) {
-                    alertContainer.remove();
-                }
-            }, 5000);
-        }
-    {% endif %}
-});
-</script>
 {% endblock %}

@@ -125,7 +125,9 @@
             <!-- Activity Summary -->
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <div class="card">
+                    <div class="card" data-controller="chapter-statistics" 
+                         data-chapter-statistics-active-chapters-value="{{ activeChapters }}" 
+                         data-chapter-statistics-inactive-chapters-value="{{ inactiveChapters }}">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
                                 <i class="fas fa-chart-donut me-2"></i>
@@ -133,7 +135,7 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <canvas id="statusChart" width="400" height="200"></canvas>
+                            <canvas data-chapter-statistics-target="statusChart" width="400" height="200"></canvas>
                         </div>
                     </div>
                 </div>
@@ -181,34 +183,4 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Status distribution chart
-    const ctx = document.getElementById('statusChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Actifs', 'Inactifs'],
-            datasets: [{
-                data: [{{ activeChapters }}, {{ inactiveChapters }}],
-                backgroundColor: [
-                    '#28a745',
-                    '#6c757d'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-});
-</script>
 {% endblock %}

@@ -28,6 +28,9 @@
 {% endblock %}
 
 {% block body %}
+<div data-controller="alternance-analytics" 
+     data-alternance-analytics-analytics-data-value="{{ analytics_data|json_encode|e('html_attr') }}"
+     data-alternance-analytics-selected-dimensions-value="{{ selected_dimensions|json_encode|e('html_attr') }}">
     <!-- Filters -->
     <div class="row mb-4">
         <div class="col-12">
@@ -89,21 +92,27 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-4">
-                            <canvas id="enrollmentTrendChart" width="300" height="200"></canvas>
+                            <canvas id="enrollmentTrendChart" 
+                                    data-alternance-analytics-target="enrollmentChart" 
+                                    width="300" height="200"></canvas>
                             <div class="text-center mt-2">
                                 <h6>Inscriptions</h6>
                                 <div class="text-muted small">Évolution mensuelle</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <canvas id="completionTrendChart" width="300" height="200"></canvas>
+                            <canvas id="completionTrendChart" 
+                                    data-alternance-analytics-target="completionChart" 
+                                    width="300" height="200"></canvas>
                             <div class="text-center mt-2">
                                 <h6>Taux de Réussite</h6>
                                 <div class="text-muted small">Évolution mensuelle</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <canvas id="satisfactionTrendChart" width="300" height="200"></canvas>
+                            <canvas id="satisfactionTrendChart" 
+                                    data-alternance-analytics-target="satisfactionChart" 
+                                    width="300" height="200"></canvas>
                             <div class="text-center mt-2">
                                 <h6>Satisfaction</h6>
                                 <div class="text-muted small">Évolution mensuelle</div>
@@ -347,117 +356,9 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-submit form on change
-            const formElements = document.querySelectorAll('form select, form input[type="checkbox"]');
-            formElements.forEach(element => {
-                element.addEventListener('change', function() {
-                    this.form.submit();
-                });
-            });
-
-            {% if 'time' in selected_dimensions %}
-            // Enrollment Trend Chart
-            const enrollmentCtx = document.getElementById('enrollmentTrendChart');
-            if (enrollmentCtx) {
-                new Chart(enrollmentCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Inscriptions',
-                            data: {{ analytics_data.trends.enrollment_trend|json_encode }},
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Completion Trend Chart
-            const completionCtx = document.getElementById('completionTrendChart');
-            if (completionCtx) {
-                new Chart(completionCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Taux de Réussite (%)',
-                            data: {{ analytics_data.trends.completion_trend|json_encode }},
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                min: 70,
-                                max: 100
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Satisfaction Trend Chart
-            const satisfactionCtx = document.getElementById('satisfactionTrendChart');
-            if (satisfactionCtx) {
-                new Chart(satisfactionCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Satisfaction',
-                            data: {{ analytics_data.trends.satisfaction_trend|json_encode }},
-                            borderColor: 'rgb(54, 162, 235)',
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                min: 3,
-                                max: 5
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-        });
-    </script>
 {% endblock %}

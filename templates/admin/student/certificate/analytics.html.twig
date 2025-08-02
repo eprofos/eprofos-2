@@ -3,6 +3,10 @@
 {% block title %}Analyses des certificats - Administration{% endblock %}
 
 {% block body %}
+<div data-controller="certificate-analytics"
+     {% if statistics.grade_distribution is defined %}data-certificate-analytics-grade-distribution-value="{{ statistics.grade_distribution|json_encode|e('html_attr') }}"{% endif %}
+     {% if statistics.monthly_trends is defined %}data-certificate-analytics-monthly-trends-value="{{ statistics.monthly_trends|json_encode|e('html_attr') }}"{% endif %}>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
         <i class="fas fa-chart-bar text-primary me-2"></i>
@@ -87,7 +91,7 @@
             </div>
             <div class="card-body">
                 {% if statistics.grade_distribution is defined and statistics.grade_distribution|length > 0 %}
-                    <canvas id="gradeChart" width="400" height="200"></canvas>
+                    <canvas data-certificate-analytics-target="gradeChart" width="400" height="200"></canvas>
                 {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
@@ -109,7 +113,7 @@
             </div>
             <div class="card-body">
                 {% if statistics.monthly_trends is defined and statistics.monthly_trends|length > 0 %}
-                    <canvas id="trendsChart" width="400" height="200"></canvas>
+                    <canvas data-certificate-analytics-target="trendsChart" width="400" height="200"></canvas>
                 {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
@@ -299,110 +303,7 @@
         </div>
     </div>
 </div>
-{% endif %}
+    </div>
+</div>
 
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Grade Distribution Chart
-            {% if statistics.grade_distribution is defined and statistics.grade_distribution|length > 0 %}
-            const gradeCtx = document.getElementById('gradeChart');
-            if (gradeCtx) {
-                const gradeData = {{ statistics.grade_distribution|json_encode|raw }};
-                const gradeLabels = Object.keys(gradeData);
-                const gradeValues = Object.values(gradeData);
-                
-                new Chart(gradeCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: gradeLabels.map(label => {
-                            const gradeLabels = {
-                                'A': 'Excellent (A)',
-                                'B': 'Très bien (B)',
-                                'C': 'Bien (C)',
-                                'D': 'Passable (D)',
-                                'F': 'Insuffisant (F)'
-                            };
-                            return gradeLabels[label] || label;
-                        }),
-                        datasets: [{
-                            data: gradeValues,
-                            backgroundColor: [
-                                '#28a745', // Green for A
-                                '#17a2b8', // Blue for B
-                                '#ffc107', // Yellow for C
-                                '#fd7e14', // Orange for D
-                                '#dc3545'  // Red for F
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-            
-            // Monthly Trends Chart
-            {% if statistics.monthly_trends is defined and statistics.monthly_trends|length > 0 %}
-            const trendsCtx = document.getElementById('trendsChart');
-            if (trendsCtx) {
-                const trendsData = {{ statistics.monthly_trends|json_encode|raw }};
-                const trendsLabels = Object.keys(trendsData);
-                const trendsValues = Object.values(trendsData);
-                
-                new Chart(trendsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: trendsLabels.map(label => {
-                            const [year, month] = label.split('-');
-                            const date = new Date(year, month - 1);
-                            return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-                        }),
-                        datasets: [{
-                            label: 'Certificats émis',
-                            data: trendsValues,
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-        });
-    </script>
 {% endblock %}

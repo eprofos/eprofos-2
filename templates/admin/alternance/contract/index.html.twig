@@ -122,13 +122,16 @@
                 </div>
                 
                 {% if contracts|length > 0 %}
-                    <form method="POST" action="{{ path('admin_alternance_contract_bulk_status') }}" id="bulk-form">
+                    <form method="POST" action="{{ path('admin_alternance_contract_bulk_status') }}" data-controller="alternance-contract-bulk">
                         <div class="card-header border-bottom-0 pb-0">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="select-all">
-                                        <label class="form-check-label" for="select-all">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               data-alternance-contract-bulk-target="selectAll"
+                                               data-action="change->alternance-contract-bulk#selectAllChanged">
+                                        <label class="form-check-label">
                                             Tout sélectionner
                                         </label>
                                     </div>
@@ -147,7 +150,10 @@
                                             </select>
                                         </div>
                                         <div class="col-auto">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary" disabled id="bulk-submit">
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-primary" 
+                                                    disabled 
+                                                    data-alternance-contract-bulk-target="bulkSubmit">
                                                 Appliquer
                                             </button>
                                         </div>
@@ -176,7 +182,12 @@
                                         <tr>
                                             <td>
                                                 <div class="form-check">
-                                                    <input class="form-check-input contract-checkbox" type="checkbox" name="contract_ids[]" value="{{ contract.id }}">
+                                                    <input class="form-check-input" 
+                                                           type="checkbox" 
+                                                           name="contract_ids[]" 
+                                                           value="{{ contract.id }}"
+                                                           data-alternance-contract-bulk-target="contractCheckbox"
+                                                           data-action="change->alternance-contract-bulk#checkboxChanged">
                                                 </div>
                                             </td>
                                             <td>
@@ -347,30 +358,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAll = document.getElementById('select-all');
-            const checkboxes = document.querySelectorAll('.contract-checkbox');
-            const bulkSubmit = document.getElementById('bulk-submit');
-            
-            selectAll.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-                updateBulkButton();
-            });
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateBulkButton);
-            });
-            
-            function updateBulkButton() {
-                const checkedBoxes = document.querySelectorAll('.contract-checkbox:checked');
-                bulkSubmit.disabled = checkedBoxes.length === 0;
-                selectAll.checked = checkedBoxes.length === checkboxes.length;
-                selectAll.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < checkboxes.length;
-            }
-        });
-    </script>
 {% endblock %}

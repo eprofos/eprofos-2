@@ -28,6 +28,9 @@
 {% endblock %}
 
 {% block body %}
+<div data-controller="missions-reporting" 
+     data-missions-reporting-mission-types-value="{{ missions_data.mission_types|json_encode }}"
+     data-missions-reporting-complexity-distribution-value="{{ missions_data.complexity_distribution|json_encode }}">
     <!-- Filters -->
     <div class="row mb-4">
         <div class="col-12">
@@ -140,7 +143,7 @@
                     <h5 class="card-title"><i class="fas fa-chart-pie me-2"></i>Types de Missions</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="missionTypesChart" width="400" height="200"></canvas>
+                    <canvas data-missions-reporting-target="missionTypesChart" width="400" height="200"></canvas>
                 </div>
             </div>
         </div>
@@ -210,7 +213,7 @@
                     <h5 class="card-title"><i class="fas fa-layer-group me-2"></i>Répartition par Complexité</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="complexityChart" width="300" height="200"></canvas>
+                    <canvas data-missions-reporting-target="complexityChart" width="300" height="200"></canvas>
                     <div class="mt-3">
                         {% for level, count in missions_data.complexity_distribution %}
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -322,84 +325,7 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-submit form on change
-            const selects = document.querySelectorAll('form select');
-            selects.forEach(select => {
-                select.addEventListener('change', function() {
-                    this.form.submit();
-                });
-            });
 
-            // Mission Types Chart
-            const missionTypesCtx = document.getElementById('missionTypesChart');
-            if (missionTypesCtx) {
-                new Chart(missionTypesCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: {{ missions_data.mission_types|keys|json_encode }},
-                        datasets: [{
-                            label: 'Nombre de Missions',
-                            data: {{ missions_data.mission_types|json_encode }},
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 205, 86, 0.8)',
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Complexity Distribution Chart
-            const complexityCtx = document.getElementById('complexityChart');
-            if (complexityCtx) {
-                new Chart(complexityCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: {{ missions_data.complexity_distribution|keys|json_encode }},
-                        datasets: [{
-                            data: {{ missions_data.complexity_distribution|json_encode }},
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(255, 205, 86, 0.8)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(153, 102, 255, 0.8)'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
-{% endblock %}

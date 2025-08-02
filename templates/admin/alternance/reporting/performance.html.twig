@@ -28,6 +28,10 @@
 {% endblock %}
 
 {% block body %}
+<div data-controller="alternance-performance" 
+     data-alternance-performance-performance-data-value="{{ performance_data|json_encode|e('html_attr') }}"
+     data-alternance-performance-selected-metrics-value="{{ selected_metrics|json_encode|e('html_attr') }}">
+    
     <!-- Filters -->
     <div class="row mb-4">
         <div class="col-12">
@@ -94,7 +98,9 @@
                             <div class="text-muted">Progression Moyenne</div>
                         </div>
                         <div class="col-md-9">
-                            <canvas id="progressionTrendChart" width="400" height="100"></canvas>
+                            <canvas id="progressionTrendChart" 
+                                    data-alternance-performance-target="progressionTrendChart"
+                                    width="400" height="100"></canvas>
                         </div>
                     </div>
                     <div class="row">
@@ -147,7 +153,9 @@
                             <div class="text-muted">Score Moyen</div>
                         </div>
                         <div class="col-md-9">
-                            <canvas id="skillsEvolutionChart" width="400" height="100"></canvas>
+                            <canvas id="skillsEvolutionChart" 
+                                    data-alternance-performance-target="skillsEvolutionChart"
+                                    width="400" height="100"></canvas>
                         </div>
                     </div>
                     <div class="row">
@@ -205,7 +213,9 @@
                             <div class="text-muted">Taux d'Absentéisme</div>
                         </div>
                         <div class="col-md-4">
-                            <canvas id="attendanceTrendChart" width="200" height="100"></canvas>
+                            <canvas id="attendanceTrendChart" 
+                                    data-alternance-performance-target="attendanceTrendChart"
+                                    width="200" height="100"></canvas>
                         </div>
                     </div>
                 </div>
@@ -240,105 +250,5 @@
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-submit form on change
-            const selects = document.querySelectorAll('form select, form input[type="checkbox"]');
-            selects.forEach(element => {
-                element.addEventListener('change', function() {
-                    this.form.submit();
-                });
-            });
-
-            // Charts
-            {% if 'progression' in selected_metrics %}
-            const progressionCtx = document.getElementById('progressionTrendChart');
-            if (progressionCtx) {
-                new Chart(progressionCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Progression (%)',
-                            data: {{ performance_data.progression_metrics.progression_trend|json_encode }},
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-
-            {% if 'skills' in selected_metrics %}
-            const skillsCtx = document.getElementById('skillsEvolutionChart');
-            if (skillsCtx) {
-                new Chart(skillsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Score Compétences',
-                            data: {{ performance_data.skills_metrics.skills_evolution|json_encode }},
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                min: 0,
-                                max: 5
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-
-            {% if 'attendance' in selected_metrics %}
-            const attendanceCtx = document.getElementById('attendanceTrendChart');
-            if (attendanceCtx) {
-                new Chart(attendanceCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                        datasets: [{
-                            label: 'Assiduité (%)',
-                            data: {{ performance_data.attendance_metrics.attendance_trend|json_encode }},
-                            borderColor: 'rgb(54, 162, 235)',
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                min: 80,
-                                max: 100
-                            }
-                        }
-                    }
-                });
-            }
-            {% endif %}
-        });
-    </script>
+</div>
 {% endblock %}
