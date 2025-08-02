@@ -13,11 +13,9 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/favicon.ico') }}">
     
-    {% block stylesheets %}
+    {% block javascripts %}
         {{ importmap('private') }}
     {% endblock %}
-    
-    {% block head_scripts %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <div class="page">
@@ -141,7 +139,5 @@
             {% endblock %}
         </div>
     </div>
-    
-    {% block javascripts %}{% endblock %}
 </body>
 </html>
