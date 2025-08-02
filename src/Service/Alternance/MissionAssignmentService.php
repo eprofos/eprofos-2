@@ -13,6 +13,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
@@ -138,7 +139,6 @@ class MissionAssignmentService
             ]);
 
             return $assignment;
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during assignment creation', [
                 'mission_id' => $mission->getId(),
@@ -147,8 +147,9 @@ class MissionAssignmentService
                 'data_provided' => array_keys($data),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during assignment creation', [
                 'mission_id' => $mission->getId(),
                 'student_id' => $student->getId(),
@@ -159,6 +160,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to create assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -329,12 +331,11 @@ class MissionAssignmentService
                 'new_status' => $assignment->getStatus(),
                 'updated_fields' => array_keys($data),
                 'final_completion_rate' => $assignment->getCompletionRate(),
-                'updated_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'updated_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             return $assignment;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception during assignment update', [
                 'assignment_id' => $assignment->getId(),
                 'error_message' => $e->getMessage(),
@@ -344,6 +345,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to update assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -369,6 +371,7 @@ class MissionAssignmentService
                     'current_status' => $assignment->getStatus(),
                     'required_status' => 'planifiee',
                 ]);
+
                 throw new RuntimeException('Only planned assignments can be started.');
             }
 
@@ -386,9 +389,8 @@ class MissionAssignmentService
                 'mission_id' => $assignment->getMission()->getId(),
                 'mission_title' => $assignment->getMission()->getTitle(),
                 'new_status' => $assignment->getStatus(),
-                'started_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'started_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during assignment start', [
                 'assignment_id' => $assignment->getId(),
@@ -396,8 +398,9 @@ class MissionAssignmentService
                 'current_status' => $assignment->getStatus(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during assignment start', [
                 'assignment_id' => $assignment->getId(),
                 'error_message' => $e->getMessage(),
@@ -407,6 +410,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to start assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -434,6 +438,7 @@ class MissionAssignmentService
                     'current_status' => $assignment->getStatus(),
                     'required_statuses' => ['planifiee', 'en_cours'],
                 ]);
+
                 throw new RuntimeException('Only planned or in-progress assignments can be completed.');
             }
 
@@ -504,9 +509,8 @@ class MissionAssignmentService
                 'final_achievements_count' => count($assignment->getAchievements()),
                 'final_competencies_count' => count($assignment->getCompetenciesAcquired()),
                 'completion_data_provided' => array_keys($completionData),
-                'completed_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'completed_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during assignment completion', [
                 'assignment_id' => $assignment->getId(),
@@ -515,8 +519,9 @@ class MissionAssignmentService
                 'completion_data_keys' => array_keys($completionData),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during assignment completion', [
                 'assignment_id' => $assignment->getId(),
                 'error_message' => $e->getMessage(),
@@ -527,6 +532,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to complete assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -554,6 +560,7 @@ class MissionAssignmentService
                     'current_status' => $assignment->getStatus(),
                     'required_statuses' => ['planifiee', 'en_cours'],
                 ]);
+
                 throw new RuntimeException('Only planned or in-progress assignments can be suspended.');
             }
 
@@ -605,9 +612,8 @@ class MissionAssignmentService
                 'reason' => $reason,
                 'new_status' => $assignment->getStatus(),
                 'total_difficulties_count' => count($assignment->getDifficulties()),
-                'suspended_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'suspended_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during assignment suspension', [
                 'assignment_id' => $assignment->getId(),
@@ -616,8 +622,9 @@ class MissionAssignmentService
                 'suspension_reason' => $reason,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during assignment suspension', [
                 'assignment_id' => $assignment->getId(),
                 'error_message' => $e->getMessage(),
@@ -628,6 +635,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to suspend assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -653,6 +661,7 @@ class MissionAssignmentService
                     'current_status' => $assignment->getStatus(),
                     'required_status' => 'suspendue',
                 ]);
+
                 throw new RuntimeException('Only suspended assignments can be resumed.');
             }
 
@@ -703,9 +712,8 @@ class MissionAssignmentService
                 'student_name' => $assignment->getStudent()->getFullName(),
                 'new_status' => $assignment->getStatus(),
                 'total_difficulties_count' => count($assignment->getDifficulties()),
-                'resumed_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'resumed_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during assignment resume', [
                 'assignment_id' => $assignment->getId(),
@@ -713,8 +721,9 @@ class MissionAssignmentService
                 'current_status' => $assignment->getStatus(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during assignment resume', [
                 'assignment_id' => $assignment->getId(),
                 'error_message' => $e->getMessage(),
@@ -724,6 +733,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to resume assignment: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -995,6 +1005,7 @@ class MissionAssignmentService
                     'existing_assignment_id' => $existingAssignment->getId(),
                     'existing_assignment_status' => $existingAssignment->getStatus(),
                 ]);
+
                 throw new RuntimeException('Student already has an active assignment for this mission.');
             }
 
@@ -1021,12 +1032,12 @@ class MissionAssignmentService
                     'note' => 'Prerequisites validation logic should be implemented based on business rules',
                 ]);
 
-                // TODO: Implement actual prerequisite validation logic
-                // This could involve checking:
-                // - Completed missions
-                // - Required skills
-                // - Minimum completion rates
-                // - Student level/experience
+            // TODO: Implement actual prerequisite validation logic
+            // This could involve checking:
+            // - Completed missions
+            // - Required skills
+            // - Minimum completion rates
+            // - Student level/experience
             } else {
                 $this->logger->debug('Mission has no prerequisites', [
                     'mission_id' => $mission->getId(),
@@ -1037,7 +1048,6 @@ class MissionAssignmentService
                 'mission_id' => $mission->getId(),
                 'student_id' => $student->getId(),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during prerequisites validation', [
                 'mission_id' => $mission->getId(),
@@ -1045,8 +1055,9 @@ class MissionAssignmentService
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during prerequisites validation', [
                 'mission_id' => $mission->getId(),
                 'student_id' => $student->getId(),
@@ -1056,6 +1067,7 @@ class MissionAssignmentService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to validate assignment prerequisites: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -1106,8 +1118,7 @@ class MissionAssignmentService
             ]);
 
             return $intermediateObjectives;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception during intermediate objectives generation', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
@@ -1121,6 +1132,7 @@ class MissionAssignmentService
             $this->logger->warning('Returning empty objectives array as fallback', [
                 'mission_id' => $mission->getId(),
             ]);
+
             return [];
         }
     }
@@ -1156,8 +1168,7 @@ class MissionAssignmentService
             ]);
 
             return $endDate;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception during expected end date calculation', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),

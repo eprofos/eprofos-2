@@ -6,14 +6,15 @@ namespace App\Controller\Admin\Student;
 
 use App\Entity\Core\StudentEnrollment;
 use App\Entity\Training\Session;
-use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Student;
 use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Training\SessionRegistrationRepository;
 use App\Repository\Training\SessionRepository;
 use App\Repository\User\StudentRepository;
 use App\Service\Student\StudentEnrollmentService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Knp\Component\Pager\PaginatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,9 +41,8 @@ class EnrollmentController extends AbstractController
         private SessionRegistrationRepository $sessionRegistrationRepository,
         private StudentRepository $studentRepository,
         private SessionRepository $sessionRepository,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
      * Enrollment management dashboard.
@@ -82,7 +82,8 @@ class EnrollmentController extends AbstractController
                 ]);
                 $queryBuilder
                     ->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search OR f.title LIKE :search')
-                    ->setParameter('search', '%' . $search . '%');
+                    ->setParameter('search', '%' . $search . '%')
+                ;
             }
 
             if ($status) {
@@ -91,7 +92,8 @@ class EnrollmentController extends AbstractController
                 ]);
                 $queryBuilder
                     ->andWhere('se.status = :status')
-                    ->setParameter('status', $status);
+                    ->setParameter('status', $status)
+                ;
             }
 
             if ($source) {
@@ -100,7 +102,8 @@ class EnrollmentController extends AbstractController
                 ]);
                 $queryBuilder
                     ->andWhere('se.enrollmentSource = :source')
-                    ->setParameter('source', $source);
+                    ->setParameter('source', $source)
+                ;
             }
 
             $queryBuilder->orderBy('se.enrolledAt', 'DESC');
@@ -108,7 +111,7 @@ class EnrollmentController extends AbstractController
             $enrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             // Get statistics
@@ -133,8 +136,7 @@ class EnrollmentController extends AbstractController
                 'source' => $source,
                 'statuses' => StudentEnrollment::STATUSES,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading enrollment dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -145,7 +147,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement du tableau de bord des inscriptions.');
-            
+
             // Return empty dashboard with error state
             return $this->render('admin/student/enrollment/index.html.twig', [
                 'enrollments' => [],
@@ -190,7 +192,8 @@ class EnrollmentController extends AbstractController
                         'student_id' => $studentId,
                         'registration_id' => $registrationId,
                     ]);
-                    throw new \Exception('Student and registration must be selected');
+
+                    throw new Exception('Student and registration must be selected');
                 }
 
                 $student = $this->studentRepository->find($studentId);
@@ -200,14 +203,16 @@ class EnrollmentController extends AbstractController
                     $this->logger->error('Student not found for linking', [
                         'student_id' => $studentId,
                     ]);
-                    throw new \Exception('Student not found');
+
+                    throw new Exception('Student not found');
                 }
 
                 if (!$registration) {
                     $this->logger->error('Registration not found for linking', [
                         'registration_id' => $registrationId,
                     ]);
-                    throw new \Exception('Registration not found');
+
+                    throw new Exception('Registration not found');
                 }
 
                 $this->logger->debug('Found entities for linking', [
@@ -218,7 +223,7 @@ class EnrollmentController extends AbstractController
                 ]);
 
                 $enrollment = $this->enrollmentService->linkStudentToSessionRegistration($student, $registration);
-                
+
                 if ($notes) {
                     $this->logger->debug('Adding admin notes to enrollment', [
                         'enrollment_id' => $enrollment->getId(),
@@ -239,12 +244,11 @@ class EnrollmentController extends AbstractController
                 $this->addFlash('success', sprintf(
                     'Étudiant %s lié avec succès à la session %s',
                     $student->getFullName(),
-                    $registration->getSession()->getName()
+                    $registration->getSession()->getName(),
                 ));
 
                 return $this->redirectToRoute('admin_student_enrollment_index');
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error during manual student linking', [
                     'error_message' => $e->getMessage(),
                     'error_file' => $e->getFile(),
@@ -262,16 +266,15 @@ class EnrollmentController extends AbstractController
             // Get unlinked confirmed registrations
             $this->logger->debug('Fetching unlinked confirmed registrations');
             $unlinkedRegistrations = $this->sessionRegistrationRepository->findUnlinkedConfirmedRegistrations();
-            
+
             $this->logger->info('Successfully loaded linking interface', [
                 'unlinked_registrations_count' => count($unlinkedRegistrations),
             ]);
-            
+
             return $this->render('admin/student/enrollment/link.html.twig', [
                 'unlinkedRegistrations' => $unlinkedRegistrations,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading linking interface', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -280,7 +283,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de l\'interface de liaison.');
-            
+
             return $this->render('admin/student/enrollment/link.html.twig', [
                 'unlinkedRegistrations' => [],
                 'error' => true,
@@ -295,7 +298,7 @@ class EnrollmentController extends AbstractController
     public function searchStudents(Request $request): JsonResponse
     {
         $query = $request->query->get('q', '');
-        
+
         $this->logger->info('Student search request', [
             'search_query' => $query,
             'query_length' => strlen($query),
@@ -309,6 +312,7 @@ class EnrollmentController extends AbstractController
                     'query_length' => strlen($query),
                     'minimum_required' => 2,
                 ]);
+
                 return new JsonResponse([]);
             }
 
@@ -324,7 +328,8 @@ class EnrollmentController extends AbstractController
                 ->setParameter('active', true)
                 ->setMaxResults(20)
                 ->getQuery()
-                ->getResult();
+                ->getResult()
+            ;
 
             $results = [];
             foreach ($students as $student) {
@@ -338,12 +343,11 @@ class EnrollmentController extends AbstractController
             $this->logger->info('Student search completed successfully', [
                 'search_query' => $query,
                 'results_count' => count($results),
-                'students_found' => array_map(fn($r) => $r['email'], $results),
+                'students_found' => array_map(static fn ($r) => $r['email'], $results),
             ]);
 
             return new JsonResponse($results);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during student search', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -354,7 +358,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'error' => 'Une erreur est survenue lors de la recherche d\'étudiants'
+                'error' => 'Une erreur est survenue lors de la recherche d\'étudiants',
             ], 500);
         }
     }
@@ -388,7 +392,8 @@ class EnrollmentController extends AbstractController
                         'session_id' => $sessionId,
                         'student_ids_count' => count($studentIds),
                     ]);
-                    throw new \Exception('Session and students must be selected');
+
+                    throw new Exception('Session and students must be selected');
                 }
 
                 $session = $this->sessionRepository->find($sessionId);
@@ -396,7 +401,8 @@ class EnrollmentController extends AbstractController
                     $this->logger->error('Session not found for bulk enrollment', [
                         'session_id' => $sessionId,
                     ]);
-                    throw new \Exception('Session not found');
+
+                    throw new Exception('Session not found');
                 }
 
                 $students = $this->studentRepository->findBy(['id' => $studentIds]);
@@ -405,14 +411,15 @@ class EnrollmentController extends AbstractController
                         'requested_student_ids' => $studentIds,
                         'found_students_count' => count($students),
                     ]);
-                    throw new \Exception('No valid students found');
+
+                    throw new Exception('No valid students found');
                 }
 
                 $this->logger->debug('Found entities for bulk enrollment', [
                     'session_name' => $session->getName(),
                     'session_start_date' => $session->getStartDate()?->format('Y-m-d'),
                     'students_found' => count($students),
-                    'student_emails' => array_map(fn($s) => $s->getEmail(), $students),
+                    'student_emails' => array_map(static fn ($s) => $s->getEmail(), $students),
                 ]);
 
                 $results = $this->enrollmentService->bulkEnrollStudents($session, $students);
@@ -428,7 +435,7 @@ class EnrollmentController extends AbstractController
                 $this->addFlash('success', sprintf(
                     'Inscription en lot terminée: %d succès, %d échecs',
                     $results['success'],
-                    $results['failed']
+                    $results['failed'],
                 ));
 
                 if ($results['failed'] > 0) {
@@ -439,8 +446,7 @@ class EnrollmentController extends AbstractController
                     'results' => $results,
                     'session' => $session,
                 ]);
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error during bulk enrollment', [
                     'error_message' => $e->getMessage(),
                     'error_file' => $e->getFile(),
@@ -460,14 +466,15 @@ class EnrollmentController extends AbstractController
             $sessions = $this->sessionRepository->createQueryBuilder('s')
                 ->leftJoin('s.formation', 'f')
                 ->where('s.startDate > :now OR s.endDate IS NULL')
-                ->setParameter('now', new \DateTime())
+                ->setParameter('now', new DateTime())
                 ->orderBy('s.startDate', 'ASC')
                 ->getQuery()
-                ->getResult();
+                ->getResult()
+            ;
 
             $this->logger->info('Successfully loaded bulk enrollment interface', [
                 'available_sessions_count' => count($sessions),
-                'sessions' => array_map(fn($s) => [
+                'sessions' => array_map(static fn ($s) => [
                     'id' => $s->getId(),
                     'name' => $s->getName(),
                     'start_date' => $s->getStartDate()?->format('Y-m-d'),
@@ -477,8 +484,7 @@ class EnrollmentController extends AbstractController
             return $this->render('admin/student/enrollment/bulk.html.twig', [
                 'sessions' => $sessions,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading bulk enrollment interface', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -487,7 +493,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de l\'interface d\'inscription en lot.');
-            
+
             return $this->render('admin/student/enrollment/bulk.html.twig', [
                 'sessions' => [],
                 'error' => true,
@@ -509,7 +515,7 @@ class EnrollmentController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $action = $request->request->get('action');
-            
+
             $this->logger->info('Processing auto-linking action', [
                 'action' => $action,
                 'user_id' => $this->getUser()?->getUserIdentifier(),
@@ -520,21 +526,20 @@ class EnrollmentController extends AbstractController
                     // Show potential matches for review
                     $this->logger->debug('Finding potential auto-links for preview');
                     $potentialMatches = $this->enrollmentService->findPotentialAutoLinks();
-                    
+
                     $this->logger->info('Successfully found potential auto-links', [
                         'potential_matches_count' => count($potentialMatches),
-                        'matches_preview' => array_slice(array_map(fn($match) => [
+                        'matches_preview' => array_slice(array_map(static fn ($match) => [
                             'student_email' => $match['student']->getEmail() ?? 'unknown',
                             'session_name' => $match['registration']->getSession()->getName() ?? 'unknown',
                             'confidence' => $match['confidence'] ?? 'unknown',
                         ], $potentialMatches), 0, 5), // Log first 5 matches
                     ]);
-                    
+
                     return $this->render('admin/student/enrollment/auto_link_preview.html.twig', [
                         'potentialMatches' => $potentialMatches,
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error finding potential auto-links', [
                         'error_message' => $e->getMessage(),
                         'error_file' => $e->getFile(),
@@ -544,38 +549,36 @@ class EnrollmentController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Erreur lors de la recherche des liaisons potentielles : ' . $e->getMessage());
-                    
+
                     return $this->render('admin/student/enrollment/auto_link_preview.html.twig', [
                         'potentialMatches' => [],
                         'error' => true,
                     ]);
                 }
-
             } elseif ($action === 'process') {
                 try {
                     $this->logger->info('Starting auto-linking process');
                     $results = $this->enrollmentService->processAllAutoLinks();
-                    
+
                     $this->logger->info('Auto-linking process completed', [
                         'processed_count' => $results['processed'],
                         'success_count' => $results['success'],
                         'failed_count' => $results['failed'],
-                        'success_rate' => $results['processed'] > 0 ? 
+                        'success_rate' => $results['processed'] > 0 ?
                             round(($results['success'] / $results['processed']) * 100, 2) . '%' : '0%',
                     ]);
-                    
+
                     $this->addFlash('success', sprintf(
                         'Liaison automatique terminée: %d traitées, %d succès, %d échecs',
                         $results['processed'],
                         $results['success'],
-                        $results['failed']
+                        $results['failed'],
                     ));
 
                     return $this->render('admin/student/enrollment/auto_link_results.html.twig', [
                         'results' => $results,
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error during auto-linking process', [
                         'error_message' => $e->getMessage(),
                         'error_file' => $e->getFile(),
@@ -609,8 +612,7 @@ class EnrollmentController extends AbstractController
                 'linkingStats' => $linkingStats,
                 'potentialMatchesCount' => count($potentialMatches),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading auto-linking interface', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -619,7 +621,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de l\'interface de liaison automatique.');
-            
+
             return $this->render('admin/student/enrollment/auto_link.html.twig', [
                 'linkingStats' => [],
                 'potentialMatchesCount' => 0,
@@ -646,17 +648,16 @@ class EnrollmentController extends AbstractController
 
         try {
             $this->enrollmentService->unlinkStudentFromSessionRegistration($enrollment);
-            
+
             $this->logger->info('Successfully unlinked student from session registration', [
                 'enrollment_id' => $enrollment->getId(),
                 'student_email' => $enrollment->getStudent()?->getEmail(),
                 'session_name' => $enrollment->getSessionRegistration()?->getSession()?->getName(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
-            
-            $this->addFlash('success', 'Étudiant délié avec succès de la session');
 
-        } catch (\Exception $e) {
+            $this->addFlash('success', 'Étudiant délié avec succès de la session');
+        } catch (Exception $e) {
             $this->logger->error('Error during student unlinking', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -697,8 +698,7 @@ class EnrollmentController extends AbstractController
             return $this->render('admin/student/enrollment/show.html.twig', [
                 'enrollment' => $enrollment,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying enrollment details', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -709,7 +709,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage des détails de l\'inscription.');
-            
+
             return $this->redirectToRoute('admin_student_enrollment_index');
         }
     }
@@ -748,15 +748,15 @@ class EnrollmentController extends AbstractController
 
                 $changes = [];
 
-                if ($status && in_array($status, array_keys(StudentEnrollment::STATUSES))) {
+                if ($status && in_array($status, array_keys(StudentEnrollment::STATUSES), true)) {
                     $oldStatus = $enrollment->getStatus();
                     $enrollment->setStatus($status);
                     $changes['status'] = ['old' => $oldStatus, 'new' => $status];
-                    
+
                     if ($status === StudentEnrollment::STATUS_DROPPED_OUT && $dropoutReason) {
                         $enrollment->setDropoutReason($dropoutReason);
                         $changes['dropout_reason'] = $dropoutReason;
-                        
+
                         $this->logger->warning('Student marked as dropped out', [
                             'enrollment_id' => $enrollment->getId(),
                             'student_email' => $enrollment->getStudent()?->getEmail(),
@@ -764,7 +764,7 @@ class EnrollmentController extends AbstractController
                             'session_name' => $enrollment->getSessionRegistration()?->getSession()?->getName(),
                         ]);
                     }
-                } else if ($status && !in_array($status, array_keys(StudentEnrollment::STATUSES))) {
+                } elseif ($status && !in_array($status, array_keys(StudentEnrollment::STATUSES), true)) {
                     $this->logger->warning('Invalid status provided for enrollment update', [
                         'enrollment_id' => $enrollment->getId(),
                         'invalid_status' => $status,
@@ -790,10 +790,9 @@ class EnrollmentController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'Inscription mise à jour avec succès');
-                
-                return $this->redirectToRoute('admin_student_enrollment_show', ['id' => $enrollment->getId()]);
 
-            } catch (\Exception $e) {
+                return $this->redirectToRoute('admin_student_enrollment_show', ['id' => $enrollment->getId()]);
+            } catch (Exception $e) {
                 $this->logger->error('Error updating enrollment', [
                     'error_message' => $e->getMessage(),
                     'error_file' => $e->getFile(),
@@ -813,8 +812,7 @@ class EnrollmentController extends AbstractController
                 'enrollment' => $enrollment,
                 'statuses' => StudentEnrollment::STATUSES,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading enrollment edit form', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -824,7 +822,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement du formulaire de modification.');
-            
+
             return $this->redirectToRoute('admin_student_enrollment_show', ['id' => $enrollment->getId()]);
         }
     }
@@ -837,13 +835,13 @@ class EnrollmentController extends AbstractController
     {
         $this->logger->info('API request for enrollment statistics', [
             'user_id' => $this->getUser()?->getUserIdentifier(),
-            'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
         ]);
 
         try {
             $this->logger->debug('Fetching enrollment statistics from repository');
             $stats = $this->enrollmentRepository->getEnrollmentStats();
-            
+
             $this->logger->debug('Fetching linking statistics from service');
             $linkingStats = $this->enrollmentService->getLinkingStats();
 
@@ -859,8 +857,7 @@ class EnrollmentController extends AbstractController
             ]);
 
             return new JsonResponse($response);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving enrollment statistics via API', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),

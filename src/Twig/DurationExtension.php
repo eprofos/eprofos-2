@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Twig;
 
 use App\Service\Training\DurationCalculationService;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -58,7 +60,8 @@ class DurationExtension extends AbstractExtension
                     'value' => $value,
                     'unit' => $unit,
                 ]);
-                throw new \InvalidArgumentException('Duration value cannot be negative');
+
+                throw new InvalidArgumentException('Duration value cannot be negative');
             }
 
             if (!in_array($unit, ['minutes', 'hours', 'days'], true)) {
@@ -66,7 +69,8 @@ class DurationExtension extends AbstractExtension
                     'unit' => $unit,
                     'allowed_units' => ['minutes', 'hours', 'days'],
                 ]);
-                throw new \InvalidArgumentException('Invalid unit. Allowed units: minutes, hours, days');
+
+                throw new InvalidArgumentException('Invalid unit. Allowed units: minutes, hours, days');
             }
 
             $result = $this->durationService->formatDuration($value, $unit);
@@ -78,7 +82,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error formatting duration', [
                 'value' => $value,
                 'unit' => $unit,
@@ -109,7 +113,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->warning('Negative minutes value provided', [
                     'minutes' => $minutes,
                 ]);
-                throw new \InvalidArgumentException('Minutes value cannot be negative');
+
+                throw new InvalidArgumentException('Minutes value cannot be negative');
             }
 
             $result = $this->durationService->minutesToHours($minutes, $roundUp);
@@ -121,7 +126,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error converting minutes to hours', [
                 'minutes' => $minutes,
                 'round_up' => $roundUp,
@@ -151,7 +156,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->warning('Negative hours value provided', [
                     'hours' => $hours,
                 ]);
-                throw new \InvalidArgumentException('Hours value cannot be negative');
+
+                throw new InvalidArgumentException('Hours value cannot be negative');
             }
 
             $result = $this->durationService->hoursToMinutes($hours);
@@ -162,7 +168,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error converting hours to minutes', [
                 'hours' => $hours,
                 'error_message' => $e->getMessage(),
@@ -193,7 +199,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->error('Invalid course object provided', [
                     'provided_type' => gettype($course),
                 ]);
-                throw new \InvalidArgumentException('Course must be an object');
+
+                throw new InvalidArgumentException('Course must be an object');
             }
 
             $result = $this->durationService->calculateCourseDuration($course);
@@ -205,7 +212,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating course duration', [
                 'course_class' => is_object($course) ? get_class($course) : gettype($course),
                 'course_id' => is_object($course) && method_exists($course, 'getId') ? $course->getId() : 'unknown',
@@ -237,7 +244,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->error('Invalid chapter object provided', [
                     'provided_type' => gettype($chapter),
                 ]);
-                throw new \InvalidArgumentException('Chapter must be an object');
+
+                throw new InvalidArgumentException('Chapter must be an object');
             }
 
             $result = $this->durationService->calculateChapterDuration($chapter);
@@ -249,7 +257,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating chapter duration', [
                 'chapter_class' => is_object($chapter) ? get_class($chapter) : gettype($chapter),
                 'chapter_id' => is_object($chapter) && method_exists($chapter, 'getId') ? $chapter->getId() : 'unknown',
@@ -281,7 +289,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->error('Invalid module object provided', [
                     'provided_type' => gettype($module),
                 ]);
-                throw new \InvalidArgumentException('Module must be an object');
+
+                throw new InvalidArgumentException('Module must be an object');
             }
 
             $result = $this->durationService->calculateModuleDuration($module);
@@ -293,7 +302,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating module duration', [
                 'module_class' => is_object($module) ? get_class($module) : gettype($module),
                 'module_id' => is_object($module) && method_exists($module, 'getId') ? $module->getId() : 'unknown',
@@ -326,7 +335,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->error('Invalid formation object provided', [
                     'provided_type' => gettype($formation),
                 ]);
-                throw new \InvalidArgumentException('Formation must be an object');
+
+                throw new InvalidArgumentException('Formation must be an object');
             }
 
             $result = $this->durationService->calculateFormationDuration($formation);
@@ -339,7 +349,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating formation duration', [
                 'formation_class' => is_object($formation) ? get_class($formation) : gettype($formation),
                 'formation_id' => is_object($formation) && method_exists($formation, 'getId') ? $formation->getId() : 'unknown',
@@ -370,7 +380,8 @@ class DurationExtension extends AbstractExtension
                 $this->logger->error('Invalid entity object provided for statistics', [
                     'provided_type' => gettype($entity),
                 ]);
-                throw new \InvalidArgumentException('Entity must be an object');
+
+                throw new InvalidArgumentException('Entity must be an object');
             }
 
             $result = $this->durationService->getDurationStatistics($entity);
@@ -383,7 +394,7 @@ class DurationExtension extends AbstractExtension
             ]);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting duration statistics', [
                 'entity_class' => is_object($entity) ? get_class($entity) : gettype($entity),
                 'entity_id' => is_object($entity) && method_exists($entity, 'getId') ? $entity->getId() : 'unknown',

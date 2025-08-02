@@ -8,6 +8,10 @@ use App\Entity\Training\Module;
 use App\Entity\User\Student;
 use App\Repository\Training\ModuleRepository;
 use App\Service\Security\ContentAccessService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,9 +31,8 @@ class ModuleController extends AbstractController
     public function __construct(
         private readonly ModuleRepository $moduleRepository,
         private readonly ContentAccessService $contentAccessService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * View a specific module with access control.
@@ -53,7 +56,7 @@ class ModuleController extends AbstractController
                 'formation_title' => $module->getFormation()?->getTitle(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for the formation containing this module
@@ -63,11 +66,11 @@ class ModuleController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved for module access', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -78,7 +81,7 @@ class ModuleController extends AbstractController
 
             $enrollment = null;
             $targetFormationId = $module->getFormation()?->getId();
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $targetFormationId) {
                     $enrollment = $e;
@@ -98,7 +101,7 @@ class ModuleController extends AbstractController
                     'student_id' => $student->getId(),
                     'module_id' => $module->getId(),
                     'target_formation_id' => $targetFormationId,
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -107,7 +110,7 @@ class ModuleController extends AbstractController
             $this->logger->debug('Module structure details', [
                 'module_id' => $module->getId(),
                 'chapters_count' => $chapters->count(),
-                'chapters_details' => array_map(fn($chapter) => [
+                'chapters_details' => array_map(static fn ($chapter) => [
                     'chapter_id' => $chapter->getId(),
                     'chapter_title' => $chapter->getTitle(),
                     'chapter_order' => $chapter->getOrderIndex(),
@@ -133,30 +136,29 @@ class ModuleController extends AbstractController
                 'student' => $student,
                 'page_title' => $module->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for module view', [
                 'module_id' => $module->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès au module.');
-            return $this->redirectToRoute('student_formation_index');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès au module.');
+
+            return $this->redirectToRoute('student_formation_index');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in module view process', [
                 'module_id' => $module->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès au module.');
-            return $this->redirectToRoute('student_formation_index');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès au module.');
+
+            return $this->redirectToRoute('student_formation_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during module view', [
                 'module_id' => $module->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -169,8 +171,9 @@ class ModuleController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès au module.');
+
             return $this->redirectToRoute('student_formation_index');
         }
     }

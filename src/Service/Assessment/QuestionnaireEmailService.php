@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Service\Assessment;
 
 use App\Entity\Assessment\QuestionnaireResponse;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -44,7 +47,8 @@ class QuestionnaireEmailService
                 $this->logger->error('Cannot send questionnaire link: questionnaire not found', [
                     'response_id' => $response->getId(),
                 ]);
-                throw new \InvalidArgumentException('Questionnaire not found for response');
+
+                throw new InvalidArgumentException('Questionnaire not found for response');
             }
 
             $this->logger->debug('Generating questionnaire URL', [
@@ -108,7 +112,6 @@ class QuestionnaireEmailService
                 'recipient_email' => $response->getEmail(),
                 'subject' => $subject,
             ]);
-
         } catch (TwigError $e) {
             $this->logger->error('Failed to render email templates for questionnaire link', [
                 'response_id' => $response->getId(),
@@ -117,8 +120,8 @@ class QuestionnaireEmailService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            throw new \RuntimeException('Failed to render email templates: ' . $e->getMessage(), 0, $e);
 
+            throw new RuntimeException('Failed to render email templates: ' . $e->getMessage(), 0, $e);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send questionnaire link email due to transport error', [
                 'response_id' => $response->getId(),
@@ -127,9 +130,9 @@ class QuestionnaireEmailService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to send email: ' . $e->getMessage(), 0, $e);
 
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to send email: ' . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while sending questionnaire link email', [
                 'response_id' => $response->getId(),
                 'questionnaire_id' => $response->getQuestionnaire()?->getId(),
@@ -140,6 +143,7 @@ class QuestionnaireEmailService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -162,6 +166,7 @@ class QuestionnaireEmailService
                     'response_id' => $response->getId(),
                     'completion_date' => $response->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
+
                 return;
             }
 
@@ -170,7 +175,8 @@ class QuestionnaireEmailService
                 $this->logger->error('Cannot send questionnaire reminder: questionnaire not found', [
                     'response_id' => $response->getId(),
                 ]);
-                throw new \InvalidArgumentException('Questionnaire not found for response');
+
+                throw new InvalidArgumentException('Questionnaire not found for response');
             }
 
             $this->logger->debug('Generating reminder URL', [
@@ -229,7 +235,6 @@ class QuestionnaireEmailService
                 'recipient_email' => $response->getEmail(),
                 'subject' => $subject,
             ]);
-
         } catch (TwigError $e) {
             $this->logger->error('Failed to render email templates for questionnaire reminder', [
                 'response_id' => $response->getId(),
@@ -238,8 +243,8 @@ class QuestionnaireEmailService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            throw new \RuntimeException('Failed to render reminder email templates: ' . $e->getMessage(), 0, $e);
 
+            throw new RuntimeException('Failed to render reminder email templates: ' . $e->getMessage(), 0, $e);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send questionnaire reminder email due to transport error', [
                 'response_id' => $response->getId(),
@@ -248,9 +253,9 @@ class QuestionnaireEmailService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to send reminder email: ' . $e->getMessage(), 0, $e);
 
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to send reminder email: ' . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while sending questionnaire reminder email', [
                 'response_id' => $response->getId(),
                 'questionnaire_id' => $response->getQuestionnaire()?->getId(),
@@ -261,6 +266,7 @@ class QuestionnaireEmailService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -282,6 +288,7 @@ class QuestionnaireEmailService
                     'response_id' => $response->getId(),
                     'completed_at' => $response->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
+
                 return;
             }
 
@@ -290,7 +297,8 @@ class QuestionnaireEmailService
                 $this->logger->error('Cannot send evaluation results: questionnaire not found', [
                     'response_id' => $response->getId(),
                 ]);
-                throw new \InvalidArgumentException('Questionnaire not found for response');
+
+                throw new InvalidArgumentException('Questionnaire not found for response');
             }
 
             $subject = 'Résultats de votre évaluation - ' . $questionnaire->getTitle();
@@ -338,7 +346,6 @@ class QuestionnaireEmailService
                 'recipient_email' => $response->getEmail(),
                 'subject' => $subject,
             ]);
-
         } catch (TwigError $e) {
             $this->logger->error('Failed to render email templates for evaluation results', [
                 'response_id' => $response->getId(),
@@ -347,8 +354,8 @@ class QuestionnaireEmailService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            throw new \RuntimeException('Failed to render evaluation results email templates: ' . $e->getMessage(), 0, $e);
 
+            throw new RuntimeException('Failed to render evaluation results email templates: ' . $e->getMessage(), 0, $e);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send evaluation results email due to transport error', [
                 'response_id' => $response->getId(),
@@ -357,9 +364,9 @@ class QuestionnaireEmailService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to send evaluation results email: ' . $e->getMessage(), 0, $e);
 
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to send evaluation results email: ' . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while sending evaluation results email', [
                 'response_id' => $response->getId(),
                 'questionnaire_id' => $response->getQuestionnaire()?->getId(),
@@ -370,6 +377,7 @@ class QuestionnaireEmailService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -392,7 +400,8 @@ class QuestionnaireEmailService
                 $this->logger->error('Cannot send admin notification: questionnaire not found', [
                     'response_id' => $response->getId(),
                 ]);
-                throw new \InvalidArgumentException('Questionnaire not found for response');
+
+                throw new InvalidArgumentException('Questionnaire not found for response');
             }
 
             $subject = 'Nouveau questionnaire complété - ' . $questionnaire->getTitle();
@@ -458,7 +467,6 @@ class QuestionnaireEmailService
                 'respondent_email' => $response->getEmail(),
                 'subject' => $subject,
             ]);
-
         } catch (TwigError $e) {
             $this->logger->error('Failed to render email templates for admin notification', [
                 'response_id' => $response->getId(),
@@ -467,8 +475,8 @@ class QuestionnaireEmailService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            throw new \RuntimeException('Failed to render admin notification email templates: ' . $e->getMessage(), 0, $e);
 
+            throw new RuntimeException('Failed to render admin notification email templates: ' . $e->getMessage(), 0, $e);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send admin notification email due to transport error', [
                 'response_id' => $response->getId(),
@@ -477,9 +485,9 @@ class QuestionnaireEmailService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to send admin notification email: ' . $e->getMessage(), 0, $e);
 
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to send admin notification email: ' . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while sending admin notification email', [
                 'response_id' => $response->getId(),
                 'questionnaire_id' => $response->getQuestionnaire()?->getId(),
@@ -489,6 +497,7 @@ class QuestionnaireEmailService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }

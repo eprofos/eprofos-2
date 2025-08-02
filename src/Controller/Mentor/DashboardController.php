@@ -7,7 +7,10 @@ namespace App\Controller\Mentor;
 use App\Entity\User\Mentor;
 use App\Service\User\MentorAuthenticationService;
 use App\Service\User\MentorService;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
@@ -44,30 +47,30 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for dashboard', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
                 'company_name' => $mentor->getCompanyName(),
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
-                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             ]);
 
             // Check account setup completion
             $this->logger->debug('Starting account setup completion check');
             $setupCompletion = $this->mentorAuthService->getAccountSetupCompletion($mentor);
-            
+
             $this->logger->info('Account setup completion checked', [
                 'mentor_id' => $mentor->getId(),
                 'is_complete' => $setupCompletion['is_complete'],
                 'completion_percentage' => $setupCompletion['completion_percentage'] ?? 0,
-                'missing_fields' => $setupCompletion['missing_fields'] ?? []
+                'missing_fields' => $setupCompletion['missing_fields'] ?? [],
             ]);
 
             if (!$setupCompletion['is_complete']) {
                 $this->logger->warning('Mentor account setup incomplete - displaying warning', [
                     'mentor_id' => $mentor->getId(),
-                    'missing_fields' => $setupCompletion['missing_fields'] ?? []
+                    'missing_fields' => $setupCompletion['missing_fields'] ?? [],
                 ]);
                 $this->addFlash('warning', 'Veuillez compléter votre profil pour accéder à toutes les fonctionnalités.');
             }
@@ -75,11 +78,11 @@ class DashboardController extends AbstractController
             // Get company statistics
             $this->logger->debug('Retrieving company statistics');
             $companyStats = $this->mentorService->getCompanyStatistics($mentor->getCompanyName());
-            
+
             $this->logger->info('Company statistics retrieved successfully', [
                 'mentor_id' => $mentor->getId(),
                 'company_name' => $mentor->getCompanyName(),
-                'stats_count' => count($companyStats)
+                'stats_count' => count($companyStats),
             ]);
 
             // TODO: Add real data once Alternant and Mission entities are implemented
@@ -104,44 +107,43 @@ class DashboardController extends AbstractController
                 'mentor_id' => $mentor->getId(),
                 'supervised_apprentices' => $dashboardData['stats']['supervised_apprentices'],
                 'active_missions' => $dashboardData['stats']['active_missions'],
-                'has_company_stats' => !empty($companyStats)
+                'has_company_stats' => !empty($companyStats),
             ]);
 
             $response = $this->render('mentor/dashboard/index.html.twig', $dashboardData);
-            
+
             $this->logger->info('Mentor dashboard rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/index.html.twig'
+                'template' => 'mentor/dashboard/index.html.twig',
             ]);
 
             return $response;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided to mentor dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur de paramétrage s\'est produite. Veuillez contacter le support.');
-            return $this->redirectToRoute('mentor_profile');
 
-        } catch (\RuntimeException $e) {
+            return $this->redirectToRoute('mentor_profile');
+        } catch (RuntimeException $e) {
             $this->logger->error('Runtime error in mentor dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Un problème technique temporaire s\'est produit. Veuillez réessayer.');
-            throw new ServiceUnavailableHttpException(30, 'Service temporairement indisponible');
 
-        } catch (\Exception $e) {
+            throw new ServiceUnavailableHttpException(30, 'Service temporairement indisponible');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in mentor dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -150,10 +152,11 @@ class DashboardController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
                 'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
-                'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown'
+                'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. L\'équipe technique a été notifiée.');
+
             return $this->redirectToRoute('mentor_help');
         }
     }
@@ -171,21 +174,21 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for profile page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
                 'has_expertise' => !empty($mentor->getExpertiseDomains()),
-                'has_education_level' => !empty($mentor->getEducationLevel())
+                'has_education_level' => !empty($mentor->getEducationLevel()),
             ]);
 
             $this->logger->debug('Starting account setup completion check for profile');
             $setupCompletion = $this->mentorAuthService->getAccountSetupCompletion($mentor);
-            
+
             $this->logger->info('Profile setup completion checked', [
                 'mentor_id' => $mentor->getId(),
                 'is_complete' => $setupCompletion['is_complete'],
-                'completion_percentage' => $setupCompletion['completion_percentage'] ?? 0
+                'completion_percentage' => $setupCompletion['completion_percentage'] ?? 0,
             ]);
 
             $profileData = [
@@ -199,31 +202,30 @@ class DashboardController extends AbstractController
             $this->logger->info('Profile data prepared successfully', [
                 'mentor_id' => $mentor->getId(),
                 'available_expertise_domains' => count(Mentor::EXPERTISE_DOMAINS),
-                'available_education_levels' => count(Mentor::EDUCATION_LEVELS)
+                'available_education_levels' => count(Mentor::EDUCATION_LEVELS),
             ]);
 
             $response = $this->render('mentor/dashboard/profile.html.twig', $profileData);
-            
+
             $this->logger->info('Mentor profile page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/profile.html.twig'
+                'template' => 'mentor/dashboard/profile.html.twig',
             ]);
 
             return $response;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in mentor profile page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'line' => $e->getLine(),
             ]);
 
             $this->addFlash('error', 'Erreur de paramétrage du profil. Veuillez contacter le support.');
-            return $this->redirectToRoute('mentor_dashboard');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('mentor_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in mentor profile page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -231,10 +233,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès au profil.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -252,27 +255,27 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Redirecting mentor to assignments page', [
                 'mentor_id' => $mentor->getId(),
                 'from_route' => 'mentor_apprentices',
-                'to_route' => 'mentor_assignments_index'
+                'to_route' => 'mentor_assignments_index',
             ]);
 
             // Redirect to assignments since that's where we manage alternance students
             return $this->redirectToRoute('mentor_assignments_index');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor apprentices redirect', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_class' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'accès à la gestion des apprentis.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -290,11 +293,11 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for evaluations page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
-                'company_name' => $mentor->getCompanyName()
+                'company_name' => $mentor->getCompanyName(),
             ]);
 
             // TODO: Implement when evaluation system is created
@@ -311,20 +314,19 @@ class DashboardController extends AbstractController
                 'mentor_id' => $mentor->getId(),
                 'pending_evaluations_count' => count($evaluationsData['pending_evaluations']),
                 'completed_evaluations_count' => count($evaluationsData['completed_evaluations']),
-                'evaluation_templates_count' => count($evaluationsData['evaluation_templates'])
+                'evaluation_templates_count' => count($evaluationsData['evaluation_templates']),
             ]);
 
             $response = $this->render('mentor/dashboard/evaluations.html.twig', $evaluationsData);
-            
+
             $this->logger->info('Mentor evaluations page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/evaluations.html.twig'
+                'template' => 'mentor/dashboard/evaluations.html.twig',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor evaluations page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -332,10 +334,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'accès aux évaluations. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -353,11 +356,11 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for notifications page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
-                'last_login' => $mentor->getLastLoginAt()?->format('Y-m-d H:i:s')
+                'last_login' => $mentor->getLastLoginAt()?->format('Y-m-d H:i:s'),
             ]);
 
             // TODO: Implement when notification system is ready
@@ -375,20 +378,19 @@ class DashboardController extends AbstractController
                 'unread_notifications_count' => count($notificationsData['unread_notifications']),
                 'apprentice_updates_count' => count($notificationsData['apprentice_updates']),
                 'system_announcements_count' => count($notificationsData['system_announcements']),
-                'evaluation_reminders_count' => count($notificationsData['evaluation_reminders'])
+                'evaluation_reminders_count' => count($notificationsData['evaluation_reminders']),
             ]);
 
             $response = $this->render('mentor/dashboard/notifications.html.twig', $notificationsData);
-            
+
             $this->logger->info('Mentor notifications page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/notifications.html.twig'
+                'template' => 'mentor/dashboard/notifications.html.twig',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor notifications page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -396,10 +398,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'accès aux notifications. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -417,27 +420,27 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for settings page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
                 'company_name' => $mentor->getCompanyName(),
-                'is_active' => $mentor->isActive()
+                'is_active' => $mentor->isActive(),
             ]);
 
             $this->logger->debug('Performing security check for mentor settings');
             $securityIssues = $this->mentorAuthService->performSecurityCheck($mentor);
-            
+
             $this->logger->info('Security check completed for mentor settings', [
                 'mentor_id' => $mentor->getId(),
                 'security_issues_count' => count($securityIssues),
-                'has_security_issues' => !empty($securityIssues)
+                'has_security_issues' => !empty($securityIssues),
             ]);
 
             if (!empty($securityIssues)) {
                 $this->logger->warning('Security issues detected for mentor', [
                     'mentor_id' => $mentor->getId(),
-                    'security_issues' => $securityIssues
+                    'security_issues' => $securityIssues,
                 ]);
             }
 
@@ -448,29 +451,28 @@ class DashboardController extends AbstractController
             ];
 
             $response = $this->render('mentor/dashboard/settings.html.twig', $settingsData);
-            
+
             $this->logger->info('Mentor settings page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
                 'template' => 'mentor/dashboard/settings.html.twig',
-                'has_security_issues' => !empty($securityIssues)
+                'has_security_issues' => !empty($securityIssues),
             ]);
 
             return $response;
-
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->logger->error('Runtime error in mentor settings page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Problème technique lors de l\'accès aux paramètres. Service temporairement indisponible.');
-            return $this->redirectToRoute('mentor_dashboard');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('mentor_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in mentor settings page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -478,10 +480,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur inattendue lors de l\'accès aux paramètres.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -499,11 +502,11 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for help page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
             ]);
 
             $helpData = [
@@ -512,30 +515,29 @@ class DashboardController extends AbstractController
             ];
 
             $response = $this->render('mentor/dashboard/help.html.twig', $helpData);
-            
+
             $this->logger->info('Mentor help page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/help.html.twig'
+                'template' => 'mentor/dashboard/help.html.twig',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor help page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_class' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             // Even if there's an error, try to show a basic help page
             return $this->render('mentor/dashboard/help.html.twig', [
                 'mentor' => $this->getUser(),
                 'page_title' => 'Aide & Support',
-                'error_mode' => true
+                'error_mode' => true,
             ]);
         }
     }
@@ -555,11 +557,11 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for meetings page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
-                'company_name' => $mentor->getCompanyName()
+                'company_name' => $mentor->getCompanyName(),
             ]);
 
             // TODO: Implement when meeting system is ready
@@ -577,20 +579,19 @@ class DashboardController extends AbstractController
                 'upcoming_meetings_count' => count($meetingsData['upcoming_meetings']),
                 'past_meetings_count' => count($meetingsData['past_meetings']),
                 'meeting_requests_count' => count($meetingsData['meeting_requests']),
-                'available_slots_count' => count($meetingsData['available_slots'])
+                'available_slots_count' => count($meetingsData['available_slots']),
             ]);
 
             $response = $this->render('mentor/dashboard/meetings.html.twig', $meetingsData);
-            
+
             $this->logger->info('Mentor meetings page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/meetings.html.twig'
+                'template' => 'mentor/dashboard/meetings.html.twig',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor meetings page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -598,10 +599,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'accès à la gestion des rendez-vous.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }
@@ -619,12 +621,12 @@ class DashboardController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Retrieved mentor user for reports page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
                 'company_name' => $mentor->getCompanyName(),
-                'expertise_domains' => $mentor->getExpertiseDomains()
+                'expertise_domains' => $mentor->getExpertiseDomains(),
             ]);
 
             // TODO: Implement when reporting system is ready
@@ -642,20 +644,19 @@ class DashboardController extends AbstractController
                 'apprentice_reports_count' => count($reportsData['apprentice_reports']),
                 'performance_reports_count' => count($reportsData['performance_reports']),
                 'company_reports_count' => count($reportsData['company_reports']),
-                'custom_reports_count' => count($reportsData['custom_reports'])
+                'custom_reports_count' => count($reportsData['custom_reports']),
             ]);
 
             $response = $this->render('mentor/dashboard/reports.html.twig', $reportsData);
-            
+
             $this->logger->info('Mentor reports page rendered successfully', [
                 'mentor_id' => $mentor->getId(),
                 'response_status' => $response->getStatusCode(),
-                'template' => 'mentor/dashboard/reports.html.twig'
+                'template' => 'mentor/dashboard/reports.html.twig',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mentor reports page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -663,10 +664,11 @@ class DashboardController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null
+                'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'accès aux rapports. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }

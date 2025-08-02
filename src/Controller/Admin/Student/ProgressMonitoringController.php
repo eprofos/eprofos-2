@@ -9,7 +9,10 @@ use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Core\StudentProgressRepository;
 use App\Repository\Training\FormationRepository;
 use App\Service\Student\StudentEnrollmentService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Knp\Component\Pager\PaginatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,9 +38,8 @@ class ProgressMonitoringController extends AbstractController
         private FormationRepository $formationRepository,
         private StudentEnrollmentService $enrollmentService,
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
      * Progress monitoring dashboard.
@@ -107,7 +109,7 @@ class ProgressMonitoringController extends AbstractController
                     'progress_range' => $progressRange,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error accessing progress monitoring dashboard', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -116,7 +118,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement du tableau de bord. Veuillez réessayer.');
-            
+
             // Return minimal dashboard with error state
             return $this->render('admin/student/progress/index.html.twig', [
                 'stats' => ['total_active' => 0, 'at_risk' => 0, 'at_risk_percentage' => 0, 'low_progress' => 0, 'high_progress' => 0, 'average_progress' => 0],
@@ -160,17 +162,20 @@ class ProgressMonitoringController extends AbstractController
 
             $queryBuilder = $this->enrollmentRepository->createEnrollmentQueryBuilder()
                 ->andWhere('se.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
 
             if ($formation) {
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formation);
+                    ->setParameter('formation', $formation)
+                ;
                 $this->logger->debug('Applied formation filter', ['formation_id' => $formation]);
             }
 
             if ($search) {
                 $queryBuilder->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search')
-                             ->setParameter('search', '%' . $search . '%');
+                    ->setParameter('search', '%' . $search . '%')
+                ;
                 $this->logger->debug('Applied search filter');
             }
 
@@ -189,7 +194,8 @@ class ProgressMonitoringController extends AbstractController
             // Risk filtering
             if ($riskFilter === 'at_risk') {
                 $queryBuilder->andWhere('sp.atRiskOfDropout = :at_risk')
-                             ->setParameter('at_risk', true);
+                    ->setParameter('at_risk', true)
+                ;
                 $this->logger->debug('Applied at-risk filter');
             } elseif ($riskFilter === 'low_engagement') {
                 $queryBuilder->andWhere('sp.engagementLevel < 3');
@@ -202,7 +208,7 @@ class ProgressMonitoringController extends AbstractController
             $enrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             $this->logger->debug('Detailed progress monitoring query executed', [
@@ -237,7 +243,7 @@ class ProgressMonitoringController extends AbstractController
                     'search' => $search,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in detailed progress monitoring', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -246,12 +252,13 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des données détaillées. Veuillez réessayer.');
-            
+
             // Return empty result set on error
             $formations = [];
+
             try {
                 $formations = $this->formationRepository->findBy(['isActive' => true], ['title' => 'ASC']);
-            } catch (\Exception $formationError) {
+            } catch (Exception $formationError) {
                 $this->logger->error('Failed to load formations for error fallback', [
                     'error' => $formationError->getMessage(),
                 ]);
@@ -297,11 +304,13 @@ class ProgressMonitoringController extends AbstractController
                 ->andWhere('se.status = :status')
                 ->andWhere('sp.atRiskOfDropout = :at_risk')
                 ->setParameter('status', StudentEnrollment::STATUS_ENROLLED)
-                ->setParameter('at_risk', true);
+                ->setParameter('at_risk', true)
+            ;
 
             if ($formation) {
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formation);
+                    ->setParameter('formation', $formation)
+                ;
                 $this->logger->debug('Applied formation filter for at-risk students', ['formation_id' => $formation]);
             }
 
@@ -322,7 +331,7 @@ class ProgressMonitoringController extends AbstractController
             $atRiskEnrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             $this->logger->debug('At-risk enrollments query executed', [
@@ -359,7 +368,7 @@ class ProgressMonitoringController extends AbstractController
                     'risk_level' => $riskLevel,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in at-risk students monitoring', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -368,12 +377,13 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des étudiants à risque. Veuillez réessayer.');
-            
+
             // Return empty result set on error
             $formations = [];
+
             try {
                 $formations = $this->formationRepository->findBy(['isActive' => true], ['title' => 'ASC']);
-            } catch (\Exception $formationError) {
+            } catch (Exception $formationError) {
                 $this->logger->error('Failed to load formations for at-risk error fallback', [
                     'error' => $formationError->getMessage(),
                 ]);
@@ -407,14 +417,15 @@ class ProgressMonitoringController extends AbstractController
 
         try {
             $progress = $enrollment->getProgress();
-            
+
             if (!$progress) {
                 $this->logger->warning('No progress data found for enrollment', [
                     'enrollment_id' => $enrollment->getId(),
                     'student_id' => $enrollment->getStudent()?->getId(),
                 ]);
-                
+
                 $this->addFlash('error', 'Aucune donnée de progression trouvée pour cet étudiant.');
+
                 return $this->redirectToRoute('admin_progress_monitoring_index');
             }
 
@@ -465,7 +476,7 @@ class ProgressMonitoringController extends AbstractController
                 'interventionHistory' => $interventionHistory,
                 'riskAssessment' => $riskAssessment,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error viewing individual student progress', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -474,6 +485,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails de l\'étudiant. Veuillez réessayer.');
+
             return $this->redirectToRoute('admin_progress_monitoring_index');
         }
     }
@@ -498,7 +510,7 @@ class ProgressMonitoringController extends AbstractController
 
             // Validate input data
             if (empty($interventionType) || empty($notes)) {
-                throw new \InvalidArgumentException('Type d\'intervention et notes sont requis');
+                throw new InvalidArgumentException('Type d\'intervention et notes sont requis');
             }
 
             $this->logger->debug('Processing intervention data', [
@@ -514,13 +526,13 @@ class ProgressMonitoringController extends AbstractController
                 "\n[%s] Intervention %s: %s",
                 date('Y-m-d H:i'),
                 $interventionType,
-                $notes
+                $notes,
             );
-            
+
             if ($followUpDate) {
-                $interventionNote .= sprintf(" (Suivi prévu: %s)", $followUpDate);
+                $interventionNote .= sprintf(' (Suivi prévu: %s)', $followUpDate);
             }
-            
+
             $enrollment->setAdminNotes($currentNotes . $interventionNote);
             $this->entityManager->flush();
 
@@ -532,7 +544,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('success', 'Intervention enregistrée avec succès');
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid intervention data provided', [
                 'error' => $e->getMessage(),
                 'enrollment_id' => $enrollment->getId(),
@@ -541,7 +553,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error recording intervention', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -581,22 +593,22 @@ class ProgressMonitoringController extends AbstractController
 
             $progress = $enrollment->getProgress();
             if (!$progress) {
-                throw new \Exception('Aucune donnée de progression trouvée');
+                throw new Exception('Aucune donnée de progression trouvée');
             }
 
             $previousRiskStatus = $progress->isAtRiskOfDropout();
             $progress->setAtRiskOfDropout($atRisk);
-            
+
             // Add risk reason to admin notes if needed
             if ($atRisk && $riskReason) {
                 $currentNotes = $enrollment->getAdminNotes() ?? '';
                 $riskNote = sprintf(
                     "\n[%s] Marqué à risque: %s",
                     date('Y-m-d H:i'),
-                    $riskReason
+                    $riskReason,
                 );
                 $enrollment->setAdminNotes($currentNotes . $riskNote);
-                
+
                 $this->logger->debug('Risk reason added to admin notes', [
                     'enrollment_id' => $enrollment->getId(),
                 ]);
@@ -606,7 +618,7 @@ class ProgressMonitoringController extends AbstractController
                 $riskNote = sprintf(
                     "\n[%s] Retiré du statut à risque par %s",
                     date('Y-m-d H:i'),
-                    $this->getUser()?->getUserIdentifier()
+                    $this->getUser()?->getUserIdentifier(),
                 );
                 $enrollment->setAdminNotes($currentNotes . $riskNote);
             }
@@ -622,7 +634,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('success', 'Statut de risque mis à jour avec succès');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating risk status', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -655,11 +667,11 @@ class ProgressMonitoringController extends AbstractController
 
             // Validate input data
             if (empty($enrollmentIds)) {
-                throw new \InvalidArgumentException('Aucune inscription sélectionnée');
+                throw new InvalidArgumentException('Aucune inscription sélectionnée');
             }
 
             if (empty($interventionType) || empty($notes)) {
-                throw new \InvalidArgumentException('Type d\'intervention et notes sont requis');
+                throw new InvalidArgumentException('Type d\'intervention et notes sont requis');
             }
 
             $this->logger->debug('Processing bulk intervention data', [
@@ -670,12 +682,12 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $enrollments = $this->enrollmentRepository->findBy(['id' => $enrollmentIds]);
-            
+
             if (count($enrollments) !== count($enrollmentIds)) {
                 $this->logger->warning('Some enrollments not found for bulk intervention', [
                     'requested_ids' => $enrollmentIds,
                     'found_count' => count($enrollments),
-                    'found_ids' => array_map(fn($e) => $e->getId(), $enrollments),
+                    'found_ids' => array_map(static fn ($e) => $e->getId(), $enrollments),
                 ]);
             }
 
@@ -691,9 +703,9 @@ class ProgressMonitoringController extends AbstractController
                         date('Y-m-d H:i'),
                         $interventionType,
                         $notes,
-                        $this->getUser()?->getUserIdentifier()
+                        $this->getUser()?->getUserIdentifier(),
                     );
-                    
+
                     $enrollment->setAdminNotes($currentNotes . $interventionNote);
                     $successCount++;
 
@@ -701,10 +713,10 @@ class ProgressMonitoringController extends AbstractController
                         'enrollment_id' => $enrollment->getId(),
                         'student_id' => $enrollment->getStudent()?->getId(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $errorCount++;
                     $errors[] = sprintf('Inscription %d: %s', $enrollment->getId(), $e->getMessage());
-                    
+
                     $this->logger->error('Error applying bulk intervention to individual enrollment', [
                         'enrollment_id' => $enrollment->getId(),
                         'error' => $e->getMessage(),
@@ -725,7 +737,7 @@ class ProgressMonitoringController extends AbstractController
             if ($successCount > 0) {
                 $this->addFlash('success', sprintf(
                     'Intervention appliquée à %d inscription(s)',
-                    $successCount
+                    $successCount,
                 ));
             }
 
@@ -733,10 +745,10 @@ class ProgressMonitoringController extends AbstractController
                 $this->addFlash('warning', sprintf(
                     '%d erreur(s) lors de l\'application: %s',
                     $errorCount,
-                    implode(', ', array_slice($errors, 0, 3)) . ($errorCount > 3 ? '...' : '')
+                    implode(', ', array_slice($errors, 0, 3)) . ($errorCount > 3 ? '...' : ''),
                 ));
             }
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid bulk intervention data provided', [
                 'error' => $e->getMessage(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
@@ -744,7 +756,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $this->addFlash('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error performing bulk intervention', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -772,9 +784,9 @@ class ProgressMonitoringController extends AbstractController
 
         try {
             $formation = $request->query->get('formation');
-            
+
             $this->logger->debug('Generating stats data', ['formation' => $formation]);
-            
+
             $stats = [
                 'overview' => $this->getProgressOverviewStats(),
                 'trends' => $this->getProgressTrends($formation),
@@ -790,7 +802,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return new JsonResponse($stats);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating API stats', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -831,7 +843,7 @@ class ProgressMonitoringController extends AbstractController
                 'engagement_levels' => $this->getEngagementLevelsChart($formation),
                 'risk_factors' => $this->getRiskFactorsChart($formation),
                 'completion_trends' => $this->getCompletionTrendsChart($formation),
-                default => throw new \InvalidArgumentException('Type de graphique non supporté: ' . $type)
+                default => throw new InvalidArgumentException('Type de graphique non supporté: ' . $type)
             };
 
             $this->logger->debug('Chart data generated successfully', [
@@ -841,7 +853,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return new JsonResponse($data);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid chart type requested', [
                 'type' => $type,
                 'error' => $e->getMessage(),
@@ -852,7 +864,7 @@ class ProgressMonitoringController extends AbstractController
                 'error' => 'Type de graphique invalide',
                 'message' => $e->getMessage(),
             ], 400);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating chart data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -894,7 +906,7 @@ class ProgressMonitoringController extends AbstractController
             $this->logger->debug('Progress overview statistics calculated', $stats);
 
             return $stats;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating progress overview statistics', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -923,18 +935,21 @@ class ProgressMonitoringController extends AbstractController
             $queryBuilder = $this->enrollmentRepository->createEnrollmentQueryBuilder()
                 ->andWhere('se.status = :status')
                 ->andWhere('sp.completionPercentage < 25')
-                ->setParameter('status', StudentEnrollment::STATUS_ENROLLED);
+                ->setParameter('status', StudentEnrollment::STATUS_ENROLLED)
+            ;
 
             if ($formationId) {
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formationId);
+                    ->setParameter('formation', $formationId)
+                ;
                 $this->logger->debug('Applied formation filter for low progress students', ['formation_id' => $formationId]);
             }
 
             $results = $queryBuilder->orderBy('sp.completionPercentage', 'ASC')
-                               ->setMaxResults(10)
-                               ->getQuery()
-                               ->getResult();
+                ->setMaxResults(10)
+                ->getQuery()
+                ->getResult()
+            ;
 
             $this->logger->debug('Low progress students found', [
                 'count' => count($results),
@@ -942,7 +957,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error finding low progress students', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -977,11 +992,11 @@ class ProgressMonitoringController extends AbstractController
 
             $params = [];
             if ($formationId) {
-                $sql .= " AND s.formation_id = :formation_id";
+                $sql .= ' AND s.formation_id = :formation_id';
                 $params['formation_id'] = $formationId;
             }
 
-            $sql .= " GROUP BY DATE(sp.last_activity) ORDER BY date DESC LIMIT 30";
+            $sql .= ' GROUP BY DATE(sp.last_activity) ORDER BY date DESC LIMIT 30';
 
             $stmt = $this->entityManager->getConnection()->prepare($sql);
             $results = $stmt->executeQuery($params)->fetchAllAssociative();
@@ -996,7 +1011,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating progress trends', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1030,11 +1045,11 @@ class ProgressMonitoringController extends AbstractController
 
             $params = [];
             if ($formationId) {
-                $sql .= " AND s.formation_id = :formation_id";
+                $sql .= ' AND s.formation_id = :formation_id';
                 $params['formation_id'] = $formationId;
             }
 
-            $sql .= " GROUP BY sp.risk_factors ORDER BY count DESC";
+            $sql .= ' GROUP BY sp.risk_factors ORDER BY count DESC';
 
             $stmt = $this->entityManager->getConnection()->prepare($sql);
             $results = $stmt->executeQuery($params)->fetchAllAssociative();
@@ -1047,7 +1062,7 @@ class ProgressMonitoringController extends AbstractController
                     foreach ($factors as $factor) {
                         $riskFactorCounts[$factor] = ($riskFactorCounts[$factor] ?? 0) + $result['count'];
                     }
-                } catch (\Exception $jsonError) {
+                } catch (Exception $jsonError) {
                     $this->logger->warning('Invalid JSON in risk factors', [
                         'risk_factors' => $result['risk_factors'],
                         'error' => $jsonError->getMessage(),
@@ -1065,7 +1080,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $riskFactorCounts;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error analyzing risk factors', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1078,6 +1093,8 @@ class ProgressMonitoringController extends AbstractController
 
     /**
      * Get detailed progress breakdown for a student.
+     *
+     * @param mixed $progress
      */
     private function getProgressBreakdown($progress): array
     {
@@ -1105,7 +1122,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $breakdown;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating progress breakdown', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1125,6 +1142,8 @@ class ProgressMonitoringController extends AbstractController
 
     /**
      * Get activity timeline for a student.
+     *
+     * @param mixed $enrollment
      */
     private function getActivityTimeline($enrollment): array
     {
@@ -1138,13 +1157,13 @@ class ProgressMonitoringController extends AbstractController
             // For now, return a placeholder structure
             $timeline = [
                 [
-                    'date' => new \DateTime('-2 days'),
+                    'date' => new DateTime('-2 days'),
                     'type' => 'progress',
                     'description' => 'Chapitre terminé: Introduction aux concepts',
                     'progress_change' => 10,
                 ],
                 [
-                    'date' => new \DateTime('-5 days'),
+                    'date' => new DateTime('-5 days'),
                     'type' => 'login',
                     'description' => 'Connexion à la plateforme',
                     'progress_change' => 0,
@@ -1158,7 +1177,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $timeline;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating activity timeline', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1171,6 +1190,8 @@ class ProgressMonitoringController extends AbstractController
 
     /**
      * Get intervention history for a student.
+     *
+     * @param mixed $enrollment
      */
     private function getInterventionHistory($enrollment): array
     {
@@ -1182,7 +1203,7 @@ class ProgressMonitoringController extends AbstractController
             // Extract interventions from admin notes for now
             $notes = $enrollment->getAdminNotes() ?? '';
             $interventions = [];
-            
+
             // Parse intervention notes (simplified)
             if (preg_match_all('/\[([^\]]+)\] Intervention ([^:]+): (.+)/', $notes, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
@@ -1199,9 +1220,9 @@ class ProgressMonitoringController extends AbstractController
                 'interventions_count' => count($interventions),
                 'notes_length' => strlen($notes),
             ]);
-            
+
             return $interventions;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving intervention history', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1214,6 +1235,8 @@ class ProgressMonitoringController extends AbstractController
 
     /**
      * Get risk assessment details.
+     *
+     * @param mixed $progress
      */
     private function getRiskAssessment($progress): array
     {
@@ -1225,8 +1248,8 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             $lastActivity = $progress->getLastActivity();
-            $daysSinceLastActivity = $lastActivity ? 
-                (new \DateTime())->diff($lastActivity)->days : 999;
+            $daysSinceLastActivity = $lastActivity ?
+                (new DateTime())->diff($lastActivity)->days : 999;
 
             $assessment = [
                 'is_at_risk' => $progress->isAtRiskOfDropout(),
@@ -1245,7 +1268,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating risk assessment', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1264,6 +1287,8 @@ class ProgressMonitoringController extends AbstractController
 
     /**
      * Calculate engagement trend.
+     *
+     * @param mixed $progress
      */
     private function calculateEngagementTrend($progress): string
     {
@@ -1291,7 +1316,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $trend;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating engagement trend', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1327,11 +1352,11 @@ class ProgressMonitoringController extends AbstractController
 
             $params = [];
             if ($formationId) {
-                $sql .= " AND s.formation_id = :formation_id";
+                $sql .= ' AND s.formation_id = :formation_id';
                 $params['formation_id'] = $formationId;
             }
 
-            $sql .= " GROUP BY risk_level";
+            $sql .= ' GROUP BY risk_level';
 
             $stmt = $this->entityManager->getConnection()->prepare($sql);
             $results = $stmt->executeQuery($params)->fetchAllAssociative();
@@ -1343,7 +1368,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating risk distribution', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1377,7 +1402,9 @@ class ProgressMonitoringController extends AbstractController
 
             foreach ($activeEnrollments as $enrollment) {
                 $progress = $enrollment->getProgress();
-                if (!$progress) continue;
+                if (!$progress) {
+                    continue;
+                }
 
                 if ($progress->getCompletionPercentage() > 80) {
                     $forecast['expected_completions_30_days']++;
@@ -1394,7 +1421,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $forecast;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating completion forecast', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1436,11 +1463,11 @@ class ProgressMonitoringController extends AbstractController
 
             $params = [];
             if ($formationId) {
-                $sql .= " AND s.formation_id = :formation_id";
+                $sql .= ' AND s.formation_id = :formation_id';
                 $params['formation_id'] = $formationId;
             }
 
-            $sql .= " GROUP BY range ORDER BY MIN(sp.completion_percentage)";
+            $sql .= ' GROUP BY range ORDER BY MIN(sp.completion_percentage)';
 
             $stmt = $this->entityManager->getConnection()->prepare($sql);
             $results = $stmt->executeQuery($params)->fetchAllAssociative();
@@ -1452,7 +1479,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating progress distribution chart data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1484,11 +1511,11 @@ class ProgressMonitoringController extends AbstractController
 
             $params = [];
             if ($formationId) {
-                $sql .= " AND s.formation_id = :formation_id";
+                $sql .= ' AND s.formation_id = :formation_id';
                 $params['formation_id'] = $formationId;
             }
 
-            $sql .= " GROUP BY sp.engagement_level ORDER BY sp.engagement_level";
+            $sql .= ' GROUP BY sp.engagement_level ORDER BY sp.engagement_level';
 
             $stmt = $this->entityManager->getConnection()->prepare($sql);
             $results = $stmt->executeQuery($params)->fetchAllAssociative();
@@ -1500,7 +1527,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating engagement levels chart data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1528,7 +1555,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $riskFactors;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating risk factors chart data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1559,7 +1586,7 @@ class ProgressMonitoringController extends AbstractController
             ]);
 
             return $trends;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating completion trends chart data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

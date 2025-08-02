@@ -10,6 +10,7 @@ use App\Form\Training\ChapterType;
 use App\Repository\Training\ChapterRepository;
 use App\Repository\Training\ModuleRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -78,6 +79,7 @@ class ChapterController extends AbstractController
                 $module = $this->moduleRepository->find($moduleId);
                 if (!$module) {
                     $this->logger->warning('Module not found for context', ['module_id' => $moduleId]);
+
                     throw $this->createNotFoundException('Module not found');
                 }
                 $this->logger->debug('Module found for context', [
@@ -109,7 +111,7 @@ class ChapterController extends AbstractController
                     'active' => $active,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter index action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -125,17 +127,19 @@ class ChapterController extends AbstractController
             // Try to render a minimal version or redirect
             try {
                 $modules = $this->moduleRepository->findBy([], ['orderIndex' => 'ASC']);
+
                 return $this->render('admin/chapters/index.html.twig', [
                     'chapters' => [],
                     'modules' => $modules,
                     'selectedModule' => null,
                     'filters' => [],
                 ]);
-            } catch (\Exception $fallbackException) {
+            } catch (Exception $fallbackException) {
                 $this->logger->critical('Fallback rendering failed in chapter index', [
                     'original_error' => $e->getMessage(),
                     'fallback_error' => $fallbackException->getMessage(),
                 ]);
+
                 throw $e; // Re-throw original exception
             }
         }
@@ -227,20 +231,20 @@ class ChapterController extends AbstractController
                     return $this->redirectToRoute('admin_chapters_index', [
                         'module' => $chapter->getModule()->getId(),
                     ]);
-                } else {
-                    $this->logger->warning('Chapter form validation failed', [
-                        'form_errors' => (string) $form->getErrors(true),
-                        'user_id' => $this->getUser()?->getUserIdentifier(),
-                    ]);
                 }
+                $this->logger->warning('Chapter form validation failed', [
+                    'form_errors' => (string) $form->getErrors(true),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                ]);
             }
 
             $this->logger->debug('Rendering chapter creation form');
+
             return $this->render('admin/chapters/new.html.twig', [
                 'chapter' => $chapter,
                 'form' => $form,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter creation action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -321,7 +325,7 @@ class ChapterController extends AbstractController
                 'chaptersByModule' => $chaptersByModule,
                 'avgDuration' => $avgDurationRounded,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter statistics action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -370,7 +374,7 @@ class ChapterController extends AbstractController
             return $this->render('admin/chapters/show.html.twig', [
                 'chapter' => $chapter,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter show action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -456,21 +460,21 @@ class ChapterController extends AbstractController
                     return $this->redirectToRoute('admin_chapters_index', [
                         'module' => $chapter->getModule()->getId(),
                     ]);
-                } else {
-                    $this->logger->warning('Chapter edit form validation failed', [
-                        'chapter_id' => $chapter->getId(),
-                        'form_errors' => (string) $form->getErrors(true),
-                        'user_id' => $this->getUser()?->getUserIdentifier(),
-                    ]);
                 }
+                $this->logger->warning('Chapter edit form validation failed', [
+                    'chapter_id' => $chapter->getId(),
+                    'form_errors' => (string) $form->getErrors(true),
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
+                ]);
             }
 
             $this->logger->debug('Rendering chapter edit form');
+
             return $this->render('admin/chapters/edit.html.twig', [
                 'chapter' => $chapter,
                 'form' => $form,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter edit action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -539,7 +543,7 @@ class ChapterController extends AbstractController
             return $this->redirectToRoute('admin_chapters_index', [
                 'module' => $moduleId,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter deletion action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -613,7 +617,7 @@ class ChapterController extends AbstractController
             return $this->redirectToRoute('admin_chapters_index', [
                 'module' => $chapter->getModule()->getId(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter toggle active action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -678,7 +682,7 @@ class ChapterController extends AbstractController
             return $this->redirectToRoute('admin_chapters_index', [
                 'module' => $moduleId,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter reorder action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -719,7 +723,7 @@ class ChapterController extends AbstractController
                 'module_id' => $module->getId(),
                 'module_title' => $module->getTitle(),
                 'chapter_count' => count($chapters),
-                'active_chapters' => count(array_filter($chapters, fn($c) => $c->isActive())),
+                'active_chapters' => count(array_filter($chapters, static fn ($c) => $c->isActive())),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
@@ -727,7 +731,7 @@ class ChapterController extends AbstractController
                 'chapters' => $chapters,
                 'module' => $module,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapters by module action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -825,7 +829,7 @@ class ChapterController extends AbstractController
             return $this->redirectToRoute('admin_chapters_index', [
                 'module' => $chapter->getModule()->getId(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in chapter duplication action', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),

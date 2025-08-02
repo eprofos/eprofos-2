@@ -9,6 +9,10 @@ use App\Entity\User\Student;
 use App\Repository\Training\QCMRepository;
 use App\Service\Security\ContentAccessService;
 use App\Service\Student\QCMAttemptService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,9 +35,8 @@ class QCMController extends AbstractController
         private readonly QCMRepository $qcmRepository,
         private readonly ContentAccessService $contentAccessService,
         private readonly QCMAttemptService $attemptService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * View a specific QCM with access control.
@@ -61,7 +64,7 @@ class QCMController extends AbstractController
                 'formation_title' => $qcm->getCourse()?->getChapter()?->getModule()?->getFormation()?->getTitle(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for the formation containing this QCM
@@ -71,11 +74,11 @@ class QCMController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved for QCM access', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -86,7 +89,7 @@ class QCMController extends AbstractController
 
             $enrollment = null;
             $targetFormationId = $qcm->getCourse()?->getChapter()?->getModule()?->getFormation()?->getId();
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $targetFormationId) {
                     $enrollment = $e;
@@ -106,7 +109,7 @@ class QCMController extends AbstractController
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'target_formation_id' => $targetFormationId,
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -135,14 +138,14 @@ class QCMController extends AbstractController
                     'has_active_attempt' => $activeAttempt !== null,
                     'active_attempt_id' => $activeAttempt?->getId(),
                 ]);
-            } catch (\Exception $attemptException) {
+            } catch (Exception $attemptException) {
                 $this->logger->error('Failed to retrieve QCM attempt information', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'error' => $attemptException->getMessage(),
                     'trace' => $attemptException->getTraceAsString(),
                 ]);
-                
+
                 // Set default values to prevent template errors
                 $attempts = [];
                 $bestScore = null;
@@ -177,30 +180,29 @@ class QCMController extends AbstractController
                 'active_attempt' => $activeAttempt,
                 'page_title' => $qcm->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for QCM view', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès au QCM.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès au QCM.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in QCM view process', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès au QCM.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès au QCM.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during QCM view', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -213,8 +215,9 @@ class QCMController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès au QCM.');
+
             return $this->redirectToRoute('student_dashboard');
         }
     }
@@ -240,7 +243,7 @@ class QCMController extends AbstractController
                 'action' => $request->request->get('action', 'view'),
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Check if student has an active attempt or can start a new one
@@ -252,14 +255,14 @@ class QCMController extends AbstractController
             try {
                 $activeAttempt = $this->attemptService->getActiveAttempt($student, $qcm);
                 $canAttempt = $this->attemptService->canStudentAttempt($student, $qcm);
-                
+
                 $this->logger->debug('Student QCM access checked', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'has_active_attempt' => $activeAttempt !== null,
                     'can_start_new_attempt' => $canAttempt,
                 ]);
-                
+
                 // Allow access if student has active attempt OR can start a new one
                 if (!$activeAttempt && !$canAttempt) {
                     $this->logger->warning('Student cannot access QCM - no active attempt and cannot start new', [
@@ -267,20 +270,21 @@ class QCMController extends AbstractController
                         'qcm_id' => $qcm->getId(),
                         'reason' => 'No active attempt and cannot start new attempt',
                     ]);
-                    
+
                     $this->addFlash('error', 'Vous ne pouvez plus commencer ce QCM.');
+
                     return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
                 }
-                
-            } catch (\Exception $eligibilityException) {
+            } catch (Exception $eligibilityException) {
                 $this->logger->error('Failed to check QCM access', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'error' => $eligibilityException->getMessage(),
                     'trace' => $eligibilityException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la vérification des droits d\'accès au QCM.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
@@ -297,7 +301,7 @@ class QCMController extends AbstractController
                 } else {
                     $attempt = $activeAttempt;
                 }
-                
+
                 $this->logger->info('QCM attempt retrieved/created', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
@@ -307,15 +311,16 @@ class QCMController extends AbstractController
                     'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
                     'was_existing' => $activeAttempt !== null,
                 ]);
-            } catch (\Exception $attemptException) {
+            } catch (Exception $attemptException) {
                 $this->logger->error('Failed to get or create QCM attempt', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'error' => $attemptException->getMessage(),
                     'trace' => $attemptException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la création de la tentative de QCM.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
@@ -328,14 +333,14 @@ class QCMController extends AbstractController
 
             try {
                 $questions = $this->attemptService->getRandomizedQuestions($qcm);
-                
+
                 $this->logger->debug('Questions retrieved for QCM', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'attempt_id' => $attempt->getId(),
                     'questions_count' => count($questions),
                 ]);
-            } catch (\Exception $questionsException) {
+            } catch (Exception $questionsException) {
                 $this->logger->error('Failed to retrieve QCM questions', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
@@ -343,33 +348,34 @@ class QCMController extends AbstractController
                     'error' => $questionsException->getMessage(),
                     'trace' => $questionsException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la récupération des questions.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
             if ($request->isMethod('POST')) {
                 $action = $request->request->get('action');
-                
+
                 $this->logger->debug('Processing QCM POST action', [
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'attempt_id' => $attempt->getId(),
                     'action' => $action,
                 ]);
-                
+
                 if ($action === 'submit') {
                     try {
                         // Save final answers
                         $questionData = $request->request->all();
-                        
+
                         $this->logger->info('Submitting QCM for final evaluation', [
                             'student_id' => $student->getId(),
                             'qcm_id' => $qcm->getId(),
                             'attempt_id' => $attempt->getId(),
-                            'answered_questions' => count(array_filter($questionData, fn($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
+                            'answered_questions' => count(array_filter($questionData, static fn ($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
                         ]);
-                        
+
                         // Process answers for each question by index
                         foreach ($questions as $questionIndex => $question) {
                             $answerKey = 'question_' . $questionIndex;
@@ -380,23 +386,23 @@ class QCMController extends AbstractController
                                 $this->attemptService->saveAnswer($attempt, $questionIndex, $answerIndices);
                             }
                         }
-                        
+
                         $this->attemptService->submitAttempt($attempt);
-                        
+
                         $this->logger->info('QCM submitted successfully for evaluation', [
                             'student_id' => $student->getId(),
                             'qcm_id' => $qcm->getId(),
                             'attempt_id' => $attempt->getId(),
                             'final_score' => $attempt->getScore(),
                         ]);
-                        
+
                         $this->addFlash('success', 'QCM soumis avec succès!');
-                        
+
                         return $this->redirectToRoute('student_qcm_result', [
                             'id' => $qcm->getId(),
-                            'attemptId' => $attempt->getId()
+                            'attemptId' => $attempt->getId(),
                         ]);
-                    } catch (\Exception $submitException) {
+                    } catch (Exception $submitException) {
                         $this->logger->error('Failed to submit QCM', [
                             'student_id' => $student->getId(),
                             'qcm_id' => $qcm->getId(),
@@ -404,7 +410,7 @@ class QCMController extends AbstractController
                             'error' => $submitException->getMessage(),
                             'trace' => $submitException->getTraceAsString(),
                         ]);
-                        
+
                         $this->addFlash('error', 'Erreur lors de la soumission: ' . $submitException->getMessage());
                     }
                 } elseif ($action === 'abandon') {
@@ -414,18 +420,19 @@ class QCMController extends AbstractController
                             'qcm_id' => $qcm->getId(),
                             'attempt_id' => $attempt->getId(),
                         ]);
-                        
+
                         $this->attemptService->abandonAttempt($attempt);
-                        
+
                         $this->logger->info('QCM attempt abandoned successfully', [
                             'student_id' => $student->getId(),
                             'qcm_id' => $qcm->getId(),
                             'attempt_id' => $attempt->getId(),
                         ]);
-                        
+
                         $this->addFlash('info', 'QCM abandonné.');
+
                         return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
-                    } catch (\Exception $abandonException) {
+                    } catch (Exception $abandonException) {
                         $this->logger->error('Failed to abandon QCM attempt', [
                             'student_id' => $student->getId(),
                             'qcm_id' => $qcm->getId(),
@@ -433,7 +440,7 @@ class QCMController extends AbstractController
                             'error' => $abandonException->getMessage(),
                             'trace' => $abandonException->getTraceAsString(),
                         ]);
-                        
+
                         $this->addFlash('error', 'Erreur lors de l\'abandon: ' . $abandonException->getMessage());
                     }
                 }
@@ -472,30 +479,29 @@ class QCMController extends AbstractController
                 'answered_count' => $answeredCount,
                 'page_title' => 'QCM: ' . $qcm->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for QCM take', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour le QCM.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour le QCM.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in QCM take process', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique du QCM.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique du QCM.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during QCM take', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -508,8 +514,9 @@ class QCMController extends AbstractController
                 'request_uri' => $request->getRequestUri(),
                 'request_method' => $request->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du QCM.');
+
             return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
         }
     }
@@ -530,51 +537,51 @@ class QCMController extends AbstractController
                 'student_id' => $student->getId(),
                 'content_length' => strlen($request->getContent()),
                 'ip_address' => $request->getClientIp(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $activeAttempt = $this->attemptService->getActiveAttempt($student, $qcm);
-                
+
                 $this->logger->debug('Active attempt retrieved for answer saving', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'attempt_id' => $activeAttempt?->getId(),
                 ]);
-            } catch (\Exception $attemptException) {
+            } catch (Exception $attemptException) {
                 $this->logger->error('Failed to get active attempt for answer saving', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'error' => $attemptException->getMessage(),
                     'trace' => $attemptException->getTraceAsString(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la récupération de la tentative'], 500);
             }
-            
+
             if (!$activeAttempt) {
                 $this->logger->warning('No active attempt found for answer saving', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Aucune tentative active'], 400);
             }
 
             // Get all form data and process answers for each question
             $questionData = $request->request->all();
-            
+
             $this->logger->debug('Processing answer data for saving', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $student->getId(),
                 'attempt_id' => $activeAttempt->getId(),
                 'data_keys' => array_keys($questionData),
-                'answered_questions' => count(array_filter($questionData, fn($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
+                'answered_questions' => count(array_filter($questionData, static fn ($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
             ]);
 
             try {
                 $questions = $this->attemptService->getRandomizedQuestions($qcm);
-                
+
                 foreach ($questions as $questionIndex => $question) {
                     $answerKey = 'question_' . $questionIndex;
                     if (isset($questionData[$answerKey])) {
@@ -584,16 +591,16 @@ class QCMController extends AbstractController
                         $this->attemptService->saveAnswer($activeAttempt, $questionIndex, $answerIndices);
                     }
                 }
-                
+
                 $this->logger->info('QCM answers saved successfully via AJAX', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'attempt_id' => $activeAttempt->getId(),
-                    'questions_answered' => count(array_filter($questionData, fn($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
+                    'questions_answered' => count(array_filter($questionData, static fn ($key) => str_starts_with($key, 'question_'), ARRAY_FILTER_USE_KEY)),
                 ]);
-                
+
                 return new JsonResponse(['success' => true, 'message' => 'Réponse sauvegardée']);
-            } catch (\Exception $saveException) {
+            } catch (Exception $saveException) {
                 $this->logger->error('Failed to save QCM answers', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -601,31 +608,28 @@ class QCMController extends AbstractController
                     'error' => $saveException->getMessage(),
                     'trace' => $saveException->getTraceAsString(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la sauvegarde'], 500);
             }
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in QCM answer saving', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return new JsonResponse(['success' => false, 'message' => 'Paramètres invalides'], 400);
 
-        } catch (\LogicException $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Paramètres invalides'], 400);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in QCM answer saving', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return new JsonResponse(['success' => false, 'message' => 'Erreur de logique'], 500);
 
-        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur de logique'], 500);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during QCM answer saving', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -636,7 +640,7 @@ class QCMController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -655,41 +659,41 @@ class QCMController extends AbstractController
             $this->logger->debug('Student requesting remaining time for QCM', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $student->getId(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $activeAttempt = $this->attemptService->getActiveAttempt($student, $qcm);
-                
+
                 $this->logger->debug('Active attempt retrieved for remaining time check', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'attempt_id' => $activeAttempt?->getId(),
                     'has_active_attempt' => $activeAttempt !== null,
                 ]);
-            } catch (\Exception $attemptException) {
+            } catch (Exception $attemptException) {
                 $this->logger->error('Failed to get active attempt for remaining time check', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'error' => $attemptException->getMessage(),
                     'trace' => $attemptException->getTraceAsString(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la récupération de la tentative']);
             }
-            
+
             if (!$activeAttempt) {
                 $this->logger->warning('No active attempt found for remaining time check', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Aucune tentative active']);
             }
 
             try {
                 $remainingSeconds = $activeAttempt->getRemainingTimeSeconds();
-                
+
                 $this->logger->debug('Remaining time calculated for QCM attempt', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -697,13 +701,13 @@ class QCMController extends AbstractController
                     'remaining_seconds' => $remainingSeconds,
                     'expired' => $remainingSeconds === 0,
                 ]);
-                
+
                 return new JsonResponse([
                     'success' => true,
                     'remaining_seconds' => $remainingSeconds,
-                    'expired' => $remainingSeconds === 0
+                    'expired' => $remainingSeconds === 0,
                 ]);
-            } catch (\Exception $timeException) {
+            } catch (Exception $timeException) {
                 $this->logger->error('Failed to calculate remaining time for QCM attempt', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -711,11 +715,10 @@ class QCMController extends AbstractController
                     'error' => $timeException->getMessage(),
                     'trace' => $timeException->getTraceAsString(),
                 ]);
-                
+
                 return new JsonResponse(['success' => false, 'message' => 'Erreur lors du calcul du temps restant'], 500);
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during remaining time check', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -726,7 +729,7 @@ class QCMController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return new JsonResponse(['success' => false, 'message' => 'Erreur inattendue'], 500);
         }
     }
@@ -750,19 +753,19 @@ class QCMController extends AbstractController
                 'attempt_id' => $attemptId,
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $attempts = $this->attemptService->getStudentAttempts($student, $qcm);
-                
+
                 $this->logger->debug('Retrieved student attempts for result view', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'total_attempts' => count($attempts),
                     'target_attempt_id' => $attemptId,
                 ]);
-            } catch (\Exception $attemptsException) {
+            } catch (Exception $attemptsException) {
                 $this->logger->error('Failed to retrieve student attempts for result view', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -770,13 +773,14 @@ class QCMController extends AbstractController
                     'error' => $attemptsException->getMessage(),
                     'trace' => $attemptsException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la récupération des tentatives.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
             $attempt = null;
-            
+
             foreach ($attempts as $a) {
                 if ($a->getId() === $attemptId) {
                     $attempt = $a;
@@ -789,10 +793,11 @@ class QCMController extends AbstractController
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'attempt_id' => $attemptId,
-                    'available_attempt_ids' => array_map(fn($a) => $a->getId(), $attempts),
+                    'available_attempt_ids' => array_map(static fn ($a) => $a->getId(), $attempts),
                 ]);
-                
+
                 $this->addFlash('error', 'Tentative introuvable.');
+
                 throw $this->createNotFoundException('Attempt not found');
             }
 
@@ -804,10 +809,10 @@ class QCMController extends AbstractController
             try {
                 $questions = $this->attemptService->getRandomizedQuestions($qcm);
                 $canRetry = $this->attemptService->canStudentAttempt($student, $qcm);
-                
+
                 // Get other attempts for the sidebar
-                $otherAttempts = array_filter($attempts, fn($a) => $a->getId() !== $attemptId);
-                
+                $otherAttempts = array_filter($attempts, static fn ($a) => $a->getId() !== $attemptId);
+
                 // Calculate statistics
                 $correctAnswers = 0;
                 $incorrectAnswers = 0;
@@ -815,23 +820,23 @@ class QCMController extends AbstractController
                 $correctQuestionIds = [];
                 $answeredQuestionIds = [];
                 $studentAnswers = [];
-                
+
                 foreach ($questions as $index => $question) {
                     $userAnswer = $attempt->getAnswerForQuestion($index);
                     $studentAnswers[$index] = $userAnswer ?? [];
-                    
+
                     if (empty($userAnswer)) {
                         $unansweredCount++;
                     } else {
                         $answeredQuestionIds[] = $index;
-                        
+
                         // Check if answer is correct
                         $correctOptions = $question['correct_answers'] ?? [];
-                        
+
                         // Compare user answer with correct options
                         sort($correctOptions);
                         sort($userAnswer);
-                        
+
                         if ($correctOptions === $userAnswer) {
                             $correctAnswers++;
                             $correctQuestionIds[] = $index;
@@ -840,7 +845,7 @@ class QCMController extends AbstractController
                         }
                     }
                 }
-                
+
                 $this->logger->debug('Result template data calculated', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -852,8 +857,7 @@ class QCMController extends AbstractController
                     'can_retry' => $canRetry,
                     'other_attempts_count' => count($otherAttempts),
                 ]);
-                
-            } catch (\Exception $dataException) {
+            } catch (Exception $dataException) {
                 $this->logger->error('Failed to calculate result template data', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
@@ -861,7 +865,7 @@ class QCMController extends AbstractController
                     'error' => $dataException->getMessage(),
                     'trace' => $dataException->getTraceAsString(),
                 ]);
-                
+
                 // Set default values to prevent template errors
                 $questions = [];
                 $canRetry = false;
@@ -907,8 +911,7 @@ class QCMController extends AbstractController
                 'student_answers' => $studentAnswers,
                 'page_title' => 'Résultat: ' . $qcm->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for QCM result view', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -916,11 +919,11 @@ class QCMController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'affichage du résultat.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'affichage du résultat.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in QCM result view', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -928,11 +931,11 @@ class QCMController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur de logique lors de l\'affichage du résultat.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur de logique lors de l\'affichage du résultat.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during QCM result view', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -946,8 +949,9 @@ class QCMController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'affichage du résultat.');
+
             return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
         }
     }
@@ -970,26 +974,27 @@ class QCMController extends AbstractController
                 'student_email' => $student->getEmail(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $canAttempt = $this->attemptService->canStudentAttempt($student, $qcm);
-                
+
                 $this->logger->debug('Checked student eligibility for QCM retry', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'can_attempt' => $canAttempt,
                 ]);
-            } catch (\Exception $eligibilityException) {
+            } catch (Exception $eligibilityException) {
                 $this->logger->error('Failed to check QCM retry eligibility', [
                     'qcm_id' => $qcm->getId(),
                     'student_id' => $student->getId(),
                     'error' => $eligibilityException->getMessage(),
                     'trace' => $eligibilityException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la vérification des droits de nouvelle tentative.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
@@ -999,8 +1004,9 @@ class QCMController extends AbstractController
                     'student_id' => $student->getId(),
                     'max_attempts' => $qcm->getMaxAttempts(),
                 ]);
-                
+
                 $this->addFlash('error', 'Vous avez atteint le nombre maximum de tentatives pour ce QCM.');
+
                 return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
             }
 
@@ -1010,30 +1016,29 @@ class QCMController extends AbstractController
             ]);
 
             return $this->redirectToRoute('student_qcm_take', ['id' => $qcm->getId()]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for QCM retry', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour la nouvelle tentative.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour la nouvelle tentative.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in QCM retry process', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur de logique lors de la nouvelle tentative.');
-            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur de logique lors de la nouvelle tentative.');
+
+            return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during QCM retry', [
                 'qcm_id' => $qcm->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -1046,8 +1051,9 @@ class QCMController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la nouvelle tentative.');
+
             return $this->redirectToRoute('student_qcm_view', ['id' => $qcm->getId()]);
         }
     }

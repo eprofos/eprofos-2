@@ -30,7 +30,7 @@ class QCMController extends AbstractController
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
         $page = max(1, $request->query->getInt('page', 1));
-        
+
         $this->logger->info('Accessing QCM index page', [
             'page' => $page,
             'user_id' => $userId,
@@ -82,6 +82,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des QCMs.');
+
             throw $e;
         }
     }
@@ -90,7 +91,7 @@ class QCMController extends AbstractController
     public function new(Request $request): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Accessing new QCM form', [
             'method' => $request->getMethod(),
             'user_id' => $userId,
@@ -137,6 +138,7 @@ class QCMController extends AbstractController
                             'course_id' => $data['course_id'],
                             'user_id' => $userId,
                         ]);
+
                         throw new Exception('Course not found');
                     }
                     $qcm->setCourse($course);
@@ -152,7 +154,7 @@ class QCMController extends AbstractController
                     if (!empty($data['evaluation_criteria'])) {
                         $evaluationCriteria = array_filter(explode("\n", $data['evaluation_criteria']));
                         $qcm->setEvaluationCriteria($evaluationCriteria);
-                        
+
                         $this->logger->debug('Set evaluation criteria', [
                             'criteria_count' => count($evaluationCriteria),
                             'user_id' => $userId,
@@ -162,7 +164,7 @@ class QCMController extends AbstractController
                     if (!empty($data['success_criteria'])) {
                         $successCriteria = array_filter(explode("\n", $data['success_criteria']));
                         $qcm->setSuccessCriteria($successCriteria);
-                        
+
                         $this->logger->debug('Set success criteria', [
                             'criteria_count' => count($successCriteria),
                             'user_id' => $userId,
@@ -173,7 +175,7 @@ class QCMController extends AbstractController
                     $questions = [];
                     if (!empty($data['questions'])) {
                         $questions = json_decode($data['questions'], true) ?? [];
-                        
+
                         $this->logger->debug('Processing QCM questions', [
                             'questions_provided' => !empty($data['questions']),
                             'questions_count' => count($questions),
@@ -221,6 +223,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'accès à la création de QCM.');
+
             throw $e;
         }
     }
@@ -229,7 +232,7 @@ class QCMController extends AbstractController
     public function show(QCM $qcm): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Viewing QCM details', [
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
@@ -249,6 +252,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage du QCM.');
+
             throw $e;
         }
     }
@@ -257,7 +261,7 @@ class QCMController extends AbstractController
     public function edit(Request $request, QCM $qcm): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Accessing edit QCM form', [
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
@@ -303,6 +307,7 @@ class QCMController extends AbstractController
                             'course_id' => $data['course_id'],
                             'user_id' => $userId,
                         ]);
+
                         throw new Exception('Course not found');
                     }
                     $qcm->setCourse($course);
@@ -380,6 +385,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'accès à la modification du QCM.');
+
             throw $e;
         }
     }
@@ -388,7 +394,7 @@ class QCMController extends AbstractController
     public function delete(Request $request, QCM $qcm): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Attempting to delete QCM', [
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
@@ -435,6 +441,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la suppression du QCM: ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_qcm_index');
         }
     }
@@ -443,7 +450,7 @@ class QCMController extends AbstractController
     public function preview(QCM $qcm): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Previewing QCM', [
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
@@ -464,6 +471,7 @@ class QCMController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la prévisualisation du QCM.');
+
             throw $e;
         }
     }

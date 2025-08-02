@@ -6,14 +6,17 @@ namespace App\Service\Core;
 
 use App\Entity\Core\StudentEnrollment;
 use App\Entity\Core\StudentProgress;
+use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Student;
 use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Core\StudentProgressRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
  * StudentEnrollmentService for managing student enrollment business logic.
@@ -27,9 +30,8 @@ class StudentEnrollmentService
         private readonly EntityManagerInterface $entityManager,
         private readonly StudentEnrollmentRepository $enrollmentRepository,
         private readonly StudentProgressRepository $progressRepository,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * Create enrollment from confirmed session registration.
@@ -38,7 +40,7 @@ class StudentEnrollmentService
         Student $student,
         SessionRegistration $sessionRegistration,
         string $enrollmentSource = 'manual',
-        ?string $adminNotes = null
+        ?string $adminNotes = null,
     ): StudentEnrollment {
         $this->logger->info('Starting enrollment creation process', [
             'student_id' => $student->getId(),
@@ -60,6 +62,7 @@ class StudentEnrollmentService
                     'current_status' => $sessionRegistration->getStatus(),
                     'required_status' => 'confirmed',
                 ]);
+
                 throw new InvalidArgumentException('Session registration must be confirmed to create enrollment');
             }
 
@@ -76,7 +79,7 @@ class StudentEnrollmentService
 
             $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSessionRegistration(
                 $student,
-                $sessionRegistration
+                $sessionRegistration,
             );
 
             if ($existingEnrollment) {
@@ -87,6 +90,7 @@ class StudentEnrollmentService
                     'existing_enrollment_status' => $existingEnrollment->getStatus(),
                     'existing_enrollment_created_at' => $existingEnrollment->getCreatedAt()?->format('Y-m-d H:i:s'),
                 ]);
+
                 throw new InvalidArgumentException('Enrollment already exists for this student and session registration');
             }
 
@@ -117,13 +121,13 @@ class StudentEnrollmentService
                 try {
                     $progress = $this->progressRepository->findOrCreateForStudentAndFormation($student, $formation);
                     $enrollment->setProgress($progress);
-                    
+
                     $this->logger->debug('Student progress associated with enrollment', [
                         'progress_id' => $progress->getId(),
                         'progress_completion_percentage' => $progress->getCompletionPercentage(),
                         'progress_engagement_score' => $progress->getEngagementScore(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to create or find student progress', [
                         'formation_id' => $formation->getId(),
                         'student_id' => $student->getId(),
@@ -159,7 +163,6 @@ class StudentEnrollmentService
             ]);
 
             return $enrollment;
-
         } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for enrollment creation', [
                 'student_id' => $student->getId(),
@@ -167,8 +170,9 @@ class StudentEnrollmentService
                 'error_message' => $e->getMessage(),
                 'enrollment_source' => $enrollmentSource,
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during enrollment creation', [
                 'student_id' => $student->getId(),
                 'session_registration_id' => $sessionRegistration->getId(),
@@ -179,7 +183,8 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to create student enrollment: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to create student enrollment: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -190,7 +195,7 @@ class StudentEnrollmentService
      */
     public function createEnrollmentsForStudentRegistrations(
         Student $student,
-        string $enrollmentSource = 'bulk_creation'
+        string $enrollmentSource = 'bulk_creation',
     ): array {
         $this->logger->info('Starting bulk enrollment creation for student', [
             'student_id' => $student->getId(),
@@ -219,14 +224,15 @@ class StudentEnrollmentService
                 ->findBy([
                     'email' => $student->getEmail(),
                     'status' => 'confirmed',
-                ]);
+                ])
+            ;
 
             $stats['total_registrations_found'] = count($sessionRegistrations);
 
             $this->logger->info('Found confirmed session registrations for student', [
                 'student_id' => $student->getId(),
                 'registrations_count' => count($sessionRegistrations),
-                'registration_ids' => array_map(fn($reg) => $reg->getId(), $sessionRegistrations),
+                'registration_ids' => array_map(static fn ($reg) => $reg->getId(), $sessionRegistrations),
             ]);
 
             foreach ($sessionRegistrations as $index => $sessionRegistration) {
@@ -243,7 +249,7 @@ class StudentEnrollmentService
                     // Check if enrollment already exists
                     $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSessionRegistration(
                         $student,
-                        $sessionRegistration
+                        $sessionRegistration,
                     );
 
                     if ($existingEnrollment) {
@@ -254,6 +260,7 @@ class StudentEnrollmentService
                             'existing_enrollment_id' => $existingEnrollment->getId(),
                             'existing_enrollment_status' => $existingEnrollment->getStatus(),
                         ]);
+
                         continue;
                     }
 
@@ -265,7 +272,7 @@ class StudentEnrollmentService
                         $student,
                         $sessionRegistration,
                         $enrollmentSource,
-                        'Auto-created from confirmed session registration'
+                        'Auto-created from confirmed session registration',
                     );
 
                     $enrollments[] = $enrollment;
@@ -276,7 +283,6 @@ class StudentEnrollmentService
                         'session_registration_id' => $sessionRegistration->getId(),
                         'formation_title' => $sessionRegistration->getSession()?->getFormation()?->getTitle(),
                     ]);
-
                 } catch (InvalidArgumentException $e) {
                     $stats['errors_encountered']++;
                     $this->logger->warning('Failed to create enrollment for session registration - invalid argument', [
@@ -285,7 +291,7 @@ class StudentEnrollmentService
                         'error_message' => $e->getMessage(),
                         'formation_title' => $sessionRegistration->getSession()?->getFormation()?->getTitle(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $stats['errors_encountered']++;
                     $this->logger->error('Unexpected error creating enrollment for session registration', [
                         'student_id' => $student->getId(),
@@ -303,12 +309,11 @@ class StudentEnrollmentService
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
                 'stats' => $stats,
-                'enrollments_created_ids' => array_map(fn($enrollment) => $enrollment->getId(), $enrollments),
+                'enrollments_created_ids' => array_map(static fn ($enrollment) => $enrollment->getId(), $enrollments),
             ]);
 
             return $enrollments;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error during bulk enrollment creation', [
                 'student_id' => $student->getId(),
                 'enrollment_source' => $enrollmentSource,
@@ -319,7 +324,8 @@ class StudentEnrollmentService
                 'stack_trace' => $e->getTraceAsString(),
                 'partial_stats' => $stats,
             ]);
-            throw new \RuntimeException('Failed to create bulk enrollments for student: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to create bulk enrollments for student: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -329,7 +335,7 @@ class StudentEnrollmentService
     public function updateEnrollmentStatus(
         StudentEnrollment $enrollment,
         string $newStatus,
-        ?string $reason = null
+        ?string $reason = null,
     ): StudentEnrollment {
         $this->logger->info('Starting enrollment status update', [
             'enrollment_id' => $enrollment->getId(),
@@ -376,6 +382,7 @@ class StudentEnrollmentService
                             'student_id' => $enrollment->getStudent()?->getId(),
                             'new_status' => $newStatus,
                         ]);
+
                         throw new InvalidArgumentException('Dropout reason is required when marking as dropped out');
                     }
                     $this->logger->debug('Marking enrollment as dropped out', [
@@ -410,6 +417,7 @@ class StudentEnrollmentService
                             StudentEnrollment::STATUS_SUSPENDED,
                         ],
                     ]);
+
                     throw new InvalidArgumentException('Invalid enrollment status: ' . $newStatus);
             }
 
@@ -429,7 +437,6 @@ class StudentEnrollmentService
             ]);
 
             return $enrollment;
-
         } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument during enrollment status update', [
                 'enrollment_id' => $enrollment->getId(),
@@ -439,8 +446,9 @@ class StudentEnrollmentService
                 'reason' => $reason,
                 'error_message' => $e->getMessage(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during enrollment status update', [
                 'enrollment_id' => $enrollment->getId(),
                 'student_id' => $enrollment->getStudent()?->getId(),
@@ -453,14 +461,15 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to update enrollment status: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to update enrollment status: ' . $e->getMessage(), 0, $e);
         }
     }
 
     /**
      * Check if student has access to formation content.
      */
-    public function hasStudentAccessToFormation(Student $student, \App\Entity\Training\Formation $formation): bool
+    public function hasStudentAccessToFormation(Student $student, Formation $formation): bool
     {
         $this->logger->debug('Checking student access to formation', [
             'student_id' => $student->getId(),
@@ -479,8 +488,7 @@ class StudentEnrollmentService
             ]);
 
             return $hasAccess;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error checking student access to formation', [
                 'student_id' => $student->getId(),
                 'formation_id' => $formation->getId(),
@@ -488,7 +496,7 @@ class StudentEnrollmentService
                 'error_class' => get_class($e),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return false on error for security (deny access on error)
             return false;
         }
@@ -497,7 +505,7 @@ class StudentEnrollmentService
     /**
      * Get all accessible formations for a student.
      *
-     * @return \App\Entity\Training\Formation[]
+     * @return Formation[]
      */
     public function getAccessibleFormationsForStudent(Student $student): array
     {
@@ -509,11 +517,11 @@ class StudentEnrollmentService
 
         try {
             $enrollments = $this->enrollmentRepository->findActiveEnrollmentsByStudent($student);
-            
+
             $this->logger->debug('Found active enrollments for student', [
                 'student_id' => $student->getId(),
                 'enrollments_count' => count($enrollments),
-                'enrollment_ids' => array_map(fn($enrollment) => $enrollment->getId(), $enrollments),
+                'enrollment_ids' => array_map(static fn ($enrollment) => $enrollment->getId(), $enrollments),
             ]);
 
             $formations = [];
@@ -538,12 +546,11 @@ class StudentEnrollmentService
                 'student_id' => $student->getId(),
                 'total_formations' => count($uniqueFormations),
                 'formation_details' => $formationDetails,
-                'unique_formation_ids' => array_map(fn($formation) => $formation->getId(), $uniqueFormations),
+                'unique_formation_ids' => array_map(static fn ($formation) => $formation->getId(), $uniqueFormations),
             ]);
 
             return $uniqueFormations;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving accessible formations for student', [
                 'student_id' => $student->getId(),
                 'error_message' => $e->getMessage(),
@@ -552,7 +559,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array on error
             return [];
         }
@@ -576,16 +583,17 @@ class StudentEnrollmentService
 
         try {
             $confirmedRegistrations = $this->entityManager->getRepository(SessionRegistration::class)
-                ->findBy(['status' => 'confirmed']);
+                ->findBy(['status' => 'confirmed'])
+            ;
 
             $this->logger->info('Found confirmed session registrations for bulk processing', [
                 'total_confirmed_registrations' => count($confirmedRegistrations),
-                'registration_ids' => array_map(fn($reg) => $reg->getId(), $confirmedRegistrations),
+                'registration_ids' => array_map(static fn ($reg) => $reg->getId(), $confirmedRegistrations),
             ]);
 
             foreach ($confirmedRegistrations as $index => $registration) {
                 $processedRegistrations++;
-                
+
                 $this->logger->debug('Processing session registration for bulk enrollment', [
                     'registration_index' => $index + 1,
                     'total_registrations' => count($confirmedRegistrations),
@@ -599,7 +607,8 @@ class StudentEnrollmentService
                 try {
                     // Try to find a matching student by email
                     $student = $this->entityManager->getRepository(Student::class)
-                        ->findOneBy(['email' => $registration->getEmail()]);
+                        ->findOneBy(['email' => $registration->getEmail()])
+                    ;
 
                     if (!$student) {
                         $stats['skipped']++;
@@ -607,6 +616,7 @@ class StudentEnrollmentService
                             'email' => $registration->getEmail(),
                             'session_registration_id' => $registration->getId(),
                         ]);
+
                         continue;
                     }
 
@@ -620,7 +630,7 @@ class StudentEnrollmentService
                     // Check if enrollment already exists
                     $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSessionRegistration(
                         $student,
-                        $registration
+                        $registration,
                     );
 
                     if ($existingEnrollment) {
@@ -631,6 +641,7 @@ class StudentEnrollmentService
                             'existing_enrollment_id' => $existingEnrollment->getId(),
                             'existing_enrollment_status' => $existingEnrollment->getStatus(),
                         ]);
+
                         continue;
                     }
 
@@ -644,7 +655,7 @@ class StudentEnrollmentService
                         $student,
                         $registration,
                         'bulk_creation',
-                        'Auto-created from bulk enrollment process'
+                        'Auto-created from bulk enrollment process',
                     );
 
                     $stats['created']++;
@@ -655,8 +666,7 @@ class StudentEnrollmentService
                         'session_registration_id' => $registration->getId(),
                         'formation_title' => $registration->getSession()?->getFormation()?->getTitle(),
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $stats['errors']++;
                     $errorDetail = [
                         'session_registration_id' => $registration->getId(),
@@ -682,8 +692,7 @@ class StudentEnrollmentService
             ]);
 
             return $stats;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error during bulk enrollment creation', [
                 'processed_registrations' => $processedRegistrations,
                 'partial_stats' => $stats,
@@ -694,7 +703,8 @@ class StudentEnrollmentService
                 'stack_trace' => $e->getTraceAsString(),
                 'error_details' => $errorDetails,
             ]);
-            throw new \RuntimeException('Critical failure in bulk enrollment creation: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Critical failure in bulk enrollment creation: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -731,14 +741,13 @@ class StudentEnrollmentService
                 'overdue_count' => count($overdueEnrollments),
                 'without_progress_count' => count($enrollmentsWithoutProgress),
                 'total_needing_attention' => count($atRiskEnrollments) + count($overdueEnrollments) + count($enrollmentsWithoutProgress),
-                'at_risk_enrollment_ids' => array_map(fn($e) => $e->getId(), $atRiskEnrollments),
-                'overdue_enrollment_ids' => array_map(fn($e) => $e->getId(), $overdueEnrollments),
-                'without_progress_enrollment_ids' => array_map(fn($e) => $e->getId(), $enrollmentsWithoutProgress),
+                'at_risk_enrollment_ids' => array_map(static fn ($e) => $e->getId(), $atRiskEnrollments),
+                'overdue_enrollment_ids' => array_map(static fn ($e) => $e->getId(), $overdueEnrollments),
+                'without_progress_enrollment_ids' => array_map(static fn ($e) => $e->getId(), $enrollmentsWithoutProgress),
             ]);
 
             return $results;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error analyzing enrollments needing attention', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
@@ -792,12 +801,11 @@ class StudentEnrollmentService
                     'without_progress_count' => $analytics['without_progress_count'],
                 ],
                 'recent_enrollments_count' => count($recentEnrollments),
-                'recent_enrollment_ids' => array_map(fn($e) => $e->getId(), $recentEnrollments),
+                'recent_enrollment_ids' => array_map(static fn ($e) => $e->getId(), $recentEnrollments),
             ]);
 
             return $analytics;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating enrollment analytics', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
@@ -871,8 +879,8 @@ class StudentEnrollmentService
                     sprintf(
                         'Invalid status transition from "%s" to "%s"',
                         $currentStatus,
-                        $newStatus
-                    )
+                        $newStatus,
+                    ),
                 );
             }
 
@@ -880,15 +888,15 @@ class StudentEnrollmentService
                 'current_status' => $currentStatus,
                 'new_status' => $newStatus,
             ]);
-
         } catch (InvalidArgumentException $e) {
             $this->logger->error('Status transition validation failed', [
                 'current_status' => $currentStatus,
                 'new_status' => $newStatus,
                 'error_message' => $e->getMessage(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during status transition validation', [
                 'current_status' => $currentStatus,
                 'new_status' => $newStatus,
@@ -896,7 +904,8 @@ class StudentEnrollmentService
                 'error_class' => get_class($e),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to validate status transition: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to validate status transition: ' . $e->getMessage(), 0, $e);
         }
     }
 }

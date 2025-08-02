@@ -8,6 +8,7 @@ use App\Entity\Document\DocumentTemplate;
 use App\Form\Document\DocumentTemplateType;
 use App\Repository\Document\DocumentTemplateRepository;
 use App\Service\Document\DocumentTemplateService;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -67,7 +68,7 @@ class DocumentTemplateController extends AbstractController
                     ['label' => 'Modèles de documents', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading document templates list', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -140,7 +141,7 @@ class DocumentTemplateController extends AbstractController
                     ['label' => $documentTemplate->getName(), 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error rendering document template details', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),
@@ -258,7 +259,7 @@ class DocumentTemplateController extends AbstractController
                     ['label' => 'Nouveau', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document template creation', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -358,7 +359,7 @@ class DocumentTemplateController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document template edit', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),
@@ -432,7 +433,7 @@ class DocumentTemplateController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document template deletion', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),
@@ -511,7 +512,7 @@ class DocumentTemplateController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document template status toggle', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),
@@ -588,7 +589,7 @@ class DocumentTemplateController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document template duplication', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),
@@ -651,7 +652,7 @@ class DocumentTemplateController extends AbstractController
                 'user' => $userId,
             ]);
             $this->addFlash('error', $result['error']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document creation from template', [
                 'template_id' => $templateId,
                 'error' => $e->getMessage(),

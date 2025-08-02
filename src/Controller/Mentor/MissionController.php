@@ -9,6 +9,7 @@ use App\Entity\User\Mentor;
 use App\Form\Alternance\CompanyMissionType;
 use App\Repository\Alternance\CompanyMissionRepository;
 use App\Service\Alternance\CompanyMissionService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -43,7 +44,7 @@ class MissionController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Mentor accessing missions index page', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
@@ -82,7 +83,7 @@ class MissionController extends AbstractController
                 $queryBuilder->andWhere('m.isActive = :isActive')
                     ->setParameter('isActive', $isActive)
                 ;
-                
+
                 $this->logger->debug('Status filter applied', [
                     'mentor_id' => $mentor->getId(),
                     'status_filter' => $status,
@@ -94,7 +95,7 @@ class MissionController extends AbstractController
                 $queryBuilder->andWhere('m.complexity = :complexity')
                     ->setParameter('complexity', $complexity)
                 ;
-                
+
                 $this->logger->debug('Complexity filter applied', [
                     'mentor_id' => $mentor->getId(),
                     'complexity_filter' => $complexity,
@@ -105,7 +106,7 @@ class MissionController extends AbstractController
                 $queryBuilder->andWhere('m.term = :term')
                     ->setParameter('term', $term)
                 ;
-                
+
                 $this->logger->debug('Term filter applied', [
                     'mentor_id' => $mentor->getId(),
                     'term_filter' => $term,
@@ -135,7 +136,7 @@ class MissionController extends AbstractController
                 $this->logger->debug('Missions retrieved successfully', [
                     'mentor_id' => $mentor->getId(),
                     'missions_count' => count($missions),
-                    'mission_ids' => array_map(fn($m) => $m->getId(), $missions),
+                    'mission_ids' => array_map(static fn ($m) => $m->getId(), $missions),
                 ]);
             } catch (Exception $e) {
                 $this->logger->error('Database error while retrieving missions', [
@@ -150,9 +151,9 @@ class MissionController extends AbstractController
                         'page' => $page,
                     ],
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la récupération des missions. Veuillez réessayer.');
-                
+
                 return $this->render('mentor/missions/index.html.twig', [
                     'missions' => [],
                     'mentor' => $mentor,
@@ -174,7 +175,7 @@ class MissionController extends AbstractController
             try {
                 // Get statistics for the mentor
                 $stats = $this->missionService->getMentorMissionStats($mentor);
-                
+
                 $this->logger->debug('Mission statistics retrieved', [
                     'mentor_id' => $mentor->getId(),
                     'stats' => $stats,
@@ -186,7 +187,7 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $stats = []; // Fallback to empty stats
                 $this->addFlash('warning', 'Les statistiques ne peuvent pas être affichées pour le moment.');
             }
@@ -229,9 +230,9 @@ class MissionController extends AbstractController
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
                 'session_id' => $request->getSession()->getId(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez contacter l\'administrateur.');
-            
+
             // Return minimal safe response
             return $this->render('mentor/missions/index.html.twig', [
                 'missions' => [],
@@ -278,7 +279,7 @@ class MissionController extends AbstractController
                     'mission_supervisor_id' => $mission->getSupervisor()?->getId(),
                     'attempted_access' => 'show',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette mission.');
             }
 
@@ -305,7 +306,7 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 // Provide fallback stats
                 $stats = [
                     'total_assignments' => 0,
@@ -314,7 +315,7 @@ class MissionController extends AbstractController
                     'complexity_level' => 'Non disponible',
                     'term_type' => 'Non disponible',
                 ];
-                
+
                 $this->addFlash('warning', 'Certaines statistiques ne peuvent pas être affichées.');
             }
 
@@ -341,9 +342,9 @@ class MissionController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
             ]);
-            
+
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage de la mission.');
-            
+
             return $this->redirectToRoute('mentor_missions_index');
         }
     }
@@ -367,10 +368,10 @@ class MissionController extends AbstractController
 
             $mission = new CompanyMission();
             $form = $this->createForm(CompanyMissionType::class, $mission);
-            
+
             try {
                 $form->handleRequest($request);
-                
+
                 $this->logger->debug('Mission creation form processed', [
                     'mentor_id' => $mentor->getId(),
                     'form_submitted' => $form->isSubmitted(),
@@ -385,9 +386,9 @@ class MissionController extends AbstractController
                     'stack_trace' => $e->getTraceAsString(),
                     'form_data' => $request->request->all(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors du traitement du formulaire. Veuillez vérifier vos données.');
-                
+
                 return $this->render('mentor/missions/create.html.twig', [
                     'form' => $form,
                     'mentor' => $mentor,
@@ -453,7 +454,7 @@ class MissionController extends AbstractController
                             'term' => $mission->getTerm(),
                         ],
                     ]);
-                    
+
                     $this->addFlash('error', 'Erreur lors de la création de la mission : ' . $e->getMessage());
                 }
             }
@@ -474,9 +475,9 @@ class MissionController extends AbstractController
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
                 'session_id' => $request->getSession()->getId(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue lors de la création de la mission.');
-            
+
             return $this->redirectToRoute('mentor_missions_index');
         }
     }
@@ -508,27 +509,27 @@ class MissionController extends AbstractController
                     'mission_supervisor_id' => $mission->getSupervisor()?->getId(),
                     'attempted_access' => 'edit',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette mission.');
             }
 
             try {
                 // Check if mission can be edited (no active assignments)
                 $activeAssignmentsCount = $mission->getActiveAssignmentsCount();
-                
+
                 $this->logger->debug('Checking if mission can be edited', [
                     'mentor_id' => $mentor->getId(),
                     'mission_id' => $mission->getId(),
                     'active_assignments_count' => $activeAssignmentsCount,
                 ]);
-                
+
                 if ($activeAssignmentsCount > 0) {
                     $this->logger->warning('Attempt to edit mission with active assignments', [
                         'mentor_id' => $mentor->getId(),
                         'mission_id' => $mission->getId(),
                         'active_assignments_count' => $activeAssignmentsCount,
                     ]);
-                    
+
                     $this->addFlash('warning', 'Cette mission ne peut pas être modifiée car elle a des assignations actives.');
 
                     return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
@@ -541,16 +542,17 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Impossible de vérifier si la mission peut être modifiée.');
+
                 return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
             }
 
             $form = $this->createForm(CompanyMissionType::class, $mission);
-            
+
             try {
                 $form->handleRequest($request);
-                
+
                 $this->logger->debug('Mission edit form processed', [
                     'mentor_id' => $mentor->getId(),
                     'mission_id' => $mission->getId(),
@@ -567,9 +569,9 @@ class MissionController extends AbstractController
                     'stack_trace' => $e->getTraceAsString(),
                     'form_data' => $request->request->all(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors du traitement du formulaire. Veuillez vérifier vos données.');
-                
+
                 return $this->render('mentor/missions/edit.html.twig', [
                     'form' => $form,
                     'mission' => $mission,
@@ -613,7 +615,7 @@ class MissionController extends AbstractController
                         'mentor_id' => $mentor->getId(),
                         'mission_id' => $mission->getId(),
                         'mission_title' => $mission->getTitle(),
-                        'updated_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                        'updated_at' => (new DateTime())->format('Y-m-d H:i:s'),
                     ]);
 
                     $this->addFlash('success', 'Mission mise à jour avec succès !');
@@ -628,7 +630,7 @@ class MissionController extends AbstractController
                         'stack_trace' => $e->getTraceAsString(),
                         'mission_title' => $mission->getTitle(),
                     ]);
-                    
+
                     $this->addFlash('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
                 }
             }
@@ -650,9 +652,9 @@ class MissionController extends AbstractController
                 'request_method' => $request->getMethod(),
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue lors de la modification de la mission.');
-            
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
     }
@@ -684,21 +686,21 @@ class MissionController extends AbstractController
                     'mission_supervisor_id' => $mission->getSupervisor()?->getId(),
                     'attempted_access' => 'toggle_status',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette mission.');
             }
 
             try {
                 $oldStatus = $mission->isActive();
                 $newStatus = !$oldStatus;
-                
+
                 $this->logger->debug('Changing mission status', [
                     'mentor_id' => $mentor->getId(),
                     'mission_id' => $mission->getId(),
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
                 ]);
-                
+
                 $mission->setIsActive($newStatus);
                 $this->entityManager->flush();
 
@@ -708,7 +710,7 @@ class MissionController extends AbstractController
                     'mission_title' => $mission->getTitle(),
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
-                    'changed_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'changed_at' => (new DateTime())->format('Y-m-d H:i:s'),
                 ]);
 
                 $statusText = $newStatus ? 'activée' : 'désactivée';
@@ -722,7 +724,7 @@ class MissionController extends AbstractController
                     'stack_trace' => $e->getTraceAsString(),
                     'current_status' => $mission->isActive(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
             }
 
@@ -736,9 +738,9 @@ class MissionController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue lors du changement de statut.');
-            
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
     }
@@ -770,27 +772,27 @@ class MissionController extends AbstractController
                     'mission_supervisor_id' => $mission->getSupervisor()?->getId(),
                     'attempted_access' => 'delete',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette mission.');
             }
 
             try {
                 // Check if mission can be deleted (no assignments)
                 $assignmentsCount = $mission->getAssignments()->count();
-                
+
                 $this->logger->debug('Checking if mission can be deleted', [
                     'mentor_id' => $mentor->getId(),
                     'mission_id' => $mission->getId(),
                     'assignments_count' => $assignmentsCount,
                 ]);
-                
+
                 if ($assignmentsCount > 0) {
                     $this->logger->warning('Attempt to delete mission with existing assignments', [
                         'mentor_id' => $mentor->getId(),
                         'mission_id' => $mission->getId(),
                         'assignments_count' => $assignmentsCount,
                     ]);
-                    
+
                     $this->addFlash('error', 'Cette mission ne peut pas être supprimée car elle a des assignations.');
 
                     return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
@@ -803,21 +805,22 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Impossible de vérifier si la mission peut être supprimée.');
+
                 return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
             }
 
             try {
                 $missionTitle = $mission->getTitle();
                 $missionId = $mission->getId();
-                
+
                 $this->logger->info('Deleting mission from database', [
                     'mentor_id' => $mentor->getId(),
                     'mission_id' => $missionId,
                     'mission_title' => $missionTitle,
                 ]);
-                
+
                 $this->entityManager->remove($mission);
                 $this->entityManager->flush();
 
@@ -825,7 +828,7 @@ class MissionController extends AbstractController
                     'mentor_id' => $mentor->getId(),
                     'deleted_mission_id' => $missionId,
                     'deleted_mission_title' => $missionTitle,
-                    'deleted_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'deleted_at' => (new DateTime())->format('Y-m-d H:i:s'),
                 ]);
 
                 $this->addFlash('success', "Mission \"{$missionTitle}\" supprimée avec succès !");
@@ -837,7 +840,7 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
 
                 return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
@@ -853,9 +856,9 @@ class MissionController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue lors de la suppression.');
-            
+
             return $this->redirectToRoute('mentor_missions_show', ['id' => $mission->getId()]);
         }
     }
@@ -878,13 +881,13 @@ class MissionController extends AbstractController
             try {
                 // Get mentor's missions that need attention
                 $recommendations = $this->missionService->getMissionsRequiringAttention($mentor);
-                
+
                 $this->logger->debug('Mission recommendations retrieved', [
                     'mentor_id' => $mentor->getId(),
                     'recommendations_count' => count($recommendations),
                     'recommendation_types' => array_keys($recommendations),
                 ]);
-                
+
                 $this->logger->info('Mission recommendations displayed successfully', [
                     'mentor_id' => $mentor->getId(),
                     'total_recommendations' => array_sum(array_map('count', $recommendations)),
@@ -896,7 +899,7 @@ class MissionController extends AbstractController
                     'error_code' => $e->getCode(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $recommendations = [];
                 $this->addFlash('warning', 'Les recommandations ne peuvent pas être affichées pour le moment.');
             }
@@ -914,9 +917,9 @@ class MissionController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user_id' => $user instanceof Mentor ? $user->getId() : null,
             ]);
-            
+
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des recommandations.');
-            
+
             return $this->redirectToRoute('mentor_missions_index');
         }
     }

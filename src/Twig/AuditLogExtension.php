@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Twig;
 
 use App\Service\Core\AuditLogService;
+use Exception;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -35,7 +37,7 @@ class AuditLogExtension extends AbstractExtension
     {
         try {
             $this->logger->debug('Registering Twig functions for AuditLogExtension');
-            
+
             $functions = [
                 new TwigFunction('audit_log_service', [$this, 'getAuditLogService']),
                 new TwigFunction('is_entity_loggable', [$this, 'isEntityLoggable']),
@@ -48,8 +50,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $functions;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while registering Twig functions', [
                 'error_class' => get_class($e),
                 'error_message' => $e->getMessage(),
@@ -57,7 +58,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array as fallback to prevent Twig from breaking
             return [];
         }
@@ -67,7 +68,7 @@ class AuditLogExtension extends AbstractExtension
     {
         try {
             $this->logger->debug('Registering Twig filters for AuditLogExtension');
-            
+
             $filters = [
                 new TwigFilter('base64_encode', [$this, 'base64Encode']),
                 new TwigFilter('base64_decode', [$this, 'base64Decode']),
@@ -79,8 +80,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $filters;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while registering Twig filters', [
                 'error_class' => get_class($e),
                 'error_message' => $e->getMessage(),
@@ -88,7 +88,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array as fallback to prevent Twig from breaking
             return [];
         }
@@ -96,8 +96,6 @@ class AuditLogExtension extends AbstractExtension
 
     /**
      * Get the audit log service instance.
-     * 
-     * @return AuditLogService
      */
     public function getAuditLogService(): AuditLogService
     {
@@ -112,8 +110,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $this->auditLogService;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while retrieving audit log service instance', [
                 'error_class' => get_class($e),
                 'error_message' => $e->getMessage(),
@@ -121,16 +118,17 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Re-throw the exception as this is critical functionality
-            throw new \RuntimeException('Failed to retrieve audit log service: ' . $e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to retrieve audit log service: ' . $e->getMessage(), 0, $e);
         }
     }
 
     /**
      * Check if an entity is loggable.
-     * 
+     *
      * @param object $entity The entity to check
+     *
      * @return bool True if the entity is loggable
      */
     public function isEntityLoggable(object $entity): bool
@@ -155,8 +153,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $isLoggable;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while checking if entity is loggable via Twig extension', [
                 'entity_class' => get_class($entity),
                 'entity_id' => method_exists($entity, 'getId') ? $entity->getId() : null,
@@ -166,7 +163,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return false as fallback - safer than throwing exception in Twig
             return false;
         }
@@ -174,8 +171,9 @@ class AuditLogExtension extends AbstractExtension
 
     /**
      * Generate audit history URL for an entity.
-     * 
+     *
      * @param object $entity The entity to generate URL for
+     *
      * @return string The generated URL or empty string if failed
      */
     public function getAuditHistoryUrl(object $entity): string
@@ -196,6 +194,7 @@ class AuditLogExtension extends AbstractExtension
                     'entity_class' => $entityClass,
                     'entity_id' => $entityId,
                 ]);
+
                 return '';
             }
 
@@ -205,6 +204,7 @@ class AuditLogExtension extends AbstractExtension
                     'entity_class' => $entityClass,
                     'entity_id' => $entityId,
                 ]);
+
                 return '';
             }
 
@@ -235,8 +235,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $url;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while generating audit history URL', [
                 'entity_class' => get_class($entity),
                 'entity_id' => method_exists($entity, 'getId') ? $entity->getId() : null,
@@ -246,7 +245,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty string as fallback - safer than throwing exception in Twig
             return '';
         }
@@ -254,8 +253,9 @@ class AuditLogExtension extends AbstractExtension
 
     /**
      * Base64 encode filter.
-     * 
+     *
      * @param string $data The data to encode
+     *
      * @return string The base64 encoded string
      */
     public function base64Encode(string $data): string
@@ -269,6 +269,7 @@ class AuditLogExtension extends AbstractExtension
 
             if (empty($data)) {
                 $this->logger->warning('Attempting to encode empty data with base64');
+
                 return '';
             }
 
@@ -281,8 +282,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $encoded;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while encoding data with base64', [
                 'data_length' => strlen($data),
                 'data_preview' => substr($data, 0, 50) . (strlen($data) > 50 ? '...' : ''),
@@ -291,7 +291,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            
+
             // Return empty string as fallback
             return '';
         }
@@ -299,8 +299,9 @@ class AuditLogExtension extends AbstractExtension
 
     /**
      * Base64 decode filter.
-     * 
+     *
      * @param string $data The base64 encoded data to decode
+     *
      * @return string The decoded string
      */
     public function base64Decode(string $data): string
@@ -315,6 +316,7 @@ class AuditLogExtension extends AbstractExtension
 
             if (empty($data)) {
                 $this->logger->warning('Attempting to decode empty data with base64');
+
                 return '';
             }
 
@@ -324,6 +326,7 @@ class AuditLogExtension extends AbstractExtension
                     'data_length' => strlen($data),
                     'data_preview' => substr($data, 0, 50) . (strlen($data) > 50 ? '...' : ''),
                 ]);
+
                 return '';
             }
 
@@ -334,6 +337,7 @@ class AuditLogExtension extends AbstractExtension
                     'data_length' => strlen($data),
                     'data_preview' => substr($data, 0, 50) . (strlen($data) > 50 ? '...' : ''),
                 ]);
+
                 return '';
             }
 
@@ -345,8 +349,7 @@ class AuditLogExtension extends AbstractExtension
             ]);
 
             return $decoded;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while decoding data with base64', [
                 'data_length' => strlen($data),
                 'data_preview' => substr($data, 0, 50) . (strlen($data) > 50 ? '...' : ''),
@@ -356,7 +359,7 @@ class AuditLogExtension extends AbstractExtension
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty string as fallback
             return '';
         }

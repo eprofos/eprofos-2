@@ -7,12 +7,13 @@ namespace App\DataFixtures;
 use App\Entity\Student\QCMAttempt;
 use App\Entity\Training\QCM;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Faker\Generator;
-use DateTimeImmutable;
 
 /**
  * QCMAttempt fixtures for EPROFOS platform.
@@ -48,9 +49,9 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
             $qcmsToAttempt = $this->faker->randomElements(
                 $qcms,
                 $this->faker->numberBetween(
-                    (int)(count($qcms) * 0.5),
-                    (int)(count($qcms) * 0.7)
-                )
+                    (int) (count($qcms) * 0.5),
+                    (int) (count($qcms) * 0.7),
+                ),
             );
 
             foreach ($qcmsToAttempt as $qcm) {
@@ -188,7 +189,7 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
     {
         $questions = $qcm->getQuestions();
         $answers = [];
-        $questionsToAnswer = $this->faker->numberBetween(1, (int)(count($questions) * 0.6));
+        $questionsToAnswer = $this->faker->numberBetween(1, (int) (count($questions) * 0.6));
 
         for ($i = 0; $i < $questionsToAnswer; $i++) {
             $question = $questions[$i];
@@ -203,7 +204,7 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
         }
 
         $attempt->setAnswers($answers);
-        
+
         // Set time spent so far
         $timeSpentMinutes = $this->faker->numberBetween(5, 30);
         $attempt->setTimeSpent($timeSpentMinutes * 60);
@@ -215,7 +216,7 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
     private function generateQuestionAnswer(string $questionType, array $choices, array $correctAnswers, int $attemptNumber): array
     {
         $choiceIndices = array_keys($choices);
-        
+
         // Performance improves with attempt number
         $correctnessChance = match ($attemptNumber) {
             1 => 0.65, // 65% chance of correct answer on first attempt
@@ -228,42 +229,40 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
             if ($this->faker->randomFloat() < $correctnessChance) {
                 // Give correct answer(s)
                 return $correctAnswers;
-            } else {
-                // Give partially correct or incorrect answer
-                $incorrectChoices = array_diff($choiceIndices, $correctAnswers);
-                $numberOfSelections = $this->faker->numberBetween(1, min(3, count($choiceIndices)));
-                
-                // Mix some correct and incorrect answers
-                $selectedChoices = [];
-                if (!empty($correctAnswers) && $this->faker->boolean(50)) {
-                    $selectedChoices[] = $this->faker->randomElement($correctAnswers);
-                }
-                
-                while (count($selectedChoices) < $numberOfSelections && !empty($incorrectChoices)) {
-                    $choice = $this->faker->randomElement($incorrectChoices);
-                    if (!in_array($choice, $selectedChoices)) {
-                        $selectedChoices[] = $choice;
-                    }
-                    $incorrectChoices = array_diff($incorrectChoices, [$choice]);
-                }
-                
-                return $selectedChoices;
             }
-        } else {
-            // Single choice questions
-            if ($this->faker->randomFloat() < $correctnessChance && !empty($correctAnswers)) {
-                // Give correct answer
-                return [$correctAnswers[0]];
-            } else {
-                // Give incorrect answer
-                $incorrectChoices = array_diff($choiceIndices, $correctAnswers);
-                if (!empty($incorrectChoices)) {
-                    return [$this->faker->randomElement($incorrectChoices)];
-                }
-                // Fallback to random choice
-                return [$this->faker->randomElement($choiceIndices)];
+            // Give partially correct or incorrect answer
+            $incorrectChoices = array_diff($choiceIndices, $correctAnswers);
+            $numberOfSelections = $this->faker->numberBetween(1, min(3, count($choiceIndices)));
+
+            // Mix some correct and incorrect answers
+            $selectedChoices = [];
+            if (!empty($correctAnswers) && $this->faker->boolean(50)) {
+                $selectedChoices[] = $this->faker->randomElement($correctAnswers);
             }
+
+            while (count($selectedChoices) < $numberOfSelections && !empty($incorrectChoices)) {
+                $choice = $this->faker->randomElement($incorrectChoices);
+                if (!in_array($choice, $selectedChoices, true)) {
+                    $selectedChoices[] = $choice;
+                }
+                $incorrectChoices = array_diff($incorrectChoices, [$choice]);
+            }
+
+            return $selectedChoices;
         }
+        // Single choice questions
+        if ($this->faker->randomFloat() < $correctnessChance && !empty($correctAnswers)) {
+            // Give correct answer
+            return [$correctAnswers[0]];
+        }
+        // Give incorrect answer
+        $incorrectChoices = array_diff($choiceIndices, $correctAnswers);
+        if (!empty($incorrectChoices)) {
+            return [$this->faker->randomElement($incorrectChoices)];
+        }
+
+        // Fallback to random choice
+        return [$this->faker->randomElement($choiceIndices)];
     }
 
     /**
@@ -291,6 +290,7 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
 
             if ($totalCorrect > 0) {
                 $partialScore = max(0, ($correctSelected - $incorrectSelected) / $totalCorrect);
+
                 return (int) round($partialScore * $questionPoints);
             }
         }
@@ -301,17 +301,17 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
     /**
      * Complete the QCM attempt.
      */
-    private function completeAttempt(QCMAttempt $attempt, \DateTime $startedAt): void
+    private function completeAttempt(QCMAttempt $attempt, DateTime $startedAt): void
     {
         $timeLimitMinutes = $attempt->getQcm()->getTimeLimitMinutes();
         $maxTimeMinutes = $timeLimitMinutes ?: 60; // Default max 1 hour
-        
+
         // Generate realistic completion time (usually less than time limit)
         $completionTimeMinutes = $this->faker->numberBetween(
-            (int)($maxTimeMinutes * 0.3),
-            (int)($maxTimeMinutes * 0.8)
+            (int) ($maxTimeMinutes * 0.3),
+            (int) ($maxTimeMinutes * 0.8),
         );
-        
+
         $completedAt = (clone $startedAt)->modify('+' . $completionTimeMinutes . ' minutes');
         $attempt->setCompletedAt(DateTimeImmutable::createFromMutable($completedAt));
         $attempt->setTimeSpent($completionTimeMinutes * 60);
@@ -326,15 +326,15 @@ class QCMAttemptFixtures extends Fixture implements DependentFixtureInterface
     /**
      * Abandon the QCM attempt.
      */
-    private function abandonAttempt(QCMAttempt $attempt, \DateTime $startedAt): void
+    private function abandonAttempt(QCMAttempt $attempt, DateTime $startedAt): void
     {
         // Students typically abandon after 10-40% of time limit
         $timeLimitMinutes = $attempt->getQcm()->getTimeLimitMinutes() ?: 60;
         $abandonTimeMinutes = $this->faker->numberBetween(
-            (int)($timeLimitMinutes * 0.1),
-            (int)($timeLimitMinutes * 0.4)
+            (int) ($timeLimitMinutes * 0.1),
+            (int) ($timeLimitMinutes * 0.4),
         );
-        
+
         $attempt->setTimeSpent($abandonTimeMinutes * 60);
         $attempt->setPassed(false);
     }

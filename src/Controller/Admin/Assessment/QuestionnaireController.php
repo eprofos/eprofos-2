@@ -715,7 +715,7 @@ class QuestionnaireController extends AbstractController
                 'error_trace' => $e->getTraceAsString(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
                 'method' => $request->getMethod(),
-                'form_data' => $request->isMethod('POST') ? 
+                'form_data' => $request->isMethod('POST') ?
                     array_merge($request->request->all(), ['email' => '***HIDDEN***']) : null,
             ]);
 

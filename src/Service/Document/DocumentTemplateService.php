@@ -39,7 +39,7 @@ class DocumentTemplateService
     {
         try {
             $this->logger->info('Starting to retrieve templates with statistics');
-            
+
             $templates = $this->documentTemplateRepository->findBy([], ['sortOrder' => 'ASC', 'name' => 'ASC']);
             $result = [];
 
@@ -54,9 +54,9 @@ class DocumentTemplateService
                         'placeholders_count' => count($template->getPlaceholders() ?? []),
                         'is_default' => $template->isDefault(),
                     ];
-                    
+
                     $result[] = $templateData;
-                    
+
                     $this->logger->debug('Processed template for statistics', [
                         'template_id' => $template->getId(),
                         'template_name' => $template->getName(),
@@ -72,6 +72,7 @@ class DocumentTemplateService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     // Continue processing other templates
                     continue;
                 }
@@ -88,7 +89,7 @@ class DocumentTemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array on error to prevent application crash
             return [];
         }
@@ -120,6 +121,7 @@ class DocumentTemplateService
                     'name' => $documentTemplate->getName(),
                     'validation_error' => $validation['error'],
                 ]);
+
                 return ['success' => false, 'error' => $validation['error']];
             }
             $this->logger->debug('Document template validation passed');
@@ -130,7 +132,7 @@ class DocumentTemplateService
                     'document_type_id' => $documentTemplate->getDocumentType()->getId(),
                     'document_type_name' => $documentTemplate->getDocumentType()->getName(),
                 ]);
-                
+
                 try {
                     $this->unsetOtherDefaultTemplates($documentTemplate->getDocumentType());
                     $this->logger->debug('Successfully unset other default templates');
@@ -140,13 +142,14 @@ class DocumentTemplateService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     throw $e;
                 }
             }
 
             $this->logger->debug('Persisting document template to database');
             $this->entityManager->persist($documentTemplate);
-            
+
             $this->logger->debug('Flushing entity manager to save document template');
             $this->entityManager->flush();
 
@@ -220,6 +223,7 @@ class DocumentTemplateService
                     'name' => $documentTemplate->getName(),
                     'validation_error' => $validation['error'],
                 ]);
+
                 return ['success' => false, 'error' => $validation['error']];
             }
             $this->logger->debug('Document template validation passed for update');
@@ -231,7 +235,7 @@ class DocumentTemplateService
                     'document_type_id' => $documentTemplate->getDocumentType()->getId(),
                     'document_type_name' => $documentTemplate->getDocumentType()->getName(),
                 ]);
-                
+
                 try {
                     $this->unsetOtherDefaultTemplates($documentTemplate->getDocumentType(), $documentTemplate);
                     $this->logger->debug('Successfully unset other default templates during update');
@@ -242,6 +246,7 @@ class DocumentTemplateService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     throw $e;
                 }
             }
@@ -320,6 +325,7 @@ class DocumentTemplateService
                     'template_name' => $templateName,
                     'usage_count' => $usageCount,
                 ]);
+
                 return ['success' => false, 'error' => 'Ce modèle ne peut pas être supprimé car il est utilisé par des documents.'];
             }
 
@@ -339,6 +345,7 @@ class DocumentTemplateService
                     'safety_check_error' => $safetyCheckException->getMessage(),
                     'trace' => $safetyCheckException->getTraceAsString(),
                 ]);
+
                 throw $safetyCheckException;
             }
 
@@ -346,7 +353,7 @@ class DocumentTemplateService
                 'template_id' => $templateId,
             ]);
             $this->entityManager->remove($documentTemplate);
-            
+
             $this->logger->debug('Flushing entity manager to delete template', [
                 'template_id' => $templateId,
             ]);
@@ -499,6 +506,7 @@ class DocumentTemplateService
             $duplicate->setUsageCount(0);
 
             $this->logger->debug('Getting next sort order for duplicate template');
+
             try {
                 $nextSortOrder = $this->getNextSortOrder();
                 $duplicate->setSortOrder($nextSortOrder);
@@ -510,6 +518,7 @@ class DocumentTemplateService
                     'original_id' => $originalId,
                     'error' => $sortOrderException->getMessage(),
                 ]);
+
                 throw $sortOrderException;
             }
 
@@ -520,7 +529,7 @@ class DocumentTemplateService
                 'duplicate_name' => $duplicateName,
             ]);
             $this->entityManager->persist($duplicate);
-            
+
             $this->logger->debug('Flushing entity manager to save duplicate template');
             $this->entityManager->flush();
 
@@ -608,6 +617,7 @@ class DocumentTemplateService
                     'placeholder_error' => $placeholderException->getMessage(),
                     'placeholders' => $placeholderValues,
                 ]);
+
                 throw $placeholderException;
             }
 
@@ -781,6 +791,7 @@ class DocumentTemplateService
                 $this->logger->warning('Template validation failed: missing name', [
                     'template_id' => $documentTemplate->getId(),
                 ]);
+
                 return ['valid' => false, 'error' => 'Le nom du modèle est requis.'];
             }
 
@@ -790,6 +801,7 @@ class DocumentTemplateService
                     'template_id' => $documentTemplate->getId(),
                     'template_name' => $documentTemplate->getName(),
                 ]);
+
                 return ['valid' => false, 'error' => 'Le contenu du modèle est requis.'];
             }
 
@@ -812,6 +824,7 @@ class DocumentTemplateService
                         'existing_template_id' => $existingTemplate->getId(),
                         'document_type_id' => $documentTemplate->getDocumentType()?->getId(),
                     ]);
+
                     return ['valid' => false, 'error' => 'Un modèle avec ce nom existe déjà pour ce type de document.'];
                 }
             } catch (Exception $duplicateCheckException) {
@@ -819,6 +832,7 @@ class DocumentTemplateService
                     'template_name' => $documentTemplate->getName(),
                     'error' => $duplicateCheckException->getMessage(),
                 ]);
+
                 throw $duplicateCheckException;
             }
 
@@ -869,7 +883,7 @@ class DocumentTemplateService
             $this->logger->debug('Found default templates to unset', [
                 'document_type_id' => $documentType->getId(),
                 'templates_count' => count($defaultTemplates),
-                'template_ids' => array_map(fn($t) => $t->getId(), $defaultTemplates),
+                'template_ids' => array_map(static fn ($t) => $t->getId(), $defaultTemplates),
             ]);
 
             foreach ($defaultTemplates as $template) {
@@ -878,7 +892,7 @@ class DocumentTemplateService
                         'template_id' => $template->getId(),
                         'template_name' => $template->getName(),
                     ]);
-                    
+
                     $template->setIsDefault(false);
                 } catch (Exception $templateException) {
                     $this->logger->error('Failed to unset default status for individual template', [
@@ -886,6 +900,7 @@ class DocumentTemplateService
                         'template_name' => $template->getName(),
                         'error' => $templateException->getMessage(),
                     ]);
+
                     throw $templateException;
                 }
             }
@@ -904,7 +919,7 @@ class DocumentTemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -929,11 +944,11 @@ class DocumentTemplateService
                 try {
                     $placeholder = '{{' . $key . '}}';
                     $occurrences = substr_count($content, $placeholder);
-                    
+
                     if ($occurrences > 0) {
                         $content = str_replace($placeholder, $value, $content);
                         $replacementCount += $occurrences;
-                        
+
                         $this->logger->debug('Replaced placeholder in template', [
                             'placeholder' => $placeholder,
                             'value' => is_string($value) ? (strlen($value) > 100 ? substr($value, 0, 100) . '...' : $value) : gettype($value),
@@ -950,6 +965,7 @@ class DocumentTemplateService
                         'placeholder_value' => is_string($value) ? (strlen($value) > 100 ? substr($value, 0, 100) . '...' : $value) : gettype($value),
                         'error' => $placeholderException->getMessage(),
                     ]);
+
                     // Continue processing other placeholders
                     continue;
                 }
@@ -973,6 +989,7 @@ class DocumentTemplateService
 
             // Return original content on error to prevent data loss
             $this->logger->warning('Returning original content due to placeholder processing error');
+
             return $content;
         }
     }

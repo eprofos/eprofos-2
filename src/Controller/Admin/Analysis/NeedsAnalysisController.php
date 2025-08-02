@@ -253,10 +253,10 @@ class NeedsAnalysisController extends AbstractController
         ]);
 
         $needsAnalysisRequest = new NeedsAnalysisRequest();
-        
+
         try {
             $this->logger->debug('Creating form for new needs analysis request');
-            
+
             $form = $this->createForm(NeedsAnalysisRequestType::class, $needsAnalysisRequest);
             $form->handleRequest($request);
 
@@ -325,9 +325,7 @@ class NeedsAnalysisController extends AbstractController
                     }
                 } else {
                     $this->logger->warning('Form validation failed for new needs analysis request', [
-                        'errors' => array_map(function ($error) {
-                            return $error->getMessage();
-                        }, iterator_to_array($form->getErrors(true, false))),
+                        'errors' => array_map(static fn ($error) => $error->getMessage(), iterator_to_array($form->getErrors(true, false))),
                         'submitted_data' => $request->request->all(),
                     ]);
                 }
@@ -456,9 +454,7 @@ class NeedsAnalysisController extends AbstractController
                 } else {
                     $this->logger->warning('Form validation failed for needs analysis request edit', [
                         'request_id' => $needsAnalysisRequest->getId(),
-                        'errors' => array_map(function ($error) {
-                            return $error->getMessage();
-                        }, iterator_to_array($form->getErrors(true, false))),
+                        'errors' => array_map(static fn ($error) => $error->getMessage(), iterator_to_array($form->getErrors(true, false))),
                         'submitted_data' => $request->request->all(),
                     ]);
                 }
@@ -673,7 +669,7 @@ class NeedsAnalysisController extends AbstractController
     public function delete(NeedsAnalysisRequest $needsAnalysisRequest): Response
     {
         $requestId = $needsAnalysisRequest->getId();
-        
+
         $this->logger->info('Starting to delete needs analysis request', [
             'request_id' => $requestId,
             'current_status' => $needsAnalysisRequest->getStatus(),

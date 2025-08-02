@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Training;
 
 use App\Entity\Training\Formation;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -30,7 +31,7 @@ class QualiopiValidationService
         $this->logger->info('Starting Qualiopi 2.5 objectives validation', [
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
-            'method' => 'validateObjectives'
+            'method' => 'validateObjectives',
         ]);
 
         $errors = [];
@@ -40,7 +41,7 @@ class QualiopiValidationService
             $this->logger->debug('Validating operational objectives', [
                 'formation_id' => $formation->getId(),
                 'operational_objectives_count' => $formation->getOperationalObjectives() ? count($formation->getOperationalObjectives()) : 0,
-                'operational_objectives' => $formation->getOperationalObjectives()
+                'operational_objectives' => $formation->getOperationalObjectives(),
             ]);
 
             if (empty($formation->getOperationalObjectives())) {
@@ -49,7 +50,7 @@ class QualiopiValidationService
                 $this->logger->warning('Missing operational objectives', [
                     'formation_id' => $formation->getId(),
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } elseif (count($formation->getOperationalObjectives()) < 2) {
                 $error = 'Au moins 2 objectifs opérationnels sont requis (Qualiopi 2.5)';
@@ -59,12 +60,12 @@ class QualiopiValidationService
                     'current_count' => count($formation->getOperationalObjectives()),
                     'required_minimum' => 2,
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } else {
                 $this->logger->info('Operational objectives validation passed', [
                     'formation_id' => $formation->getId(),
-                    'objectives_count' => count($formation->getOperationalObjectives())
+                    'objectives_count' => count($formation->getOperationalObjectives()),
                 ]);
             }
 
@@ -72,7 +73,7 @@ class QualiopiValidationService
             $this->logger->debug('Validating evaluable objectives', [
                 'formation_id' => $formation->getId(),
                 'evaluable_objectives_count' => $formation->getEvaluableObjectives() ? count($formation->getEvaluableObjectives()) : 0,
-                'evaluable_objectives' => $formation->getEvaluableObjectives()
+                'evaluable_objectives' => $formation->getEvaluableObjectives(),
             ]);
 
             if (empty($formation->getEvaluableObjectives())) {
@@ -81,7 +82,7 @@ class QualiopiValidationService
                 $this->logger->warning('Missing evaluable objectives', [
                     'formation_id' => $formation->getId(),
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } elseif (count($formation->getEvaluableObjectives()) < 2) {
                 $error = 'Au moins 2 objectifs évaluables sont requis (Qualiopi 2.5)';
@@ -91,12 +92,12 @@ class QualiopiValidationService
                     'current_count' => count($formation->getEvaluableObjectives()),
                     'required_minimum' => 2,
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } else {
                 $this->logger->info('Evaluable objectives validation passed', [
                     'formation_id' => $formation->getId(),
-                    'objectives_count' => count($formation->getEvaluableObjectives())
+                    'objectives_count' => count($formation->getEvaluableObjectives()),
                 ]);
             }
 
@@ -104,7 +105,7 @@ class QualiopiValidationService
             $this->logger->debug('Validating evaluation criteria', [
                 'formation_id' => $formation->getId(),
                 'evaluation_criteria_count' => $formation->getEvaluationCriteria() ? count($formation->getEvaluationCriteria()) : 0,
-                'evaluation_criteria' => $formation->getEvaluationCriteria()
+                'evaluation_criteria' => $formation->getEvaluationCriteria(),
             ]);
 
             if (empty($formation->getEvaluationCriteria())) {
@@ -113,7 +114,7 @@ class QualiopiValidationService
                 $this->logger->warning('Missing evaluation criteria', [
                     'formation_id' => $formation->getId(),
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } elseif (count($formation->getEvaluationCriteria()) < 2) {
                 $error = 'Au moins 2 critères d\'évaluation sont requis (Qualiopi 2.5)';
@@ -123,12 +124,12 @@ class QualiopiValidationService
                     'current_count' => count($formation->getEvaluationCriteria()),
                     'required_minimum' => 2,
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } else {
                 $this->logger->info('Evaluation criteria validation passed', [
                     'formation_id' => $formation->getId(),
-                    'criteria_count' => count($formation->getEvaluationCriteria())
+                    'criteria_count' => count($formation->getEvaluationCriteria()),
                 ]);
             }
 
@@ -136,7 +137,7 @@ class QualiopiValidationService
             $this->logger->debug('Validating success indicators', [
                 'formation_id' => $formation->getId(),
                 'success_indicators_count' => $formation->getSuccessIndicators() ? count($formation->getSuccessIndicators()) : 0,
-                'success_indicators' => $formation->getSuccessIndicators()
+                'success_indicators' => $formation->getSuccessIndicators(),
             ]);
 
             if (empty($formation->getSuccessIndicators())) {
@@ -145,7 +146,7 @@ class QualiopiValidationService
                 $this->logger->warning('Missing success indicators', [
                     'formation_id' => $formation->getId(),
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } elseif (count($formation->getSuccessIndicators()) < 2) {
                 $error = 'Au moins 2 indicateurs de réussite sont requis (Qualiopi 2.5)';
@@ -155,12 +156,12 @@ class QualiopiValidationService
                     'current_count' => count($formation->getSuccessIndicators()),
                     'required_minimum' => 2,
                     'error' => $error,
-                    'qualiopi_criterion' => '2.5'
+                    'qualiopi_criterion' => '2.5',
                 ]);
             } else {
                 $this->logger->info('Success indicators validation passed', [
                     'formation_id' => $formation->getId(),
-                    'indicators_count' => count($formation->getSuccessIndicators())
+                    'indicators_count' => count($formation->getSuccessIndicators()),
                 ]);
             }
 
@@ -168,10 +169,9 @@ class QualiopiValidationService
                 'formation_id' => $formation->getId(),
                 'total_errors' => count($errors),
                 'errors' => $errors,
-                'is_compliant' => empty($errors)
+                'is_compliant' => empty($errors),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during Qualiopi objectives validation', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -179,7 +179,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'validateObjectives'
+                'method' => 'validateObjectives',
             ]);
 
             // Re-throw the exception to maintain error handling behavior
@@ -197,7 +197,7 @@ class QualiopiValidationService
         $this->logger->info('Checking Qualiopi 2.5 compliance', [
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
-            'method' => 'isCompliantWithCriteria25'
+            'method' => 'isCompliantWithCriteria25',
         ]);
 
         try {
@@ -208,12 +208,11 @@ class QualiopiValidationService
                 'formation_id' => $formation->getId(),
                 'is_compliant' => $isCompliant,
                 'errors_count' => count($errors),
-                'errors' => $errors
+                'errors' => $errors,
             ]);
 
             return $isCompliant;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during Qualiopi 2.5 compliance check', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -221,7 +220,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'isCompliantWithCriteria25'
+                'method' => 'isCompliantWithCriteria25',
             ]);
 
             // Re-throw the exception to maintain error handling behavior
@@ -237,7 +236,7 @@ class QualiopiValidationService
         $this->logger->info('Starting Qualiopi compliance report generation', [
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
-            'method' => 'generateQualiopiReport'
+            'method' => 'generateQualiopiReport',
         ]);
 
         try {
@@ -252,7 +251,7 @@ class QualiopiValidationService
                 'evaluation_methods_filled' => !empty($formation->getEvaluationMethods()),
                 'contact_info_filled' => !empty($formation->getContactInfo()),
                 'training_location_filled' => !empty($formation->getTrainingLocation()),
-                'funding_modalities_filled' => !empty($formation->getFundingModalities())
+                'funding_modalities_filled' => !empty($formation->getFundingModalities()),
             ]);
 
             $objectivesScore = $this->calculateObjectivesScore($formation);
@@ -261,7 +260,7 @@ class QualiopiValidationService
             $this->logger->debug('Calculated compliance metrics', [
                 'formation_id' => $formation->getId(),
                 'objectives_score' => $objectivesScore,
-                'overall_compliance' => $overallCompliance
+                'overall_compliance' => $overallCompliance,
             ]);
 
             $report = [
@@ -295,12 +294,11 @@ class QualiopiValidationService
                 'objectives_score' => $report['critere_2_5']['score'],
                 'overall_compliance' => $report['overall_compliance'],
                 'general_fields_filled' => array_sum($report['general_qualiopi_fields']),
-                'total_general_fields' => count($report['general_qualiopi_fields'])
+                'total_general_fields' => count($report['general_qualiopi_fields']),
             ]);
 
             return $report;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during Qualiopi report generation', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -308,7 +306,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'generateQualiopiReport'
+                'method' => 'generateQualiopiReport',
             ]);
 
             // Re-throw the exception to maintain error handling behavior
@@ -324,7 +322,7 @@ class QualiopiValidationService
         $this->logger->info('Generating Qualiopi compliance suggestions', [
             'formation_id' => $formation->getId(),
             'formation_title' => $formation->getTitle(),
-            'method' => 'getComplianceSuggestions'
+            'method' => 'getComplianceSuggestions',
         ]);
 
         $suggestions = [];
@@ -339,7 +337,7 @@ class QualiopiValidationService
                 'has_success_indicators' => !empty($formation->getSuccessIndicators()),
                 'has_target_audience' => !empty($formation->getTargetAudience()),
                 'has_access_modalities' => !empty($formation->getAccessModalities()),
-                'has_handicap_accessibility' => !empty($formation->getHandicapAccessibility())
+                'has_handicap_accessibility' => !empty($formation->getHandicapAccessibility()),
             ]);
 
             if (empty($formation->getOperationalObjectives())) {
@@ -347,7 +345,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for operational objectives', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -356,7 +354,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for evaluable objectives', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -365,7 +363,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for evaluation criteria', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -374,7 +372,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for success indicators', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -384,7 +382,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for target audience', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -393,7 +391,7 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for access modalities', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
@@ -402,17 +400,16 @@ class QualiopiValidationService
                 $suggestions[] = $suggestion;
                 $this->logger->debug('Added suggestion for handicap accessibility', [
                     'formation_id' => $formation->getId(),
-                    'suggestion' => $suggestion
+                    'suggestion' => $suggestion,
                 ]);
             }
 
             $this->logger->info('Qualiopi compliance suggestions generated', [
                 'formation_id' => $formation->getId(),
                 'total_suggestions' => count($suggestions),
-                'suggestions' => $suggestions
+                'suggestions' => $suggestions,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during compliance suggestions generation', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -420,7 +417,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'getComplianceSuggestions'
+                'method' => 'getComplianceSuggestions',
             ]);
 
             // Re-throw the exception to maintain error handling behavior
@@ -437,7 +434,7 @@ class QualiopiValidationService
     {
         $this->logger->debug('Calculating objectives score', [
             'formation_id' => $formation->getId(),
-            'method' => 'calculateObjectivesScore'
+            'method' => 'calculateObjectivesScore',
         ]);
 
         try {
@@ -454,7 +451,7 @@ class QualiopiValidationService
             $this->logger->debug('Operational objectives score calculated', [
                 'formation_id' => $formation->getId(),
                 'operational_count' => $operationalCount,
-                'operational_score' => $operationalScore
+                'operational_score' => $operationalScore,
             ]);
 
             // Evaluable objectives (25 points)
@@ -468,7 +465,7 @@ class QualiopiValidationService
             $this->logger->debug('Evaluable objectives score calculated', [
                 'formation_id' => $formation->getId(),
                 'evaluable_count' => $evaluableCount,
-                'evaluable_score' => $evaluableScore
+                'evaluable_score' => $evaluableScore,
             ]);
 
             // Evaluation criteria (25 points)
@@ -482,7 +479,7 @@ class QualiopiValidationService
             $this->logger->debug('Evaluation criteria score calculated', [
                 'formation_id' => $formation->getId(),
                 'criteria_count' => $criteriaCount,
-                'criteria_score' => $criteriaScore
+                'criteria_score' => $criteriaScore,
             ]);
 
             // Success indicators (25 points)
@@ -496,7 +493,7 @@ class QualiopiValidationService
             $this->logger->debug('Success indicators score calculated', [
                 'formation_id' => $formation->getId(),
                 'indicators_count' => $indicatorsCount,
-                'indicators_score' => $indicatorsScore
+                'indicators_score' => $indicatorsScore,
             ]);
 
             $this->logger->info('Objectives score calculation completed', [
@@ -506,13 +503,12 @@ class QualiopiValidationService
                     'operational' => $operationalScore,
                     'evaluable' => $evaluableScore,
                     'criteria' => $criteriaScore,
-                    'indicators' => $indicatorsScore
-                ]
+                    'indicators' => $indicatorsScore,
+                ],
             ]);
 
             return $score;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during objectives score calculation', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -520,7 +516,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'calculateObjectivesScore'
+                'method' => 'calculateObjectivesScore',
             ]);
 
             // Re-throw the exception to maintain error handling behavior
@@ -535,7 +531,7 @@ class QualiopiValidationService
     {
         $this->logger->debug('Calculating overall compliance', [
             'formation_id' => $formation->getId(),
-            'method' => 'calculateOverallCompliance'
+            'method' => 'calculateOverallCompliance',
         ]);
 
         try {
@@ -552,9 +548,7 @@ class QualiopiValidationService
 
             $this->logger->debug('Required fields status', [
                 'formation_id' => $formation->getId(),
-                'fields_status' => array_map(function($value) {
-                    return !empty($value);
-                }, $requiredFields)
+                'fields_status' => array_map(static fn ($value) => !empty($value), $requiredFields),
             ]);
 
             $filledFields = 0;
@@ -568,7 +562,7 @@ class QualiopiValidationService
                 'formation_id' => $formation->getId(),
                 'filled_fields' => $filledFields,
                 'total_fields' => count($requiredFields),
-                'completion_percentage' => ($filledFields / count($requiredFields)) * 100
+                'completion_percentage' => ($filledFields / count($requiredFields)) * 100,
             ]);
 
             $basicCompliance = ($filledFields / count($requiredFields)) * 80; // 80% for basic fields
@@ -583,12 +577,11 @@ class QualiopiValidationService
                 'objectives_compliance' => round($objectivesCompliance, 1),
                 'overall_compliance' => $overallCompliance,
                 'objectives_score' => $objectivesScore,
-                'filled_fields_ratio' => "{$filledFields}/" . count($requiredFields)
+                'filled_fields_ratio' => "{$filledFields}/" . count($requiredFields),
             ]);
 
             return $overallCompliance;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during overall compliance calculation', [
                 'formation_id' => $formation->getId(),
                 'exception_message' => $e->getMessage(),
@@ -596,7 +589,7 @@ class QualiopiValidationService
                 'exception_file' => $e->getFile(),
                 'exception_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'method' => 'calculateOverallCompliance'
+                'method' => 'calculateOverallCompliance',
             ]);
 
             // Re-throw the exception to maintain error handling behavior

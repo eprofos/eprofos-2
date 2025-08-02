@@ -7,7 +7,11 @@ namespace App\Controller\Admin\Service;
 use App\Entity\Service\Service;
 use App\Form\Service\ServiceType;
 use App\Repository\Service\ServiceRepository;
+use DateTime;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,10 +42,10 @@ class ServiceController extends AbstractController
     public function index(ServiceRepository $serviceRepository): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin services list access started', [
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
         ]);
@@ -61,7 +65,7 @@ class ServiceController extends AbstractController
             ;
 
             $servicesCount = count($services);
-            
+
             $this->logger->info('Services list successfully retrieved', [
                 'admin' => $adminId,
                 'services_count' => $servicesCount,
@@ -69,9 +73,9 @@ class ServiceController extends AbstractController
             ]);
 
             // Log detailed service statistics
-            $activeServices = array_filter($services, fn($service) => $service->isActive());
-            $categorizedServices = array_filter($services, fn($service) => $service->getServiceCategory() !== null);
-            
+            $activeServices = array_filter($services, static fn ($service) => $service->isActive());
+            $categorizedServices = array_filter($services, static fn ($service) => $service->getServiceCategory() !== null);
+
             $this->logger->debug('Services statistics calculated', [
                 'admin' => $adminId,
                 'total_services' => $servicesCount,
@@ -88,7 +92,6 @@ class ServiceController extends AbstractController
                     ['label' => 'Services', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error while retrieving services list', [
                 'admin' => $adminId,
@@ -100,7 +103,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors du chargement des services.');
-            
+
             return $this->render('admin/service/index.html.twig', [
                 'services' => [],
                 'page_title' => 'Gestion des services',
@@ -109,8 +112,7 @@ class ServiceController extends AbstractController
                     ['label' => 'Services', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error while accessing services list', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -123,7 +125,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->render('admin/service/index.html.twig', [
                 'services' => [],
                 'page_title' => 'Gestion des services',
@@ -142,12 +144,12 @@ class ServiceController extends AbstractController
     public function show(Service $service): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service details view started', [
             'service_id' => $service->getId(),
             'service_title' => $service->getTitle(),
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
@@ -181,8 +183,7 @@ class ServiceController extends AbstractController
                     ['label' => $service->getTitle(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while displaying service details', [
                 'service_id' => $service->getId(),
                 'admin' => $adminId,
@@ -195,7 +196,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur s\'est produite lors de l\'affichage des détails du service.');
-            
+
             return $this->redirectToRoute('admin_service_index');
         }
     }
@@ -207,18 +208,18 @@ class ServiceController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service creation started', [
             'admin' => $adminId,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             $service = new Service();
             $form = $this->createForm(ServiceType::class, $service);
-            
+
             $this->logger->debug('Service creation form initialized', [
                 'admin' => $adminId,
                 'form_type' => ServiceType::class,
@@ -243,7 +244,7 @@ class ServiceController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Service creation form validation failed', [
                         'admin' => $adminId,
                         'validation_errors' => $errors,
@@ -273,7 +274,7 @@ class ServiceController extends AbstractController
                     'service_slug' => $service->getSlug(),
                     'service_category' => $service->getServiceCategory()?->getName(),
                     'admin' => $adminId,
-                    'creation_timestamp' => new \DateTime(),
+                    'creation_timestamp' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', 'Le service a été créé avec succès.');
@@ -291,8 +292,7 @@ class ServiceController extends AbstractController
                     ['label' => 'Nouveau service', 'url' => null],
                 ],
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Service creation failed: unique constraint violation', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -302,7 +302,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Un service avec ce titre existe déjà. Veuillez choisir un titre différent.');
-            
+
             return $this->render('admin/service/new.html.twig', [
                 'service' => $service,
                 'form' => $form,
@@ -313,7 +313,6 @@ class ServiceController extends AbstractController
                     ['label' => 'Nouveau service', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service creation', [
                 'admin' => $adminId,
@@ -328,7 +327,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la création du service.');
-            
+
             return $this->render('admin/service/new.html.twig', [
                 'service' => $service,
                 'form' => $form,
@@ -339,8 +338,7 @@ class ServiceController extends AbstractController
                     ['label' => 'Nouveau service', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service creation', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -353,7 +351,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_index');
         }
     }
@@ -365,13 +363,13 @@ class ServiceController extends AbstractController
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service edit started', [
             'service_id' => $service->getId(),
             'service_title' => $service->getTitle(),
             'admin' => $adminId,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
@@ -413,7 +411,7 @@ class ServiceController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Service edit form validation failed', [
                         'service_id' => $service->getId(),
                         'admin' => $adminId,
@@ -469,7 +467,7 @@ class ServiceController extends AbstractController
                     'service_title' => $service->getTitle(),
                     'admin' => $adminId,
                     'changes_made' => $changes,
-                    'update_timestamp' => new \DateTime(),
+                    'update_timestamp' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', 'Le service a été modifié avec succès.');
@@ -488,8 +486,7 @@ class ServiceController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Service update failed: unique constraint violation', [
                 'service_id' => $service->getId(),
                 'admin' => $adminId,
@@ -500,7 +497,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Un service avec ce titre existe déjà. Veuillez choisir un titre différent.');
-            
+
             return $this->render('admin/service/edit.html.twig', [
                 'service' => $service,
                 'form' => $form,
@@ -512,7 +509,6 @@ class ServiceController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service update', [
                 'service_id' => $service->getId(),
@@ -524,7 +520,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la modification du service.');
-            
+
             return $this->render('admin/service/edit.html.twig', [
                 'service' => $service,
                 'form' => $form,
@@ -536,8 +532,7 @@ class ServiceController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service update', [
                 'service_id' => $service->getId(),
                 'admin' => $adminId,
@@ -550,7 +545,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_index');
         }
     }
@@ -564,19 +559,19 @@ class ServiceController extends AbstractController
         $adminId = $this->getUser()?->getUserIdentifier();
         $serviceId = $service->getId();
         $serviceTitle = $service->getTitle();
-        
+
         $this->logger->info('Admin service deletion started', [
             'service_id' => $serviceId,
             'service_title' => $serviceTitle,
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             $tokenValue = $request->getPayload()->get('_token');
             $expectedToken = 'delete' . $serviceId;
-            
+
             $this->logger->debug('CSRF token validation started', [
                 'service_id' => $serviceId,
                 'admin' => $adminId,
@@ -616,12 +611,11 @@ class ServiceController extends AbstractController
                     'service_id' => $serviceId,
                     'service_title' => $serviceTitle,
                     'admin' => $adminId,
-                    'deletion_timestamp' => new \DateTime(),
+                    'deletion_timestamp' => new DateTime(),
                     'deleted_service_details' => $serviceDetails,
                 ]);
 
                 $this->addFlash('success', 'Le service a été supprimé avec succès.');
-
             } else {
                 $this->logger->warning('Service deletion failed: invalid CSRF token', [
                     'service_id' => $serviceId,
@@ -635,8 +629,7 @@ class ServiceController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_service_index');
-
-        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException $e) {
+        } catch (ForeignKeyConstraintViolationException $e) {
             $this->logger->error('Service deletion failed: foreign key constraint violation', [
                 'service_id' => $serviceId,
                 'service_title' => $serviceTitle,
@@ -648,9 +641,8 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Impossible de supprimer ce service car il est référencé par d\'autres éléments du système.');
-            
-            return $this->redirectToRoute('admin_service_index');
 
+            return $this->redirectToRoute('admin_service_index');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service deletion', [
                 'service_id' => $serviceId,
@@ -663,10 +655,9 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la suppression du service.');
-            
-            return $this->redirectToRoute('admin_service_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_service_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service deletion', [
                 'service_id' => $serviceId,
                 'service_title' => $serviceTitle,
@@ -680,7 +671,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_index');
         }
     }
@@ -695,20 +686,20 @@ class ServiceController extends AbstractController
         $serviceId = $service->getId();
         $serviceTitle = $service->getTitle();
         $currentStatus = $service->isActive();
-        
+
         $this->logger->info('Admin service status toggle started', [
             'service_id' => $serviceId,
             'service_title' => $serviceTitle,
             'current_status' => $currentStatus,
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             $tokenValue = $request->getPayload()->get('_token');
             $expectedToken = 'toggle_status' . $serviceId;
-            
+
             $this->logger->debug('CSRF token validation for status toggle', [
                 'service_id' => $serviceId,
                 'admin' => $adminId,
@@ -724,7 +715,7 @@ class ServiceController extends AbstractController
 
                 $newStatus = !$currentStatus;
                 $service->setIsActive($newStatus);
-                
+
                 $this->logger->debug('Service status change prepared', [
                     'service_id' => $serviceId,
                     'admin' => $adminId,
@@ -734,7 +725,7 @@ class ServiceController extends AbstractController
                 $entityManager->flush();
 
                 $status = $newStatus ? 'activé' : 'désactivé';
-                
+
                 $this->logger->info('Service status toggled successfully', [
                     'service_id' => $serviceId,
                     'service_title' => $serviceTitle,
@@ -742,11 +733,10 @@ class ServiceController extends AbstractController
                     'new_status' => $newStatus,
                     'status_text' => $status,
                     'admin' => $adminId,
-                    'toggle_timestamp' => new \DateTime(),
+                    'toggle_timestamp' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', "Le service a été {$status} avec succès.");
-
             } else {
                 $this->logger->warning('Service status toggle failed: invalid CSRF token', [
                     'service_id' => $serviceId,
@@ -761,7 +751,6 @@ class ServiceController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_service_index');
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service status toggle', [
                 'service_id' => $serviceId,
@@ -775,10 +764,9 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors du changement de statut du service.');
-            
-            return $this->redirectToRoute('admin_service_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_service_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service status toggle', [
                 'service_id' => $serviceId,
                 'service_title' => $serviceTitle,
@@ -793,7 +781,7 @@ class ServiceController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_index');
         }
     }

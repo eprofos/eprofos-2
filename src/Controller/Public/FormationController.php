@@ -7,6 +7,7 @@ namespace App\Controller\Public;
 use App\Entity\Training\Formation;
 use App\Repository\Training\CategoryRepository;
 use App\Repository\Training\FormationRepository;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,7 +37,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $requestId = uniqid('formation_index_', true);
-        
+
         try {
             $this->logger->info('Formation catalog index requested', [
                 'request_id' => $requestId,
@@ -65,7 +66,7 @@ class FormationController extends AbstractController
             $page = max(1, $request->query->getInt('page', 1));
             $limit = 12; // Formations per page
             $offset = ($page - 1) * $limit;
-            
+
             $this->logger->debug('Pagination parameters calculated', [
                 'request_id' => $requestId,
                 'page' => $page,
@@ -79,7 +80,7 @@ class FormationController extends AbstractController
                 ->getQuery()
                 ->getResult()
             ;
-            
+
             $this->logger->debug('Formations retrieved from database', [
                 'request_id' => $requestId,
                 'formations_count' => count($formations),
@@ -90,7 +91,7 @@ class FormationController extends AbstractController
             // Get total count for pagination
             $totalFormations = $this->formationRepository->countByFilters($filters);
             $totalPages = ceil($totalFormations / $limit);
-            
+
             $this->logger->debug('Pagination metadata calculated', [
                 'request_id' => $requestId,
                 'total_formations' => $totalFormations,
@@ -151,7 +152,6 @@ class FormationController extends AbstractController
                 'total_pages' => $totalPages,
                 'total_formations' => $totalFormations,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in formation catalog index', [
                 'request_id' => $requestId,
@@ -162,8 +162,7 @@ class FormationController extends AbstractController
             ]);
 
             throw $this->createNotFoundException('Erreur lors du chargement du catalogue de formations');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in formation catalog index', [
                 'request_id' => $requestId,
                 'error_message' => $e->getMessage(),
@@ -185,7 +184,7 @@ class FormationController extends AbstractController
     public function byCategory(string $slug, Request $request): Response
     {
         $requestId = uniqid('formation_by_category_', true);
-        
+
         try {
             $this->logger->info('Formation by category requested', [
                 'request_id' => $requestId,
@@ -224,7 +223,6 @@ class FormationController extends AbstractController
             ]);
 
             return $this->redirectToRoute('public_formations_index', $queryParams);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in formation by category', [
                 'request_id' => $requestId,
@@ -235,8 +233,7 @@ class FormationController extends AbstractController
             ]);
 
             throw $this->createNotFoundException('Erreur lors du chargement de la catégorie');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in formation by category', [
                 'request_id' => $requestId,
                 'category_slug' => $slug,
@@ -258,7 +255,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $requestId = uniqid('formation_show_', true);
-        
+
         try {
             $this->logger->info('Formation detail view requested', [
                 'request_id' => $requestId,
@@ -309,7 +306,7 @@ class FormationController extends AbstractController
                 'request_id' => $requestId,
                 'formation_id' => $formation->getId(),
                 'similar_formations_count' => count($similarFormations),
-                'similar_formation_ids' => array_map(fn($f) => $f->getId(), $similarFormations),
+                'similar_formation_ids' => array_map(static fn ($f) => $f->getId(), $similarFormations),
             ]);
 
             $processingTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -336,7 +333,6 @@ class FormationController extends AbstractController
                 'open_sessions' => $openSessions,
                 'similar_formations' => $similarFormations,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in formation show', [
                 'request_id' => $requestId,
@@ -348,8 +344,7 @@ class FormationController extends AbstractController
             ]);
 
             throw $this->createNotFoundException('Erreur lors du chargement de la formation');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in formation show', [
                 'request_id' => $requestId,
                 'formation_slug' => $slug,
@@ -364,8 +359,6 @@ class FormationController extends AbstractController
         }
     }
 
-
-
     /**
      * Ajax endpoint for formation filtering.
      */
@@ -374,7 +367,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $requestId = uniqid('formation_ajax_filter_', true);
-        
+
         try {
             $this->logger->info('Ajax formation filter requested', [
                 'request_id' => $requestId,
@@ -404,7 +397,7 @@ class FormationController extends AbstractController
             $page = max(1, $request->query->getInt('page', 1));
             $limit = 12; // Formations per page
             $offset = ($page - 1) * $limit;
-            
+
             $this->logger->debug('Ajax pagination calculated', [
                 'request_id' => $requestId,
                 'page' => $page,
@@ -418,20 +411,20 @@ class FormationController extends AbstractController
                 ->getQuery()
                 ->getResult()
             ;
-            
+
             $this->logger->debug('Ajax formations retrieved', [
                 'request_id' => $requestId,
                 'formations_count' => count($formations),
-                'formation_ids' => array_map(fn($f) => $f->getId(), $formations),
+                'formation_ids' => array_map(static fn ($f) => $f->getId(), $formations),
                 'page' => $page,
             ]);
 
             // Get total count for pagination
             $totalFormations = $this->formationRepository->countByFilters($filters);
             $totalPages = ceil($totalFormations / $limit);
-            
+
             $processingTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->info('Ajax formation filter response prepared', [
                 'request_id' => $requestId,
                 'formations_count' => count($formations),
@@ -448,7 +441,6 @@ class FormationController extends AbstractController
                 'total_pages' => $totalPages,
                 'total_formations' => $totalFormations,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in ajax formation filter', [
                 'request_id' => $requestId,
@@ -461,10 +453,9 @@ class FormationController extends AbstractController
 
             return $this->json([
                 'error' => 'Erreur lors du filtrage des formations',
-                'message' => 'Une erreur de base de données s\'est produite'
+                'message' => 'Une erreur de base de données s\'est produite',
             ], 500);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in ajax formation filter', [
                 'request_id' => $requestId,
                 'error_message' => $e->getMessage(),
@@ -477,7 +468,7 @@ class FormationController extends AbstractController
 
             return $this->json([
                 'error' => 'Erreur inattendue lors du filtrage',
-                'message' => 'Une erreur inattendue s\'est produite'
+                'message' => 'Une erreur inattendue s\'est produite',
             ], 500);
         }
     }
@@ -490,7 +481,7 @@ class FormationController extends AbstractController
     private function extractFilters(Request $request): array
     {
         $requestId = uniqid('extract_filters_', true);
-        
+
         try {
             $this->logger->debug('Starting filter extraction', [
                 'request_id' => $requestId,
@@ -587,14 +578,11 @@ class FormationController extends AbstractController
                 'request_id' => $requestId,
                 'total_filters' => count($filters),
                 'active_filters' => array_keys($filters),
-                'filters_summary' => array_map(function($value) {
-                    return is_string($value) ? substr($value, 0, 50) : $value;
-                }, $filters),
+                'filters_summary' => array_map(static fn ($value) => is_string($value) ? substr($value, 0, 50) : $value, $filters),
             ]);
 
             return $filters;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during filter extraction', [
                 'request_id' => $requestId,
                 'error_message' => $e->getMessage(),
@@ -616,7 +604,7 @@ class FormationController extends AbstractController
     private function getFilterOptions(): array
     {
         $requestId = uniqid('get_filter_options_', true);
-        
+
         try {
             $this->logger->debug('Starting filter options retrieval', [
                 'request_id' => $requestId,
@@ -627,7 +615,7 @@ class FormationController extends AbstractController
             $this->logger->debug('Categories with active formations retrieved', [
                 'request_id' => $requestId,
                 'categories_count' => count($categories),
-                'category_ids' => array_map(fn($c) => $c->getId(), $categories),
+                'category_ids' => array_map(static fn ($c) => $c->getId(), $categories),
             ]);
 
             // Get available levels
@@ -682,7 +670,6 @@ class FormationController extends AbstractController
             ]);
 
             return $filterOptions;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during filter options retrieval', [
                 'request_id' => $requestId,
@@ -699,8 +686,7 @@ class FormationController extends AbstractController
                 'price_range' => ['min' => 0, 'max' => 10000],
                 'duration_range' => ['min' => 1, 'max' => 365],
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error during filter options retrieval', [
                 'request_id' => $requestId,
                 'error_message' => $e->getMessage(),

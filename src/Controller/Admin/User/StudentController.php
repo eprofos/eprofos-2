@@ -123,6 +123,7 @@ class StudentController extends AbstractController
                     'user' => $userIdentifier,
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -143,6 +144,7 @@ class StudentController extends AbstractController
                     'filters' => $filters,
                     'user' => $userIdentifier,
                 ]);
+
                 throw $e;
             }
 
@@ -356,7 +358,7 @@ class StudentController extends AbstractController
 
         try {
             $student = new Student();
-            
+
             $this->logger->debug('New student entity created', [
                 'entity_class' => get_class($student),
                 'created_by' => $userIdentifier,
@@ -403,7 +405,7 @@ class StudentController extends AbstractController
                             try {
                                 $hashedPassword = $this->passwordHasher->hashPassword($student, $plainPassword);
                                 $student->setPassword($hashedPassword);
-                                
+
                                 $this->logger->debug('Password hashed successfully', [
                                     'student_email' => $student->getEmail(),
                                     'password_length' => strlen($plainPassword),
@@ -415,6 +417,7 @@ class StudentController extends AbstractController
                                     'student_email' => $student->getEmail(),
                                     'created_by' => $userIdentifier,
                                 ]);
+
                                 throw $e;
                             }
                         }
@@ -449,6 +452,7 @@ class StudentController extends AbstractController
                                 'created_by' => $userIdentifier,
                                 'trace' => $e->getTraceAsString(),
                             ]);
+
                             throw $e;
                         }
 
@@ -456,7 +460,7 @@ class StudentController extends AbstractController
                         if ($sendWelcomeEmail) {
                             try {
                                 $emailSent = $this->studentService->sendWelcomeEmail($student, $plainPassword);
-                                
+
                                 $this->logger->info('Welcome email sending attempted', [
                                     'student_id' => $student->getId(),
                                     'student_email' => $student->getEmail(),
@@ -676,12 +680,13 @@ class StudentController extends AbstractController
                                     'error' => $e->getMessage(),
                                     'updated_by' => $userIdentifier,
                                 ]);
+
                                 throw $e;
                             }
                         } else {
                             // Keep original password if no new password provided
                             $student->setPassword($originalPassword);
-                            
+
                             $this->logger->debug('Original password retained', [
                                 'student_id' => $studentId,
                                 'updated_by' => $userIdentifier,
@@ -709,6 +714,7 @@ class StudentController extends AbstractController
                                 'updated_by' => $userIdentifier,
                                 'trace' => $e->getTraceAsString(),
                             ]);
+
                             throw $e;
                         }
 
@@ -872,6 +878,7 @@ class StudentController extends AbstractController
                             'deleted_by' => $userIdentifier,
                             'trace' => $e->getTraceAsString(),
                         ]);
+
                         throw $e;
                     }
 
@@ -1000,6 +1007,7 @@ class StudentController extends AbstractController
                             'toggled_by' => $userIdentifier,
                             'trace' => $e->getTraceAsString(),
                         ]);
+
                         throw $e;
                     }
 
@@ -1110,7 +1118,7 @@ class StudentController extends AbstractController
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Token CSRF invalide'
+                    'message' => 'Token CSRF invalide',
                 ], 400);
             }
 
@@ -1125,7 +1133,7 @@ class StudentController extends AbstractController
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Impossible d\'envoyer un email de réinitialisation pour un étudiant inactif.'
+                    'message' => 'Impossible d\'envoyer un email de réinitialisation pour un étudiant inactif.',
                 ], 400);
             }
 
@@ -1155,21 +1163,20 @@ class StudentController extends AbstractController
                         'success' => true,
                         'message' => 'Email de réinitialisation envoyé avec succès.',
                     ]);
-                } else {
-                    $this->logger->error('Password reset email sending failed', [
-                        'student_id' => $studentId,
-                        'student_email' => $studentEmail,
-                        'sent_by' => $userIdentifier,
-                        'email_service_response' => 'failure',
-                        'processing_time_ms' => round($totalTime * 1000, 2),
-                        'error_type' => 'service_returned_false',
-                    ]);
-
-                    return new JsonResponse([
-                        'success' => false,
-                        'message' => 'Erreur lors de l\'envoi de l\'email.',
-                    ], 500);
                 }
+                $this->logger->error('Password reset email sending failed', [
+                    'student_id' => $studentId,
+                    'student_email' => $studentEmail,
+                    'sent_by' => $userIdentifier,
+                    'email_service_response' => 'failure',
+                    'processing_time_ms' => round($totalTime * 1000, 2),
+                    'error_type' => 'service_returned_false',
+                ]);
+
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Erreur lors de l\'envoi de l\'email.',
+                ], 500);
             } catch (Exception $e) {
                 $totalTime = microtime(true) - $startTime;
 
@@ -1258,7 +1265,7 @@ class StudentController extends AbstractController
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Token CSRF invalide'
+                    'message' => 'Token CSRF invalide',
                 ], 400);
             }
 
@@ -1318,21 +1325,20 @@ class StudentController extends AbstractController
                         'success' => true,
                         'message' => 'Email de vérification envoyé avec succès.',
                     ]);
-                } else {
-                    $this->logger->error('Email verification sending failed', [
-                        'student_id' => $studentId,
-                        'student_email' => $studentEmail,
-                        'sent_by' => $userIdentifier,
-                        'email_service_response' => 'failure',
-                        'processing_time_ms' => round($totalTime * 1000, 2),
-                        'error_type' => 'service_returned_false',
-                    ]);
-
-                    return new JsonResponse([
-                        'success' => false,
-                        'message' => 'Erreur lors de l\'envoi de l\'email.',
-                    ], 500);
                 }
+                $this->logger->error('Email verification sending failed', [
+                    'student_id' => $studentId,
+                    'student_email' => $studentEmail,
+                    'sent_by' => $userIdentifier,
+                    'email_service_response' => 'failure',
+                    'processing_time_ms' => round($totalTime * 1000, 2),
+                    'error_type' => 'service_returned_false',
+                ]);
+
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Erreur lors de l\'envoi de l\'email.',
+                ], 500);
             } catch (Exception $e) {
                 $totalTime = microtime(true) - $startTime;
 
@@ -1461,6 +1467,7 @@ class StudentController extends AbstractController
                                 'verified_by' => $userIdentifier,
                                 'trace' => $e->getTraceAsString(),
                             ]);
+
                             throw $e;
                         }
 
@@ -1567,7 +1574,7 @@ class StudentController extends AbstractController
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Token CSRF invalide'
+                    'message' => 'Token CSRF invalide',
                 ], 400);
             }
 
@@ -1618,6 +1625,7 @@ class StudentController extends AbstractController
                         'error' => $e->getMessage(),
                         'requested_by' => $userIdentifier,
                     ]);
+
                     throw $e;
                 }
 
@@ -1656,11 +1664,13 @@ class StudentController extends AbstractController
                         'generated_by' => $userIdentifier,
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     throw $e;
                 }
 
                 // Send the new password via email
                 $emailSent = false;
+
                 try {
                     $this->logger->debug('Attempting to send new password via email', [
                         'student_id' => $studentId,
@@ -1803,6 +1813,7 @@ class StudentController extends AbstractController
                     'exported_by' => $userIdentifier,
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -1826,6 +1837,7 @@ class StudentController extends AbstractController
                     'exported_by' => $userIdentifier,
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -1955,7 +1967,7 @@ class StudentController extends AbstractController
                 ]);
 
                 if (count($students) !== count($studentIds)) {
-                    $foundIds = array_map(fn($student) => $student->getId(), $students);
+                    $foundIds = array_map(static fn ($student) => $student->getId(), $students);
                     $missingIds = array_diff($studentIds, $foundIds);
 
                     $this->logger->warning('Some students not found for bulk action', [
@@ -2011,7 +2023,7 @@ class StudentController extends AbstractController
                                     }
                                 } catch (Exception $e) {
                                     $errors[] = "Erreur email pour {$student->getEmail()}: {$e->getMessage()}";
-                                    
+
                                     $this->logger->error('Email sending failed in bulk action', [
                                         'student_id' => $student->getId(),
                                         'student_email' => $student->getEmail(),
@@ -2024,7 +2036,7 @@ class StudentController extends AbstractController
                         }
                     } catch (Exception $e) {
                         $errors[] = "Erreur pour étudiant ID {$student->getId()}: {$e->getMessage()}";
-                        
+
                         $this->logger->error('Error processing student in bulk action', [
                             'student_id' => $student->getId(),
                             'action' => $action,
@@ -2058,6 +2070,7 @@ class StudentController extends AbstractController
                             'performed_by' => $userIdentifier,
                             'trace' => $e->getTraceAsString(),
                         ]);
+
                         throw $e;
                     }
                 }
@@ -2138,22 +2151,23 @@ class StudentController extends AbstractController
             'HTTP_X_FORWARDED_FOR',
             'HTTP_X_REAL_IP',
             'HTTP_CLIENT_IP',
-            'REMOTE_ADDR'
+            'REMOTE_ADDR',
         ];
 
         foreach ($ipSources as $source) {
             if (!empty($_SERVER[$source])) {
                 $ip = $_SERVER[$source];
-                
+
                 // Handle comma-separated IPs (X-Forwarded-For can contain multiple IPs)
-                if (strpos($ip, ',') !== false) {
+                if (str_contains($ip, ',')) {
                     $ip = trim(explode(',', $ip)[0]);
                 }
-                
+
                 // Validate IP address
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
                     return $ip;
-                } elseif (filter_var($ip, FILTER_VALIDATE_IP)) {
+                }
+                if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip; // Return private/reserved IPs for development
                 }
             }

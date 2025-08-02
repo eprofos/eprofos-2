@@ -68,13 +68,14 @@ class AuditLogController extends AbstractController
             ]);
 
             $decodedEntityClass = base64_decode($entityClass, true);
-            
+
             if ($decodedEntityClass === false) {
                 $this->logger->error('Failed to decode entity class parameter', [
                     'encoded_class' => $entityClass,
                     'session_id' => $sessionId,
                     'user_id' => $userId,
                 ]);
+
                 throw new InvalidArgumentException('Invalid entity class parameter encoding');
             }
 
@@ -98,6 +99,7 @@ class AuditLogController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Cette entité n\'est pas auditable.');
+
                 return $this->redirectToRoute('admin_dashboard');
             }
 
@@ -115,7 +117,7 @@ class AuditLogController extends AbstractController
 
             $repository = $this->entityManager->getRepository($decodedEntityClass);
             $entity = $repository->find($entityId);
-            
+
             if (!$entity) {
                 $this->logger->warning('Entity not found in database', [
                     'entity_class' => $decodedEntityClass,
@@ -125,6 +127,7 @@ class AuditLogController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Entité non trouvée.');
+
                 return $this->redirectToRoute('admin_dashboard');
             }
 
@@ -154,7 +157,7 @@ class AuditLogController extends AbstractController
             ]);
 
             $changes = $this->auditLogService->getFormattedEntityChanges($entity, $limit * $page);
-            
+
             $this->logger->info('Entity change history retrieved', [
                 'entity_class' => $decodedEntityClass,
                 'entity_id' => $entityId,
@@ -239,7 +242,7 @@ class AuditLogController extends AbstractController
                                 'trace' => $e->getTraceAsString(),
                                 'session_id' => $sessionId,
                             ]);
-                            
+
                             // Keep processing other fields
                             $processedFieldChanges[$fieldName] = [
                                 'old' => $fieldChange['old'] ?? null,
@@ -254,7 +257,6 @@ class AuditLogController extends AbstractController
 
                     $change['fieldChanges'] = $processedFieldChanges;
                     $processedChanges[] = $change;
-
                 } catch (Exception $e) {
                     $this->logger->error('Error processing individual change', [
                         'change_index' => $i,
@@ -262,7 +264,7 @@ class AuditLogController extends AbstractController
                         'trace' => $e->getTraceAsString(),
                         'session_id' => $sessionId,
                     ]);
-                    
+
                     // Continue processing other changes
                     continue;
                 }
@@ -289,7 +291,7 @@ class AuditLogController extends AbstractController
 
             // Step 9: Prepare response
             $executionTime = microtime(true) - $startTime;
-            
+
             $this->logger->info('Audit entity history request completed successfully', [
                 'entity_class' => $decodedEntityClass,
                 'entity_id' => $entityId,
@@ -311,7 +313,6 @@ class AuditLogController extends AbstractController
                 'totalPages' => $totalPages,
                 'totalChanges' => $totalChanges,
             ]);
-
         } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided to audit entity history', [
                 'error' => $e->getMessage(),
@@ -324,8 +325,8 @@ class AuditLogController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Paramètres invalides fournis.');
-            return $this->redirectToRoute('admin_dashboard');
 
+            return $this->redirectToRoute('admin_dashboard');
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime error in audit entity history', [
                 'error' => $e->getMessage(),
@@ -338,8 +339,8 @@ class AuditLogController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur s\'est produite lors de la récupération de l\'historique.');
-            return $this->redirectToRoute('admin_dashboard');
 
+            return $this->redirectToRoute('admin_dashboard');
         } catch (Throwable $e) {
             $this->logger->critical('Critical error in audit entity history', [
                 'error' => $e->getMessage(),
@@ -355,6 +356,7 @@ class AuditLogController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur critique s\'est produite. L\'équipe technique a été notifiée.');
+
             return $this->redirectToRoute('admin_dashboard');
         }
     }
@@ -411,12 +413,13 @@ class AuditLogController extends AbstractController
                     ]);
 
                     $repository = $this->entityManager->getRepository($entityClass);
-                    
+
                     if (!$repository) {
                         $this->logger->warning('Repository not found for entity class', [
                             'entity_class' => $entityClass,
                             'session_id' => $sessionId,
                         ]);
+
                         continue;
                     }
 
@@ -453,7 +456,6 @@ class AuditLogController extends AbstractController
                     ]);
 
                     $totalEntitiesProcessed++;
-
                 } catch (ReflectionException $e) {
                     $this->logger->error('Reflection error processing entity', [
                         'entity_class' => $entityClass,
@@ -461,8 +463,8 @@ class AuditLogController extends AbstractController
                         'trace' => $e->getTraceAsString(),
                         'session_id' => $sessionId,
                     ]);
-                    continue;
 
+                    continue;
                 } catch (Exception $e) {
                     $this->logger->error('Error processing entity statistics', [
                         'entity_class' => $entityClass,
@@ -470,6 +472,7 @@ class AuditLogController extends AbstractController
                         'trace' => $e->getTraceAsString(),
                         'session_id' => $sessionId,
                     ]);
+
                     continue;
                 }
             }
@@ -488,7 +491,6 @@ class AuditLogController extends AbstractController
             return $this->render('admin/audit/index.html.twig', [
                 'entityStats' => $entityStats,
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime error in audit overview', [
                 'error' => $e->getMessage(),
@@ -499,8 +501,8 @@ class AuditLogController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur s\'est produite lors de la récupération des données d\'audit.');
-            return $this->redirectToRoute('admin_dashboard');
 
+            return $this->redirectToRoute('admin_dashboard');
         } catch (Throwable $e) {
             $this->logger->critical('Critical error in audit overview', [
                 'error' => $e->getMessage(),
@@ -514,6 +516,7 @@ class AuditLogController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur critique s\'est produite. L\'équipe technique a été notifiée.');
+
             return $this->redirectToRoute('admin_dashboard');
         }
     }
@@ -535,6 +538,7 @@ class AuditLogController extends AbstractController
                     'display_name' => $displayName,
                     'entity_class' => get_class($entity),
                 ]);
+
                 return $displayName;
             }
 
@@ -544,6 +548,7 @@ class AuditLogController extends AbstractController
                     'display_name' => $displayName,
                     'entity_class' => get_class($entity),
                 ]);
+
                 return $displayName;
             }
 
@@ -553,6 +558,7 @@ class AuditLogController extends AbstractController
                     'display_name' => $displayName,
                     'entity_class' => get_class($entity),
                 ]);
+
                 return $displayName;
             }
 
@@ -563,6 +569,7 @@ class AuditLogController extends AbstractController
                     'display_name' => $displayName,
                     'entity_class' => get_class($entity),
                 ]);
+
                 return $displayName;
             }
 
@@ -572,22 +579,23 @@ class AuditLogController extends AbstractController
                 'display_name' => $displayName,
                 'entity_class' => get_class($entity),
             ]);
-            return $displayName;
 
+            return $displayName;
         } catch (ReflectionException $e) {
             $this->logger->error('Reflection error getting entity display name', [
                 'entity_class' => get_class($entity),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return 'Entité inconnue';
 
+            return 'Entité inconnue';
         } catch (Exception $e) {
             $this->logger->error('Error getting entity display name', [
                 'entity_class' => get_class($entity),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return 'Erreur d\'affichage';
         }
     }
@@ -654,21 +662,21 @@ class AuditLogController extends AbstractController
             ]);
 
             return $displayName;
-
         } catch (ReflectionException $e) {
             $this->logger->error('Reflection error getting entity class display name', [
                 'entity_class' => $entityClass,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return 'Entité inconnue';
 
+            return 'Entité inconnue';
         } catch (Exception $e) {
             $this->logger->error('Error getting entity class display name', [
                 'entity_class' => $entityClass,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return 'Erreur d\'affichage';
         }
     }

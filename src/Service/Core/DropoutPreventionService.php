@@ -91,7 +91,7 @@ class DropoutPreventionService
                         ]);
 
                         $recommendations = $this->generateInterventionRecommendations($riskFactors);
-                        
+
                         $atRiskStudents[] = [
                             'student' => $progress->getStudent(),
                             'formation' => $progress->getFormation(),
@@ -118,6 +118,7 @@ class DropoutPreventionService
                         'error_line' => $e->getLine(),
                         'stack_trace' => $e->getTraceAsString(),
                     ]);
+
                     // Continue processing other students
                     continue;
                 }
@@ -131,7 +132,6 @@ class DropoutPreventionService
             // Sort by risk score (highest first)
             usort($atRiskStudents, static fn ($a, $b) => $b['riskScore'] <=> $a['riskScore']);
             $this->logger->debug('Sorted at-risk students by risk score');
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during dropout risk detection', [
                 'error_message' => $e->getMessage(),
@@ -140,6 +140,7 @@ class DropoutPreventionService
                 'stack_trace' => $e->getTraceAsString(),
                 'processed_count' => $totalProcessed,
             ]);
+
             throw $e;
         }
 
@@ -171,6 +172,7 @@ class DropoutPreventionService
                     'student_id' => $student->getId(),
                     'default_score' => 50.0,
                 ]);
+
                 return 50.0; // Neutral score for new students
             }
 
@@ -187,7 +189,7 @@ class DropoutPreventionService
             foreach ($progressRecords as $progress) {
                 try {
                     $processedRecords++;
-                    
+
                     // Update engagement score for this progress
                     $engagementScore = $progress->calculateEngagementScore();
 
@@ -205,7 +207,6 @@ class DropoutPreventionService
 
                     $totalScore += $engagementScore * $weight;
                     $totalWeight += $weight;
-
                 } catch (Exception $e) {
                     $errorCount++;
                     $this->logger->error('Error calculating engagement for progress record', [
@@ -216,6 +217,7 @@ class DropoutPreventionService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other records
                     continue;
                 }
@@ -233,7 +235,6 @@ class DropoutPreventionService
             ]);
 
             return $finalScore;
-
         } catch (Exception $e) {
             $this->logger->error('Critical error during engagement score calculation', [
                 'student_id' => $student->getId(),
@@ -242,6 +243,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             // Return neutral score on error
             return 50.0;
         }
@@ -278,7 +280,7 @@ class DropoutPreventionService
                 try {
                     if ($progress->isAtRiskOfDropout()) {
                         $alertsTriggered++;
-                        
+
                         $this->logger->warning('Student intervention alert triggered', [
                             'student_id' => $student->getId(),
                             'student_name' => $student->getFullName(),
@@ -300,7 +302,7 @@ class DropoutPreventionService
                         // Log detailed intervention recommendations
                         $riskFactors = $this->analyzeRiskFactors($progress);
                         $recommendations = $this->generateInterventionRecommendations($riskFactors);
-                        
+
                         $this->logger->info('Intervention recommendations generated', [
                             'student_id' => $student->getId(),
                             'formation_id' => $progress->getFormation()?->getId(),
@@ -322,6 +324,7 @@ class DropoutPreventionService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other progress records
                     continue;
                 }
@@ -333,7 +336,6 @@ class DropoutPreventionService
                 'total_progress_records' => count($progressRecords),
                 'error_count' => $errorCount,
             ]);
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during intervention alert processing', [
                 'student_id' => $student->getId(),
@@ -342,6 +344,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -352,7 +355,7 @@ class DropoutPreventionService
     public function generateRetentionReport(): array
     {
         $this->logger->info('Starting retention report generation for Qualiopi compliance');
-        
+
         try {
             $this->logger->debug('Retrieving retention statistics from repository');
             $stats = $this->progressRepository->getRetentionStats();
@@ -365,7 +368,7 @@ class DropoutPreventionService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            
+
             // Fallback to simple stats if complex query fails
             try {
                 $allProgress = $this->progressRepository->findAll();
@@ -392,7 +395,7 @@ class DropoutPreventionService
                     'error_file' => $fallbackError->getFile(),
                     'error_line' => $fallbackError->getLine(),
                 ]);
-                
+
                 // Use minimal default stats
                 $stats = [
                     'totalEnrollments' => 0,
@@ -437,7 +440,7 @@ class DropoutPreventionService
             $this->logger->debug('Calculating additional report metrics');
             $totalFormations = $this->countFormations();
             $avgEngagement = $this->calculateAverageEngagement();
-            
+
             $report = [
                 'total_formations' => $totalFormations,
                 'total_students' => $stats['totalEnrollments'] ?? 0,
@@ -465,7 +468,6 @@ class DropoutPreventionService
             ]);
 
             return $report;
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during retention report generation', [
                 'error_message' => $e->getMessage(),
@@ -473,6 +475,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -483,7 +486,7 @@ class DropoutPreventionService
     public function analyzeDropoutPatterns(): array
     {
         $this->logger->info('Starting dropout patterns analysis for continuous improvement');
-        
+
         try {
             // Get students who dropped out (high risk + inactive for 30+ days)
             $this->logger->debug('Querying dropped out students (high risk + inactive for 30+ days)');
@@ -552,7 +555,6 @@ class DropoutPreventionService
                             'days_before_risk' => $daysBeforeRisk,
                         ]);
                     }
-
                 } catch (Exception $e) {
                     $errorCount++;
                     $this->logger->error('Error analyzing dropout pattern for progress record', [
@@ -563,6 +565,7 @@ class DropoutPreventionService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other records
                     continue;
                 }
@@ -591,7 +594,6 @@ class DropoutPreventionService
             ]);
 
             return $patterns;
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during dropout patterns analysis', [
                 'error_message' => $e->getMessage(),
@@ -599,6 +601,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -627,7 +630,7 @@ class DropoutPreventionService
             foreach ($progressRecords as $progress) {
                 try {
                     $processedCount++;
-                    
+
                     if ($progress->isAtRiskOfDropout()) {
                         $this->logger->debug('Processing at-risk progress record for interventions', [
                             'progress_id' => $progress->getId(),
@@ -668,7 +671,6 @@ class DropoutPreventionService
                             'risk_score' => $progress->getRiskScore(),
                         ]);
                     }
-
                 } catch (Exception $e) {
                     $errorCount++;
                     $this->logger->error('Error generating interventions for progress record', [
@@ -679,6 +681,7 @@ class DropoutPreventionService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other records
                     continue;
                 }
@@ -696,7 +699,6 @@ class DropoutPreventionService
             ]);
 
             return $recommendations;
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during intervention recommendations generation', [
                 'student_id' => $student->getId(),
@@ -705,6 +707,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -758,7 +761,7 @@ class DropoutPreventionService
             foreach ($report['at_risk_students'] as $item) {
                 try {
                     $processedStudents++;
-                    
+
                     $exportData['at_risk_students'][] = [
                         'student_name' => $item['student']->getFullName(),
                         'student_email' => $item['student']->getEmail(),
@@ -771,7 +774,6 @@ class DropoutPreventionService
                         'difficulty_signals' => implode(', ', $item['progress']->getDifficultySignals()),
                         'recommendations' => implode('; ', $item['recommendations']),
                     ];
-
                 } catch (Exception $e) {
                     $errorCount++;
                     $this->logger->error('Error processing at-risk student for export', [
@@ -781,6 +783,7 @@ class DropoutPreventionService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other students
                     continue;
                 }
@@ -797,7 +800,6 @@ class DropoutPreventionService
             ]);
 
             return $exportData;
-
         } catch (Exception $e) {
             $this->logger->critical('Critical error during retention data export', [
                 'format' => $format,
@@ -806,6 +808,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -824,7 +827,7 @@ class DropoutPreventionService
     public function getAttendanceStatistics(): array
     {
         $this->logger->info('Retrieving attendance statistics for compliance reporting');
-        
+
         try {
             $qb = $this->attendanceRepository->createQueryBuilder('a')
                 ->select('a.status, COUNT(a.id) as count')
@@ -833,7 +836,7 @@ class DropoutPreventionService
 
             $this->logger->debug('Executing attendance statistics query');
             $results = $qb->getQuery()->getResult();
-            
+
             $this->logger->debug('Attendance query results retrieved', [
                 'result_count' => count($results),
                 'raw_results' => $results,
@@ -849,7 +852,7 @@ class DropoutPreventionService
             foreach ($results as $result) {
                 $count = (int) $result['count'];
                 $percentage = $total > 0 ? ($count / $total) * 100 : 0;
-                
+
                 $statistics[$result['status']] = [
                     'count' => $count,
                     'percentage' => $percentage,
@@ -869,7 +872,6 @@ class DropoutPreventionService
             ]);
 
             return $statistics;
-
         } catch (Exception $e) {
             $this->logger->error('Error retrieving attendance statistics', [
                 'error_message' => $e->getMessage(),
@@ -877,7 +879,7 @@ class DropoutPreventionService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty statistics on error
             return [];
         }
@@ -977,7 +979,6 @@ class DropoutPreventionService
             ]);
 
             return $factors;
-
         } catch (Exception $e) {
             $this->logger->error('Error during risk factors analysis', [
                 'progress_id' => $progress->getId() ?? 'unknown',
@@ -987,6 +988,7 @@ class DropoutPreventionService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
+
             // Return empty factors on error
             return [];
         }
@@ -1007,7 +1009,7 @@ class DropoutPreventionService
 
             foreach ($riskFactors as $factor => $value) {
                 $factorScore = 0;
-                
+
                 switch ($factor) {
                     case 'low_engagement':
                         $factorScore = (60 - $value) * 0.5; // Max 30 points
@@ -1078,7 +1080,6 @@ class DropoutPreventionService
             ]);
 
             return $finalScore;
-
         } catch (Exception $e) {
             $this->logger->error('Error calculating risk score', [
                 'factors' => $riskFactors,
@@ -1086,6 +1087,7 @@ class DropoutPreventionService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
+
             // Return neutral score on error
             return 50.0;
         }
@@ -1185,7 +1187,7 @@ class DropoutPreventionService
     private function countFormations(): int
     {
         $this->logger->debug('Counting total formations for reporting');
-        
+
         try {
             $count = $this->progressRepository->createQueryBuilder('sp')
                 ->select('COUNT(DISTINCT sp.formation)')
@@ -1198,13 +1200,13 @@ class DropoutPreventionService
             ]);
 
             return (int) $count;
-
         } catch (Exception $e) {
             $this->logger->error('Error counting formations', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
+
             // Return 0 on error
             return 0;
         }
@@ -1216,7 +1218,7 @@ class DropoutPreventionService
     private function calculateAverageEngagement(): float
     {
         $this->logger->debug('Calculating average engagement score across all students');
-        
+
         try {
             $result = $this->progressRepository->createQueryBuilder('sp')
                 ->select('AVG(sp.engagementScore)')
@@ -1231,13 +1233,13 @@ class DropoutPreventionService
             ]);
 
             return $avgEngagement;
-
         } catch (Exception $e) {
             $this->logger->error('Error calculating average engagement', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
+
             // Return 0.0 on error
             return 0.0;
         }

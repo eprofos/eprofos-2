@@ -8,6 +8,10 @@ use App\Entity\Training\Formation;
 use App\Entity\User\Student;
 use App\Repository\Training\FormationRepository;
 use App\Service\Security\ContentAccessService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,9 +31,8 @@ class FormationController extends AbstractController
     public function __construct(
         private readonly FormationRepository $formationRepository,
         private readonly ContentAccessService $contentAccessService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * List all accessible formations for the current student.
@@ -46,7 +49,7 @@ class FormationController extends AbstractController
                 'student_email' => $student->getEmail(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get formations accessible to this student
@@ -59,7 +62,7 @@ class FormationController extends AbstractController
             $this->logger->info('Accessible formations retrieved successfully', [
                 'student_id' => $student->getId(),
                 'total_formations' => count($accessibleFormations),
-                'formation_details' => array_map(fn($formation) => [
+                'formation_details' => array_map(static fn ($formation) => [
                     'formation_id' => $formation->getId(),
                     'formation_title' => $formation->getTitle(),
                     'formation_level' => $formation->getLevel(),
@@ -79,28 +82,27 @@ class FormationController extends AbstractController
                 'student' => $student,
                 'page_title' => 'Mes Formations',
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for formations index', [
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès aux formations.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès aux formations.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in formations index process', [
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès aux formations.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès aux formations.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during formations index', [
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_class' => get_class($e),
@@ -112,8 +114,9 @@ class FormationController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès aux formations.');
+
             return $this->redirectToRoute('student_dashboard');
         }
     }
@@ -141,7 +144,7 @@ class FormationController extends AbstractController
                 'student_email' => $student->getEmail(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for this formation
@@ -151,11 +154,11 @@ class FormationController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved for formation access', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -165,7 +168,7 @@ class FormationController extends AbstractController
             ]);
 
             $enrollment = null;
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $formation->getId()) {
                     $enrollment = $e;
@@ -184,7 +187,7 @@ class FormationController extends AbstractController
                 $this->logger->warning('No valid enrollment found for formation access', [
                     'student_id' => $student->getId(),
                     'formation_id' => $formation->getId(),
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -193,7 +196,7 @@ class FormationController extends AbstractController
             $this->logger->debug('Formation structure details', [
                 'formation_id' => $formation->getId(),
                 'modules_count' => $modules->count(),
-                'modules_details' => array_map(fn($module) => [
+                'modules_details' => array_map(static fn ($module) => [
                     'module_id' => $module->getId(),
                     'module_title' => $module->getTitle(),
                     'module_order' => $module->getOrderIndex(),
@@ -217,30 +220,29 @@ class FormationController extends AbstractController
                 'student' => $student,
                 'page_title' => $formation->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for formation view', [
                 'formation_id' => $formation->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès à la formation.');
-            return $this->redirectToRoute('student_formation_index');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès à la formation.');
+
+            return $this->redirectToRoute('student_formation_index');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in formation view process', [
                 'formation_id' => $formation->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès à la formation.');
-            return $this->redirectToRoute('student_formation_index');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès à la formation.');
+
+            return $this->redirectToRoute('student_formation_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during formation view', [
                 'formation_id' => $formation->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -253,8 +255,9 @@ class FormationController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès à la formation.');
+
             return $this->redirectToRoute('student_formation_index');
         }
     }

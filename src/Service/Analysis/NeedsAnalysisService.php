@@ -17,7 +17,6 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
-use Exception;
 use InvalidArgumentException;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -73,24 +72,28 @@ class NeedsAnalysisService
         try {
             // Validate input parameters
             $this->logger->debug('Validating input parameters', $requestContext);
-            
+
             if (empty(trim($type))) {
                 $this->logger->error('Type parameter is empty', $requestContext);
+
                 throw new InvalidArgumentException('Type parameter cannot be empty');
             }
 
             if (empty(trim($recipientName))) {
                 $this->logger->error('Recipient name parameter is empty', $requestContext);
+
                 throw new InvalidArgumentException('Recipient name parameter cannot be empty');
             }
 
             if (empty(trim($recipientEmail))) {
                 $this->logger->error('Recipient email parameter is empty', $requestContext);
+
                 throw new InvalidArgumentException('Recipient email parameter cannot be empty');
             }
 
             if (!filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
                 $this->logger->error('Invalid email format provided', $requestContext);
+
                 throw new InvalidArgumentException('Invalid email format provided');
             }
 
@@ -99,6 +102,7 @@ class NeedsAnalysisService
                 $this->logger->error('Invalid needs analysis type provided', array_merge($requestContext, [
                     'allowed_types' => [NeedsAnalysisRequest::TYPE_COMPANY, NeedsAnalysisRequest::TYPE_INDIVIDUAL],
                 ]));
+
                 throw new InvalidArgumentException('Invalid needs analysis type');
             }
 
@@ -106,7 +110,7 @@ class NeedsAnalysisService
 
             // Generate token and expiration
             $this->logger->debug('Generating security token and expiration', $requestContext);
-            
+
             try {
                 $tokenData = $this->tokenGeneratorService->generateTokenWithExpiration();
                 $this->logger->debug('Token generated successfully', array_merge($requestContext, [
@@ -118,12 +122,13 @@ class NeedsAnalysisService
                     'token_error' => $e->getMessage(),
                     'token_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Failed to generate security token: ' . $e->getMessage(), 0, $e);
             }
 
             // Create the request entity
             $this->logger->debug('Creating NeedsAnalysisRequest entity', $requestContext);
-            
+
             try {
                 $request = new NeedsAnalysisRequest();
                 $request->setType($type)
@@ -147,41 +152,44 @@ class NeedsAnalysisService
                     'entity_error' => $e->getMessage(),
                     'entity_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Failed to create needs analysis request entity: ' . $e->getMessage(), 0, $e);
             }
 
             // Persist to database
             $this->logger->debug('Persisting entity to database', $requestContext);
-            
+
             try {
                 $this->entityManager->persist($request);
                 $this->entityManager->flush();
-                
+
                 $finalContext = array_merge($requestContext, [
                     'request_id' => $request->getId(),
                     'request_token' => substr($request->getToken(), 0, 8) . '...',
                     'request_status' => $request->getStatus(),
                     'created_at' => $request->getCreatedAt()?->format('Y-m-d H:i:s'),
                 ]);
-                
+
                 $this->logger->info('Needs analysis request created and persisted successfully', $finalContext);
-                
+
                 return $request;
-            } catch (ORMException | DBALException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while persisting needs analysis request', array_merge($requestContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Database error while creating needs analysis request: ' . $e->getMessage(), 0, $e);
             } catch (Throwable $e) {
                 $this->logger->error('Unexpected error while persisting needs analysis request', array_merge($requestContext, [
                     'unexpected_error' => $e->getMessage(),
                     'unexpected_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Unexpected error while creating needs analysis request: ' . $e->getMessage(), 0, $e);
             }
-        } catch (InvalidArgumentException | RuntimeException $e) {
+        } catch (InvalidArgumentException|RuntimeException $e) {
             // Re-throw validation and runtime exceptions
             throw $e;
         } catch (Throwable $e) {
@@ -190,6 +198,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Critical error while creating needs analysis request: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -216,25 +225,28 @@ class NeedsAnalysisService
         try {
             // Validate request status
             $this->logger->debug('Validating request status for sending', $sendContext);
-            
+
             if ($request->getStatus() !== NeedsAnalysisRequest::STATUS_PENDING) {
                 $this->logger->warning('Attempted to send request with invalid status', array_merge($sendContext, [
                     'expected_status' => NeedsAnalysisRequest::STATUS_PENDING,
                     'validation_error' => 'Can only send pending requests',
                 ]));
+
                 throw new LogicException('Can only send pending requests');
             }
 
             // Validate request data
             $this->logger->debug('Validating request data before sending', $sendContext);
-            
+
             if (empty($request->getRecipientEmail())) {
                 $this->logger->error('Request has no recipient email', $sendContext);
+
                 throw new InvalidArgumentException('Request must have a recipient email');
             }
 
             if (empty($request->getToken())) {
                 $this->logger->error('Request has no token', $sendContext);
+
                 throw new InvalidArgumentException('Request must have a valid token');
             }
 
@@ -243,6 +255,7 @@ class NeedsAnalysisService
                     'token_expired' => true,
                     'current_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                 ]));
+
                 throw new InvalidArgumentException('Request token is expired or invalid');
             }
 
@@ -250,10 +263,10 @@ class NeedsAnalysisService
 
             // Send email notification
             $this->logger->debug('Sending email notification via AnalysisEmailNotificationService', $sendContext);
-            
+
             try {
                 $emailSent = $this->emailNotificationService->sendNeedsAnalysisRequest($request);
-                
+
                 $this->logger->debug('Email notification service call completed', array_merge($sendContext, [
                     'email_sent_result' => $emailSent,
                 ]));
@@ -263,17 +276,19 @@ class NeedsAnalysisService
                     'email_service_error_class' => $e::class,
                     'email_service_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 return false;
             }
 
             if ($emailSent) {
                 $this->logger->debug('Email sent successfully, updating request status', $sendContext);
-                
+
                 try {
                     // Update status to sent
                     $sentAt = new DateTimeImmutable();
                     $request->setStatus(NeedsAnalysisRequest::STATUS_SENT)
-                        ->setSentAt($sentAt);
+                        ->setSentAt($sentAt)
+                    ;
 
                     $this->entityManager->flush();
 
@@ -286,12 +301,13 @@ class NeedsAnalysisService
                     $this->logger->info('Needs analysis request sent successfully', $finalContext);
 
                     return true;
-                } catch (ORMException | DBALException $e) {
+                } catch (DBALException|ORMException $e) {
                     $this->logger->error('Database error while updating request status after email sent', array_merge($sendContext, [
                         'db_update_error' => $e->getMessage(),
                         'db_update_error_code' => $e->getCode(),
                         'email_was_sent' => true,
                     ]));
+
                     // Email was sent but status update failed - this is a critical issue
                     throw new RuntimeException('Email was sent but failed to update database status: ' . $e->getMessage(), 0, $e);
                 }
@@ -300,13 +316,15 @@ class NeedsAnalysisService
                     'email_sent_result' => false,
                     'operation_successful' => false,
                 ]));
+
                 return false;
             }
-        } catch (LogicException | InvalidArgumentException $e) {
+        } catch (InvalidArgumentException|LogicException $e) {
             $this->logger->error('Validation error in sendNeedsAnalysisRequest', array_merge($sendContext, [
                 'validation_error' => $e->getMessage(),
                 'validation_error_class' => $e::class,
             ]));
+
             throw $e;
         } catch (RuntimeException $e) {
             // Re-throw runtime exceptions (like database errors after email sent)
@@ -317,6 +335,7 @@ class NeedsAnalysisService
                 'unexpected_error_class' => $e::class,
                 'unexpected_error_trace' => $e->getTraceAsString(),
             ]));
+
             return false;
         }
     }
@@ -337,9 +356,10 @@ class NeedsAnalysisService
         try {
             // Validate token format
             $this->logger->debug('Validating token format', $findContext);
-            
+
             if (empty(trim($token))) {
                 $this->logger->warning('Empty token provided for lookup', $findContext);
+
                 return null;
             }
 
@@ -348,9 +368,10 @@ class NeedsAnalysisService
                     $this->logger->warning('Invalid token format provided', array_merge($findContext, [
                         'token_format_valid' => false,
                     ]));
+
                     return null;
                 }
-                
+
                 $this->logger->debug('Token format validation passed', array_merge($findContext, [
                     'token_format_valid' => true,
                 ]));
@@ -359,15 +380,16 @@ class NeedsAnalysisService
                     'validation_error' => $e->getMessage(),
                     'validation_error_class' => $e::class,
                 ]));
+
                 return null;
             }
 
             // Search in repository
             $this->logger->debug('Searching for request in repository', $findContext);
-            
+
             try {
                 $request = $this->needsAnalysisRequestRepository->findByToken($token);
-                
+
                 if ($request) {
                     $resultContext = array_merge($findContext, [
                         'request_found' => true,
@@ -378,7 +400,7 @@ class NeedsAnalysisService
                         'expires_at' => $request->getExpiresAt()?->format('Y-m-d H:i:s'),
                         'created_at' => $request->getCreatedAt()?->format('Y-m-d H:i:s'),
                     ]);
-                    
+
                     $this->logger->info('Request found by token', $resultContext);
                 } else {
                     $this->logger->info('No request found for provided token', array_merge($findContext, [
@@ -387,12 +409,13 @@ class NeedsAnalysisService
                 }
 
                 return $request;
-            } catch (DBALException | ORMException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error during token lookup', array_merge($findContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                 ]));
+
                 return null;
             }
         } catch (Throwable $e) {
@@ -401,6 +424,7 @@ class NeedsAnalysisService
                 'unexpected_error_class' => $e::class,
                 'unexpected_error_trace' => $e->getTraceAsString(),
             ]));
+
             return null;
         }
     }
@@ -424,27 +448,29 @@ class NeedsAnalysisService
         try {
             // Check if expired
             $this->logger->debug('Checking token expiration', $accessContext);
-            
+
             $expiresAt = $request->getExpiresAt();
             if (!$expiresAt) {
                 $this->logger->warning('Request has no expiration date', array_merge($accessContext, [
                     'expiration_check' => 'no_expiration_date',
                     'accessible' => false,
                 ]));
+
                 return false;
             }
 
             try {
                 $isExpired = $this->tokenGeneratorService->isTokenExpired($expiresAt);
-                
+
                 if ($isExpired) {
                     $this->logger->info('Request token is expired', array_merge($accessContext, [
                         'expiration_check' => 'expired',
                         'accessible' => false,
                     ]));
+
                     return false;
                 }
-                
+
                 $this->logger->debug('Token expiration check passed', array_merge($accessContext, [
                     'expiration_check' => 'valid',
                 ]));
@@ -453,12 +479,13 @@ class NeedsAnalysisService
                     'expiration_error' => $e->getMessage(),
                     'expiration_error_class' => $e::class,
                 ]));
+
                 return false;
             }
 
             // Check status
             $this->logger->debug('Checking request status accessibility', $accessContext);
-            
+
             $allowedStatuses = [
                 NeedsAnalysisRequest::STATUS_SENT,
                 NeedsAnalysisRequest::STATUS_PENDING,
@@ -485,6 +512,7 @@ class NeedsAnalysisService
                 'unexpected_error_class' => $e::class,
                 'accessible' => false,
             ]));
+
             return false;
         }
     }
@@ -513,27 +541,29 @@ class NeedsAnalysisService
         try {
             // Validate request type
             $this->logger->debug('Validating request type for company analysis', $submitContext);
-            
+
             if ($request->getType() !== NeedsAnalysisRequest::TYPE_COMPANY) {
                 $this->logger->error('Invalid request type for company analysis', array_merge($submitContext, [
                     'expected_type' => NeedsAnalysisRequest::TYPE_COMPANY,
                     'validation_error' => 'Request is not for company analysis',
                 ]));
+
                 throw new InvalidArgumentException('Request is not for company analysis');
             }
 
             // Check accessibility
             $this->logger->debug('Checking request accessibility', $submitContext);
-            
+
             try {
                 if (!$this->isRequestAccessible($request)) {
                     $this->logger->warning('Request is not accessible for submission', array_merge($submitContext, [
                         'accessibility_check' => 'failed',
                         'expires_at' => $request->getExpiresAt()?->format('Y-m-d H:i:s'),
                     ]));
+
                     throw new LogicException('Request is not accessible');
                 }
-                
+
                 $this->logger->debug('Request accessibility check passed', array_merge($submitContext, [
                     'accessibility_check' => 'passed',
                 ]));
@@ -544,26 +574,28 @@ class NeedsAnalysisService
                     'accessibility_error' => $e->getMessage(),
                     'accessibility_error_class' => $e::class,
                 ]));
+
                 throw new RuntimeException('Failed to verify request accessibility: ' . $e->getMessage(), 0, $e);
             }
 
             // Validate analysis data
             $this->logger->debug('Validating analysis data', $submitContext);
-            
+
             $requiredFields = ['company_name', 'responsible_person', 'contact_email'];
             $missingFields = [];
-            
+
             foreach ($requiredFields as $field) {
                 if (empty($analysisData[$field])) {
                     $missingFields[] = $field;
                 }
             }
-            
+
             if (!empty($missingFields)) {
                 $this->logger->error('Missing required fields in analysis data', array_merge($submitContext, [
                     'missing_fields' => $missingFields,
                     'required_fields' => $requiredFields,
                 ]));
+
                 throw new InvalidArgumentException('Missing required fields: ' . implode(', ', $missingFields));
             }
 
@@ -572,6 +604,7 @@ class NeedsAnalysisService
                 $this->logger->error('Invalid email format in analysis data', array_merge($submitContext, [
                     'invalid_email' => $analysisData['contact_email'],
                 ]));
+
                 throw new InvalidArgumentException('Invalid email format provided');
             }
 
@@ -579,7 +612,7 @@ class NeedsAnalysisService
 
             // Create company analysis entity
             $this->logger->debug('Creating CompanyNeedsAnalysis entity', $submitContext);
-            
+
             try {
                 $analysis = new CompanyNeedsAnalysis();
                 $analysis->setNeedsAnalysisRequest($request);
@@ -587,7 +620,7 @@ class NeedsAnalysisService
                 // Populate with data
                 $this->logger->debug('Populating company analysis with provided data', $submitContext);
                 $this->populateCompanyAnalysis($analysis, $analysisData);
-                
+
                 $this->logger->debug('Company analysis entity populated successfully', array_merge($submitContext, [
                     'analysis_company_name' => $analysis->getCompanyName(),
                     'analysis_training_title' => $analysis->getTrainingTitle(),
@@ -599,16 +632,18 @@ class NeedsAnalysisService
                     'entity_error_class' => $e::class,
                     'entity_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Failed to create company analysis entity: ' . $e->getMessage(), 0, $e);
             }
 
             // Update request status and persist
             $this->logger->debug('Updating request status and persisting to database', $submitContext);
-            
+
             try {
                 $completedAt = new DateTimeImmutable();
                 $request->setStatus(NeedsAnalysisRequest::STATUS_COMPLETED)
-                    ->setCompletedAt($completedAt);
+                    ->setCompletedAt($completedAt)
+                ;
 
                 $this->entityManager->persist($analysis);
                 $this->entityManager->flush();
@@ -621,13 +656,14 @@ class NeedsAnalysisService
                 ]);
 
                 $this->logger->info('Company needs analysis submitted and persisted successfully', $finalContext);
-            } catch (ORMException | DBALException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while persisting company analysis', array_merge($submitContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                     'db_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Database error while saving company analysis: ' . $e->getMessage(), 0, $e);
             }
 
@@ -635,10 +671,10 @@ class NeedsAnalysisService
             $this->logger->debug('Sending completion notification to admin', array_merge($finalContext, [
                 'notification_step' => 'starting',
             ]));
-            
+
             try {
                 $notificationSent = $this->emailNotificationService->sendAnalysisCompletedNotification($request);
-                
+
                 $this->logger->info('Admin notification process completed', array_merge($finalContext, [
                     'notification_sent' => $notificationSent,
                     'notification_step' => 'completed',
@@ -653,11 +689,12 @@ class NeedsAnalysisService
             }
 
             return $analysis;
-        } catch (InvalidArgumentException | LogicException $e) {
+        } catch (InvalidArgumentException|LogicException $e) {
             $this->logger->error('Validation error in submitCompanyAnalysis', array_merge($submitContext, [
                 'validation_error' => $e->getMessage(),
                 'validation_error_class' => $e::class,
             ]));
+
             throw $e;
         } catch (RuntimeException $e) {
             // Re-throw runtime exceptions
@@ -668,6 +705,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Critical error while submitting company analysis: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -696,27 +734,29 @@ class NeedsAnalysisService
         try {
             // Validate request type
             $this->logger->debug('Validating request type for individual analysis', $submitContext);
-            
+
             if ($request->getType() !== NeedsAnalysisRequest::TYPE_INDIVIDUAL) {
                 $this->logger->error('Invalid request type for individual analysis', array_merge($submitContext, [
                     'expected_type' => NeedsAnalysisRequest::TYPE_INDIVIDUAL,
                     'validation_error' => 'Request is not for individual analysis',
                 ]));
+
                 throw new InvalidArgumentException('Request is not for individual analysis');
             }
 
             // Check accessibility
             $this->logger->debug('Checking request accessibility', $submitContext);
-            
+
             try {
                 if (!$this->isRequestAccessible($request)) {
                     $this->logger->warning('Request is not accessible for submission', array_merge($submitContext, [
                         'accessibility_check' => 'failed',
                         'expires_at' => $request->getExpiresAt()?->format('Y-m-d H:i:s'),
                     ]));
+
                     throw new LogicException('Request is not accessible');
                 }
-                
+
                 $this->logger->debug('Request accessibility check passed', array_merge($submitContext, [
                     'accessibility_check' => 'passed',
                 ]));
@@ -727,26 +767,28 @@ class NeedsAnalysisService
                     'accessibility_error' => $e->getMessage(),
                     'accessibility_error_class' => $e::class,
                 ]));
+
                 throw new RuntimeException('Failed to verify request accessibility: ' . $e->getMessage(), 0, $e);
             }
 
             // Validate analysis data
             $this->logger->debug('Validating analysis data', $submitContext);
-            
+
             $requiredFields = ['first_name', 'last_name', 'email'];
             $missingFields = [];
-            
+
             foreach ($requiredFields as $field) {
                 if (empty($analysisData[$field])) {
                     $missingFields[] = $field;
                 }
             }
-            
+
             if (!empty($missingFields)) {
                 $this->logger->error('Missing required fields in analysis data', array_merge($submitContext, [
                     'missing_fields' => $missingFields,
                     'required_fields' => $requiredFields,
                 ]));
+
                 throw new InvalidArgumentException('Missing required fields: ' . implode(', ', $missingFields));
             }
 
@@ -755,6 +797,7 @@ class NeedsAnalysisService
                 $this->logger->error('Invalid email format in analysis data', array_merge($submitContext, [
                     'invalid_email' => $analysisData['email'],
                 ]));
+
                 throw new InvalidArgumentException('Invalid email format provided');
             }
 
@@ -762,7 +805,7 @@ class NeedsAnalysisService
 
             // Create individual analysis entity
             $this->logger->debug('Creating IndividualNeedsAnalysis entity', $submitContext);
-            
+
             try {
                 $analysis = new IndividualNeedsAnalysis();
                 $analysis->setNeedsAnalysisRequest($request);
@@ -770,7 +813,7 @@ class NeedsAnalysisService
                 // Populate with data
                 $this->logger->debug('Populating individual analysis with provided data', $submitContext);
                 $this->populateIndividualAnalysis($analysis, $analysisData);
-                
+
                 $this->logger->debug('Individual analysis entity populated successfully', array_merge($submitContext, [
                     'analysis_full_name' => $analysis->getFirstName() . ' ' . $analysis->getLastName(),
                     'analysis_training_title' => $analysis->getDesiredTrainingTitle(),
@@ -783,16 +826,18 @@ class NeedsAnalysisService
                     'entity_error_class' => $e::class,
                     'entity_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Failed to create individual analysis entity: ' . $e->getMessage(), 0, $e);
             }
 
             // Update request status and persist
             $this->logger->debug('Updating request status and persisting to database', $submitContext);
-            
+
             try {
                 $completedAt = new DateTimeImmutable();
                 $request->setStatus(NeedsAnalysisRequest::STATUS_COMPLETED)
-                    ->setCompletedAt($completedAt);
+                    ->setCompletedAt($completedAt)
+                ;
 
                 $this->entityManager->persist($analysis);
                 $this->entityManager->flush();
@@ -805,13 +850,14 @@ class NeedsAnalysisService
                 ]);
 
                 $this->logger->info('Individual needs analysis submitted and persisted successfully', $finalContext);
-            } catch (ORMException | DBALException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while persisting individual analysis', array_merge($submitContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                     'db_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Database error while saving individual analysis: ' . $e->getMessage(), 0, $e);
             }
 
@@ -819,10 +865,10 @@ class NeedsAnalysisService
             $this->logger->debug('Sending completion notification to admin', array_merge($finalContext, [
                 'notification_step' => 'starting',
             ]));
-            
+
             try {
                 $notificationSent = $this->emailNotificationService->sendAnalysisCompletedNotification($request);
-                
+
                 $this->logger->info('Admin notification process completed', array_merge($finalContext, [
                     'notification_sent' => $notificationSent,
                     'notification_step' => 'completed',
@@ -837,11 +883,12 @@ class NeedsAnalysisService
             }
 
             return $analysis;
-        } catch (InvalidArgumentException | LogicException $e) {
+        } catch (InvalidArgumentException|LogicException $e) {
             $this->logger->error('Validation error in submitIndividualAnalysis', array_merge($submitContext, [
                 'validation_error' => $e->getMessage(),
                 'validation_error_class' => $e::class,
             ]));
+
             throw $e;
         } catch (RuntimeException $e) {
             // Re-throw runtime exceptions
@@ -852,6 +899,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Critical error while submitting individual analysis: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -876,12 +924,13 @@ class NeedsAnalysisService
         try {
             // Validate current status
             $this->logger->debug('Validating request status for cancellation', $cancelContext);
-            
+
             if ($request->getStatus() === NeedsAnalysisRequest::STATUS_COMPLETED) {
                 $this->logger->warning('Attempted to cancel completed request', array_merge($cancelContext, [
                     'validation_error' => 'Cannot cancel completed request',
                     'completed_at' => $request->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]));
+
                 throw new LogicException('Cannot cancel completed request');
             }
 
@@ -889,7 +938,7 @@ class NeedsAnalysisService
 
             // Update status and notes
             $this->logger->debug('Updating request status to cancelled', $cancelContext);
-            
+
             try {
                 $oldStatus = $request->getStatus();
                 $request->setStatus(NeedsAnalysisRequest::STATUS_CANCELLED);
@@ -898,12 +947,12 @@ class NeedsAnalysisService
                     $this->logger->debug('Adding cancellation reason to admin notes', array_merge($cancelContext, [
                         'reason_preview' => substr($reason, 0, 100) . (strlen($reason) > 100 ? '...' : ''),
                     ]));
-                    
+
                     $currentNotes = $request->getAdminNotes();
                     $newNote = 'Annulé: ' . $reason;
                     $updatedNotes = $currentNotes ? $currentNotes . "\n" . $newNote : $newNote;
                     $request->setAdminNotes($updatedNotes);
-                    
+
                     $this->logger->debug('Cancellation reason added to notes', array_merge($cancelContext, [
                         'notes_updated' => true,
                         'new_notes_length' => strlen($updatedNotes),
@@ -912,7 +961,7 @@ class NeedsAnalysisService
 
                 // Persist changes
                 $this->logger->debug('Persisting cancellation changes to database', $cancelContext);
-                
+
                 $this->entityManager->flush();
 
                 $finalContext = array_merge($cancelContext, [
@@ -922,13 +971,14 @@ class NeedsAnalysisService
                 ]);
 
                 $this->logger->info('Needs analysis request cancelled successfully', $finalContext);
-            } catch (ORMException | DBALException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while cancelling request', array_merge($cancelContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                     'db_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Database error while cancelling request: ' . $e->getMessage(), 0, $e);
             }
         } catch (LogicException $e) {
@@ -936,6 +986,7 @@ class NeedsAnalysisService
                 'validation_error' => $e->getMessage(),
                 'validation_error_class' => $e::class,
             ]));
+
             throw $e;
         } catch (RuntimeException $e) {
             // Re-throw runtime exceptions
@@ -946,6 +997,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Critical error while cancelling request: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -964,10 +1016,10 @@ class NeedsAnalysisService
 
         try {
             $this->logger->debug('Calling repository to mark expired requests', $markContext);
-            
+
             try {
                 $count = $this->needsAnalysisRequestRepository->markExpiredRequests();
-                
+
                 $finalContext = array_merge($markContext, [
                     'expired_count' => $count,
                     'operation_successful' => true,
@@ -977,13 +1029,14 @@ class NeedsAnalysisService
                 $this->logger->info('Successfully marked expired requests', $finalContext);
 
                 return $count;
-            } catch (DBALException | ORMException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while marking expired requests', array_merge($markContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                     'db_error_trace' => $e->getTraceAsString(),
                 ]));
+
                 throw new RuntimeException('Database error while marking expired requests: ' . $e->getMessage(), 0, $e);
             }
         } catch (RuntimeException $e) {
@@ -995,6 +1048,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Critical error while marking expired requests: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -1016,6 +1070,7 @@ class NeedsAnalysisService
 
             // Get requests statistics
             $this->logger->debug('Fetching requests statistics', $statsContext);
+
             try {
                 $statistics['requests'] = $this->needsAnalysisRequestRepository->getStatistics();
                 $this->logger->debug('Requests statistics retrieved', array_merge($statsContext, [
@@ -1031,6 +1086,7 @@ class NeedsAnalysisService
 
             // Get company analyses statistics
             $this->logger->debug('Fetching company analyses statistics', $statsContext);
+
             try {
                 $statistics['company_analyses'] = $this->companyNeedsAnalysisRepository->getCompanyStatistics();
                 $this->logger->debug('Company analyses statistics retrieved', array_merge($statsContext, [
@@ -1046,6 +1102,7 @@ class NeedsAnalysisService
 
             // Get individual analyses statistics
             $this->logger->debug('Fetching individual analyses statistics', $statsContext);
+
             try {
                 $statistics['individual_analyses'] = $this->individualNeedsAnalysisRepository->getIndividualStatistics();
                 $this->logger->debug('Individual analyses statistics retrieved', array_merge($statsContext, [
@@ -1074,7 +1131,7 @@ class NeedsAnalysisService
                 'unexpected_error_class' => $e::class,
                 'unexpected_error_trace' => $e->getTraceAsString(),
             ]));
-            
+
             // Return empty statistics rather than failing
             return [
                 'requests' => [],
@@ -1103,14 +1160,15 @@ class NeedsAnalysisService
                 $this->logger->warning('Invalid days parameter provided', array_merge($expiringContext, [
                     'validation_error' => 'Days must be positive',
                 ]));
+
                 throw new InvalidArgumentException('Days parameter must be positive');
             }
 
             $this->logger->debug('Calling repository to find expiring requests', $expiringContext);
-            
+
             try {
                 $requests = $this->needsAnalysisRequestRepository->findRequestsExpiringSoon($days);
-                
+
                 $finalContext = array_merge($expiringContext, [
                     'found_count' => count($requests),
                     'operation_successful' => true,
@@ -1119,31 +1177,34 @@ class NeedsAnalysisService
 
                 if (count($requests) > 0) {
                     $this->logger->info('Found requests expiring soon', array_merge($finalContext, [
-                        'request_ids' => array_map(fn($r) => $r->getId(), $requests),
+                        'request_ids' => array_map(static fn ($r) => $r->getId(), $requests),
                     ]));
                 } else {
                     $this->logger->debug('No requests found expiring soon', $finalContext);
                 }
 
                 return $requests;
-            } catch (DBALException | ORMException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while searching for expiring requests', array_merge($expiringContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                 ]));
+
                 return [];
             }
         } catch (InvalidArgumentException $e) {
             $this->logger->error('Validation error in getRequestsExpiringSoon', array_merge($expiringContext, [
                 'validation_error' => $e->getMessage(),
             ]));
+
             throw $e;
         } catch (Throwable $e) {
             $this->logger->error('Unexpected error searching for expiring requests', array_merge($expiringContext, [
                 'unexpected_error' => $e->getMessage(),
                 'unexpected_error_class' => $e::class,
             ]));
+
             return [];
         }
     }
@@ -1167,12 +1228,13 @@ class NeedsAnalysisService
         try {
             // Validate status
             $this->logger->debug('Validating request status for resend', $resendContext);
-            
+
             if ($request->getStatus() !== NeedsAnalysisRequest::STATUS_SENT) {
                 $this->logger->warning('Attempted to resend request with invalid status', array_merge($resendContext, [
                     'expected_status' => NeedsAnalysisRequest::STATUS_SENT,
                     'validation_error' => 'Can only resend sent requests',
                 ]));
+
                 throw new LogicException('Can only resend sent requests');
             }
 
@@ -1180,10 +1242,10 @@ class NeedsAnalysisService
 
             // Generate new token and expiration
             $this->logger->debug('Generating new token and expiration for resend', $resendContext);
-            
+
             try {
                 $tokenData = $this->tokenGeneratorService->generateTokenWithExpiration();
-                
+
                 $this->logger->debug('New token generated for resend', array_merge($resendContext, [
                     'new_token' => substr($tokenData['token'], 0, 8) . '...',
                     'new_expires_at' => $tokenData['expires_at']->format('Y-m-d H:i:s'),
@@ -1193,36 +1255,39 @@ class NeedsAnalysisService
                     'token_error' => $e->getMessage(),
                     'token_error_class' => $e::class,
                 ]));
+
                 throw new RuntimeException('Failed to generate new token for resend: ' . $e->getMessage(), 0, $e);
             }
 
             // Update request with new token
             $this->logger->debug('Updating request with new token and expiration', $resendContext);
-            
+
             try {
                 $request->setToken($tokenData['token'])
-                    ->setExpiresAt($tokenData['expires_at']);
+                    ->setExpiresAt($tokenData['expires_at'])
+                ;
 
                 $this->entityManager->flush();
-                
+
                 $this->logger->debug('Request updated with new token successfully', array_merge($resendContext, [
                     'token_updated' => true,
                 ]));
-            } catch (ORMException | DBALException $e) {
+            } catch (DBALException|ORMException $e) {
                 $this->logger->error('Database error while updating request for resend', array_merge($resendContext, [
                     'db_error' => $e->getMessage(),
                     'db_error_code' => $e->getCode(),
                     'db_error_class' => $e::class,
                 ]));
+
                 throw new RuntimeException('Database error while updating request for resend: ' . $e->getMessage(), 0, $e);
             }
 
             // Send email
             $this->logger->debug('Sending resend email notification', $resendContext);
-            
+
             try {
                 $emailSent = $this->emailNotificationService->sendNeedsAnalysisRequest($request);
-                
+
                 $finalContext = array_merge($resendContext, [
                     'email_sent' => $emailSent,
                     'operation_successful' => $emailSent,
@@ -1242,12 +1307,14 @@ class NeedsAnalysisService
                     'email_error_class' => $e::class,
                     'token_was_updated' => true,
                 ]));
+
                 return false;
             }
         } catch (LogicException $e) {
             $this->logger->error('Validation error in resendRequest', array_merge($resendContext, [
                 'validation_error' => $e->getMessage(),
             ]));
+
             throw $e;
         } catch (RuntimeException $e) {
             // Re-throw runtime exceptions
@@ -1258,6 +1325,7 @@ class NeedsAnalysisService
                 'critical_error_class' => $e::class,
                 'critical_error_trace' => $e->getTraceAsString(),
             ]));
+
             return false;
         }
     }
@@ -1278,7 +1346,7 @@ class NeedsAnalysisService
 
         try {
             $this->logger->debug('Setting company analysis fields', $populateContext);
-            
+
             $analysis->setCompanyName($data['company_name'] ?? '')
                 ->setResponsiblePerson($data['responsible_person'] ?? '')
                 ->setContactEmail($data['contact_email'] ?? '')
@@ -1298,7 +1366,8 @@ class NeedsAnalysisService
                 ->setLocationAppropriationNeeds($data['location_appropriation_needs'] ?? null)
                 ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
                 ->setTrainingExpectations($data['training_expectations'] ?? '')
-                ->setSpecificNeeds($data['specific_needs'] ?? '');
+                ->setSpecificNeeds($data['specific_needs'] ?? '')
+            ;
 
             $this->logger->debug('Company analysis populated successfully', array_merge($populateContext, [
                 'populated_company_name' => $analysis->getCompanyName(),
@@ -1314,6 +1383,7 @@ class NeedsAnalysisService
                 'population_error_class' => $e::class,
                 'population_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Failed to populate company analysis: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -1335,7 +1405,7 @@ class NeedsAnalysisService
 
         try {
             $this->logger->debug('Setting individual analysis fields', $populateContext);
-            
+
             $analysis->setFirstName($data['first_name'] ?? '')
                 ->setLastName($data['last_name'] ?? '')
                 ->setAddress($data['address'] ?? '')
@@ -1354,7 +1424,8 @@ class NeedsAnalysisService
                 ->setTrainingLocationPreference($data['training_location_preference'] ?? '')
                 ->setDisabilityAccommodations($data['disability_accommodations'] ?? null)
                 ->setTrainingExpectations($data['training_expectations'] ?? '')
-                ->setSpecificNeeds($data['specific_needs'] ?? '');
+                ->setSpecificNeeds($data['specific_needs'] ?? '')
+            ;
 
             $this->logger->debug('Individual analysis populated successfully', array_merge($populateContext, [
                 'populated_full_name' => $analysis->getFirstName() . ' ' . $analysis->getLastName(),
@@ -1370,6 +1441,7 @@ class NeedsAnalysisService
                 'population_error_class' => $e::class,
                 'population_error_trace' => $e->getTraceAsString(),
             ]));
+
             throw new RuntimeException('Failed to populate individual analysis: ' . $e->getMessage(), 0, $e);
         }
     }

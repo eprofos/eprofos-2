@@ -32,7 +32,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('es.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -48,7 +49,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->orderBy('es.attemptNumber', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
@@ -65,7 +67,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->setParameter('exercise', $exercise)
             ->orderBy('es.attemptNumber', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -82,7 +85,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->orderBy('es.attemptNumber', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $lastSubmission ? $lastSubmission['attemptNumber'] + 1 : 1;
     }
@@ -99,7 +103,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->setParameter('status', $status)
             ->orderBy('es.submittedAt', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -126,7 +131,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->setParameter('exercise', $exercise)
             ->setParameter('status', ExerciseSubmission::STATUS_GRADED)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $result['bestScore'] ?? null;
     }
@@ -145,7 +151,8 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
             ->setParameter('passed', true)
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $passedSubmission !== null;
     }
@@ -162,12 +169,13 @@ class ExerciseSubmissionRepository extends ServiceEntityRepository
                 'AVG(es.score) as averageScore',
                 'MAX(es.score) as maxScore',
                 'MIN(es.score) as minScore',
-                'SUM(CASE WHEN es.passed = true THEN 1 ELSE 0 END) as passedCount'
+                'SUM(CASE WHEN es.passed = true THEN 1 ELSE 0 END) as passedCount',
             ])
             ->andWhere('es.exercise = :exercise')
             ->andWhere('es.status = :status')
             ->setParameter('exercise', $exercise)
-            ->setParameter('status', ExerciseSubmission::STATUS_GRADED);
+            ->setParameter('status', ExerciseSubmission::STATUS_GRADED)
+        ;
 
         return $qb->getQuery()->getOneOrNullResult();
     }

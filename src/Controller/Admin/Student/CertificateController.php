@@ -9,6 +9,8 @@ use App\Entity\Student\Certificate;
 use App\Repository\Student\CertificateRepository;
 use App\Service\Student\CertificateService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Knp\Component\Pager\PaginatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,9 +35,8 @@ class CertificateController extends AbstractController
         private readonly CertificateService $certificateService,
         private readonly CertificateRepository $certificateRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * Certificate management dashboard.
@@ -45,7 +46,7 @@ class CertificateController extends AbstractController
     {
         $this->logger->info('Admin certificate index accessed', [
             'user_id' => $this->getUser()?->getUserIdentifier(),
-            'request_params' => $request->query->all()
+            'request_params' => $request->query->all(),
         ]);
 
         try {
@@ -54,7 +55,7 @@ class CertificateController extends AbstractController
 
             $this->logger->debug('Building certificate query', [
                 'search' => $search,
-                'status' => $status
+                'status' => $status,
             ]);
 
             $queryBuilder = $this->certificateRepository->createCertificateQueryBuilder();
@@ -62,16 +63,18 @@ class CertificateController extends AbstractController
             if ($search) {
                 $queryBuilder
                     ->andWhere('s.firstName LIKE :search OR s.lastName LIKE :search OR f.title LIKE :search OR c.certificateNumber LIKE :search')
-                    ->setParameter('search', '%' . $search . '%');
-                    
+                    ->setParameter('search', '%' . $search . '%')
+                ;
+
                 $this->logger->debug('Applied search filter', ['search_term' => $search]);
             }
 
             if ($status) {
                 $queryBuilder
                     ->andWhere('c.status = :status')
-                    ->setParameter('status', $status);
-                    
+                    ->setParameter('status', $status)
+                ;
+
                 $this->logger->debug('Applied status filter', ['status' => $status]);
             }
 
@@ -80,25 +83,25 @@ class CertificateController extends AbstractController
             $certificates = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $request->query->getInt('page', 1),
-                20
+                20,
             );
 
             $this->logger->debug('Certificates retrieved', [
                 'total_items' => $certificates->getTotalItemCount(),
                 'current_page' => $certificates->getCurrentPageNumber(),
-                'items_per_page' => $certificates->getItemNumberPerPage()
+                'items_per_page' => $certificates->getItemNumberPerPage(),
             ]);
 
             // Get statistics for dashboard
             $statistics = $this->certificateService->getCertificateStatistics();
-            
+
             $this->logger->debug('Certificate statistics loaded', [
-                'statistics_keys' => array_keys($statistics)
+                'statistics_keys' => array_keys($statistics),
             ]);
 
             $this->logger->info('Certificate index loaded successfully', [
                 'certificates_count' => $certificates->getTotalItemCount(),
-                'current_page' => $certificates->getCurrentPageNumber()
+                'current_page' => $certificates->getCurrentPageNumber(),
             ]);
 
             return $this->render('admin/student/certificate/index.html.twig', [
@@ -108,18 +111,18 @@ class CertificateController extends AbstractController
                 'status' => $status,
                 'available_statuses' => Certificate::STATUSES,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading certificate index', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
-                'request_params' => $request->query->all()
+                'request_params' => $request->query->all(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de la liste des certificats.');
-            
+
             // Return empty result in case of error
             return $this->render('admin/student/certificate/index.html.twig', [
                 'certificates' => [],
@@ -141,7 +144,7 @@ class CertificateController extends AbstractController
             'certificate_id' => $certificate->getId(),
             'certificate_number' => $certificate->getCertificateNumber(),
             'certificate_status' => $certificate->getStatus(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -149,29 +152,29 @@ class CertificateController extends AbstractController
                 'certificate_id' => $certificate->getId(),
                 'student_id' => $certificate->getStudent()->getId(),
                 'formation_id' => $certificate->getFormation()->getId(),
-                'issued_at' => $certificate->getIssuedAt()?->format('Y-m-d H:i:s')
+                'issued_at' => $certificate->getIssuedAt()?->format('Y-m-d H:i:s'),
             ]);
 
             $this->logger->info('Certificate details loaded successfully', [
                 'certificate_id' => $certificate->getId(),
-                'certificate_number' => $certificate->getCertificateNumber()
+                'certificate_number' => $certificate->getCertificateNumber(),
             ]);
 
             return $this->render('admin/student/certificate/show.html.twig', [
                 'certificate' => $certificate,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading certificate details', [
                 'certificate_id' => $certificate->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails du certificat.');
-            
+
             return $this->redirectToRoute('admin_certificate_index');
         }
     }
@@ -189,7 +192,7 @@ class CertificateController extends AbstractController
             'formation_id' => $enrollment->getFormation()->getId(),
             'formation_title' => $enrollment->getFormation()->getTitle(),
             'enrollment_status' => $enrollment->getStatus(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -197,7 +200,7 @@ class CertificateController extends AbstractController
                 'enrollment_id' => $enrollment->getId(),
                 'enrollment_status' => $enrollment->getStatus(),
                 'is_completed' => $enrollment->isCompleted(),
-                'completion_date' => $enrollment->getCompletedAt()?->format('Y-m-d H:i:s')
+                'completion_date' => $enrollment->getCompletedAt()?->format('Y-m-d H:i:s'),
             ]);
 
             // Check if enrollment is eligible for certificate
@@ -205,14 +208,14 @@ class CertificateController extends AbstractController
                 $this->logger->warning('Certificate generation attempted for incomplete enrollment', [
                     'enrollment_id' => $enrollment->getId(),
                     'enrollment_status' => $enrollment->getStatus(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
-                throw new \InvalidArgumentException('L\'inscription doit être terminée pour générer un certificat');
+
+                throw new InvalidArgumentException('L\'inscription doit être terminée pour générer un certificat');
             }
 
             $this->logger->debug('Calling certificate service for generation', [
-                'enrollment_id' => $enrollment->getId()
+                'enrollment_id' => $enrollment->getId(),
             ]);
 
             $certificate = $this->certificateService->generateCertificate($enrollment);
@@ -223,25 +226,26 @@ class CertificateController extends AbstractController
                 'enrollment_id' => $enrollment->getId(),
                 'student_id' => $enrollment->getStudent()->getId(),
                 'formation_id' => $enrollment->getFormation()->getId(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', sprintf(
                 'Certificat généré avec succès (N° %s)',
-                $certificate->getCertificateNumber()
+                $certificate->getCertificateNumber(),
             ));
 
             return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Certificate generation validation error', [
                 'enrollment_id' => $enrollment->getId(),
                 'validation_error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', $e->getMessage());
+
             return $this->redirectToRoute('admin_student_enrollment_show', ['id' => $enrollment->getId()]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during certificate generation', [
                 'enrollment_id' => $enrollment->getId(),
                 'student_id' => $enrollment->getStudent()->getId(),
@@ -250,7 +254,7 @@ class CertificateController extends AbstractController
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la génération du certificat : ' . $e->getMessage());
@@ -271,7 +275,7 @@ class CertificateController extends AbstractController
             'current_status' => $certificate->getStatus(),
             'student_id' => $certificate->getStudent()->getId(),
             'formation_id' => $certificate->getFormation()->getId(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -280,16 +284,17 @@ class CertificateController extends AbstractController
             $this->logger->debug('Validating revocation request', [
                 'certificate_id' => $certificate->getId(),
                 'has_reason' => !empty($reason),
-                'reason_length' => $reason ? strlen($reason) : 0
+                'reason_length' => $reason ? strlen($reason) : 0,
             ]);
 
             if (!$reason) {
                 $this->logger->warning('Certificate revocation attempted without reason', [
                     'certificate_id' => $certificate->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
+
                 $this->addFlash('error', 'Une raison de révocation est requise.');
+
                 return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
             }
 
@@ -297,16 +302,17 @@ class CertificateController extends AbstractController
                 $this->logger->warning('Certificate revocation attempted with insufficient reason', [
                     'certificate_id' => $certificate->getId(),
                     'reason_length' => strlen($reason),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
+
                 $this->addFlash('error', 'La raison de révocation doit contenir au moins 10 caractères.');
+
                 return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
             }
 
             $this->logger->debug('Calling certificate service for revocation', [
                 'certificate_id' => $certificate->getId(),
-                'reason' => $reason
+                'reason' => $reason,
             ]);
 
             $this->certificateService->revokeCertificate($certificate, $reason);
@@ -317,19 +323,19 @@ class CertificateController extends AbstractController
                 'revocation_reason' => $reason,
                 'student_id' => $certificate->getStudent()->getId(),
                 'formation_id' => $certificate->getFormation()->getId(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Certificat révoqué avec succès.');
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Certificate revocation validation error', [
                 'certificate_id' => $certificate->getId(),
                 'validation_error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during certificate revocation', [
                 'certificate_id' => $certificate->getId(),
                 'certificate_number' => $certificate->getCertificateNumber(),
@@ -337,7 +343,7 @@ class CertificateController extends AbstractController
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la révocation : ' . $e->getMessage());
@@ -358,13 +364,13 @@ class CertificateController extends AbstractController
             'current_status' => $certificate->getStatus(),
             'student_id' => $certificate->getStudent()->getId(),
             'formation_id' => $certificate->getFormation()->getId(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             $this->logger->debug('Validating certificate for reissuance', [
                 'certificate_id' => $certificate->getId(),
-                'current_status' => $certificate->getStatus()
+                'current_status' => $certificate->getStatus(),
             ]);
 
             // Additional validation before reissuance
@@ -372,14 +378,14 @@ class CertificateController extends AbstractController
                 $this->logger->warning('Certificate reissuance attempted for revoked certificate', [
                     'certificate_id' => $certificate->getId(),
                     'current_status' => $certificate->getStatus(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
-                throw new \InvalidArgumentException('Un certificat révoqué ne peut pas être réémis');
+
+                throw new InvalidArgumentException('Un certificat révoqué ne peut pas être réémis');
             }
 
             $this->logger->debug('Calling certificate service for reissuance', [
-                'certificate_id' => $certificate->getId()
+                'certificate_id' => $certificate->getId(),
             ]);
 
             $newCertificate = $this->certificateService->reissueCertificate($certificate);
@@ -391,25 +397,26 @@ class CertificateController extends AbstractController
                 'new_certificate_number' => $newCertificate->getCertificateNumber(),
                 'student_id' => $certificate->getStudent()->getId(),
                 'formation_id' => $certificate->getFormation()->getId(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', sprintf(
                 'Certificat réémis avec succès (N° %s)',
-                $newCertificate->getCertificateNumber()
+                $newCertificate->getCertificateNumber(),
             ));
 
             return $this->redirectToRoute('admin_certificate_show', ['id' => $newCertificate->getId()]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Certificate reissuance validation error', [
                 'certificate_id' => $certificate->getId(),
                 'validation_error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', $e->getMessage());
+
             return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during certificate reissuance', [
                 'certificate_id' => $certificate->getId(),
                 'certificate_number' => $certificate->getCertificateNumber(),
@@ -417,7 +424,7 @@ class CertificateController extends AbstractController
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la réémission : ' . $e->getMessage());
@@ -438,24 +445,25 @@ class CertificateController extends AbstractController
             'certificate_status' => $certificate->getStatus(),
             'student_id' => $certificate->getStudent()->getId(),
             'formation_id' => $certificate->getFormation()->getId(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             $this->logger->debug('Validating certificate download eligibility', [
                 'certificate_id' => $certificate->getId(),
                 'can_be_downloaded' => $certificate->canBeDownloaded(),
-                'certificate_status' => $certificate->getStatus()
+                'certificate_status' => $certificate->getStatus(),
             ]);
 
             if (!$certificate->canBeDownloaded()) {
                 $this->logger->warning('Certificate download attempted for ineligible certificate', [
                     'certificate_id' => $certificate->getId(),
                     'certificate_status' => $certificate->getStatus(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
+
                 $this->addFlash('error', 'Ce certificat ne peut pas être téléchargé.');
+
                 return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
             }
 
@@ -466,7 +474,7 @@ class CertificateController extends AbstractController
                 'certificate_id' => $certificate->getId(),
                 'file_path' => $filePath,
                 'absolute_path' => $absolutePath,
-                'file_exists' => file_exists($absolutePath)
+                'file_exists' => file_exists($absolutePath),
             ]);
 
             if (!file_exists($absolutePath)) {
@@ -475,10 +483,11 @@ class CertificateController extends AbstractController
                     'certificate_number' => $certificate->getCertificateNumber(),
                     'expected_path' => $absolutePath,
                     'relative_path' => $filePath,
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
+
                 $this->addFlash('error', 'Le fichier PDF du certificat est introuvable.');
+
                 return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
             }
 
@@ -486,40 +495,42 @@ class CertificateController extends AbstractController
             $this->logger->debug('Preparing certificate file download', [
                 'certificate_id' => $certificate->getId(),
                 'file_size' => $fileSize,
-                'file_path' => $absolutePath
+                'file_path' => $absolutePath,
             ]);
 
             $response = new StreamedResponse(function () use ($absolutePath, $certificate) {
                 $this->logger->debug('Starting certificate file stream', [
                     'certificate_id' => $certificate->getId(),
-                    'file_path' => $absolutePath
+                    'file_path' => $absolutePath,
                 ]);
-                
+
                 try {
                     readfile($absolutePath);
-                    
+
                     $this->logger->info('Certificate file streamed successfully', [
                         'certificate_id' => $certificate->getId(),
-                        'certificate_number' => $certificate->getCertificateNumber()
+                        'certificate_number' => $certificate->getCertificateNumber(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error streaming certificate file', [
                         'certificate_id' => $certificate->getId(),
                         'error_message' => $e->getMessage(),
-                        'file_path' => $absolutePath
+                        'file_path' => $absolutePath,
                     ]);
+
                     throw $e;
                 }
             });
 
             $filename = 'Certificat_' . $certificate->getCertificateNumber() . '.pdf';
-            
+
             $response->headers->set('Content-Type', 'application/pdf');
-            $response->headers->set('Content-Disposition', 
+            $response->headers->set(
+                'Content-Disposition',
                 $response->headers->makeDisposition(
                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                    $filename
-                )
+                    $filename,
+                ),
             );
 
             $this->logger->info('Certificate download initiated successfully', [
@@ -527,11 +538,11 @@ class CertificateController extends AbstractController
                 'certificate_number' => $certificate->getCertificateNumber(),
                 'filename' => $filename,
                 'file_size' => $fileSize,
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             return $response;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during certificate download', [
                 'certificate_id' => $certificate->getId(),
                 'certificate_number' => $certificate->getCertificateNumber(),
@@ -539,10 +550,11 @@ class CertificateController extends AbstractController
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du téléchargement du certificat.');
+
             return $this->redirectToRoute('admin_certificate_show', ['id' => $certificate->getId()]);
         }
     }
@@ -555,7 +567,7 @@ class CertificateController extends AbstractController
     {
         $this->logger->info('Bulk certificate generation accessed', [
             'method' => $request->getMethod(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         if ($request->isMethod('POST')) {
@@ -565,46 +577,48 @@ class CertificateController extends AbstractController
                 $this->logger->debug('Processing bulk certificate generation request', [
                     'enrollment_ids_count' => count($enrollmentIds),
                     'enrollment_ids' => $enrollmentIds,
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 if (empty($enrollmentIds)) {
                     $this->logger->warning('Bulk certificate generation attempted without enrollments', [
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    
+
                     $this->addFlash('error', 'Aucune inscription sélectionnée.');
+
                     return $this->redirectToRoute('admin_certificate_bulk_generate');
                 }
 
                 // Validate enrollment IDs exist and are eligible
                 $validEnrollments = $this->entityManager->getRepository(StudentEnrollment::class)
-                    ->findBy(['id' => $enrollmentIds]);
+                    ->findBy(['id' => $enrollmentIds])
+                ;
 
                 $this->logger->debug('Validated enrollments for bulk generation', [
                     'requested_count' => count($enrollmentIds),
                     'valid_count' => count($validEnrollments),
-                    'valid_enrollment_ids' => array_map(fn($e) => $e->getId(), $validEnrollments)
+                    'valid_enrollment_ids' => array_map(static fn ($e) => $e->getId(), $validEnrollments),
                 ]);
 
                 if (count($validEnrollments) !== count($enrollmentIds)) {
                     $this->logger->warning('Some enrollment IDs not found for bulk generation', [
                         'requested_ids' => $enrollmentIds,
-                        'valid_ids' => array_map(fn($e) => $e->getId(), $validEnrollments),
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'valid_ids' => array_map(static fn ($e) => $e->getId(), $validEnrollments),
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
                 }
 
                 $this->logger->info('Starting bulk certificate generation', [
                     'enrollment_count' => count($enrollmentIds),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $results = $this->certificateService->bulkGenerateCertificates($enrollmentIds);
 
                 $this->logger->info('Bulk certificate generation completed', [
                     'results' => $results,
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', sprintf(
@@ -612,7 +626,7 @@ class CertificateController extends AbstractController
                     $results['processed'],
                     $results['generated'],
                     $results['skipped'],
-                    $results['errors']
+                    $results['errors'],
                 ));
 
                 if (!empty($results['errors_details'])) {
@@ -620,18 +634,18 @@ class CertificateController extends AbstractController
                         $this->addFlash('warning', $error);
                         $this->logger->warning('Bulk generation specific error', [
                             'error' => $error,
-                            'user_id' => $this->getUser()?->getUserIdentifier()
+                            'user_id' => $this->getUser()?->getUserIdentifier(),
                         ]);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error during bulk certificate generation', [
                     'error_message' => $e->getMessage(),
                     'error_code' => $e->getCode(),
                     'error_file' => $e->getFile(),
                     'error_line' => $e->getLine(),
                     'enrollment_ids' => $enrollmentIds ?? [],
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('error', 'Erreur lors de la génération en lot : ' . $e->getMessage());
@@ -655,27 +669,28 @@ class CertificateController extends AbstractController
                 ->setParameter('revoked', Certificate::STATUS_REVOKED)
                 ->orderBy('se.completedAt', 'DESC')
                 ->getQuery()
-                ->getResult();
+                ->getResult()
+            ;
 
             $this->logger->debug('Eligible enrollments loaded', [
                 'count' => count($eligibleEnrollments),
-                'enrollment_ids' => array_map(fn($e) => $e->getId(), $eligibleEnrollments)
+                'enrollment_ids' => array_map(static fn ($e) => $e->getId(), $eligibleEnrollments),
             ]);
 
             return $this->render('admin/student/certificate/bulk_generate.html.twig', [
                 'eligible_enrollments' => $eligibleEnrollments,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading eligible enrollments for bulk generation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des inscriptions éligibles.');
-            
+
             return $this->render('admin/student/certificate/bulk_generate.html.twig', [
                 'eligible_enrollments' => [],
             ]);
@@ -689,39 +704,39 @@ class CertificateController extends AbstractController
     public function analytics(): Response
     {
         $this->logger->info('Certificate analytics dashboard accessed', [
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             $this->logger->debug('Loading certificate statistics for analytics');
 
             $statistics = $this->certificateService->getCertificateStatistics();
-            
+
             $this->logger->debug('Certificate statistics loaded', [
-                'statistics_keys' => array_keys($statistics)
+                'statistics_keys' => array_keys($statistics),
             ]);
 
             $this->logger->debug('Loading formation-specific certificate statistics');
 
             $formationStats = $this->certificateRepository->countCertificatesByFormation();
-            
+
             $this->logger->debug('Formation statistics loaded', [
-                'formations_count' => count($formationStats)
+                'formations_count' => count($formationStats),
             ]);
 
             $this->logger->debug('Loading average scores by formation');
 
             $averageScores = $this->certificateRepository->getAverageScoresByFormation();
-            
+
             $this->logger->debug('Average scores loaded', [
-                'formations_with_scores' => count($averageScores)
+                'formations_with_scores' => count($averageScores),
             ]);
 
             $this->logger->info('Certificate analytics data loaded successfully', [
                 'statistics_count' => count($statistics),
                 'formations_count' => count($formationStats),
                 'formations_with_scores' => count($averageScores),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             return $this->render('admin/student/certificate/analytics.html.twig', [
@@ -729,17 +744,17 @@ class CertificateController extends AbstractController
                 'formation_stats' => $formationStats,
                 'average_scores' => $averageScores,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading certificate analytics', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des analytics.');
-            
+
             // Return empty analytics in case of error
             return $this->render('admin/student/certificate/analytics.html.twig', [
                 'statistics' => [],
@@ -762,7 +777,7 @@ class CertificateController extends AbstractController
             'student_id' => $certificate->getStudent()->getId(),
             'student_email' => $certificate->getStudent()->getEmail(),
             'formation_id' => $certificate->getFormation()->getId(),
-            'user_id' => $this->getUser()?->getUserIdentifier()
+            'user_id' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -770,7 +785,7 @@ class CertificateController extends AbstractController
                 'certificate_id' => $certificate->getId(),
                 'certificate_status' => $certificate->getStatus(),
                 'student_email' => $certificate->getStudent()->getEmail(),
-                'has_pdf_path' => !empty($certificate->getPdfPath())
+                'has_pdf_path' => !empty($certificate->getPdfPath()),
             ]);
 
             // Validate certificate can be emailed
@@ -778,25 +793,25 @@ class CertificateController extends AbstractController
                 $this->logger->warning('Email send attempted for revoked certificate', [
                     'certificate_id' => $certificate->getId(),
                     'certificate_status' => $certificate->getStatus(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
-                throw new \InvalidArgumentException('Un certificat révoqué ne peut pas être envoyé par email');
+
+                throw new InvalidArgumentException('Un certificat révoqué ne peut pas être envoyé par email');
             }
 
             if (empty($certificate->getStudent()->getEmail())) {
                 $this->logger->warning('Email send attempted for student without email', [
                     'certificate_id' => $certificate->getId(),
                     'student_id' => $certificate->getStudent()->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
-                throw new \InvalidArgumentException('L\'étudiant n\'a pas d\'adresse email valide');
+
+                throw new InvalidArgumentException('L\'étudiant n\'a pas d\'adresse email valide');
             }
 
             $this->logger->debug('Calling certificate service to send email', [
                 'certificate_id' => $certificate->getId(),
-                'recipient_email' => $certificate->getStudent()->getEmail()
+                'recipient_email' => $certificate->getStudent()->getEmail(),
             ]);
 
             $this->certificateService->sendCertificateEmail($certificate);
@@ -807,19 +822,19 @@ class CertificateController extends AbstractController
                 'student_id' => $certificate->getStudent()->getId(),
                 'student_email' => $certificate->getStudent()->getEmail(),
                 'formation_id' => $certificate->getFormation()->getId(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Email de certificat envoyé avec succès.');
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Certificate email send validation error', [
                 'certificate_id' => $certificate->getId(),
                 'validation_error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error sending certificate email', [
                 'certificate_id' => $certificate->getId(),
                 'certificate_number' => $certificate->getCertificateNumber(),
@@ -829,7 +844,7 @@ class CertificateController extends AbstractController
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());

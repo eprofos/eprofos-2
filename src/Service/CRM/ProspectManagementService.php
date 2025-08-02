@@ -12,7 +12,10 @@ use App\Entity\Training\Formation;
 use App\Entity\Training\SessionRegistration;
 use App\Repository\CRM\ProspectRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
  * ProspectManagementService.
@@ -50,7 +53,8 @@ class ProspectManagementService
                     'email' => $email,
                     'method' => __METHOD__,
                 ]);
-                throw new \InvalidArgumentException('Invalid email format: ' . $email);
+
+                throw new InvalidArgumentException('Invalid email format: ' . $email);
             }
 
             $this->logger->debug('Searching for existing prospect by email', [
@@ -112,17 +116,16 @@ class ProspectManagementService
             ]);
 
             return $prospect;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in findOrCreateProspectFromEmail', [
                 'email' => $email,
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
 
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in findOrCreateProspectFromEmail', [
                 'email' => $email,
                 'first_name' => $firstName,
@@ -132,7 +135,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to find or create prospect: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to find or create prospect: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -156,7 +160,8 @@ class ProspectManagementService
                     'contact_request_id' => $contactRequest->getId(),
                     'method' => __METHOD__,
                 ]);
-                throw new \InvalidArgumentException('Contact request must have an email address');
+
+                throw new InvalidArgumentException('Contact request must have an email address');
             }
 
             $this->logger->debug('Finding or creating prospect from contact request', [
@@ -256,17 +261,16 @@ class ProspectManagementService
             ]);
 
             return $prospect;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in createProspectFromContactRequest', [
                 'contact_request_id' => $contactRequest->getId(),
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
 
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in createProspectFromContactRequest', [
                 'contact_request_id' => $contactRequest->getId(),
                 'email' => $contactRequest->getEmail(),
@@ -276,7 +280,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to create prospect from contact request: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to create prospect from contact request: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -300,7 +305,8 @@ class ProspectManagementService
                     'registration_id' => $registration->getId(),
                     'method' => __METHOD__,
                 ]);
-                throw new \InvalidArgumentException('Session registration must have an email address');
+
+                throw new InvalidArgumentException('Session registration must have an email address');
             }
 
             if (!$registration->getSession()) {
@@ -401,17 +407,16 @@ class ProspectManagementService
             ]);
 
             return $prospect;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in createProspectFromSessionRegistration', [
                 'registration_id' => $registration->getId(),
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
 
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in createProspectFromSessionRegistration', [
                 'registration_id' => $registration->getId(),
                 'email' => $registration->getEmail(),
@@ -421,7 +426,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to create prospect from session registration: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to create prospect from session registration: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -446,7 +452,8 @@ class ProspectManagementService
                     'needs_analysis_id' => $needsAnalysis->getId(),
                     'method' => __METHOD__,
                 ]);
-                throw new \InvalidArgumentException('Needs analysis request must have a recipient email address');
+
+                throw new InvalidArgumentException('Needs analysis request must have a recipient email address');
             }
 
             if (!$needsAnalysis->getRecipientName()) {
@@ -557,17 +564,16 @@ class ProspectManagementService
             ]);
 
             return $prospect;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in createProspectFromNeedsAnalysis', [
                 'needs_analysis_id' => $needsAnalysis->getId(),
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
 
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in createProspectFromNeedsAnalysis', [
                 'needs_analysis_id' => $needsAnalysis->getId(),
                 'recipient_email' => $needsAnalysis->getRecipientEmail(),
@@ -577,7 +583,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to create prospect from needs analysis: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to create prospect from needs analysis: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -613,7 +620,8 @@ class ProspectManagementService
                         'formation_title' => $formation->getTitle(),
                         'method' => __METHOD__,
                     ]);
-                    throw new \InvalidArgumentException('Formation must have an ID');
+
+                    throw new InvalidArgumentException('Formation must have an ID');
                 }
 
                 $managedFormation = $this->entityManager->getRepository(Formation::class)->find($formationId);
@@ -624,7 +632,8 @@ class ProspectManagementService
                         'formation_id' => $formationId,
                         'method' => __METHOD__,
                     ]);
-                    throw new \InvalidArgumentException('Formation not found: ' . $formationId);
+
+                    throw new InvalidArgumentException('Formation not found: ' . $formationId);
                 }
 
                 if (!$prospect->getInterestedFormations()->contains($managedFormation)) {
@@ -663,7 +672,8 @@ class ProspectManagementService
                         'service_title' => $service->getTitle(),
                         'method' => __METHOD__,
                     ]);
-                    throw new \InvalidArgumentException('Service must have an ID');
+
+                    throw new InvalidArgumentException('Service must have an ID');
                 }
 
                 $managedService = $this->entityManager->getRepository(Service::class)->find($serviceId);
@@ -674,7 +684,8 @@ class ProspectManagementService
                         'service_id' => $serviceId,
                         'method' => __METHOD__,
                     ]);
-                    throw new \InvalidArgumentException('Service not found: ' . $serviceId);
+
+                    throw new InvalidArgumentException('Service not found: ' . $serviceId);
                 }
 
                 if (!$prospect->getInterestedServices()->contains($managedService)) {
@@ -703,8 +714,7 @@ class ProspectManagementService
                     'method' => __METHOD__,
                 ]);
             }
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in updateProspectInterests', [
                 'prospect_id' => $prospect->getId(),
                 'formation_id' => $formation?->getId(),
@@ -713,9 +723,9 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
 
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in updateProspectInterests', [
                 'prospect_id' => $prospect->getId(),
                 'formation_id' => $formation?->getId(),
@@ -725,7 +735,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to update prospect interests: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to update prospect interests: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -774,7 +785,7 @@ class ProspectManagementService
 
                     if (count($prospects) > 1) {
                         $primaryProspect = $prospects[0]; // Keep the first one (oldest)
-                        
+
                         $this->logger->debug('Selected primary prospect for merge', [
                             'primary_prospect_id' => $primaryProspect->getId(),
                             'email' => $duplicate['email'],
@@ -784,7 +795,7 @@ class ProspectManagementService
 
                         for ($i = 1; $i < count($prospects); $i++) {
                             $secondaryProspect = $prospects[$i];
-                            
+
                             $this->logger->debug('Merging prospect into primary', [
                                 'primary_prospect_id' => $primaryProspect->getId(),
                                 'secondary_prospect_id' => $secondaryProspect->getId(),
@@ -804,8 +815,7 @@ class ProspectManagementService
                             ]);
                         }
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error processing duplicate group', [
                         'email' => $duplicate['email'],
                         'prospect_count' => $duplicate['count'],
@@ -813,6 +823,7 @@ class ProspectManagementService
                         'method' => __METHOD__,
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     // Continue with next group instead of failing completely
                     continue;
                 }
@@ -832,8 +843,7 @@ class ProspectManagementService
             ]);
 
             return $mergedCount;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in mergeDuplicateProspects', [
                 'merged_count' => $mergedCount,
                 'error_message' => $e->getMessage(),
@@ -841,7 +851,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to merge duplicate prospects: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to merge duplicate prospects: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -896,15 +907,14 @@ class ProspectManagementService
             );
 
             $prospect->setDescription($description ? $description . "\n\n" . $newNote : $newNote);
-            
+
             $this->logger->debug('Added contact request note to prospect description', [
                 'prospect_id' => $prospect->getId(),
                 'contact_request_id' => $contactRequest->getId(),
                 'note_preview' => substr($newNote, 0, 100) . '...',
                 'method' => __METHOD__,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mergeContactRequestData', [
                 'prospect_id' => $prospect->getId(),
                 'contact_request_id' => $contactRequest->getId(),
@@ -912,7 +922,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to merge contact request data: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to merge contact request data: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -987,7 +998,7 @@ class ProspectManagementService
             }
 
             $prospect->setDescription($description ? $description . "\n\n" . $newNote : $newNote);
-            
+
             $this->logger->debug('Added session registration note to prospect description', [
                 'prospect_id' => $prospect->getId(),
                 'registration_id' => $registration->getId(),
@@ -996,8 +1007,7 @@ class ProspectManagementService
                 'note_preview' => substr($newNote, 0, 100) . '...',
                 'method' => __METHOD__,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mergeSessionRegistrationData', [
                 'prospect_id' => $prospect->getId(),
                 'registration_id' => $registration->getId(),
@@ -1005,7 +1015,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to merge session registration data: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to merge session registration data: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -1060,7 +1071,7 @@ class ProspectManagementService
             }
 
             $prospect->setDescription($description ? $description . "\n\n" . $newNote : $newNote);
-            
+
             $this->logger->debug('Added needs analysis note to prospect description', [
                 'prospect_id' => $prospect->getId(),
                 'needs_analysis_id' => $needsAnalysis->getId(),
@@ -1068,8 +1079,7 @@ class ProspectManagementService
                 'note_preview' => substr($newNote, 0, 100) . '...',
                 'method' => __METHOD__,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mergeNeedsAnalysisData', [
                 'prospect_id' => $prospect->getId(),
                 'needs_analysis_id' => $needsAnalysis->getId(),
@@ -1077,7 +1087,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to merge needs analysis data: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to merge needs analysis data: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -1103,13 +1114,13 @@ class ProspectManagementService
             ]);
 
             return $firstName;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error extracting first name', [
                 'full_name' => $fullName,
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
             ]);
+
             return 'Prénom';
         }
     }
@@ -1147,13 +1158,13 @@ class ProspectManagementService
             ]);
 
             return 'Nom';
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error extracting last name', [
                 'full_name' => $fullName,
                 'error_message' => $e->getMessage(),
                 'method' => __METHOD__,
             ]);
+
             return 'Nom';
         }
     }
@@ -1363,8 +1374,7 @@ class ProspectManagementService
                 'new_services_added' => $newServicesCount,
                 'method' => __METHOD__,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in mergeProspects', [
                 'target_id' => $target->getId(),
                 'source_id' => $source->getId(),
@@ -1373,7 +1383,8 @@ class ProspectManagementService
                 'method' => __METHOD__,
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to merge prospects: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to merge prospects: ' . $e->getMessage(), 0, $e);
         }
     }
 }

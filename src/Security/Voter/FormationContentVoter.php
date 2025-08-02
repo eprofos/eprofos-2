@@ -12,6 +12,8 @@ use App\Entity\Training\Module;
 use App\Entity\Training\QCM;
 use App\Entity\User\Student;
 use App\Service\Security\ContentAccessService;
+use DateTimeImmutable;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -28,6 +30,7 @@ class FormationContentVoter extends Voter
 {
     // Supported attributes
     public const VIEW = 'view';
+
     public const INTERACT = 'interact';
 
     // Supported content types
@@ -55,7 +58,7 @@ class FormationContentVoter extends Voter
                 'attribute' => $attribute,
                 'subject_class' => $subject ? get_class($subject) : 'null',
                 'subject_id' => $this->getContentId($subject),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // Check if the attribute is supported
@@ -65,13 +68,14 @@ class FormationContentVoter extends Voter
                     'supported_attributes' => [self::VIEW, self::INTERACT],
                     'subject_class' => $subject ? get_class($subject) : 'null',
                 ]);
+
                 return false;
             }
 
             // Check if the subject is a supported content type
             $isSupported = false;
             $subjectClass = null;
-            
+
             if ($subject !== null) {
                 $subjectClass = get_class($subject);
                 foreach (self::SUPPORTED_CLASSES as $supportedClass) {
@@ -89,12 +93,11 @@ class FormationContentVoter extends Voter
                 'is_supported' => $isSupported,
                 'supported_classes' => self::SUPPORTED_CLASSES,
                 'attribute_supported' => in_array($attribute, [self::VIEW, self::INTERACT], true),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             return $isSupported;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception in FormationContentVoter supports method', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -103,7 +106,7 @@ class FormationContentVoter extends Voter
                 'stack_trace' => $e->getTraceAsString(),
                 'attribute' => $attribute,
                 'subject_class' => $subject ? get_class($subject) : 'null',
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // Default to not supported when exception occurs
@@ -128,7 +131,7 @@ class FormationContentVoter extends Voter
                 'user_class' => $user ? get_class($user) : 'null',
                 'user_identifier' => $user instanceof UserInterface ? $user->getUserIdentifier() : 'anonymous',
                 'user_roles' => $user instanceof UserInterface ? $user->getRoles() : [],
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // If user is not authenticated, deny access
@@ -142,6 +145,7 @@ class FormationContentVoter extends Voter
                 ]);
 
                 $this->logAccessAttempt($subject, $attribute, null, false, 'User not authenticated');
+
                 return false;
             }
 
@@ -157,6 +161,7 @@ class FormationContentVoter extends Voter
                 ]);
 
                 $this->logAccessAttempt($subject, $attribute, $user, true, 'Admin override');
+
                 return true;
             }
 
@@ -173,6 +178,7 @@ class FormationContentVoter extends Voter
                 ]);
 
                 $this->logAccessAttempt($subject, $attribute, $user, false, 'User is not a student');
+
                 return false;
             }
 
@@ -200,7 +206,7 @@ class FormationContentVoter extends Voter
                 'student_id' => $user->getId(),
                 'student_email' => $user->getEmail(),
                 'has_access' => $hasAccess,
-                'decision_timestamp' => new \DateTimeImmutable(),
+                'decision_timestamp' => new DateTimeImmutable(),
             ]);
 
             // Log the access attempt for Qualiopi compliance
@@ -212,7 +218,7 @@ class FormationContentVoter extends Voter
                     'subject_id' => $contentId,
                     'access_granted' => $hasAccess,
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Failed to log content access', [
                     'exception_message' => $e->getMessage(),
                     'exception_class' => get_class($e),
@@ -224,8 +230,7 @@ class FormationContentVoter extends Voter
             }
 
             return $hasAccess;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception in FormationContentVoter voteOnAttribute method', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -236,11 +241,12 @@ class FormationContentVoter extends Voter
                 'subject_class' => $subject ? get_class($subject) : 'null',
                 'subject_id' => $this->getContentId($subject),
                 'user_identifier' => $token->getUser() instanceof UserInterface ? $token->getUser()->getUserIdentifier() : 'unknown',
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // Default to deny access when exception occurs for security
             $this->logAccessAttempt($subject, $attribute, $token->getUser(), false, 'Exception occurred: ' . $e->getMessage());
+
             return false;
         }
     }
@@ -260,7 +266,7 @@ class FormationContentVoter extends Voter
                 'content_class' => $contentClass,
                 'content_id' => $contentId,
                 'check_type' => 'view',
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $hasAccess = match (true) {
@@ -279,12 +285,11 @@ class FormationContentVoter extends Voter
                 'content_id' => $contentId,
                 'has_access' => $hasAccess,
                 'check_type' => 'view',
-                'decision_timestamp' => new \DateTimeImmutable(),
+                'decision_timestamp' => new DateTimeImmutable(),
             ]);
 
             return $hasAccess;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception in canView method', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -294,7 +299,7 @@ class FormationContentVoter extends Voter
                 'student_id' => $student->getId(),
                 'content_class' => $content ? get_class($content) : 'null',
                 'content_id' => $this->getContentId($content),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // Default to deny access when exception occurs
@@ -304,7 +309,7 @@ class FormationContentVoter extends Voter
 
     /**
      * Check if student can interact with the content.
-     * 
+     *
      * For most content types, interaction has the same requirements as viewing.
      * This method allows for future differentiation if needed.
      */
@@ -320,7 +325,7 @@ class FormationContentVoter extends Voter
                 'content_class' => $contentClass,
                 'content_id' => $contentId,
                 'check_type' => 'interact',
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // For now, interaction requires the same permissions as viewing
@@ -333,12 +338,11 @@ class FormationContentVoter extends Voter
                 'content_id' => $contentId,
                 'has_access' => $hasAccess,
                 'check_type' => 'interact',
-                'decision_timestamp' => new \DateTimeImmutable(),
+                'decision_timestamp' => new DateTimeImmutable(),
             ]);
 
             return $hasAccess;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception in canInteract method', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -348,7 +352,7 @@ class FormationContentVoter extends Voter
                 'student_id' => $student->getId(),
                 'content_class' => $content ? get_class($content) : 'null',
                 'content_id' => $this->getContentId($content),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // Default to deny access when exception occurs
@@ -364,7 +368,7 @@ class FormationContentVoter extends Voter
         string $attribute,
         ?UserInterface $user,
         bool $granted,
-        string $reason
+        string $reason,
     ): void {
         try {
             $contentClass = $content ? get_class($content) : 'null';
@@ -378,7 +382,7 @@ class FormationContentVoter extends Voter
                 $userEmail = $user->getUserIdentifier();
                 $userRoles = $user->getRoles();
                 $userClass = get_class($user);
-                
+
                 if ($user instanceof Student) {
                     $userId = $user->getId();
                 }
@@ -407,7 +411,7 @@ class FormationContentVoter extends Voter
                 ],
                 'security' => [
                     'voter' => 'FormationContentVoter',
-                    'decision_timestamp' => new \DateTimeImmutable(),
+                    'decision_timestamp' => new DateTimeImmutable(),
                 ],
                 'compliance' => [
                     'logged_for_qualiopi' => true,
@@ -415,8 +419,7 @@ class FormationContentVoter extends Voter
                     'security_check' => 'passed',
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Even if logging fails, we should not affect the security decision
             // Log the logging error separately
             $this->logger->error('Failed to log access attempt', [
@@ -426,7 +429,7 @@ class FormationContentVoter extends Voter
                 'original_reason' => $reason,
                 'attribute' => $attribute,
                 'content_class' => $content ? get_class($content) : 'null',
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
         }
     }
@@ -450,11 +453,12 @@ class FormationContentVoter extends Voter
                 $content instanceof QCM => method_exists($content, 'getId') ? $content->getId() : null,
                 default => null
             };
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->debug('Failed to get content ID', [
                 'exception_message' => $e->getMessage(),
                 'content_class' => get_class($content),
             ]);
+
             return null;
         }
     }

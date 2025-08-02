@@ -9,11 +9,11 @@ use App\Repository\Alternance\AlternanceContractRepository;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use InvalidArgumentException;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Psr\Log\LoggerInterface;
 use Exception;
+use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Service for managing alternance contracts.
@@ -48,7 +48,7 @@ class AlternanceContractService
 
         try {
             $contract = new AlternanceContract();
-            
+
             $this->logger->debug('Populating new contract with provided data', [
                 'contract_temp_id' => spl_object_hash($contract),
             ]);
@@ -67,7 +67,7 @@ class AlternanceContractService
                 foreach ($errors as $error) {
                     $errorMessages[] = $error->getMessage();
                 }
-                
+
                 $this->logger->error('Contract validation failed during creation', [
                     'contract_temp_id' => spl_object_hash($contract),
                     'validation_errors' => $errorMessages,
@@ -94,7 +94,6 @@ class AlternanceContractService
             ]);
 
             return $contract;
-
         } catch (InvalidArgumentException $e) {
             // Re-throw validation exceptions as-is
             throw $e;
@@ -109,7 +108,7 @@ class AlternanceContractService
             throw new RuntimeException(
                 sprintf('Erreur inattendue lors de la création du contrat: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -166,7 +165,7 @@ class AlternanceContractService
                 foreach ($errors as $error) {
                     $errorMessages[] = $error->getMessage();
                 }
-                
+
                 $this->logger->error('Contract validation failed during update', [
                     'contract_id' => $contract->getId(),
                     'validation_errors' => $errorMessages,
@@ -208,7 +207,6 @@ class AlternanceContractService
             ]);
 
             return $contract;
-
         } catch (InvalidArgumentException $e) {
             // Re-throw validation exceptions as-is
             throw $e;
@@ -222,12 +220,13 @@ class AlternanceContractService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la mise à jour du contrat %s: %s', 
-                    $contract->getId(), 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la mise à jour du contrat %s: %s',
+                    $contract->getId(),
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -265,6 +264,7 @@ class AlternanceContractService
                     'required_status' => 'pending_validation',
                     'error' => $error,
                 ]);
+
                 throw new InvalidArgumentException($error);
             }
 
@@ -290,7 +290,6 @@ class AlternanceContractService
             ]);
 
             return $contract;
-
         } catch (InvalidArgumentException $e) {
             // Re-throw business logic exceptions as-is
             throw $e;
@@ -303,12 +302,13 @@ class AlternanceContractService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la validation du contrat %s: %s', 
-                    $contract->getId(), 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la validation du contrat %s: %s',
+                    $contract->getId(),
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -487,7 +487,6 @@ class AlternanceContractService
             ]);
 
             return $statistics;
-
         } catch (Exception $e) {
             $this->logger->error('Error generating contract statistics', [
                 'error' => $e->getMessage(),
@@ -498,7 +497,7 @@ class AlternanceContractService
             throw new RuntimeException(
                 sprintf('Erreur lors de la génération des statistiques de contrats: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

@@ -7,7 +7,12 @@ namespace App\Controller\Admin\Training;
 use App\Entity\Training\Category;
 use App\Form\Training\CategoryType;
 use App\Repository\Training\CategoryRepository;
+use DateTime;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,12 +43,12 @@ class CategoryController extends AbstractController
     public function index(CategoryRepository $categoryRepository): Response
     {
         $userId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin categories list access initiated', [
             'admin' => $userId,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -54,12 +59,12 @@ class CategoryController extends AbstractController
             ]);
 
             $categories = $categoryRepository->findBy([], ['name' => 'ASC']);
-            
+
             $this->logger->info('Categories successfully retrieved', [
                 'admin' => $userId,
                 'categories_count' => count($categories),
-                'active_categories' => array_reduce($categories, fn($count, $cat) => $count + ($cat->isActive() ? 1 : 0), 0),
-                'inactive_categories' => array_reduce($categories, fn($count, $cat) => $count + (!$cat->isActive() ? 1 : 0), 0),
+                'active_categories' => array_reduce($categories, static fn ($count, $cat) => $count + ($cat->isActive() ? 1 : 0), 0),
+                'inactive_categories' => array_reduce($categories, static fn ($count, $cat) => $count + (!$cat->isActive() ? 1 : 0), 0),
             ]);
 
             $this->logger->debug('Rendering categories index template', [
@@ -85,8 +90,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la récupération des catégories.');
+
             return $this->redirectToRoute('admin_dashboard');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in categories index', [
                 'admin' => $userId,
                 'error_message' => $e->getMessage(),
@@ -98,6 +104,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des catégories.');
+
             return $this->redirectToRoute('admin_dashboard');
         }
     }
@@ -116,7 +123,7 @@ class CategoryController extends AbstractController
             'category_slug' => $category->getSlug(),
             'user' => $userId,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -129,7 +136,7 @@ class CategoryController extends AbstractController
 
             // Log category performance metrics
             $formationsCount = $category->getFormations()->count();
-            $activeFormationsCount = $category->getFormations()->filter(fn($f) => $f->isActive())->count();
+            $activeFormationsCount = $category->getFormations()->filter(static fn ($f) => $f->isActive())->count();
 
             $this->logger->info('Category details successfully loaded', [
                 'category_id' => $category->getId(),
@@ -155,7 +162,7 @@ class CategoryController extends AbstractController
                     ['label' => $category->getName(), 'url' => null],
                 ],
             ]);
-        } catch (\Doctrine\ORM\EntityNotFoundException $e) {
+        } catch (EntityNotFoundException $e) {
             $this->logger->warning('Category not found for show action', [
                 'category_id' => $category->getId(),
                 'user' => $userId,
@@ -163,8 +170,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'La catégorie demandée est introuvable.');
+
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in category show', [
                 'category_id' => $category->getId(),
                 'user' => $userId,
@@ -177,6 +185,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'affichage de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
         }
     }
@@ -193,12 +202,12 @@ class CategoryController extends AbstractController
             'user' => $userId,
             'method' => $request->getMethod(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
             $category = new Category();
-            
+
             $this->logger->debug('Category form creation started', [
                 'form_type' => CategoryType::class,
                 'user' => $userId,
@@ -249,12 +258,11 @@ class CategoryController extends AbstractController
                     $this->addFlash('success', 'La catégorie a été créée avec succès.');
 
                     return $this->redirectToRoute('admin_category_index');
-                } else {
-                    $this->logger->warning('Category form validation failed', [
-                        'user' => $userId,
-                        'form_errors' => array_map(fn($error) => $error->getMessage(), iterator_to_array($form->getErrors(true))),
-                    ]);
                 }
+                $this->logger->warning('Category form validation failed', [
+                    'user' => $userId,
+                    'form_errors' => array_map(static fn ($error) => $error->getMessage(), iterator_to_array($form->getErrors(true))),
+                ]);
             }
 
             $this->logger->debug('Rendering new category form', [
@@ -272,7 +280,7 @@ class CategoryController extends AbstractController
                     ['label' => 'Nouvelle catégorie', 'url' => null],
                 ],
             ]);
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Unique constraint violation when creating category', [
                 'user' => $userId,
                 'error_message' => $e->getMessage(),
@@ -280,6 +288,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une catégorie avec ce nom existe déjà.');
+
             return $this->redirectToRoute('admin_category_new');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error when creating category', [
@@ -294,8 +303,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la création de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in category creation', [
                 'user' => $userId,
                 'error_message' => $e->getMessage(),
@@ -307,6 +317,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la création de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
         }
     }
@@ -325,7 +336,7 @@ class CategoryController extends AbstractController
             'user' => $userId,
             'method' => $request->getMethod(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -401,13 +412,12 @@ class CategoryController extends AbstractController
                     $this->addFlash('success', 'La catégorie a été modifiée avec succès.');
 
                     return $this->redirectToRoute('admin_category_index');
-                } else {
-                    $this->logger->warning('Category edit form validation failed', [
-                        'category_id' => $category->getId(),
-                        'user' => $userId,
-                        'form_errors' => array_map(fn($error) => $error->getMessage(), iterator_to_array($form->getErrors(true))),
-                    ]);
                 }
+                $this->logger->warning('Category edit form validation failed', [
+                    'category_id' => $category->getId(),
+                    'user' => $userId,
+                    'form_errors' => array_map(static fn ($error) => $error->getMessage(), iterator_to_array($form->getErrors(true))),
+                ]);
             }
 
             $this->logger->debug('Rendering category edit form', [
@@ -427,7 +437,7 @@ class CategoryController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Unique constraint violation when editing category', [
                 'category_id' => $category->getId(),
                 'user' => $userId,
@@ -436,6 +446,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une catégorie avec ce nom existe déjà.');
+
             return $this->redirectToRoute('admin_category_edit', ['id' => $category->getId()]);
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error when editing category', [
@@ -447,8 +458,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la modification de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in category edit', [
                 'category_id' => $category->getId(),
                 'user' => $userId,
@@ -461,6 +473,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la modification de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
         }
     }
@@ -480,7 +493,7 @@ class CategoryController extends AbstractController
             'category_name' => $categoryName,
             'user' => $userId,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -514,6 +527,7 @@ class CategoryController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle contient des formations.');
+
                     return $this->redirectToRoute('admin_category_index');
                 }
 
@@ -530,7 +544,7 @@ class CategoryController extends AbstractController
                     'category_id' => $categoryId,
                     'category_name' => $categoryName,
                     'user' => $userId,
-                    'deletion_time' => new \DateTime(),
+                    'deletion_time' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', 'La catégorie a été supprimée avec succès.');
@@ -545,7 +559,7 @@ class CategoryController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException $e) {
+        } catch (ForeignKeyConstraintViolationException $e) {
             $this->logger->error('Foreign key constraint violation when deleting category', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -554,6 +568,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle est utilisée par d\'autres éléments.');
+
             return $this->redirectToRoute('admin_category_index');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error when deleting category', [
@@ -566,8 +581,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la suppression de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in category deletion', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -581,6 +597,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la suppression de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
         }
     }
@@ -602,7 +619,7 @@ class CategoryController extends AbstractController
             'current_status' => $currentStatus,
             'user' => $userId,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -615,7 +632,7 @@ class CategoryController extends AbstractController
 
             if ($this->isCsrfTokenValid('toggle' . $categoryId, $token)) {
                 $newStatus = !$currentStatus;
-                
+
                 $this->logger->debug('Toggling category status', [
                     'category_id' => $categoryId,
                     'from_status' => $currentStatus,
@@ -627,14 +644,14 @@ class CategoryController extends AbstractController
                 $entityManager->flush();
 
                 $status = $newStatus ? 'activée' : 'désactivée';
-                
+
                 $this->logger->info('Category status successfully toggled', [
                     'category_id' => $categoryId,
                     'category_name' => $categoryName,
                     'old_status' => $currentStatus,
                     'new_status' => $newStatus,
                     'user' => $userId,
-                    'toggle_time' => new \DateTime(),
+                    'toggle_time' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', "La catégorie a été {$status} avec succès.");
@@ -661,8 +678,9 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du changement de statut de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in category status toggle', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -677,6 +695,7 @@ class CategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du changement de statut de la catégorie.');
+
             return $this->redirectToRoute('admin_category_index');
         }
     }

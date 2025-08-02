@@ -41,7 +41,7 @@ class DocumentUITemplateService
     public function getTemplatesWithStats(): array
     {
         $this->logger->info('Starting getTemplatesWithStats operation');
-        
+
         try {
             $this->logger->debug('Fetching templates with stats from repository');
             $templates = $this->uiTemplateRepository->findWithStats();
@@ -55,10 +55,10 @@ class DocumentUITemplateService
                 try {
                     $data = $template[0] ?? $template;
                     $componentCount = $template['componentCount'] ?? 0;
-                    
+
                     $templateId = $data->getId();
                     $templateName = $data->getName();
-                    
+
                     $this->logger->debug('Processing template statistics', [
                         'template_id' => $templateId,
                         'template_name' => $templateName,
@@ -100,7 +100,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array as fallback
             return [];
         }
@@ -113,7 +113,7 @@ class DocumentUITemplateService
     {
         $templateName = $uiTemplate->getName();
         $documentTypeName = $uiTemplate->getDocumentType()?->getName() ?? 'Global';
-        
+
         $this->logger->info('Starting createUITemplate operation', [
             'template_name' => $templateName,
             'document_type' => $documentTypeName,
@@ -137,6 +137,7 @@ class DocumentUITemplateService
                 ]);
 
                 $this->entityManager->rollback();
+
                 return [
                     'success' => false,
                     'error' => 'Configuration invalide: ' . implode(', ', $validationErrors),
@@ -150,7 +151,7 @@ class DocumentUITemplateService
                     'template_name' => $templateName,
                     'document_type' => $documentTypeName,
                 ]);
-                
+
                 try {
                     $this->handleDefaultTemplateChange($uiTemplate);
                     $this->logger->debug('Default template logic processed successfully');
@@ -160,6 +161,7 @@ class DocumentUITemplateService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     throw $e;
                 }
             }
@@ -167,6 +169,7 @@ class DocumentUITemplateService
             // Set sort order if not set
             if ($uiTemplate->getSortOrder() === 0) {
                 $this->logger->debug('Setting sort order for template');
+
                 try {
                     $nextSortOrder = $this->getNextSortOrder();
                     $uiTemplate->setSortOrder($nextSortOrder);
@@ -179,16 +182,17 @@ class DocumentUITemplateService
                         'template_name' => $templateName,
                         'error' => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
             }
 
             $this->logger->debug('Persisting template to database');
             $this->entityManager->persist($uiTemplate);
-            
+
             $this->logger->debug('Flushing entity manager changes');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing database transaction');
             $this->entityManager->commit();
 
@@ -241,7 +245,7 @@ class DocumentUITemplateService
         $templateId = $uiTemplate->getId();
         $templateName = $uiTemplate->getName();
         $documentTypeName = $uiTemplate->getDocumentType()?->getName() ?? 'Global';
-        
+
         $this->logger->info('Starting updateUITemplate operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -265,6 +269,7 @@ class DocumentUITemplateService
                 ]);
 
                 $this->entityManager->rollback();
+
                 return [
                     'success' => false,
                     'error' => 'Configuration invalide: ' . implode(', ', $validationErrors),
@@ -279,7 +284,7 @@ class DocumentUITemplateService
                     'template_name' => $templateName,
                     'document_type' => $documentTypeName,
                 ]);
-                
+
                 try {
                     $this->handleDefaultTemplateChange($uiTemplate);
                     $this->logger->debug('Default template logic processed successfully for update');
@@ -290,6 +295,7 @@ class DocumentUITemplateService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
+
                     throw $e;
                 }
             }
@@ -297,10 +303,10 @@ class DocumentUITemplateService
             $this->logger->debug('Setting updated timestamp');
             $updateTime = new DateTimeImmutable();
             $uiTemplate->setUpdatedAt($updateTime);
-            
+
             $this->logger->debug('Flushing entity manager changes for update');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing database transaction for update');
             $this->entityManager->commit();
 
@@ -355,7 +361,7 @@ class DocumentUITemplateService
         $templateName = $uiTemplate->getName();
         $usageCount = $uiTemplate->getUsageCount();
         $documentTypeName = $uiTemplate->getDocumentType()?->getName() ?? 'Global';
-        
+
         $this->logger->info('Starting deleteUITemplate operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -379,6 +385,7 @@ class DocumentUITemplateService
                 ]);
 
                 $this->entityManager->rollback();
+
                 return [
                     'success' => false,
                     'error' => 'Le modèle UI ne peut pas être supprimé car il est utilisé.',
@@ -399,10 +406,10 @@ class DocumentUITemplateService
 
             $this->logger->debug('Removing template from entity manager');
             $this->entityManager->remove($uiTemplate);
-            
+
             $this->logger->debug('Flushing entity manager changes for deletion');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing database transaction for deletion');
             $this->entityManager->commit();
 
@@ -450,7 +457,7 @@ class DocumentUITemplateService
         $templateName = $uiTemplate->getName();
         $currentStatus = $uiTemplate->isActive();
         $newStatus = !$currentStatus;
-        
+
         $this->logger->info('Starting toggleActiveStatus operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -464,9 +471,9 @@ class DocumentUITemplateService
                 'old_status' => $currentStatus,
                 'new_status' => $newStatus,
             ]);
-            
+
             $uiTemplate->setIsActive($newStatus);
-            
+
             $this->logger->debug('Setting updated timestamp for status change');
             $updateTime = new DateTimeImmutable();
             $uiTemplate->setUpdatedAt($updateTime);
@@ -475,7 +482,7 @@ class DocumentUITemplateService
             $this->entityManager->flush();
 
             $statusText = $newStatus ? 'activé' : 'désactivé';
-            
+
             $this->logger->info('UI template status toggled successfully', [
                 'template_id' => $templateId,
                 'template_name' => $templateName,
@@ -515,7 +522,7 @@ class DocumentUITemplateService
         $originalName = $uiTemplate->getName();
         $originalSlug = $uiTemplate->getSlug();
         $documentTypeName = $uiTemplate->getDocumentType()?->getName() ?? 'Global';
-        
+
         $this->logger->info('Starting duplicateUITemplate operation', [
             'original_template_id' => $originalId,
             'original_template_name' => $originalName,
@@ -530,7 +537,7 @@ class DocumentUITemplateService
             // Generate unique name and slug
             $baseName = $originalName . ' (Copie)';
             $baseSlug = $originalSlug . '-copie';
-            
+
             $this->logger->debug('Generating unique name and slug for duplicate', [
                 'base_name' => $baseName,
                 'base_slug' => $baseSlug,
@@ -547,6 +554,7 @@ class DocumentUITemplateService
                     'base_name' => $baseName,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -561,11 +569,13 @@ class DocumentUITemplateService
                     'base_slug' => $baseSlug,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Clone template
             $this->logger->debug('Cloning template with new name and slug');
+
             try {
                 $newTemplate = $uiTemplate->cloneTemplate($newName, $newSlug);
                 $this->logger->debug('Template cloned successfully', [
@@ -579,6 +589,7 @@ class DocumentUITemplateService
                     'new_slug' => $newSlug,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -593,15 +604,16 @@ class DocumentUITemplateService
                 $this->logger->error('Error setting sort order for duplicated template', [
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             $this->logger->debug('Persisting duplicated template');
             $this->entityManager->persist($newTemplate);
-            
+
             $this->logger->debug('Flushing entity manager changes for duplication');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing database transaction for duplication');
             $this->entityManager->commit();
 
@@ -659,7 +671,7 @@ class DocumentUITemplateService
         $componentName = $component->getName();
         $componentType = $component->getType();
         $componentZone = $component->getZone();
-        
+
         $this->logger->info('Starting addComponent operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -674,6 +686,7 @@ class DocumentUITemplateService
 
             // Get next sort order for component
             $this->logger->debug('Getting next sort order for component');
+
             try {
                 $nextSortOrder = $this->componentRepository->getNextSortOrder($uiTemplate);
                 $component->setSortOrder($nextSortOrder);
@@ -688,12 +701,13 @@ class DocumentUITemplateService
                     'component_name' => $componentName,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             $this->logger->debug('Persisting component to database');
             $this->entityManager->persist($component);
-            
+
             $this->logger->debug('Flushing entity manager changes for component addition');
             $this->entityManager->flush();
 
@@ -741,7 +755,7 @@ class DocumentUITemplateService
         $templateId = $uiTemplate->getId();
         $templateName = $uiTemplate->getName();
         $componentCount = count($componentIds);
-        
+
         $this->logger->info('Starting updateComponentSortOrders operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -755,6 +769,7 @@ class DocumentUITemplateService
                 $this->logger->warning('Empty component IDs array provided', [
                     'template_id' => $templateId,
                 ]);
+
                 return [
                     'success' => false,
                     'error' => 'Aucun composant fourni pour la mise à jour de l\'ordre.',
@@ -763,7 +778,7 @@ class DocumentUITemplateService
 
             $this->logger->debug('Updating component sort orders via repository');
             $this->componentRepository->updateSortOrders($uiTemplate, $componentIds);
-            
+
             $this->logger->info('Component sort orders updated successfully', [
                 'template_id' => $templateId,
                 'template_name' => $templateName,
@@ -802,7 +817,7 @@ class DocumentUITemplateService
         $templateId = $uiTemplate->getId();
         $templateName = $uiTemplate->getName();
         $dataKeys = array_keys($data);
-        
+
         $this->logger->info('Starting renderTemplate operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -813,6 +828,7 @@ class DocumentUITemplateService
         try {
             // Increment usage count
             $this->logger->debug('Incrementing template usage count');
+
             try {
                 $previousUsageCount = $uiTemplate->getUsageCount();
                 $uiTemplate->incrementUsage();
@@ -828,11 +844,13 @@ class DocumentUITemplateService
                     'template_id' => $templateId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Render components first
             $this->logger->debug('Fetching active components for template');
+
             try {
                 $components = $this->componentRepository->findActiveByTemplate($uiTemplate);
                 $componentCount = count($components);
@@ -845,6 +863,7 @@ class DocumentUITemplateService
                     'template_id' => $templateId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -861,7 +880,7 @@ class DocumentUITemplateService
                     $componentId = $component->getId();
                     $componentName = $component->getName();
                     $componentZone = $component->getZone();
-                    
+
                     $this->logger->debug('Processing component', [
                         'template_id' => $templateId,
                         'component_id' => $componentId,
@@ -875,16 +894,16 @@ class DocumentUITemplateService
                             'component_id' => $componentId,
                             'component_name' => $componentName,
                         ]);
-                        
+
                         $componentHtml = $component->renderHtml($data);
                         $htmlLength = strlen($componentHtml);
-                        
+
                         $renderedComponents[$componentZone][] = [
                             'component' => $component,
                             'html' => $componentHtml,
                         ];
                         $zoneContents[$componentZone] .= $componentHtml . "\n";
-                        
+
                         $this->logger->debug('Component rendered successfully', [
                             'component_id' => $componentId,
                             'component_name' => $componentName,
@@ -926,6 +945,7 @@ class DocumentUITemplateService
 
             // Generate HTML with component content
             $this->logger->debug('Rendering template HTML');
+
             try {
                 $html = $uiTemplate->renderHtml($templateData);
                 $htmlLength = strlen($html);
@@ -938,11 +958,13 @@ class DocumentUITemplateService
                     'template_id' => $templateId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Generate CSS
             $this->logger->debug('Rendering template CSS');
+
             try {
                 $css = $uiTemplate->renderCss();
                 $cssLength = strlen($css);
@@ -955,11 +977,13 @@ class DocumentUITemplateService
                     'template_id' => $templateId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Get page configuration
             $this->logger->debug('Getting template page configuration');
+
             try {
                 $pageConfig = $uiTemplate->getPageConfig();
                 $this->logger->debug('Template page configuration retrieved', [
@@ -971,6 +995,7 @@ class DocumentUITemplateService
                     'template_id' => $templateId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -1017,7 +1042,7 @@ class DocumentUITemplateService
     {
         $documentTypeName = $documentType?->getName() ?? 'Global';
         $documentTypeId = $documentType?->getId() ?? null;
-        
+
         $this->logger->debug('Starting getTemplatesForType operation', [
             'document_type_id' => $documentTypeId,
             'document_type_name' => $documentTypeName,
@@ -1026,12 +1051,12 @@ class DocumentUITemplateService
         try {
             $templates = $this->uiTemplateRepository->findByDocumentType($documentType);
             $templateCount = count($templates);
-            
+
             $this->logger->debug('Templates retrieved for document type', [
                 'document_type_id' => $documentTypeId,
                 'document_type_name' => $documentTypeName,
                 'template_count' => $templateCount,
-                'template_ids' => array_map(fn($t) => $t->getId(), $templates),
+                'template_ids' => array_map(static fn ($t) => $t->getId(), $templates),
             ]);
 
             return $templates;
@@ -1042,7 +1067,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return empty array as fallback
             return [];
         }
@@ -1055,7 +1080,7 @@ class DocumentUITemplateService
     {
         $documentTypeName = $documentType?->getName() ?? 'Global';
         $documentTypeId = $documentType?->getId() ?? null;
-        
+
         $this->logger->debug('Starting getDefaultTemplateForType operation', [
             'document_type_id' => $documentTypeId,
             'document_type_name' => $documentTypeName,
@@ -1063,7 +1088,7 @@ class DocumentUITemplateService
 
         try {
             $defaultTemplate = $this->uiTemplateRepository->findDefaultForType($documentType);
-            
+
             if ($defaultTemplate) {
                 $this->logger->debug('Default template found for document type', [
                     'document_type_id' => $documentTypeId,
@@ -1086,7 +1111,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return null as fallback
             return null;
         }
@@ -1103,7 +1128,7 @@ class DocumentUITemplateService
 
         try {
             $documentType = $this->documentTypeRepository->find($id);
-            
+
             if ($documentType) {
                 $this->logger->debug('Document type found by ID', [
                     'document_type_id' => $id,
@@ -1122,7 +1147,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return null as fallback
             return null;
         }
@@ -1137,7 +1162,7 @@ class DocumentUITemplateService
 
         try {
             $nextSortOrder = $this->uiTemplateRepository->getNextSortOrder();
-            
+
             $this->logger->debug('Next sort order calculated', [
                 'next_sort_order' => $nextSortOrder,
             ]);
@@ -1148,7 +1173,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return default value as fallback
             return 1;
         }
@@ -1161,7 +1186,7 @@ class DocumentUITemplateService
     {
         $templateId = $uiTemplate->getId();
         $templateName = $uiTemplate->getName();
-        
+
         $this->logger->info('Starting exportTemplate operation', [
             'template_id' => $templateId,
             'template_name' => $templateName,
@@ -1171,11 +1196,11 @@ class DocumentUITemplateService
             $this->logger->debug('Fetching components for template export');
             $components = $this->componentRepository->findByTemplate($uiTemplate);
             $componentCount = count($components);
-            
+
             $this->logger->debug('Components retrieved for export', [
                 'template_id' => $templateId,
                 'component_count' => $componentCount,
-                'component_ids' => array_map(fn($c) => $c->getId(), $components),
+                'component_ids' => array_map(static fn ($c) => $c->getId(), $components),
             ]);
 
             $this->logger->debug('Building template export configuration');
@@ -1196,23 +1221,21 @@ class DocumentUITemplateService
             ];
 
             $this->logger->debug('Building components export configuration');
-            $componentsConfig = array_map(static function ($component) {
-                return [
-                    'name' => $component->getName(),
-                    'type' => $component->getType(),
-                    'zone' => $component->getZone(),
-                    'content' => $component->getContent(),
-                    'html_content' => $component->getHtmlContent(),
-                    'style_config' => $component->getStyleConfig(),
-                    'position_config' => $component->getPositionConfig(),
-                    'data_binding' => $component->getDataBinding(),
-                    'conditional_display' => $component->getConditionalDisplay(),
-                    'sort_order' => $component->getSortOrder(),
-                    'css_class' => $component->getCssClass(),
-                    'element_id' => $component->getElementId(),
-                    'is_required' => $component->isRequired(),
-                ];
-            }, $components);
+            $componentsConfig = array_map(static fn ($component) => [
+                'name' => $component->getName(),
+                'type' => $component->getType(),
+                'zone' => $component->getZone(),
+                'content' => $component->getContent(),
+                'html_content' => $component->getHtmlContent(),
+                'style_config' => $component->getStyleConfig(),
+                'position_config' => $component->getPositionConfig(),
+                'data_binding' => $component->getDataBinding(),
+                'conditional_display' => $component->getConditionalDisplay(),
+                'sort_order' => $component->getSortOrder(),
+                'css_class' => $component->getCssClass(),
+                'element_id' => $component->getElementId(),
+                'is_required' => $component->isRequired(),
+            ], $components);
 
             $exportData = [
                 'template' => $templateConfig,
@@ -1236,7 +1259,7 @@ class DocumentUITemplateService
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             // Return empty configuration as fallback
             return [
                 'template' => [],
@@ -1253,7 +1276,7 @@ class DocumentUITemplateService
         $templateName = $config['template']['name'] ?? 'Unknown Template';
         $documentTypeName = $documentType?->getName() ?? 'Global';
         $componentCount = count($config['components'] ?? []);
-        
+
         $this->logger->info('Starting importTemplate operation', [
             'template_name' => $templateName,
             'document_type' => $documentTypeName,
@@ -1270,6 +1293,7 @@ class DocumentUITemplateService
             if (!isset($config['template']) || !is_array($config['template'])) {
                 $this->logger->error('Invalid import configuration - missing or invalid template section');
                 $this->entityManager->rollback();
+
                 return [
                     'success' => false,
                     'error' => 'Configuration d\'importation invalide - section template manquante ou invalide.',
@@ -1278,6 +1302,7 @@ class DocumentUITemplateService
 
             // Create template
             $this->logger->debug('Creating new template from import configuration');
+
             try {
                 $template = new DocumentUITemplate();
                 $template->setName($config['template']['name'])
@@ -1308,6 +1333,7 @@ class DocumentUITemplateService
                     'template_name' => $templateName,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -1329,7 +1355,7 @@ class DocumentUITemplateService
                     $componentName = $componentData['name'] ?? "Component {$index}";
                     $componentType = $componentData['type'] ?? 'text';
                     $componentZone = $componentData['zone'] ?? 'body';
-                    
+
                     $this->logger->debug('Creating component from import data', [
                         'template_id' => $templateId,
                         'component_index' => $index,
@@ -1357,7 +1383,7 @@ class DocumentUITemplateService
 
                     $this->entityManager->persist($component);
                     $createdComponents[] = $component;
-                    
+
                     $this->logger->debug('Component created successfully from import', [
                         'template_id' => $templateId,
                         'component_name' => $componentName,
@@ -1372,13 +1398,14 @@ class DocumentUITemplateService
                         'component_data' => $componentData,
                         'error' => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
             }
 
             $this->logger->debug('Flushing all imported entities');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing import transaction');
             $this->entityManager->commit();
 
@@ -1433,7 +1460,7 @@ class DocumentUITemplateService
         $documentType = $newDefaultTemplate->getDocumentType();
         $documentTypeName = $documentType?->getName() ?? 'Global';
         $isGlobal = $newDefaultTemplate->isGlobal();
-        
+
         $this->logger->debug('Starting handleDefaultTemplateChange operation', [
             'new_default_template_id' => $templateId,
             'new_default_template_name' => $templateName,
@@ -1453,7 +1480,7 @@ class DocumentUITemplateService
             $existingDefaultCount = count($existingDefaults);
             $this->logger->debug('Found existing default templates', [
                 'count' => $existingDefaultCount,
-                'existing_template_ids' => array_map(fn($t) => $t->getId(), $existingDefaults),
+                'existing_template_ids' => array_map(static fn ($t) => $t->getId(), $existingDefaults),
             ]);
 
             // Remove default status from existing templates
@@ -1462,13 +1489,13 @@ class DocumentUITemplateService
                 if ($existing->getId() !== $templateId) {
                     $existingId = $existing->getId();
                     $existingName = $existing->getName();
-                    
+
                     $this->logger->debug('Removing default status from existing template', [
                         'existing_template_id' => $existingId,
                         'existing_template_name' => $existingName,
                         'new_default_template_id' => $templateId,
                     ]);
-                    
+
                     $existing->setIsDefault(false);
                     $updatedTemplates[] = [
                         'id' => $existingId,
@@ -1493,6 +1520,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1513,18 +1541,19 @@ class DocumentUITemplateService
             while (count($this->uiTemplateRepository->findSimilarByName($name)) > 0) {
                 $name = $baseName . ' (' . $counter . ')';
                 $counter++;
-                
+
                 $this->logger->debug('Name collision detected, trying new name', [
                     'attempted_name' => $name,
                     'counter' => $counter,
                 ]);
-                
+
                 // Safety check to prevent infinite loop
                 if ($counter > 1000) {
                     $this->logger->error('Too many name collision attempts', [
                         'base_name' => $baseName,
                         'counter' => $counter,
                     ]);
+
                     throw new Exception('Impossible de générer un nom unique après 1000 tentatives');
                 }
             }
@@ -1542,6 +1571,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1562,18 +1592,19 @@ class DocumentUITemplateService
             while ($this->uiTemplateRepository->findBySlug($slug) !== null) {
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
-                
+
                 $this->logger->debug('Slug collision detected, trying new slug', [
                     'attempted_slug' => $slug,
                     'counter' => $counter,
                 ]);
-                
+
                 // Safety check to prevent infinite loop
                 if ($counter > 1000) {
                     $this->logger->error('Too many slug collision attempts', [
                         'base_slug' => $baseSlug,
                         'counter' => $counter,
                     ]);
+
                     throw new Exception('Impossible de générer un slug unique après 1000 tentatives');
                 }
             }
@@ -1591,6 +1622,7 @@ class DocumentUITemplateService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }

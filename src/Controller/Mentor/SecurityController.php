@@ -9,6 +9,7 @@ use App\Form\User\MentorRegistrationFormType;
 use App\Repository\User\MentorRepository;
 use App\Service\User\MentorAuthenticationService;
 use App\Service\User\MentorService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
@@ -48,13 +49,13 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Mentor login page accessed', [
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
                 'session_id' => session_id(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -67,6 +68,7 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'action' => 'redirect_to_dashboard',
                 ]);
+
                 return $this->redirectToRoute('mentor_dashboard');
             }
 
@@ -84,7 +86,7 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
                     'session_id' => session_id(),
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'login_attempt_context' => [
                         'username_length' => $lastUsername ? strlen($lastUsername) : 0,
                         'has_previous_session' => !empty($_COOKIE[session_name()]),
@@ -103,7 +105,6 @@ class SecurityController extends AbstractController
                 'error' => $error,
                 'page_title' => 'Connexion Mentor',
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in mentor login page', [
                 'error_message' => $e->getMessage(),
@@ -114,11 +115,11 @@ class SecurityController extends AbstractController
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
                 'session_id' => session_id(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             // Return a minimal login page in case of error
             return $this->render('mentor/security/login.html.twig', [
                 'last_username' => '',
@@ -138,14 +139,14 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Mentor registration page accessed', [
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
                 'session_id' => session_id(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -158,12 +159,13 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'action' => 'redirect_to_dashboard',
                 ]);
+
                 return $this->redirectToRoute('mentor_dashboard');
             }
 
             $mentor = new Mentor();
             $form = $this->createForm(MentorRegistrationFormType::class, $mentor);
-            
+
             $this->logger->debug('Registration form created', [
                 'form_class' => MentorRegistrationFormType::class,
                 'entity_class' => get_class($mentor),
@@ -178,7 +180,7 @@ class SecurityController extends AbstractController
                     'submitted_email' => $mentor->getEmail(),
                     'submitted_company' => $mentor->getCompanyName(),
                     'form_errors_count' => count($form->getErrors(true)),
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
 
                 if (!$form->isValid()) {
@@ -189,12 +191,12 @@ class SecurityController extends AbstractController
                             'message' => $error->getMessage(),
                         ];
                     }
-                    
+
                     $this->logger->warning('Mentor registration form validation failed', [
                         'email' => $mentor->getEmail(),
                         'form_errors' => $errors,
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                 }
             }
@@ -210,7 +212,7 @@ class SecurityController extends AbstractController
                         'education_level' => $mentor->getEducationLevel(),
                         'expertise_domains' => $mentor->getExpertiseDomains(),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
 
                     // Check for existing mentor with same email
@@ -222,6 +224,7 @@ class SecurityController extends AbstractController
                             'existing_mentor_verified' => $existingMentor->isEmailVerified(),
                             'ip' => $clientIp,
                         ]);
+
                         throw new InvalidArgumentException('Un compte avec cet email existe déjà.');
                     }
 
@@ -240,7 +243,7 @@ class SecurityController extends AbstractController
                     ];
 
                     $plainPassword = $form->get('plainPassword')->getData();
-                    
+
                     $this->logger->debug('Calling mentor authentication service', [
                         'service_method' => 'createMentorAccount',
                         'mentor_email' => $mentorData['email'],
@@ -263,7 +266,7 @@ class SecurityController extends AbstractController
                         'email_verified' => $createdMentor->isEmailVerified(),
                         'ip' => $clientIp,
                         'user_agent' => $userAgent,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                         'registration_context' => [
                             'has_phone' => !empty($createdMentor->getPhone()),
                             'has_siret' => !empty($createdMentor->getCompanySiret()),
@@ -274,13 +277,12 @@ class SecurityController extends AbstractController
                     $this->addFlash('success', 'Votre compte mentor a été créé avec succès ! Un email de vérification vous a été envoyé.');
 
                     return $this->redirectToRoute('mentor_login');
-
                 } catch (InvalidArgumentException $e) {
                     $this->logger->warning('Mentor registration validation error', [
                         'error_message' => $e->getMessage(),
                         'email' => $mentor->getEmail(),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', $e->getMessage());
                 } catch (Exception $e) {
@@ -294,7 +296,7 @@ class SecurityController extends AbstractController
                         'company' => $mentor->getCompanyName(),
                         'ip' => $clientIp,
                         'user_agent' => $userAgent,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                         'registration_data' => [
                             'has_email' => !empty($mentor->getEmail()),
                             'has_names' => !empty($mentor->getFirstName()) && !empty($mentor->getLastName()),
@@ -318,7 +320,6 @@ class SecurityController extends AbstractController
                 'expertise_domains' => Mentor::EXPERTISE_DOMAINS,
                 'education_levels' => Mentor::EDUCATION_LEVELS,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in mentor registration controller', [
                 'error_message' => $e->getMessage(),
@@ -328,16 +329,16 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'request_method' => $request->getMethod(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             // Return a minimal registration form in case of critical error
             $mentor = new Mentor();
             $form = $this->createForm(MentorRegistrationFormType::class, $mentor);
-            
+
             return $this->render('mentor/security/register.html.twig', [
                 'registrationForm' => $form,
                 'page_title' => 'Inscription Mentor',
@@ -368,23 +369,24 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Email verification attempt', [
                 'token_preview' => substr($token, 0, 8) . '...',
                 'token_length' => strlen($token),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             if (empty($token) || strlen($token) < 10) {
                 $this->logger->warning('Invalid email verification token format', [
                     'token_length' => strlen($token),
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
                 $this->addFlash('error', 'Token de vérification invalide.');
+
                 return $this->redirectToRoute('mentor_login');
             }
 
@@ -395,7 +397,7 @@ class SecurityController extends AbstractController
                     'token_preview' => substr($token, 0, 8) . '...',
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'verification_context' => [
                         'token_format_valid' => strlen($token) >= 10,
                         'service_method' => 'verifyEmail',
@@ -403,6 +405,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de vérification invalide ou expiré.');
+
                 return $this->redirectToRoute('mentor_login');
             }
 
@@ -413,26 +416,26 @@ class SecurityController extends AbstractController
                 'full_name' => $mentor->getFirstName() . ' ' . $mentor->getLastName(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'verification_context' => [
                     'was_previously_verified' => false, // Since service only returns unverified mentors
-                    'account_creation_to_verification_time' => $mentor->getCreatedAt() ? 
-                        (new \DateTime())->diff($mentor->getCreatedAt())->format('%h hours %i minutes') : 'unknown',
+                    'account_creation_to_verification_time' => $mentor->getCreatedAt() ?
+                        (new DateTime())->diff($mentor->getCreatedAt())->format('%h hours %i minutes') : 'unknown',
                 ],
             ]);
 
             $this->addFlash('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
 
             return $this->redirectToRoute('mentor_login');
-
         } catch (InvalidArgumentException $e) {
             $this->logger->warning('Email verification validation error', [
                 'error_message' => $e->getMessage(),
                 'token_preview' => substr($token, 0, 8) . '...',
                 'ip' => $clientIp,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
             $this->addFlash('error', $e->getMessage());
+
             return $this->redirectToRoute('mentor_login');
         } catch (Exception $e) {
             $this->logger->error('Critical error during email verification', [
@@ -444,10 +447,11 @@ class SecurityController extends AbstractController
                 'token_preview' => substr($token, 0, 8) . '...',
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue lors de la vérification. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_login');
         }
     }
@@ -462,23 +466,23 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Password reset page accessed', [
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             if ($request->isMethod('POST')) {
                 $email = $request->request->get('email');
-                
+
                 $this->logger->info('Password reset request submitted', [
                     'email' => $email,
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'request_context' => [
                         'has_email' => !empty($email),
                         'email_format_valid' => filter_var($email, FILTER_VALIDATE_EMAIL) !== false,
@@ -489,7 +493,7 @@ class SecurityController extends AbstractController
                 if (empty($email)) {
                     $this->logger->warning('Password reset request with empty email', [
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                 } else {
                     try {
@@ -505,7 +509,7 @@ class SecurityController extends AbstractController
                                 'email' => $email,
                                 'ip' => $clientIp,
                                 'user_agent' => $userAgent,
-                                'timestamp' => new \DateTime(),
+                                'timestamp' => new DateTime(),
                                 'reset_context' => [
                                     'service_response' => 'success',
                                     'email_will_be_sent' => true,
@@ -515,7 +519,7 @@ class SecurityController extends AbstractController
                             $this->logger->info('Password reset request for non-existent or invalid email', [
                                 'email' => $email,
                                 'ip' => $clientIp,
-                                'timestamp' => new \DateTime(),
+                                'timestamp' => new DateTime(),
                                 'reset_context' => [
                                     'service_response' => 'false',
                                     'likely_reason' => 'email_not_found_or_not_verified',
@@ -527,7 +531,7 @@ class SecurityController extends AbstractController
                             'email' => $email,
                             'error_message' => $e->getMessage(),
                             'ip' => $clientIp,
-                            'timestamp' => new \DateTime(),
+                            'timestamp' => new DateTime(),
                         ]);
                     } catch (Exception $e) {
                         $this->logger->error('Error during password reset request processing', [
@@ -538,7 +542,7 @@ class SecurityController extends AbstractController
                             'line' => $e->getLine(),
                             'ip' => $clientIp,
                             'user_agent' => $userAgent,
-                            'timestamp' => new \DateTime(),
+                            'timestamp' => new DateTime(),
                         ]);
                     }
                 }
@@ -556,7 +560,6 @@ class SecurityController extends AbstractController
             return $this->render('mentor/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in password reset controller', [
                 'error_message' => $e->getMessage(),
@@ -566,12 +569,12 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'request_method' => $request->getMethod(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             return $this->render('mentor/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
@@ -588,7 +591,7 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Password reset page accessed', [
                 'token_preview' => substr($token, 0, 8) . '...',
@@ -596,16 +599,17 @@ class SecurityController extends AbstractController
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             if (empty($token) || strlen($token) < 10) {
                 $this->logger->warning('Invalid password reset token format', [
                     'token_length' => strlen($token),
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
                 $this->addFlash('error', 'Token de réinitialisation invalide.');
+
                 return $this->redirectToRoute('mentor_login');
             }
 
@@ -616,7 +620,7 @@ class SecurityController extends AbstractController
                 $this->logger->info('Password reset form submitted', [
                     'token_preview' => substr($token, 0, 8) . '...',
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'validation_context' => [
                         'has_new_password' => !empty($newPassword),
                         'has_confirm_password' => !empty($confirmPassword),
@@ -629,7 +633,7 @@ class SecurityController extends AbstractController
                     $this->logger->warning('Password reset attempt with mismatched passwords', [
                         'token_preview' => substr($token, 0, 8) . '...',
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
 
@@ -644,7 +648,7 @@ class SecurityController extends AbstractController
                         'token_preview' => substr($token, 0, 8) . '...',
                         'password_length' => strlen($newPassword),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', 'Le mot de passe doit contenir au moins 8 caractères.');
 
@@ -671,7 +675,7 @@ class SecurityController extends AbstractController
                             'full_name' => $mentor->getFirstName() . ' ' . $mentor->getLastName(),
                             'ip' => $clientIp,
                             'user_agent' => $userAgent,
-                            'timestamp' => new \DateTime(),
+                            'timestamp' => new DateTime(),
                             'reset_context' => [
                                 'token_was_valid' => true,
                                 'password_strength_check' => [
@@ -692,17 +696,16 @@ class SecurityController extends AbstractController
                     $this->logger->warning('Password reset failed - invalid or expired token', [
                         'token_preview' => substr($token, 0, 8) . '...',
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                         'service_response' => 'null',
                     ]);
                     $this->addFlash('error', 'Token de réinitialisation invalide ou expiré.');
-
                 } catch (InvalidArgumentException $e) {
                     $this->logger->warning('Password reset validation error', [
                         'error_message' => $e->getMessage(),
                         'token_preview' => substr($token, 0, 8) . '...',
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', $e->getMessage());
                 } catch (Exception $e) {
@@ -715,7 +718,7 @@ class SecurityController extends AbstractController
                         'token_preview' => substr($token, 0, 8) . '...',
                         'ip' => $clientIp,
                         'user_agent' => $userAgent,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', 'Une erreur est survenue. Veuillez réessayer.');
                 }
@@ -730,7 +733,6 @@ class SecurityController extends AbstractController
                 'token' => $token,
                 'page_title' => 'Nouveau mot de passe',
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in password reset controller', [
                 'error_message' => $e->getMessage(),
@@ -741,12 +743,12 @@ class SecurityController extends AbstractController
                 'token_preview' => substr($token, 0, 8) . '...',
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'request_method' => $request->getMethod(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             return $this->render('mentor/security/reset_password.html.twig', [
                 'token' => $token,
                 'page_title' => 'Nouveau mot de passe',
@@ -764,12 +766,12 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Resend verification form page accessed', [
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -783,6 +785,7 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'action' => 'redirect_to_dashboard',
                 ]);
+
                 return $this->redirectToRoute('mentor_dashboard');
             }
 
@@ -793,7 +796,6 @@ class SecurityController extends AbstractController
             return $this->render('mentor/security/resend_verification.html.twig', [
                 'page_title' => 'Renvoyer l\'email de vérification',
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in resend verification form controller', [
                 'error_message' => $e->getMessage(),
@@ -803,11 +805,11 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             return $this->render('mentor/security/resend_verification.html.twig', [
                 'page_title' => 'Renvoyer l\'email de vérification',
             ]);
@@ -824,12 +826,12 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             $this->logger->info('Resend verification request received', [
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Verify CSRF token
@@ -838,9 +840,10 @@ class SecurityController extends AbstractController
                 $this->logger->warning('Invalid CSRF token in resend verification request', [
                     'ip' => $clientIp,
                     'submitted_token_preview' => $submittedToken ? substr($submittedToken, 0, 8) . '...' : 'null',
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
                 $this->addFlash('error', 'Token de sécurité invalide.');
+
                 return $this->redirectToRoute('mentor_login');
             }
 
@@ -849,16 +852,17 @@ class SecurityController extends AbstractController
             if (!$email) {
                 $this->logger->warning('Resend verification request without email', [
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
                 $this->addFlash('error', 'Email requis.');
+
                 return $this->redirectToRoute('mentor_login');
             }
 
             $this->logger->info('Processing resend verification for email', [
                 'email' => $email,
                 'ip' => $clientIp,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'email_validation' => [
                     'format_valid' => filter_var($email, FILTER_VALIDATE_EMAIL) !== false,
                     'length' => strlen($email),
@@ -885,21 +889,21 @@ class SecurityController extends AbstractController
                         ]);
 
                         $this->mentorService->sendEmailVerification($mentor);
-                        
+
                         $this->logger->info('Email verification resent successfully', [
                             'mentor_id' => $mentor->getId(),
                             'email' => $mentor->getEmail(),
                             'company' => $mentor->getCompanyName(),
                             'ip' => $clientIp,
                             'user_agent' => $userAgent,
-                            'timestamp' => new \DateTime(),
+                            'timestamp' => new DateTime(),
                             'resend_context' => [
                                 'previous_verification_attempts' => 'unknown', // Could track this in the future
-                                'account_age' => $mentor->getCreatedAt() ? 
-                                    (new \DateTime())->diff($mentor->getCreatedAt())->format('%d days %h hours') : 'unknown',
+                                'account_age' => $mentor->getCreatedAt() ?
+                                    (new DateTime())->diff($mentor->getCreatedAt())->format('%d days %h hours') : 'unknown',
                             ],
                         ]);
-                        
+
                         $this->addFlash('success', 'Email de vérification renvoyé.');
                     } catch (Exception $e) {
                         $this->logger->error('Error resending verification email', [
@@ -911,7 +915,7 @@ class SecurityController extends AbstractController
                             'line' => $e->getLine(),
                             'trace' => $e->getTraceAsString(),
                             'ip' => $clientIp,
-                            'timestamp' => new \DateTime(),
+                            'timestamp' => new DateTime(),
                         ]);
                         $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email.');
                     }
@@ -920,7 +924,7 @@ class SecurityController extends AbstractController
                         'mentor_id' => $mentor->getId(),
                         'email' => $mentor->getEmail(),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('info', 'Ce compte est déjà vérifié.');
                 }
@@ -928,14 +932,13 @@ class SecurityController extends AbstractController
                 $this->logger->info('Resend verification requested for non-existent email', [
                     'email' => $email,
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'security_response' => 'generic_message_for_privacy',
                 ]);
                 $this->addFlash('info', 'Si un compte non vérifié existe avec cet email, un email de vérification a été envoyé.');
             }
 
             return $this->redirectToRoute('mentor_login');
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in resend verification controller', [
                 'error_message' => $e->getMessage(),
@@ -945,7 +948,7 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'request_data' => [
                     'has_email' => !empty($request->request->get('email')),
                     'has_csrf_token' => !empty($request->request->get('_csrf_token')),
@@ -953,11 +956,10 @@ class SecurityController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_login');
         }
     }
-
-
 
     /**
      * Complete account setup.
@@ -969,7 +971,7 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
-        
+
         try {
             /** @var Mentor|null $mentor */
             $mentor = $this->getUser();
@@ -978,8 +980,9 @@ class SecurityController extends AbstractController
                 $this->logger->warning('Unauthenticated access to complete setup page', [
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
+
                 return $this->redirectToRoute('mentor_login');
             }
 
@@ -989,7 +992,7 @@ class SecurityController extends AbstractController
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             $setupCompletion = $this->mentorAuthService->getAccountSetupCompletion($mentor);
@@ -1008,6 +1011,7 @@ class SecurityController extends AbstractController
                     'email' => $mentor->getEmail(),
                     'ip' => $clientIp,
                 ]);
+
                 return $this->redirectToRoute('mentor_dashboard');
             }
 
@@ -1016,7 +1020,7 @@ class SecurityController extends AbstractController
                     'mentor_id' => $mentor->getId(),
                     'email' => $mentor->getEmail(),
                     'ip' => $clientIp,
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                     'form_data_keys' => array_keys($request->request->all()),
                 ]);
 
@@ -1024,18 +1028,18 @@ class SecurityController extends AbstractController
                     // Handle setup completion form submission
                     // This would involve updating mentor profile fields
                     // For now, just redirect to dashboard
-                    
+
                     $this->logger->info('Setup completion processed successfully', [
                         'mentor_id' => $mentor->getId(),
                         'email' => $mentor->getEmail(),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                         'next_action' => 'redirect_to_dashboard',
                     ]);
 
                     $this->addFlash('success', 'Votre profil a été complété avec succès !');
-                    return $this->redirectToRoute('mentor_dashboard');
 
+                    return $this->redirectToRoute('mentor_dashboard');
                 } catch (Exception $e) {
                     $this->logger->error('Error processing setup completion', [
                         'mentor_id' => $mentor->getId(),
@@ -1044,7 +1048,7 @@ class SecurityController extends AbstractController
                         'file' => $e->getFile(),
                         'line' => $e->getLine(),
                         'ip' => $clientIp,
-                        'timestamp' => new \DateTime(),
+                        'timestamp' => new DateTime(),
                     ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de la finalisation de votre profil.');
                 }
@@ -1061,7 +1065,6 @@ class SecurityController extends AbstractController
                 'setup_completion' => $setupCompletion,
                 'page_title' => 'Finaliser votre profil',
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in complete setup controller', [
                 'error_message' => $e->getMessage(),
@@ -1071,12 +1074,13 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
                 'request_method' => $request->getMethod(),
                 'mentor_id' => ($user = $this->getUser()) instanceof Mentor ? $user->getId() : null,
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
+
             return $this->redirectToRoute('mentor_dashboard');
         }
     }

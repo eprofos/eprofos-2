@@ -41,7 +41,7 @@ class MentorService
     public function sendWelcomeEmail(Mentor $mentor, ?string $plainPassword = null): bool
     {
         $startTime = microtime(true);
-        
+
         try {
             $this->logger->info('Sending welcome email to mentor', [
                 'mentor_id' => $mentor->getId(),
@@ -99,6 +99,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate login URL: ' . $e->getMessage());
             }
 
@@ -135,6 +136,7 @@ class MentorService
                     'email' => $mentor->getEmail(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send welcome email: ' . $e->getMessage());
             }
 
@@ -213,6 +215,7 @@ class MentorService
                     'error' => $e->getMessage(),
                     'email' => $email,
                 ]);
+
                 throw new Exception('Failed to generate registration URL: ' . $e->getMessage());
             }
 
@@ -241,6 +244,7 @@ class MentorService
                     'company_name' => $companyName,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send invitation email: ' . $e->getMessage());
             }
 
@@ -289,6 +293,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate reset token: ' . $e->getMessage());
             }
 
@@ -303,6 +308,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to save reset token: ' . $e->getMessage());
             }
 
@@ -322,6 +328,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate reset URL: ' . $e->getMessage());
             }
 
@@ -350,6 +357,7 @@ class MentorService
                     'email' => $mentor->getEmail(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send reset email: ' . $e->getMessage());
             }
 
@@ -396,6 +404,7 @@ class MentorService
                         'mentor_id' => $mentor->getId(),
                         'error' => $e->getMessage(),
                     ]);
+
                     throw new Exception('Failed to generate verification token: ' . $e->getMessage());
                 }
 
@@ -409,6 +418,7 @@ class MentorService
                         'mentor_id' => $mentor->getId(),
                         'error' => $e->getMessage(),
                     ]);
+
                     throw new Exception('Failed to save verification token: ' . $e->getMessage());
                 }
             } else {
@@ -434,6 +444,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate verification URL: ' . $e->getMessage());
             }
 
@@ -461,6 +472,7 @@ class MentorService
                     'email' => $mentor->getEmail(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send verification email: ' . $e->getMessage());
             }
 
@@ -530,6 +542,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate login URL: ' . $e->getMessage());
             }
 
@@ -564,6 +577,7 @@ class MentorService
                     'email' => $mentor->getEmail(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send new password email: ' . $e->getMessage());
             }
 
@@ -651,211 +665,12 @@ class MentorService
     }
 
     /**
-     * Log comprehensive mentor operation context.
-     */
-    private function logMentorOperationContext(string $operation, Mentor $mentor, array $additionalContext = []): void
-    {
-        try {
-            $baseContext = [
-                'operation' => $operation,
-                'mentor_id' => $mentor->getId(),
-                'mentor_email' => $mentor->getEmail(),
-                'mentor_full_name' => $mentor->getFullName(),
-                'mentor_company' => $mentor->getCompanyName(),
-                'mentor_is_active' => $mentor->isActive(),
-                'mentor_is_email_verified' => $mentor->isEmailVerified(),
-                'mentor_created_at' => $mentor->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'mentor_last_login' => $mentor->getLastLoginAt()?->format('Y-m-d H:i:s'),
-                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
-            ];
-
-            $fullContext = array_merge($baseContext, $additionalContext);
-
-            $this->logger->debug('Mentor operation context', $fullContext);
-        } catch (Exception $e) {
-            $this->logger->warning('Failed to log mentor operation context', [
-                'operation' => $operation,
-                'mentor_id' => $mentor->getId() ?? 'unknown',
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Validate email configuration before sending emails.
-     */
-    private function validateEmailConfiguration(): void
-    {
-        try {
-            $this->logger->debug('Validating email configuration', [
-                'from_email' => $this->fromEmail,
-                'from_name_length' => strlen($this->fromName),
-                'admin_email' => $this->adminEmail,
-                'operation' => 'email_config_validation',
-            ]);
-
-            if (empty($this->fromEmail) || !filter_var($this->fromEmail, FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException("Invalid from email configuration: {$this->fromEmail}");
-            }
-
-            if (empty($this->fromName)) {
-                throw new InvalidArgumentException('From name is not configured');
-            }
-
-            if (empty($this->adminEmail) || !filter_var($this->adminEmail, FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException("Invalid admin email configuration: {$this->adminEmail}");
-            }
-
-            $this->logger->debug('Email configuration validation passed', [
-                'from_email_valid' => true,
-                'from_name_configured' => !empty($this->fromName),
-                'admin_email_valid' => true,
-            ]);
-        } catch (Exception $e) {
-            $this->logger->error('Email configuration validation failed', [
-                'error' => $e->getMessage(),
-                'from_email' => $this->fromEmail,
-                'admin_email' => $this->adminEmail,
-                'operation' => 'email_config_validation',
-            ]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Log system performance metrics for debugging.
-     */
-    private function logPerformanceMetrics(string $operation, float $startTime, array $additionalMetrics = []): void
-    {
-        try {
-            $endTime = microtime(true);
-            $executionTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
-            $memoryUsage = memory_get_usage(true);
-            $peakMemoryUsage = memory_get_peak_usage(true);
-
-            $performanceContext = [
-                'operation' => $operation,
-                'execution_time_ms' => $executionTime,
-                'memory_usage_bytes' => $memoryUsage,
-                'memory_usage_mb' => round($memoryUsage / 1024 / 1024, 2),
-                'peak_memory_usage_bytes' => $peakMemoryUsage,
-                'peak_memory_usage_mb' => round($peakMemoryUsage / 1024 / 1024, 2),
-                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
-            ];
-
-            $fullContext = array_merge($performanceContext, $additionalMetrics);
-
-            // Log as info for operations taking longer than 1 second
-            if ($executionTime > 1000) {
-                $this->logger->info('Performance metrics (slow operation)', $fullContext);
-            } else {
-                $this->logger->debug('Performance metrics', $fullContext);
-            }
-        } catch (Exception $e) {
-            $this->logger->warning('Failed to log performance metrics', [
-                'operation' => $operation,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Handle critical errors and send notifications to administrators.
-     */
-    private function handleCriticalError(string $operation, Exception $exception, array $context = []): void
-    {
-        try {
-            $errorContext = [
-                'operation' => $operation,
-                'error_type' => get_class($exception),
-                'error_message' => $exception->getMessage(),
-                'error_file' => $exception->getFile(),
-                'error_line' => $exception->getLine(),
-                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
-                'php_version' => PHP_VERSION,
-                'memory_usage_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
-            ];
-
-            $fullContext = array_merge($errorContext, $context);
-
-            // Log critical error
-            $this->logger->critical('Critical error in MentorService', $fullContext);
-
-            // For critical operations, also try to send email notification to admin
-            $criticalOperations = [
-                'welcome_email',
-                'password_reset_email',
-                'email_verification',
-                'mentor_validation',
-                'csv_export',
-            ];
-
-            if (in_array($operation, $criticalOperations, true)) {
-                $this->sendCriticalErrorNotificationToAdmin($operation, $exception, $fullContext);
-            }
-        } catch (Exception $e) {
-            // Even if error handling fails, we should log it
-            $this->logger->emergency('Failed to handle critical error', [
-                'original_operation' => $operation,
-                'original_error' => $exception->getMessage(),
-                'error_handling_error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Send critical error notification to administrators.
-     */
-    private function sendCriticalErrorNotificationToAdmin(string $operation, Exception $exception, array $context): void
-    {
-        try {
-            $this->logger->debug('Attempting to send critical error notification to admin', [
-                'operation' => $operation,
-                'admin_email' => $this->adminEmail,
-            ]);
-
-            // Only send if we have a valid admin email and mailer service
-            if (empty($this->adminEmail) || !filter_var($this->adminEmail, FILTER_VALIDATE_EMAIL)) {
-                $this->logger->warning('Cannot send critical error notification: invalid admin email', [
-                    'admin_email' => $this->adminEmail,
-                ]);
-                return;
-            }
-
-            // Create simplified error email
-            $email = (new TemplatedEmail())
-                ->from(new Address($this->fromEmail, $this->fromName))
-                ->to(new Address($this->adminEmail, 'Administration EPROFOS'))
-                ->subject("Erreur critique - MentorService - {$operation}")
-                ->text("Une erreur critique s'est produite dans MentorService.\n\n" .
-                       "Opération: {$operation}\n" .
-                       "Erreur: {$exception->getMessage()}\n" .
-                       "Fichier: {$exception->getFile()}:{$exception->getLine()}\n" .
-                       "Timestamp: " . (new DateTimeImmutable())->format('Y-m-d H:i:s'))
-            ;
-
-            $this->mailer->send($email);
-
-            $this->logger->info('Critical error notification sent to admin', [
-                'operation' => $operation,
-                'admin_email' => $this->adminEmail,
-            ]);
-        } catch (Exception $e) {
-            $this->logger->error('Failed to send critical error notification to admin', [
-                'operation' => $operation,
-                'original_error' => $exception->getMessage(),
-                'notification_error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
      * Export mentors data to CSV format.
      */
     public function exportToCsv(array $mentors): string
     {
         $startTime = microtime(true);
-        
+
         try {
             $this->logger->info('Starting CSV export for mentors', [
                 'mentors_count' => count($mentors),
@@ -944,6 +759,7 @@ class MentorService
                         'error' => $e->getMessage(),
                         'skipping_mentor' => true,
                     ]);
+
                     continue;
                 }
             }
@@ -967,7 +783,7 @@ class MentorService
 
             // Convert to CSV string
             $csvStartTime = microtime(true);
-            
+
             $output = fopen('php://temp', 'r+');
             if ($output === false) {
                 throw new Exception('Failed to open temporary file for CSV generation');
@@ -1251,6 +1067,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate admin URL: ' . $e->getMessage());
             }
 
@@ -1284,6 +1101,7 @@ class MentorService
                     'admin_email' => $this->adminEmail,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send admin notification: ' . $e->getMessage());
             }
 
@@ -1481,6 +1299,7 @@ class MentorService
                             return true;
                         }
                     }
+
                     return false;
                 });
 
@@ -1616,7 +1435,7 @@ class MentorService
 
             $activeMentors = array_filter($mentors, static fn ($m) => $m->isActive());
             $verifiedMentors = array_filter($mentors, static fn ($m) => $m->isEmailVerified());
-            
+
             $experienceSum = array_sum(array_map(static fn ($m) => $m->getExperienceYears(), $mentors));
             $averageExperience = $mentorsCount > 0 ? $experienceSum / $mentorsCount : 0;
 
@@ -1675,6 +1494,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'is_active' => false,
                 ]);
+
                 return false;
             }
 
@@ -1683,6 +1503,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'is_email_verified' => false,
                 ]);
+
                 return false;
             }
 
@@ -1786,6 +1607,7 @@ class MentorService
                     'mentor_id' => $mentor->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to generate dashboard URL: ' . $e->getMessage());
             }
 
@@ -1821,6 +1643,7 @@ class MentorService
                     'email' => $mentor->getEmail(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw new Exception('Failed to send apprentice assignment notification: ' . $e->getMessage());
             }
 
@@ -2135,6 +1958,207 @@ class MentorService
     }
 
     /**
+     * Log comprehensive mentor operation context.
+     */
+    private function logMentorOperationContext(string $operation, Mentor $mentor, array $additionalContext = []): void
+    {
+        try {
+            $baseContext = [
+                'operation' => $operation,
+                'mentor_id' => $mentor->getId(),
+                'mentor_email' => $mentor->getEmail(),
+                'mentor_full_name' => $mentor->getFullName(),
+                'mentor_company' => $mentor->getCompanyName(),
+                'mentor_is_active' => $mentor->isActive(),
+                'mentor_is_email_verified' => $mentor->isEmailVerified(),
+                'mentor_created_at' => $mentor->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'mentor_last_login' => $mentor->getLastLoginAt()?->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ];
+
+            $fullContext = array_merge($baseContext, $additionalContext);
+
+            $this->logger->debug('Mentor operation context', $fullContext);
+        } catch (Exception $e) {
+            $this->logger->warning('Failed to log mentor operation context', [
+                'operation' => $operation,
+                'mentor_id' => $mentor->getId() ?? 'unknown',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Validate email configuration before sending emails.
+     */
+    private function validateEmailConfiguration(): void
+    {
+        try {
+            $this->logger->debug('Validating email configuration', [
+                'from_email' => $this->fromEmail,
+                'from_name_length' => strlen($this->fromName),
+                'admin_email' => $this->adminEmail,
+                'operation' => 'email_config_validation',
+            ]);
+
+            if (empty($this->fromEmail) || !filter_var($this->fromEmail, FILTER_VALIDATE_EMAIL)) {
+                throw new InvalidArgumentException("Invalid from email configuration: {$this->fromEmail}");
+            }
+
+            if (empty($this->fromName)) {
+                throw new InvalidArgumentException('From name is not configured');
+            }
+
+            if (empty($this->adminEmail) || !filter_var($this->adminEmail, FILTER_VALIDATE_EMAIL)) {
+                throw new InvalidArgumentException("Invalid admin email configuration: {$this->adminEmail}");
+            }
+
+            $this->logger->debug('Email configuration validation passed', [
+                'from_email_valid' => true,
+                'from_name_configured' => !empty($this->fromName),
+                'admin_email_valid' => true,
+            ]);
+        } catch (Exception $e) {
+            $this->logger->error('Email configuration validation failed', [
+                'error' => $e->getMessage(),
+                'from_email' => $this->fromEmail,
+                'admin_email' => $this->adminEmail,
+                'operation' => 'email_config_validation',
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Log system performance metrics for debugging.
+     */
+    private function logPerformanceMetrics(string $operation, float $startTime, array $additionalMetrics = []): void
+    {
+        try {
+            $endTime = microtime(true);
+            $executionTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
+            $memoryUsage = memory_get_usage(true);
+            $peakMemoryUsage = memory_get_peak_usage(true);
+
+            $performanceContext = [
+                'operation' => $operation,
+                'execution_time_ms' => $executionTime,
+                'memory_usage_bytes' => $memoryUsage,
+                'memory_usage_mb' => round($memoryUsage / 1024 / 1024, 2),
+                'peak_memory_usage_bytes' => $peakMemoryUsage,
+                'peak_memory_usage_mb' => round($peakMemoryUsage / 1024 / 1024, 2),
+                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ];
+
+            $fullContext = array_merge($performanceContext, $additionalMetrics);
+
+            // Log as info for operations taking longer than 1 second
+            if ($executionTime > 1000) {
+                $this->logger->info('Performance metrics (slow operation)', $fullContext);
+            } else {
+                $this->logger->debug('Performance metrics', $fullContext);
+            }
+        } catch (Exception $e) {
+            $this->logger->warning('Failed to log performance metrics', [
+                'operation' => $operation,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Handle critical errors and send notifications to administrators.
+     */
+    private function handleCriticalError(string $operation, Exception $exception, array $context = []): void
+    {
+        try {
+            $errorContext = [
+                'operation' => $operation,
+                'error_type' => get_class($exception),
+                'error_message' => $exception->getMessage(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'php_version' => PHP_VERSION,
+                'memory_usage_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
+            ];
+
+            $fullContext = array_merge($errorContext, $context);
+
+            // Log critical error
+            $this->logger->critical('Critical error in MentorService', $fullContext);
+
+            // For critical operations, also try to send email notification to admin
+            $criticalOperations = [
+                'welcome_email',
+                'password_reset_email',
+                'email_verification',
+                'mentor_validation',
+                'csv_export',
+            ];
+
+            if (in_array($operation, $criticalOperations, true)) {
+                $this->sendCriticalErrorNotificationToAdmin($operation, $exception, $fullContext);
+            }
+        } catch (Exception $e) {
+            // Even if error handling fails, we should log it
+            $this->logger->emergency('Failed to handle critical error', [
+                'original_operation' => $operation,
+                'original_error' => $exception->getMessage(),
+                'error_handling_error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Send critical error notification to administrators.
+     */
+    private function sendCriticalErrorNotificationToAdmin(string $operation, Exception $exception, array $context): void
+    {
+        try {
+            $this->logger->debug('Attempting to send critical error notification to admin', [
+                'operation' => $operation,
+                'admin_email' => $this->adminEmail,
+            ]);
+
+            // Only send if we have a valid admin email and mailer service
+            if (empty($this->adminEmail) || !filter_var($this->adminEmail, FILTER_VALIDATE_EMAIL)) {
+                $this->logger->warning('Cannot send critical error notification: invalid admin email', [
+                    'admin_email' => $this->adminEmail,
+                ]);
+
+                return;
+            }
+
+            // Create simplified error email
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->fromEmail, $this->fromName))
+                ->to(new Address($this->adminEmail, 'Administration EPROFOS'))
+                ->subject("Erreur critique - MentorService - {$operation}")
+                ->text("Une erreur critique s'est produite dans MentorService.\n\n" .
+                       "Opération: {$operation}\n" .
+                       "Erreur: {$exception->getMessage()}\n" .
+                       "Fichier: {$exception->getFile()}:{$exception->getLine()}\n" .
+                       'Timestamp: ' . (new DateTimeImmutable())->format('Y-m-d H:i:s'))
+            ;
+
+            $this->mailer->send($email);
+
+            $this->logger->info('Critical error notification sent to admin', [
+                'operation' => $operation,
+                'admin_email' => $this->adminEmail,
+            ]);
+        } catch (Exception $e) {
+            $this->logger->error('Failed to send critical error notification to admin', [
+                'operation' => $operation,
+                'original_error' => $exception->getMessage(),
+                'notification_error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Get expertise domains for a company's mentors.
      */
     private function getCompanyExpertiseDomains(array $mentors): array
@@ -2164,6 +2188,7 @@ class MentorService
                         'error' => $e->getMessage(),
                         'skipping_mentor' => true,
                     ]);
+
                     continue;
                 }
             }

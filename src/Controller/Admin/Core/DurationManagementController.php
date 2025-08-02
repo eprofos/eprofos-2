@@ -166,7 +166,7 @@ class DurationManagementController extends AbstractController
             }
 
             $totalAnalysisTime = microtime(true) - $analysisStartTime;
-            $entitiesNeedingUpdate = array_filter($results, fn($result) => $result['needs_update'] ?? false);
+            $entitiesNeedingUpdate = array_filter($results, static fn ($result) => $result['needs_update'] ?? false);
 
             $this->logger->info('Duration analysis completed successfully', [
                 'user' => $this->getUser()?->getUserIdentifier(),
@@ -308,7 +308,7 @@ class DurationManagementController extends AbstractController
             if ($batchSize < 1 || $batchSize > 1000) {
                 $this->logger->warning('Invalid batch size provided', [
                     'provided_batch_size' => $batchSize,
-                'user' => $this->getUser()?->getUserIdentifier(),
+                    'user' => $this->getUser()?->getUserIdentifier(),
                 ]);
                 $batchSize = 50; // Default fallback
             }

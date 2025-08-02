@@ -49,12 +49,12 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $versions = $versionRepository->findByDocument($document);
-            
+
             $this->logger->info('Document versions retrieved successfully', [
                 'document_id' => $document->getId(),
                 'versions_count' => count($versions),
-                'versions_ids' => array_map(fn($v) => $v->getId(), $versions),
-                'current_version' => $versions ? array_filter($versions, fn($v) => $v->isCurrent())[0]?->getVersion() ?? 'none' : 'none',
+                'versions_ids' => array_map(static fn ($v) => $v->getId(), $versions),
+                'current_version' => $versions ? array_filter($versions, static fn ($v) => $v->isCurrent())[0]?->getVersion() ?? 'none' : 'none',
             ]);
 
             return $this->render('admin/document_version/index.html.twig', [
@@ -81,7 +81,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la récupération des versions du document.');
-            
+
             return $this->redirectToRoute('admin_document_index');
         }
     }
@@ -140,7 +140,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage des détails de la version.');
-            
+
             return $this->redirectToRoute('admin_document_version_index', ['id' => $version->getDocument()->getId()]);
         }
     }
@@ -172,6 +172,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'La version avec l\'ID ' . $id1 . ' n\'existe pas.');
+
                 return $this->redirectToRoute('admin_document_index');
             }
 
@@ -183,6 +184,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'La version avec l\'ID ' . $id2 . ' n\'existe pas.');
+
                 return $this->redirectToRoute('admin_document_index');
             }
 
@@ -208,6 +210,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Les versions doivent appartenir au même document.');
+
                 return $this->redirectToRoute('admin_document_index');
             }
 
@@ -215,7 +218,7 @@ class DocumentVersionController extends AbstractController
             $originalOrder = ['version1' => $version1, 'version2' => $version2];
             if ($version1->getCreatedAt() > $version2->getCreatedAt()) {
                 [$version1, $version2] = [$version2, $version1];
-                
+
                 $this->logger->debug('Swapped version order for consistent comparison', [
                     'original_version1_id' => $originalOrder['version1']->getId(),
                     'original_version2_id' => $originalOrder['version2']->getId(),
@@ -262,7 +265,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la comparaison des versions.');
-            
+
             return $this->redirectToRoute('admin_document_index');
         }
     }
@@ -274,7 +277,7 @@ class DocumentVersionController extends AbstractController
     public function rollback(Request $request, DocumentVersion $version, EntityManagerInterface $entityManager): Response
     {
         $documentId = $version->getDocument()->getId();
-        
+
         try {
             $this->logger->info('Starting document rollback process', [
                 'version_id' => $version->getId(),
@@ -298,6 +301,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
             }
 
@@ -316,7 +320,7 @@ class DocumentVersionController extends AbstractController
             // Create new version from rollback
             $nextVersionNumber = $this->getNextVersionNumber($document);
             $changeLog = 'Restauration vers la version ' . $version->getVersion();
-            
+
             $this->logger->debug('Creating new version for rollback', [
                 'document_id' => $document->getId(),
                 'new_version_number' => $nextVersionNumber,
@@ -384,6 +388,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la restauration.');
+
             return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
         }
     }
@@ -396,7 +401,7 @@ class DocumentVersionController extends AbstractController
     {
         $documentId = $version->getDocument()->getId();
         $versionNumber = $version->getVersion();
-        
+
         try {
             $this->logger->info('Starting document version deletion process', [
                 'version_id' => $version->getId(),
@@ -423,6 +428,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
             }
 
@@ -436,6 +442,7 @@ class DocumentVersionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Impossible de supprimer la version actuelle.');
+
                 return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
             }
 
@@ -481,6 +488,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la suppression.');
+
             return $this->redirectToRoute('admin_document_version_index', ['id' => $documentId]);
         }
     }
@@ -503,13 +511,13 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $versions = $versionRepository->findByDocument($document);
-            
+
             $this->logger->debug('Document versions retrieved for export', [
                 'document_id' => $document->getId(),
                 'versions_count' => count($versions),
-                'versions_ids' => array_map(fn($v) => $v->getId(), $versions),
-                'versions_numbers' => array_map(fn($v) => $v->getVersion(), $versions),
-                'current_version' => $versions ? array_filter($versions, fn($v) => $v->isCurrent())[0]?->getVersion() ?? 'none' : 'none',
+                'versions_ids' => array_map(static fn ($v) => $v->getId(), $versions),
+                'versions_numbers' => array_map(static fn ($v) => $v->getVersion(), $versions),
+                'current_version' => $versions ? array_filter($versions, static fn ($v) => $v->isCurrent())[0]?->getVersion() ?? 'none' : 'none',
             ]);
 
             $exportData = [
@@ -544,13 +552,13 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $jsonContent = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            
+
             if ($jsonContent === false) {
                 throw new Exception('Failed to encode export data to JSON: ' . json_last_error_msg());
             }
 
             $filename = 'versions-' . $document->getSlug() . '-' . date('Y-m-d') . '.json';
-            
+
             $this->logger->info('Document version history export completed successfully', [
                 'document_id' => $document->getId(),
                 'document_title' => $document->getTitle(),
@@ -580,7 +588,7 @@ class DocumentVersionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export des versions.');
-            
+
             return $this->redirectToRoute('admin_document_version_index', ['id' => $document->getId()]);
         }
     }
@@ -603,6 +611,7 @@ class DocumentVersionController extends AbstractController
                 $this->logger->debug('No current version found, defaulting to version 1.0', [
                     'document_id' => $document->getId(),
                 ]);
+
                 return '1.0';
             }
 

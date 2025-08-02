@@ -9,6 +9,7 @@ use App\Entity\Training\Course;
 use App\Repository\Training\CourseRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
@@ -34,7 +35,7 @@ class CourseController extends AbstractController
         $this->logger->info('Starting course index page', [
             'user_id' => $this->getUser()?->getUserIdentifier(),
             'page' => $request->query->getInt('page', 1),
-            'route' => 'admin_course_index'
+            'route' => 'admin_course_index',
         ]);
 
         try {
@@ -45,7 +46,7 @@ class CourseController extends AbstractController
             $this->logger->debug('Course index pagination parameters', [
                 'page' => $page,
                 'limit' => $limit,
-                'offset' => $offset
+                'offset' => $offset,
             ]);
 
             // First, get the total count without joins to avoid grouping issues
@@ -78,7 +79,7 @@ class CourseController extends AbstractController
                 'courses_count' => count($courses),
                 'total_courses' => $totalCourses,
                 'current_page' => $page,
-                'total_pages' => $totalPages
+                'total_pages' => $totalPages,
             ]);
 
             return $this->render('admin/course/index.html.twig', [
@@ -87,8 +88,7 @@ class CourseController extends AbstractController
                 'total_pages' => $totalPages,
                 'total_courses' => $totalCourses,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in course index page', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -96,7 +96,7 @@ class CourseController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
-                'page' => $request->query->getInt('page', 1)
+                'page' => $request->query->getInt('page', 1),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de la liste des cours.');
@@ -116,31 +116,32 @@ class CourseController extends AbstractController
         $this->logger->info('Starting course creation', [
             'user_id' => $this->getUser()?->getUserIdentifier(),
             'method' => $request->getMethod(),
-            'route' => 'admin_course_new'
+            'route' => 'admin_course_new',
         ]);
 
         try {
             $course = new Course();
-            
+
             $this->logger->debug('Fetching active chapters for course creation');
             $chapters = $this->entityManager->getRepository(Chapter::class)->findBy(['isActive' => true]);
             $this->logger->debug('Active chapters found', ['chapters_count' => count($chapters)]);
 
             if ($request->isMethod('POST')) {
                 $this->logger->info('Processing course creation form submission');
-                
+
                 $data = $request->request->all();
                 $this->logger->debug('Form data received', [
                     'title' => $data['title'] ?? 'NOT_PROVIDED',
                     'type' => $data['type'] ?? 'NOT_PROVIDED',
                     'chapter_id' => $data['chapter_id'] ?? 'NOT_PROVIDED',
-                    'duration_minutes' => $data['duration_minutes'] ?? 'NOT_PROVIDED'
+                    'duration_minutes' => $data['duration_minutes'] ?? 'NOT_PROVIDED',
                 ]);
 
                 // Validate required fields
                 if (empty($data['title'])) {
                     $this->logger->warning('Course creation failed: missing title');
                     $this->addFlash('error', 'Le titre du cours est requis.');
+
                     return $this->render('admin/course/new.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -151,6 +152,7 @@ class CourseController extends AbstractController
                 if (empty($data['chapter_id'])) {
                     $this->logger->warning('Course creation failed: missing chapter');
                     $this->addFlash('error', 'Le chapitre est requis.');
+
                     return $this->render('admin/course/new.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -163,7 +165,7 @@ class CourseController extends AbstractController
                 $slug = $this->slugger->slug($data['title'])->lower()->toString();
                 $course->setSlug($slug);
                 $this->logger->debug('Generated slug for course', ['slug' => $slug]);
-                
+
                 $course->setDescription($data['description']);
                 $course->setType($data['type']);
                 $course->setContent($data['content'] ?? null);
@@ -172,10 +174,11 @@ class CourseController extends AbstractController
 
                 $this->logger->debug('Finding chapter for course', ['chapter_id' => $data['chapter_id']]);
                 $chapter = $this->entityManager->getRepository(Chapter::class)->find($data['chapter_id']);
-                
+
                 if (!$chapter) {
                     $this->logger->error('Chapter not found for course creation', ['chapter_id' => $data['chapter_id']]);
                     $this->addFlash('error', 'Chapitre introuvable.');
+
                     return $this->render('admin/course/new.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -186,7 +189,7 @@ class CourseController extends AbstractController
                 $course->setChapter($chapter);
                 $this->logger->debug('Chapter assigned to course', [
                     'chapter_id' => $chapter->getId(),
-                    'chapter_title' => $chapter->getTitle()
+                    'chapter_title' => $chapter->getTitle(),
                 ]);
 
                 // Handle JSON arrays
@@ -227,7 +230,7 @@ class CourseController extends AbstractController
                 $this->logger->info('Persisting new course to database', [
                     'course_title' => $course->getTitle(),
                     'course_slug' => $course->getSlug(),
-                    'chapter_id' => $chapter->getId()
+                    'chapter_id' => $chapter->getId(),
                 ]);
 
                 $this->entityManager->persist($course);
@@ -237,7 +240,7 @@ class CourseController extends AbstractController
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle(),
                     'course_slug' => $course->getSlug(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Cours créé avec succès.');
@@ -246,13 +249,13 @@ class CourseController extends AbstractController
             }
 
             $this->logger->debug('Rendering course creation form');
+
             return $this->render('admin/course/new.html.twig', [
                 'course' => $course,
                 'chapters' => $chapters,
                 'types' => Course::TYPES,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during course creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -260,24 +263,25 @@ class CourseController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
-                'method' => $request->getMethod()
+                'method' => $request->getMethod(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création du cours.');
 
             try {
                 $chapters = $this->entityManager->getRepository(Chapter::class)->findBy(['isActive' => true]);
+
                 return $this->render('admin/course/new.html.twig', [
                     'course' => new Course(),
                     'chapters' => $chapters,
                     'types' => Course::TYPES,
                 ]);
-            } catch (\Exception $renderException) {
+            } catch (Exception $renderException) {
                 $this->logger->critical('Critical error: unable to render course creation form', [
                     'original_error' => $e->getMessage(),
-                    'render_error' => $renderException->getMessage()
+                    'render_error' => $renderException->getMessage(),
                 ]);
-                
+
                 return $this->redirectToRoute('admin_course_index');
             }
         }
@@ -291,7 +295,7 @@ class CourseController extends AbstractController
             'course_title' => $course->getTitle(),
             'course_slug' => $course->getSlug(),
             'user_id' => $this->getUser()?->getUserIdentifier(),
-            'route' => 'admin_course_show'
+            'route' => 'admin_course_show',
         ]);
 
         try {
@@ -302,24 +306,24 @@ class CourseController extends AbstractController
                 'formation_id' => $course->getChapter()?->getModule()?->getFormation()?->getId(),
                 'duration_minutes' => $course->getDurationMinutes(),
                 'type' => $course->getType(),
-                'is_active' => $course->isActive()
+                'is_active' => $course->isActive(),
             ]);
 
             return $this->render('admin/course/show.html.twig', [
                 'course' => $course,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying course details', [
                 'course_id' => $course->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage du cours.');
+
             return $this->redirectToRoute('admin_course_index');
         }
     }
@@ -332,7 +336,7 @@ class CourseController extends AbstractController
             'course_title' => $course->getTitle(),
             'course_slug' => $course->getSlug(),
             'user_id' => $this->getUser()?->getUserIdentifier(),
-            'route' => 'admin_course_pdf'
+            'route' => 'admin_course_pdf',
         ]);
 
         try {
@@ -342,7 +346,7 @@ class CourseController extends AbstractController
             ]);
 
             $this->logger->debug('HTML template rendered successfully', [
-                'html_length' => strlen($html)
+                'html_length' => strlen($html),
             ]);
 
             $filename = sprintf(
@@ -376,15 +380,14 @@ class CourseController extends AbstractController
                 'course_id' => $course->getId(),
                 'filename' => $filename,
                 'pdf_size_bytes' => strlen($pdfContent),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             return new PdfResponse(
                 $pdfContent,
                 $filename,
             );
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error generating PDF for course', [
                 'course_id' => $course->getId(),
                 'course_title' => $course->getTitle(),
@@ -393,10 +396,11 @@ class CourseController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la génération du PDF.');
+
             return $this->redirectToRoute('admin_course_show', ['id' => $course->getId()]);
         }
     }
@@ -409,7 +413,7 @@ class CourseController extends AbstractController
             'course_title' => $course->getTitle(),
             'user_id' => $this->getUser()?->getUserIdentifier(),
             'method' => $request->getMethod(),
-            'route' => 'admin_course_edit'
+            'route' => 'admin_course_edit',
         ]);
 
         try {
@@ -420,7 +424,7 @@ class CourseController extends AbstractController
             if ($request->isMethod('POST')) {
                 $this->logger->info('Processing course edit form submission', [
                     'course_id' => $course->getId(),
-                    'original_title' => $course->getTitle()
+                    'original_title' => $course->getTitle(),
                 ]);
 
                 // Store original values for comparison
@@ -430,7 +434,7 @@ class CourseController extends AbstractController
                     'type' => $course->getType(),
                     'chapter_id' => $course->getChapter()?->getId(),
                     'duration_minutes' => $course->getDurationMinutes(),
-                    'is_active' => $course->isActive()
+                    'is_active' => $course->isActive(),
                 ];
 
                 $data = $request->request->all();
@@ -438,13 +442,14 @@ class CourseController extends AbstractController
                     'title' => $data['title'] ?? 'NOT_PROVIDED',
                     'type' => $data['type'] ?? 'NOT_PROVIDED',
                     'chapter_id' => $data['chapter_id'] ?? 'NOT_PROVIDED',
-                    'duration_minutes' => $data['duration_minutes'] ?? 'NOT_PROVIDED'
+                    'duration_minutes' => $data['duration_minutes'] ?? 'NOT_PROVIDED',
                 ]);
 
                 // Validate required fields
                 if (empty($data['title'])) {
                     $this->logger->warning('Course edit failed: missing title', ['course_id' => $course->getId()]);
                     $this->addFlash('error', 'Le titre du cours est requis.');
+
                     return $this->render('admin/course/edit.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -455,6 +460,7 @@ class CourseController extends AbstractController
                 if (empty($data['chapter_id'])) {
                     $this->logger->warning('Course edit failed: missing chapter', ['course_id' => $course->getId()]);
                     $this->addFlash('error', 'Le chapitre est requis.');
+
                     return $this->render('admin/course/edit.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -466,13 +472,13 @@ class CourseController extends AbstractController
                 $course->setTitle($data['title']);
                 $newSlug = $this->slugger->slug($data['title'])->lower()->toString();
                 $course->setSlug($newSlug);
-                
+
                 if ($originalData['title'] !== $data['title']) {
                     $this->logger->info('Course title changed', [
                         'course_id' => $course->getId(),
                         'old_title' => $originalData['title'],
                         'new_title' => $data['title'],
-                        'new_slug' => $newSlug
+                        'new_slug' => $newSlug,
                     ]);
                 }
 
@@ -484,13 +490,14 @@ class CourseController extends AbstractController
 
                 $this->logger->debug('Finding chapter for course edit', ['chapter_id' => $data['chapter_id']]);
                 $chapter = $this->entityManager->getRepository(Chapter::class)->find($data['chapter_id']);
-                
+
                 if (!$chapter) {
                     $this->logger->error('Chapter not found for course edit', [
                         'course_id' => $course->getId(),
-                        'chapter_id' => $data['chapter_id']
+                        'chapter_id' => $data['chapter_id'],
                     ]);
                     $this->addFlash('error', 'Chapitre introuvable.');
+
                     return $this->render('admin/course/edit.html.twig', [
                         'course' => $course,
                         'chapters' => $chapters,
@@ -503,7 +510,7 @@ class CourseController extends AbstractController
                         'course_id' => $course->getId(),
                         'old_chapter_id' => $originalData['chapter_id'],
                         'new_chapter_id' => $chapter->getId(),
-                        'new_chapter_title' => $chapter->getTitle()
+                        'new_chapter_title' => $chapter->getTitle(),
                     ]);
                 }
 
@@ -549,13 +556,13 @@ class CourseController extends AbstractController
                     $this->logger->info('Course active status changed', [
                         'course_id' => $course->getId(),
                         'old_status' => $originalData['is_active'] ? 'active' : 'inactive',
-                        'new_status' => $isActive ? 'active' : 'inactive'
+                        'new_status' => $isActive ? 'active' : 'inactive',
                     ]);
                 }
 
                 $this->logger->info('Saving course changes to database', [
                     'course_id' => $course->getId(),
-                    'course_title' => $course->getTitle()
+                    'course_title' => $course->getTitle(),
                 ]);
 
                 $this->entityManager->flush();
@@ -564,7 +571,7 @@ class CourseController extends AbstractController
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle(),
                     'course_slug' => $course->getSlug(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Cours modifié avec succès.');
@@ -573,13 +580,13 @@ class CourseController extends AbstractController
             }
 
             $this->logger->debug('Rendering course edit form');
+
             return $this->render('admin/course/edit.html.twig', [
                 'course' => $course,
                 'chapters' => $chapters,
                 'types' => Course::TYPES,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during course edit', [
                 'course_id' => $course->getId(),
                 'error_message' => $e->getMessage(),
@@ -588,25 +595,26 @@ class CourseController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $this->getUser()?->getUserIdentifier(),
-                'method' => $request->getMethod()
+                'method' => $request->getMethod(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification du cours.');
 
             try {
                 $chapters = $this->entityManager->getRepository(Chapter::class)->findBy(['isActive' => true]);
+
                 return $this->render('admin/course/edit.html.twig', [
                     'course' => $course,
                     'chapters' => $chapters,
                     'types' => Course::TYPES,
                 ]);
-            } catch (\Exception $renderException) {
+            } catch (Exception $renderException) {
                 $this->logger->critical('Critical error: unable to render course edit form', [
                     'course_id' => $course->getId(),
                     'original_error' => $e->getMessage(),
-                    'render_error' => $renderException->getMessage()
+                    'render_error' => $renderException->getMessage(),
                 ]);
-                
+
                 return $this->redirectToRoute('admin_course_index');
             }
         }
@@ -620,7 +628,7 @@ class CourseController extends AbstractController
             'course_title' => $course->getTitle(),
             'course_slug' => $course->getSlug(),
             'user_id' => $this->getUser()?->getUserIdentifier(),
-            'route' => 'admin_course_delete'
+            'route' => 'admin_course_delete',
         ]);
 
         try {
@@ -634,31 +642,31 @@ class CourseController extends AbstractController
                 'formation_id' => $course->getChapter()?->getModule()?->getFormation()?->getId(),
                 'type' => $course->getType(),
                 'duration_minutes' => $course->getDurationMinutes(),
-                'is_active' => $course->isActive()
+                'is_active' => $course->isActive(),
             ];
 
             $tokenValue = $request->request->get('_token');
             $this->logger->debug('CSRF token validation', [
                 'course_id' => $course->getId(),
-                'token_provided' => !empty($tokenValue)
+                'token_provided' => !empty($tokenValue),
             ]);
 
             if ($this->isCsrfTokenValid('delete' . $course->getId(), $tokenValue)) {
                 $this->logger->info('CSRF token valid, proceeding with course deletion', [
                     'course_id' => $course->getId(),
-                    'course_data' => $courseData
+                    'course_data' => $courseData,
                 ]);
 
                 // Check for related entities before deletion
                 $relatedEntities = [];
-                
+
                 // Check for exercises
                 $exercises = $course->getExercises();
                 if ($exercises && count($exercises) > 0) {
                     $relatedEntities['exercises'] = count($exercises);
                     $this->logger->warning('Course has related exercises', [
                         'course_id' => $course->getId(),
-                        'exercises_count' => count($exercises)
+                        'exercises_count' => count($exercises),
                     ]);
                 }
 
@@ -668,14 +676,14 @@ class CourseController extends AbstractController
                     $relatedEntities['qcms'] = count($qcms);
                     $this->logger->warning('Course has related QCMs', [
                         'course_id' => $course->getId(),
-                        'qcms_count' => count($qcms)
+                        'qcms_count' => count($qcms),
                     ]);
                 }
 
                 if (!empty($relatedEntities)) {
                     $this->logger->info('Course deletion will cascade to related entities', [
                         'course_id' => $course->getId(),
-                        'related_entities' => $relatedEntities
+                        'related_entities' => $relatedEntities,
                     ]);
                 }
 
@@ -686,7 +694,7 @@ class CourseController extends AbstractController
                 $this->logger->info('Course deleted successfully', [
                     'deleted_course' => $courseData,
                     'related_entities_deleted' => $relatedEntities,
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Cours supprimé avec succès.');
@@ -694,13 +702,12 @@ class CourseController extends AbstractController
                 $this->logger->warning('Course deletion failed: invalid CSRF token', [
                     'course_id' => $course->getId(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'token_provided' => !empty($tokenValue)
+                    'token_provided' => !empty($tokenValue),
                 ]);
 
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during course deletion', [
                 'course_id' => $course->getId(),
                 'course_title' => $course->getTitle(),
@@ -709,7 +716,7 @@ class CourseController extends AbstractController
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'user_id' => $this->getUser()?->getUserIdentifier()
+                'user_id' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la suppression du cours.');

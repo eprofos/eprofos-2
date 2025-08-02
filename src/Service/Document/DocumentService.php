@@ -7,9 +7,9 @@ namespace App\Service\Document;
 use App\Entity\Document\Document;
 use App\Entity\Document\DocumentType;
 use App\Entity\Document\DocumentVersion;
-use App\Entity\User\Admin;
 use App\Repository\Document\DocumentRepository;
 use App\Repository\Document\DocumentTypeRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -66,11 +66,11 @@ class DocumentService
                 $this->logger->debug('Generating unique slug for document', [
                     'original_title' => $document->getTitle(),
                 ]);
-                
+
                 try {
                     $slug = $this->generateUniqueSlug($document->getTitle());
                     $document->setSlug($slug);
-                    
+
                     $this->logger->debug('Generated unique slug', [
                         'title' => $document->getTitle(),
                         'generated_slug' => $slug,
@@ -80,6 +80,7 @@ class DocumentService
                         'title' => $document->getTitle(),
                         'error' => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
             } else {
@@ -93,11 +94,11 @@ class DocumentService
                 $this->logger->debug('Setting default status for document type', [
                     'document_type' => $document->getDocumentType()?->getCode(),
                 ]);
-                
+
                 try {
                     $defaultStatus = $this->getDefaultStatusForType($document->getDocumentType());
                     $document->setStatus($defaultStatus);
-                    
+
                     $this->logger->debug('Set default status', [
                         'document_type' => $document->getDocumentType()?->getCode(),
                         'default_status' => $defaultStatus,
@@ -107,6 +108,7 @@ class DocumentService
                         'document_type' => $document->getDocumentType()?->getCode(),
                         'error' => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
             } else {
@@ -117,6 +119,7 @@ class DocumentService
 
             // Validate business rules
             $this->logger->debug('Starting document validation');
+
             try {
                 $validationResult = $this->validateDocument($document);
                 if (!$validationResult['valid']) {
@@ -124,24 +127,26 @@ class DocumentService
                         'title' => $document->getTitle(),
                         'validation_errors' => $validationResult['errors'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => $validationResult['errors'],
                     ];
                 }
-                
+
                 $this->logger->debug('Document validation passed');
             } catch (Exception $e) {
                 $this->logger->error('Error during document validation', [
                     'title' => $document->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Check if document type allows multiple published documents
             $this->logger->debug('Checking publishing rules');
+
             try {
                 $publishingResult = $this->checkPublishingRules($document);
                 if (!$publishingResult['valid']) {
@@ -150,24 +155,26 @@ class DocumentService
                         'document_type' => $document->getDocumentType()?->getCode(),
                         'publishing_errors' => $publishingResult['errors'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => $publishingResult['errors'],
                     ];
                 }
-                
+
                 $this->logger->debug('Publishing rules validation passed');
             } catch (Exception $e) {
                 $this->logger->error('Error during publishing rules validation', [
                     'title' => $document->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Persist document
             $this->logger->debug('Persisting document to database');
+
             try {
                 $this->entityManager->persist($document);
                 $this->logger->debug('Document persisted successfully');
@@ -176,11 +183,13 @@ class DocumentService
                     'title' => $document->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Create initial version
             $this->logger->debug('Creating initial version for document');
+
             try {
                 $this->createInitialVersion($document);
                 $this->logger->debug('Initial version created successfully');
@@ -189,11 +198,13 @@ class DocumentService
                     'title' => $document->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Flush changes to database
             $this->logger->debug('Flushing changes to database');
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully');
@@ -202,6 +213,7 @@ class DocumentService
                     'title' => $document->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -287,7 +299,7 @@ class DocumentService
             $this->logger->debug('Starting document validation for update', [
                 'document_id' => $document->getId(),
             ]);
-            
+
             try {
                 $validationResult = $this->validateDocument($document);
                 if (!$validationResult['valid']) {
@@ -296,19 +308,20 @@ class DocumentService
                         'title' => $document->getTitle(),
                         'validation_errors' => $validationResult['errors'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => $validationResult['errors'],
                     ];
                 }
-                
+
                 $this->logger->debug('Document validation passed for update');
             } catch (Exception $e) {
                 $this->logger->error('Error during document validation for update', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -317,7 +330,7 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'status' => $document->getStatus(),
             ]);
-            
+
             try {
                 $publishingResult = $this->checkPublishingRules($document);
                 if (!$publishingResult['valid']) {
@@ -326,19 +339,20 @@ class DocumentService
                         'title' => $document->getTitle(),
                         'publishing_errors' => $publishingResult['errors'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => $publishingResult['errors'],
                     ];
                 }
-                
+
                 $this->logger->debug('Publishing rules validation passed for update');
             } catch (Exception $e) {
                 $this->logger->error('Error during publishing rules validation for update', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -347,11 +361,12 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'version_data' => $versionData,
             ]);
-            
+
             $newVersion = null;
+
             try {
                 $newVersion = $this->handleVersioning($document, $versionData);
-                
+
                 if ($newVersion) {
                     $this->logger->info('New version created during update', [
                         'document_id' => $document->getId(),
@@ -370,6 +385,7 @@ class DocumentService
                     'version_data' => $versionData,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -377,7 +393,7 @@ class DocumentService
             $this->logger->debug('Flushing update changes to database', [
                 'document_id' => $document->getId(),
             ]);
-            
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully for update');
@@ -386,6 +402,7 @@ class DocumentService
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -451,7 +468,7 @@ class DocumentService
         $documentId = $document->getId();
         $documentTitle = $document->getTitle();
         $documentStatus = $document->getStatus();
-        
+
         $this->logger->info('Starting document deletion process', [
             'document_id' => $documentId,
             'title' => $documentTitle,
@@ -465,7 +482,7 @@ class DocumentService
                 'document_id' => $documentId,
                 'status' => $documentStatus,
             ]);
-            
+
             if ($document->getStatus() === Document::STATUS_PUBLISHED) {
                 $this->logger->warning('Attempted to delete published document', [
                     'document_id' => $documentId,
@@ -473,7 +490,7 @@ class DocumentService
                     'status' => $documentStatus,
                     'user' => ($user = $this->security->getUser()) ? $user->getUserIdentifier() : 'anonymous',
                 ]);
-                
+
                 return [
                     'success' => false,
                     'errors' => ['Impossible de supprimer un document publié. Archivez-le d\'abord.'],
@@ -519,7 +536,7 @@ class DocumentService
             $this->logger->debug('Removing document from entity manager', [
                 'document_id' => $documentId,
             ]);
-            
+
             try {
                 $this->entityManager->remove($document);
                 $this->logger->debug('Document removed from entity manager');
@@ -528,6 +545,7 @@ class DocumentService
                     'document_id' => $documentId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -535,7 +553,7 @@ class DocumentService
             $this->logger->debug('Flushing deletion changes to database', [
                 'document_id' => $documentId,
             ]);
-            
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully for deletion');
@@ -544,6 +562,7 @@ class DocumentService
                     'document_id' => $documentId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -552,7 +571,7 @@ class DocumentService
                 'title' => $documentTitle,
                 'status' => $documentStatus,
                 'deleted_by' => ($admin = $this->security->getUser()) ? $admin->getUserIdentifier() : 'anonymous',
-                'deleted_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'deleted_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             return [
@@ -612,7 +631,7 @@ class DocumentService
                 'title' => $document->getTitle(),
                 'status' => $document->getStatus(),
             ]);
-            
+
             try {
                 $canPublish = $this->canPublishDocument($document);
                 if (!$canPublish) {
@@ -625,19 +644,20 @@ class DocumentService
                         'has_document_type' => $document->getDocumentType() !== null,
                         'requires_approval' => $document->getDocumentType()?->isRequiresApproval() ?? false,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => ['Ce document ne peut pas être publié dans son état actuel.'],
                     ];
                 }
-                
+
                 $this->logger->debug('Document publishing requirements check passed');
             } catch (Exception $e) {
                 $this->logger->error('Error checking document publishing requirements', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -646,7 +666,7 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'document_type' => $document->getDocumentType()?->getCode(),
             ]);
-            
+
             try {
                 $publishingResult = $this->checkPublishingRules($document, true);
                 if (!$publishingResult['valid']) {
@@ -656,19 +676,20 @@ class DocumentService
                         'document_type' => $document->getDocumentType()?->getCode(),
                         'publishing_errors' => $publishingResult['errors'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'errors' => $publishingResult['errors'],
                     ];
                 }
-                
+
                 $this->logger->debug('Publishing rules validation passed');
             } catch (Exception $e) {
                 $this->logger->error('Error during publishing rules validation', [
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -681,7 +702,7 @@ class DocumentService
                 'document_id' => $document->getId(),
                 'previous_status' => $previousStatus,
             ]);
-            
+
             try {
                 $document->publish();
                 $this->logger->debug('Document status updated to published', [
@@ -694,6 +715,7 @@ class DocumentService
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -714,7 +736,7 @@ class DocumentService
             $this->logger->debug('Flushing publication changes to database', [
                 'document_id' => $document->getId(),
             ]);
-            
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully for publication');
@@ -723,6 +745,7 @@ class DocumentService
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -733,7 +756,7 @@ class DocumentService
                 'new_status' => $document->getStatus(),
                 'document_type' => $document->getDocumentType()?->getCode(),
                 'published_by' => ($admin = $this->security->getUser()) ? $admin->getUserIdentifier() : 'anonymous',
-                'published_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'published_at' => (new DateTime())->format('Y-m-d H:i:s'),
                 'version' => $document->getVersion(),
                 'is_public' => $document->isPublic(),
             ]);
@@ -800,11 +823,11 @@ class DocumentService
                 'previous_status' => $previousStatus,
                 'previous_is_active' => $previousIsActive,
             ]);
-            
+
             try {
                 $document->setStatus(Document::STATUS_ARCHIVED);
                 $document->setIsActive(false);
-                
+
                 $this->logger->debug('Document status updated to archived', [
                     'document_id' => $document->getId(),
                     'new_status' => $document->getStatus(),
@@ -815,6 +838,7 @@ class DocumentService
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -835,7 +859,7 @@ class DocumentService
             $this->logger->debug('Flushing archiving changes to database', [
                 'document_id' => $document->getId(),
             ]);
-            
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully for archiving');
@@ -844,6 +868,7 @@ class DocumentService
                     'document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -855,7 +880,7 @@ class DocumentService
                 'previous_is_active' => $previousIsActive,
                 'new_is_active' => $document->isActive(),
                 'archived_by' => ($admin = $this->security->getUser()) ? $admin->getUserIdentifier() : 'anonymous',
-                'archived_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'archived_at' => (new DateTime())->format('Y-m-d H:i:s'),
                 'version' => $document->getVersion(),
                 'document_type' => $document->getDocumentType()?->getCode(),
             ]);
@@ -917,11 +942,11 @@ class DocumentService
                 'original_document_id' => $document->getId(),
                 'original_title' => $document->getTitle(),
             ]);
-            
+
             try {
                 $duplicate = new Document();
                 $duplicateTitle = $document->getTitle() . ' (Copie)';
-                
+
                 $duplicate->setTitle($duplicateTitle);
                 $duplicate->setDescription($document->getDescription());
                 $duplicate->setContent($document->getContent());
@@ -931,7 +956,7 @@ class DocumentService
                 $duplicate->setIsActive(true);
                 $duplicate->setIsPublic($document->isPublic());
                 $duplicate->setTags($document->getTags());
-                
+
                 $this->logger->debug('Duplicate document properties set', [
                     'duplicate_title' => $duplicateTitle,
                     'status' => Document::STATUS_DRAFT,
@@ -944,6 +969,7 @@ class DocumentService
                     'original_document_id' => $document->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -951,11 +977,11 @@ class DocumentService
             $this->logger->debug('Generating unique slug for duplicate', [
                 'duplicate_title' => $duplicate->getTitle(),
             ]);
-            
+
             try {
                 $slug = $this->generateUniqueSlug($duplicate->getTitle());
                 $duplicate->setSlug($slug);
-                
+
                 $this->logger->debug('Generated unique slug for duplicate', [
                     'duplicate_title' => $duplicate->getTitle(),
                     'generated_slug' => $slug,
@@ -965,6 +991,7 @@ class DocumentService
                     'duplicate_title' => $duplicate->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -983,6 +1010,7 @@ class DocumentService
 
             // Persist duplicate document
             $this->logger->debug('Persisting duplicate document to database');
+
             try {
                 $this->entityManager->persist($duplicate);
                 $this->logger->debug('Duplicate document persisted successfully');
@@ -992,11 +1020,13 @@ class DocumentService
                     'duplicate_title' => $duplicate->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Create initial version for duplicate
             $this->logger->debug('Creating initial version for duplicate document');
+
             try {
                 $this->createInitialVersion($duplicate);
                 $this->logger->debug('Initial version created successfully for duplicate');
@@ -1006,11 +1036,13 @@ class DocumentService
                     'duplicate_title' => $duplicate->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
             // Flush changes to database
             $this->logger->debug('Flushing duplication changes to database');
+
             try {
                 $this->entityManager->flush();
                 $this->logger->debug('Database flush completed successfully for duplication');
@@ -1020,6 +1052,7 @@ class DocumentService
                     'duplicate_title' => $duplicate->getTitle(),
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
 
@@ -1032,7 +1065,7 @@ class DocumentService
                 'duplicate_status' => $duplicate->getStatus(),
                 'duplicate_version' => $duplicate->getVersion(),
                 'duplicated_by' => ($admin = $this->security->getUser()) ? $admin->getUserIdentifier() : 'anonymous',
-                'duplicated_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'duplicated_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             return [
@@ -1105,7 +1138,7 @@ class DocumentService
                     'attempted_slug' => $slug,
                     'counter' => $counter,
                 ]);
-                
+
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
 
@@ -1133,6 +1166,7 @@ class DocumentService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1150,6 +1184,7 @@ class DocumentService
         try {
             if (!$documentType) {
                 $this->logger->debug('No document type provided, using default draft status');
+
                 return Document::STATUS_DRAFT;
             }
 
@@ -1163,6 +1198,7 @@ class DocumentService
                 $this->logger->debug('Draft status is allowed, using as default', [
                     'document_type' => $documentType->getCode(),
                 ]);
+
                 return Document::STATUS_DRAFT;
             }
 
@@ -1179,7 +1215,7 @@ class DocumentService
                 'document_type' => $documentType?->getCode(),
                 'error' => $e->getMessage(),
             ]);
-            
+
             // Fallback to draft status
             return Document::STATUS_DRAFT;
         }
@@ -1283,6 +1319,7 @@ class DocumentService
         try {
             if (!$documentType) {
                 $this->logger->debug('No document type found, skipping publishing rules validation');
+
                 return ['valid' => true, 'errors' => []];
             }
 
@@ -1296,7 +1333,6 @@ class DocumentService
             // Check if multiple published documents are allowed
             if (!$documentType->isAllowMultiplePublished()
                 && ($document->getStatus() === Document::STATUS_PUBLISHED || $isPublishing)) {
-                
                 try {
                     $existingPublished = $this->documentRepository->findBy([
                         'documentType' => $documentType,
@@ -1306,7 +1342,7 @@ class DocumentService
                     $this->logger->debug('Found existing published documents', [
                         'document_type' => $documentType->getCode(),
                         'existing_published_count' => count($existingPublished),
-                        'existing_published_ids' => array_map(fn($doc) => $doc->getId(), $existingPublished),
+                        'existing_published_ids' => array_map(static fn ($doc) => $doc->getId(), $existingPublished),
                     ]);
 
                     // Filter out the current document if it's being updated
@@ -1315,7 +1351,7 @@ class DocumentService
                         $this->logger->debug('Filtered out current document from existing published', [
                             'current_document_id' => $document->getId(),
                             'filtered_published_count' => count($filteredPublished),
-                            'filtered_published_ids' => array_map(fn($doc) => $doc->getId(), $filteredPublished),
+                            'filtered_published_ids' => array_map(static fn ($doc) => $doc->getId(), $filteredPublished),
                         ]);
                         $existingPublished = $filteredPublished;
                     }
@@ -1327,7 +1363,7 @@ class DocumentService
                             'document_id' => $document->getId(),
                             'document_type' => $documentType->getCode(),
                             'existing_published_count' => count($existingPublished),
-                            'existing_published_titles' => array_map(fn($doc) => $doc->getTitle(), $existingPublished),
+                            'existing_published_titles' => array_map(static fn ($doc) => $doc->getTitle(), $existingPublished),
                         ]);
                     }
                 } catch (Exception $e) {
@@ -1336,6 +1372,7 @@ class DocumentService
                         'document_type' => $documentType->getCode(),
                         'error' => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
             }
@@ -1389,6 +1426,7 @@ class DocumentService
                     'has_title' => !empty($document->getTitle()),
                     'has_document_type' => $document->getDocumentType() !== null,
                 ]);
+
                 return false;
             }
 
@@ -1410,6 +1448,7 @@ class DocumentService
                     'current_status' => $document->getStatus(),
                     'required_status' => Document::STATUS_APPROVED,
                 ]);
+
                 return false;
             }
 
@@ -1426,7 +1465,7 @@ class DocumentService
                 'title' => $document->getTitle(),
                 'error' => $e->getMessage(),
             ]);
-            
+
             // Return false on error for safety
             return false;
         }
@@ -1479,6 +1518,7 @@ class DocumentService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }

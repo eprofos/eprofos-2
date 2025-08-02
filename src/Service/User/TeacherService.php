@@ -6,14 +6,20 @@ namespace App\Service\User;
 
 use App\Entity\User\Teacher;
 use App\Repository\User\TeacherRepository;
+use DateTime;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
+use Twig\Error\Error;
 
 /**
  * Teacher Service.
@@ -43,7 +49,7 @@ class TeacherService
             'teacher_email' => $teacher->getEmail(),
             'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
             'action' => 'send_password_reset_email',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -54,7 +60,7 @@ class TeacherService
             ]);
 
             $teacher->generatePasswordResetToken();
-            
+
             $this->logger->debug('Persisting password reset token to database', [
                 'teacher_id' => $teacher->getId(),
                 'token_generated' => $teacher->getPasswordResetToken() ? 'success' : 'failed',
@@ -110,7 +116,7 @@ class TeacherService
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'reset_token' => substr($teacher->getPasswordResetToken(), 0, 8) . '...',
                 'reset_url_domain' => parse_url($resetUrl, PHP_URL_HOST),
-                'email_sent_at' => new \DateTime(),
+                'email_sent_at' => new DateTime(),
                 'action_result' => 'success',
             ]);
 
@@ -127,11 +133,11 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'transport_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Twig\Error\Error $e) {
+        } catch (Error $e) {
             $this->logger->error('Failed to send password reset email to teacher - Twig Template Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -140,7 +146,7 @@ class TeacherService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'action_result' => 'template_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
@@ -152,11 +158,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Failed to send password reset email to teacher - Unexpected Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -168,7 +174,7 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
@@ -187,7 +193,7 @@ class TeacherService
             'is_email_verified' => $teacher->isEmailVerified(),
             'existing_token' => $teacher->getEmailVerificationToken() ? 'exists' : 'none',
             'action' => 'send_email_verification',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -199,7 +205,7 @@ class TeacherService
                 ]);
 
                 $teacher->generateEmailVerificationToken();
-                
+
                 $this->logger->debug('Persisting email verification token to database', [
                     'teacher_id' => $teacher->getId(),
                     'token_generated' => $teacher->getEmailVerificationToken() ? 'success' : 'failed',
@@ -262,7 +268,7 @@ class TeacherService
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'verification_token' => substr($teacher->getEmailVerificationToken(), 0, 8) . '...',
                 'verification_url_domain' => parse_url($verificationUrl, PHP_URL_HOST),
-                'email_sent_at' => new \DateTime(),
+                'email_sent_at' => new DateTime(),
                 'action_result' => 'success',
             ]);
 
@@ -279,11 +285,11 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'transport_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Twig\Error\Error $e) {
+        } catch (Error $e) {
             $this->logger->error('Failed to send email verification to teacher - Twig Template Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -292,7 +298,7 @@ class TeacherService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'action_result' => 'template_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
@@ -304,11 +310,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Failed to send email verification to teacher - Unexpected Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -320,7 +326,7 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
@@ -339,7 +345,7 @@ class TeacherService
             'has_temp_password' => $tempPassword !== null,
             'teacher_created_at' => $teacher->getCreatedAt()?->format('Y-m-d H:i:s'),
             'action' => 'send_welcome_email',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -395,7 +401,7 @@ class TeacherService
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'login_url_domain' => parse_url($loginUrl, PHP_URL_HOST),
                 'temp_password_provided' => $tempPassword !== null,
-                'email_sent_at' => new \DateTime(),
+                'email_sent_at' => new DateTime(),
                 'action_result' => 'success',
             ]);
 
@@ -412,11 +418,11 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'transport_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Twig\Error\Error $e) {
+        } catch (Error $e) {
             $this->logger->error('Failed to send welcome email to teacher - Twig Template Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -425,11 +431,11 @@ class TeacherService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'action_result' => 'template_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Failed to send welcome email to teacher - Unexpected Error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -441,7 +447,7 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return false;
@@ -460,19 +466,19 @@ class TeacherService
             'has_password' => isset($data['password']) && !empty($data['password']),
             'data_keys' => array_keys($data),
             'action' => 'create_teacher',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
             // Validate required fields
             if (empty($data['firstName'])) {
-                throw new \InvalidArgumentException('First name is required');
+                throw new InvalidArgumentException('First name is required');
             }
             if (empty($data['lastName'])) {
-                throw new \InvalidArgumentException('Last name is required');
+                throw new InvalidArgumentException('Last name is required');
             }
             if (empty($data['email'])) {
-                throw new \InvalidArgumentException('Email is required');
+                throw new InvalidArgumentException('Email is required');
             }
 
             $this->logger->debug('Validating teacher email uniqueness', [
@@ -482,7 +488,7 @@ class TeacherService
 
             // Check if email already exists
             if ($this->emailExists($data['email'])) {
-                throw new \InvalidArgumentException('Email already exists');
+                throw new InvalidArgumentException('Email already exists');
             }
 
             $this->logger->debug('Creating new teacher entity', [
@@ -566,32 +572,32 @@ class TeacherService
                 'temp_password_generated' => $tempPasswordGenerated,
                 'created_at' => $teacher->getCreatedAt()?->format('Y-m-d H:i:s'),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $teacher;
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Teacher creation failed - Invalid argument', [
                 'email' => $data['email'] ?? 'not_provided',
                 'error_type' => 'InvalidArgumentException',
                 'error_message' => $e->getMessage(),
                 'data_provided' => array_keys($data),
                 'action_result' => 'validation_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             throw $e;
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Teacher creation failed - Unique constraint violation', [
                 'email' => $data['email'] ?? 'not_provided',
                 'error_type' => 'UniqueConstraintViolationException',
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'constraint_violation',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \InvalidArgumentException('A teacher with this email already exists');
+            throw new InvalidArgumentException('A teacher with this email already exists');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Teacher creation failed - Database error', [
                 'email' => $data['email'] ?? 'not_provided',
@@ -599,11 +605,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to create teacher due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to create teacher due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher creation failed - Unexpected error', [
                 'email' => $data['email'] ?? 'not_provided',
                 'firstName' => $data['firstName'] ?? 'not_provided',
@@ -615,10 +621,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to create teacher due to unexpected error');
+            throw new RuntimeException('Failed to create teacher due to unexpected error');
         }
     }
 
@@ -634,7 +640,7 @@ class TeacherService
             'data_keys' => array_keys($data),
             'has_password_update' => isset($data['password']) && !empty($data['password']),
             'action' => 'update_teacher',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -747,7 +753,7 @@ class TeacherService
                 'password_updated' => isset($changes['password']),
                 'updated_at' => $teacher->getUpdatedAt()?->format('Y-m-d H:i:s'),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $teacher;
@@ -760,11 +766,11 @@ class TeacherService
                 'error_code' => $e->getCode(),
                 'changes_attempted' => array_keys($data),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to update teacher due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to update teacher due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher update failed - Unexpected error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -777,10 +783,10 @@ class TeacherService
                 'stack_trace' => $e->getTraceAsString(),
                 'changes_attempted' => array_keys($data),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to update teacher due to unexpected error');
+            throw new RuntimeException('Failed to update teacher due to unexpected error');
         }
     }
 
@@ -795,7 +801,7 @@ class TeacherService
             'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
             'current_status' => $teacher->isActive() ? 'active' : 'inactive',
             'action' => 'deactivate_teacher',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -828,9 +834,9 @@ class TeacherService
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'previous_status' => 'active',
                 'new_status' => 'inactive',
-                'deactivated_at' => new \DateTime(),
+                'deactivated_at' => new DateTime(),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Teacher deactivation failed - Database error', [
@@ -840,11 +846,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to deactivate teacher due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to deactivate teacher due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher deactivation failed - Unexpected error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -856,10 +862,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to deactivate teacher due to unexpected error');
+            throw new RuntimeException('Failed to deactivate teacher due to unexpected error');
         }
     }
 
@@ -874,7 +880,7 @@ class TeacherService
             'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
             'current_status' => $teacher->isActive() ? 'active' : 'inactive',
             'action' => 'activate_teacher',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -907,9 +913,9 @@ class TeacherService
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'previous_status' => 'inactive',
                 'new_status' => 'active',
-                'activated_at' => new \DateTime(),
+                'activated_at' => new DateTime(),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Teacher activation failed - Database error', [
@@ -919,11 +925,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to activate teacher due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to activate teacher due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher activation failed - Unexpected error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -935,10 +941,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to activate teacher due to unexpected error');
+            throw new RuntimeException('Failed to activate teacher due to unexpected error');
         }
     }
 
@@ -952,7 +958,7 @@ class TeacherService
             'teacher_email' => $teacher->getEmail(),
             'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
             'action' => 'generate_temporary_password',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -988,9 +994,9 @@ class TeacherService
                 'teacher_email' => $teacher->getEmail(),
                 'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
                 'temp_password_length' => strlen($tempPassword),
-                'generated_at' => new \DateTime(),
+                'generated_at' => new DateTime(),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $tempPassword;
@@ -1002,11 +1008,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to generate temporary password due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to generate temporary password due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Temporary password generation failed - Unexpected error', [
                 'teacher_id' => $teacher->getId(),
                 'teacher_email' => $teacher->getEmail(),
@@ -1018,10 +1024,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to generate temporary password due to unexpected error');
+            throw new RuntimeException('Failed to generate temporary password due to unexpected error');
         }
     }
 
@@ -1032,7 +1038,7 @@ class TeacherService
     {
         $this->logger->info('Starting teacher statistics retrieval', [
             'action' => 'get_teacher_statistics',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -1062,7 +1068,7 @@ class TeacherService
                     'verified_query_executed' => true,
                 ],
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $statistics;
@@ -1072,11 +1078,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to retrieve teacher statistics due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to retrieve teacher statistics due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher statistics retrieval failed - Unexpected error', [
                 'error_type' => get_class($e),
                 'error_message' => $e->getMessage(),
@@ -1085,10 +1091,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to retrieve teacher statistics due to unexpected error');
+            throw new RuntimeException('Failed to retrieve teacher statistics due to unexpected error');
         }
     }
 
@@ -1101,7 +1107,7 @@ class TeacherService
             'criteria' => $criteria,
             'criteria_count' => count($criteria),
             'action' => 'find_teachers_by_criteria',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -1130,17 +1136,15 @@ class TeacherService
                 'original_criteria' => $criteria,
                 'valid_criteria' => $validCriteria,
                 'results_count' => count($teachers),
-                'teachers_found' => array_map(function($teacher) {
-                    return [
-                        'id' => $teacher->getId(),
-                        'email' => $teacher->getEmail(),
-                        'name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
-                        'specialty' => $teacher->getSpecialty(),
-                        'is_active' => $teacher->isActive(),
-                    ];
-                }, $teachers),
+                'teachers_found' => array_map(static fn ($teacher) => [
+                    'id' => $teacher->getId(),
+                    'email' => $teacher->getEmail(),
+                    'name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
+                    'specialty' => $teacher->getSpecialty(),
+                    'is_active' => $teacher->isActive(),
+                ], $teachers),
                 'action_result' => 'success',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $teachers;
@@ -1151,11 +1155,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to search teachers due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to search teachers due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher search failed - Unexpected error', [
                 'criteria' => $criteria,
                 'error_type' => get_class($e),
@@ -1165,10 +1169,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to search teachers due to unexpected error');
+            throw new RuntimeException('Failed to search teachers due to unexpected error');
         }
     }
 
@@ -1182,7 +1186,7 @@ class TeacherService
             'email_length' => strlen($email),
             'email_domain' => substr($email, strpos($email, '@') + 1),
             'action' => 'find_teacher_by_email',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -1214,14 +1218,14 @@ class TeacherService
                     'teacher_verified' => $teacher->isEmailVerified(),
                     'created_at' => $teacher->getCreatedAt()?->format('Y-m-d H:i:s'),
                     'action_result' => 'found',
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
             } else {
                 $this->logger->info('No teacher found with provided email', [
                     'email' => $email,
                     'email_domain' => substr($email, strpos($email, '@') + 1),
                     'action_result' => 'not_found',
-                    'timestamp' => new \DateTime(),
+                    'timestamp' => new DateTime(),
                 ]);
             }
 
@@ -1233,11 +1237,11 @@ class TeacherService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'action_result' => 'database_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to lookup teacher due to database error');
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to lookup teacher due to database error');
+        } catch (Exception $e) {
             $this->logger->critical('Teacher lookup by email failed - Unexpected error', [
                 'email' => $email,
                 'error_type' => get_class($e),
@@ -1247,10 +1251,10 @@ class TeacherService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'action_result' => 'unexpected_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
-            throw new \RuntimeException('Failed to lookup teacher due to unexpected error');
+            throw new RuntimeException('Failed to lookup teacher due to unexpected error');
         }
     }
 
@@ -1264,7 +1268,7 @@ class TeacherService
             'email_length' => strlen($email),
             'email_domain' => substr($email, strpos($email, '@') + 1),
             'action' => 'check_email_exists',
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -1295,11 +1299,11 @@ class TeacherService
                 'teacher_name' => $exists ? $teacher->getFirstName() . ' ' . $teacher->getLastName() : null,
                 'teacher_active' => $exists ? $teacher->isActive() : null,
                 'action_result' => $exists ? 'exists' : 'not_exists',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             return $exists;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Email existence check failed - Error during lookup', [
                 'email' => $email,
                 'error_type' => get_class($e),
@@ -1308,7 +1312,7 @@ class TeacherService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'action_result' => 'lookup_error',
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Return false on error to prevent blocking operations

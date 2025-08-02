@@ -157,7 +157,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send needs analysis request email', [
                 'request_id' => $requestId,
@@ -176,19 +175,19 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types for better debugging
-            if (strpos($e->getMessage(), 'Connection') !== false) {
+            if (str_contains($e->getMessage(), 'Connection')) {
                 $this->logger->critical('Email connection error detected', [
                     'request_id' => $requestId,
                     'error_type' => 'connection_error',
                     'mailer_class' => get_class($this->mailer),
                 ]);
-            } elseif (strpos($e->getMessage(), 'template') !== false || strpos($e->getMessage(), 'twig') !== false) {
+            } elseif (str_contains($e->getMessage(), 'template') || str_contains($e->getMessage(), 'twig')) {
                 $this->logger->critical('Template rendering error detected', [
                     'request_id' => $requestId,
                     'error_type' => 'template_error',
                     'template' => 'emails/needs_analysis_sent.html.twig',
                 ]);
-            } elseif (strpos($e->getMessage(), 'Address') !== false || strpos($e->getMessage(), 'email') !== false) {
+            } elseif (str_contains($e->getMessage(), 'Address') || str_contains($e->getMessage(), 'email')) {
                 $this->logger->critical('Email address validation error detected', [
                     'request_id' => $requestId,
                     'error_type' => 'address_validation_error',
@@ -209,7 +208,7 @@ class AnalysisEmailNotificationService
         $requestId = $request->getId();
         $recipientEmail = $request->getRecipientEmail();
         $recipientName = $request->getRecipientName();
-        
+
         try {
             $this->logger->info('Starting analysis completed notification process', [
                 'request_id' => $requestId,
@@ -331,7 +330,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send analysis completed notification', [
                 'request_id' => $requestId,
@@ -350,7 +348,7 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error context
-            if (strpos($e->getMessage(), 'admin_needs_analysis_show') !== false) {
+            if (str_contains($e->getMessage(), 'admin_needs_analysis_show')) {
                 $this->logger->critical('Admin route generation error', [
                     'request_id' => $requestId,
                     'error_type' => 'route_generation_error',
@@ -370,7 +368,7 @@ class AnalysisEmailNotificationService
         $requestId = $request->getId();
         $recipientEmail = $request->getRecipientEmail();
         $recipientName = $request->getRecipientName();
-        
+
         try {
             $this->logger->info('Starting expiration reminder process', [
                 'request_id' => $requestId,
@@ -395,6 +393,7 @@ class AnalysisEmailNotificationService
                     'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
                     'current_time' => $now->format('Y-m-d H:i:s'),
                 ]);
+
                 throw new Exception('Cannot send reminder for expired request');
             }
 
@@ -479,7 +478,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send expiration reminder', [
                 'request_id' => $requestId,
@@ -497,12 +495,12 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types
-            if (strpos($e->getMessage(), 'expired') !== false) {
+            if (str_contains($e->getMessage(), 'expired')) {
                 $this->logger->warning('Reminder attempted for expired request', [
                     'request_id' => $requestId,
                     'error_type' => 'expired_request_error',
                 ]);
-            } elseif (strpos($e->getMessage(), 'token') !== false) {
+            } elseif (str_contains($e->getMessage(), 'token')) {
                 $this->logger->critical('Token-related error in reminder', [
                     'request_id' => $requestId,
                     'error_type' => 'token_error',
@@ -602,7 +600,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send weekly summary', [
                 'admin_email' => $this->adminEmail,
@@ -617,12 +614,12 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error context
-            if (strpos($e->getMessage(), 'Admin email') !== false) {
+            if (str_contains($e->getMessage(), 'Admin email')) {
                 $this->logger->critical('Admin email configuration error', [
                     'error_type' => 'admin_email_missing',
                     'admin_email' => $this->adminEmail,
                 ]);
-            } elseif (strpos($e->getMessage(), 'template') !== false) {
+            } elseif (str_contains($e->getMessage(), 'template')) {
                 $this->logger->critical('Weekly summary template error', [
                     'error_type' => 'template_error',
                     'template' => 'emails/weekly_summary.html.twig',
@@ -653,6 +650,7 @@ class AnalysisEmailNotificationService
                 $this->logger->warning('Empty requests array provided for bulk reminders', [
                     'total_requests' => 0,
                 ]);
+
                 return 0;
             }
 
@@ -665,6 +663,7 @@ class AnalysisEmailNotificationService
                         'expected_type' => NeedsAnalysisRequest::class,
                     ]);
                     $failedCount++;
+
                     continue;
                 }
 
@@ -678,7 +677,7 @@ class AnalysisEmailNotificationService
 
                 try {
                     $success = $this->sendExpirationReminder($request);
-                    
+
                     if ($success) {
                         $sentCount++;
                         $this->logger->debug('Bulk reminder sent successfully', [
@@ -694,7 +693,6 @@ class AnalysisEmailNotificationService
                             'recipient_email' => $request->getRecipientEmail(),
                         ]);
                     }
-
                 } catch (Exception $e) {
                     $failedCount++;
                     $this->logger->error('Exception during bulk reminder sending', [
@@ -724,7 +722,6 @@ class AnalysisEmailNotificationService
                 'success_rate' => $totalRequests > 0 ? round(($sentCount / $totalRequests) * 100, 2) : 0,
                 'process_end_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Fatal error during bulk expiration reminders process', [
                 'total_requests' => $totalRequests,
@@ -819,7 +816,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send test email', [
                 'to_email' => $toEmail,
@@ -834,18 +830,18 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types for test emails
-            if (strpos($e->getMessage(), 'email address') !== false) {
+            if (str_contains($e->getMessage(), 'email address')) {
                 $this->logger->critical('Email address validation error in test', [
                     'error_type' => 'email_validation_error',
                     'to_email' => $toEmail,
                     'from_email' => $this->fromEmail,
                 ]);
-            } elseif (strpos($e->getMessage(), 'Connection') !== false) {
+            } elseif (str_contains($e->getMessage(), 'Connection')) {
                 $this->logger->critical('Email connection error in test', [
                     'error_type' => 'connection_error',
                     'mailer_class' => get_class($this->mailer),
                 ]);
-            } elseif (strpos($e->getMessage(), 'template') !== false) {
+            } elseif (str_contains($e->getMessage(), 'template')) {
                 $this->logger->critical('Template error in test email', [
                     'error_type' => 'template_error',
                     'template' => 'emails/test_email.html.twig',
@@ -864,7 +860,7 @@ class AnalysisEmailNotificationService
         $registrationId = $registration->getId();
         $recipientEmail = $registration->getEmail();
         $recipientName = $registration->getFullName();
-        
+
         try {
             $this->logger->info('Starting document delivery notification process', [
                 'registration_id' => $registrationId,
@@ -992,7 +988,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send document delivery notification', [
                 'registration_id' => $registrationId,
@@ -1010,13 +1005,13 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types
-            if (strpos($e->getMessage(), 'app_document_acknowledgment') !== false) {
+            if (str_contains($e->getMessage(), 'app_document_acknowledgment')) {
                 $this->logger->critical('Document acknowledgment route generation error', [
                     'registration_id' => $registrationId,
                     'error_type' => 'route_generation_error',
                     'route_name' => 'app_document_acknowledgment',
                 ]);
-            } elseif (strpos($e->getMessage(), 'session') !== false || strpos($e->getMessage(), 'formation') !== false) {
+            } elseif (str_contains($e->getMessage(), 'session') || str_contains($e->getMessage(), 'formation')) {
                 $this->logger->critical('Registration data validation error', [
                     'registration_id' => $registrationId,
                     'error_type' => 'data_validation_error',
@@ -1037,7 +1032,7 @@ class AnalysisEmailNotificationService
         $registrationId = $registration->getId();
         $recipientEmail = $registration->getEmail();
         $recipientName = $registration->getFullName();
-        
+
         try {
             $this->logger->info('Starting document acknowledgment confirmation process', [
                 'registration_id' => $registrationId,
@@ -1116,7 +1111,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send document acknowledgment confirmation', [
                 'registration_id' => $registrationId,
@@ -1132,14 +1126,14 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types
-            if (strpos($e->getMessage(), 'session') !== false || strpos($e->getMessage(), 'formation') !== false) {
+            if (str_contains($e->getMessage(), 'session') || str_contains($e->getMessage(), 'formation')) {
                 $this->logger->critical('Registration data validation error in acknowledgment confirmation', [
                     'registration_id' => $registrationId,
                     'error_type' => 'data_validation_error',
                     'has_session' => $registration->getSession() !== null,
                     'has_formation' => $registration->getSession()?->getFormation() !== null,
                 ]);
-            } elseif (strpos($e->getMessage(), 'template') !== false) {
+            } elseif (str_contains($e->getMessage(), 'template')) {
                 $this->logger->critical('Template error in acknowledgment confirmation', [
                     'registration_id' => $registrationId,
                     'error_type' => 'template_error',
@@ -1159,7 +1153,7 @@ class AnalysisEmailNotificationService
         $contactRequestId = $contactRequest->getId();
         $requestorEmail = $contactRequest->getEmail();
         $requestorName = $contactRequest->getFullName();
-        
+
         try {
             $this->logger->info('Starting accessibility request notification to admin', [
                 'contact_request_id' => $contactRequestId,
@@ -1252,7 +1246,6 @@ class AnalysisEmailNotificationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send accessibility request notification to admin', [
                 'contact_request_id' => $contactRequestId,
@@ -1269,13 +1262,13 @@ class AnalysisEmailNotificationService
             ]);
 
             // Log specific error types
-            if (strpos($e->getMessage(), 'admin_contact_request_show') !== false) {
+            if (str_contains($e->getMessage(), 'admin_contact_request_show')) {
                 $this->logger->critical('Admin contact request route generation error', [
                     'contact_request_id' => $contactRequestId,
                     'error_type' => 'route_generation_error',
                     'route_name' => 'admin_contact_request_show',
                 ]);
-            } elseif (strpos($e->getMessage(), 'Admin email') !== false) {
+            } elseif (str_contains($e->getMessage(), 'Admin email')) {
                 $this->logger->critical('Admin email configuration error for accessibility request', [
                     'contact_request_id' => $contactRequestId,
                     'error_type' => 'admin_email_missing',
@@ -1319,7 +1312,6 @@ class AnalysisEmailNotificationService
                 'admin_email' => $this->adminEmail,
                 'configuration_active' => true,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Failed to set admin email configuration', [
                 'attempted_admin_email' => $adminEmail,
@@ -1364,7 +1356,7 @@ class AnalysisEmailNotificationService
             ]);
 
             $this->fromEmail = $fromEmail;
-            
+
             if ($fromName) {
                 $this->fromName = $fromName;
                 $this->logger->debug('From name updated', [
@@ -1377,7 +1369,6 @@ class AnalysisEmailNotificationService
                 'from_name' => $this->fromName,
                 'configuration_active' => true,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Failed to set from email configuration', [
                 'attempted_from_email' => $fromEmail,

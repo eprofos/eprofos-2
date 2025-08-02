@@ -8,9 +8,13 @@ use App\Entity\Core\StudentEnrollment;
 use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Training\FormationRepository;
 use App\Repository\Training\SessionRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Knp\Component\Pager\PaginatorInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,9 +38,8 @@ class EnrollmentReportController extends AbstractController
         private FormationRepository $formationRepository,
         private SessionRepository $sessionRepository,
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
      * Enrollment analytics dashboard.
@@ -48,7 +51,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting enrollment reports dashboard generation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -60,7 +63,7 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Processing enrollment reports filters', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'formation' => $formation
+                'formation' => $formation,
             ]);
 
             // Basic enrollment statistics
@@ -75,7 +78,7 @@ class EnrollmentReportController extends AbstractController
 
             // Enrollment trends over time
             $this->logger->debug('Calculating enrollment trends', [
-                'date_range' => ['start' => $startDate, 'end' => $endDate]
+                'date_range' => ['start' => $startDate, 'end' => $endDate],
             ]);
             $enrollmentTrends = $this->getEnrollmentTrends($startDate, $endDate);
             $this->logger->debug('Enrollment trends calculated', ['trends_count' => count($enrollmentTrends)]);
@@ -109,8 +112,8 @@ class EnrollmentReportController extends AbstractController
                     'trends' => count($enrollmentTrends),
                     'completion_rates' => count($completionRates),
                     'dropout_analysis' => count($dropoutAnalysis),
-                    'formations' => count($formations)
-                ]
+                    'formations' => count($formations),
+                ],
             ]);
 
             return $this->render('admin/student/enrollment/reports/index.html.twig', [
@@ -127,19 +130,18 @@ class EnrollmentReportController extends AbstractController
                     'formation' => $formation,
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in enrollment reports dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la génération des rapports.');
-            return $this->redirectToRoute('admin_dashboard');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in enrollment reports dashboard', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -147,10 +149,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
+
             return $this->redirectToRoute('admin_dashboard');
         }
     }
@@ -165,7 +168,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting completion report generation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -176,17 +179,19 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Processing completion report filters', [
                 'formation' => $formation,
                 'status' => $status,
-                'page' => $page
+                'page' => $page,
             ]);
 
             $queryBuilder = $this->enrollmentRepository->createEnrollmentQueryBuilder()
                 ->andWhere('se.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $status)
+            ;
 
             if ($formation) {
                 $this->logger->debug('Applying formation filter', ['formation_id' => $formation]);
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formation);
+                    ->setParameter('formation', $formation)
+                ;
             }
 
             $queryBuilder->orderBy('se.completedAt', 'DESC');
@@ -195,7 +200,7 @@ class EnrollmentReportController extends AbstractController
             $enrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             $this->logger->debug('Fetching formations for filter dropdown');
@@ -207,7 +212,7 @@ class EnrollmentReportController extends AbstractController
                 'total_items' => $enrollments->getTotalItemCount(),
                 'current_page' => $enrollments->getCurrentPageNumber(),
                 'items_per_page' => $enrollments->getItemNumberPerPage(),
-                'formations_available' => count($formations)
+                'formations_available' => count($formations),
             ]);
 
             return $this->render('admin/student/enrollment/reports/completion.html.twig', [
@@ -216,19 +221,18 @@ class EnrollmentReportController extends AbstractController
                 'selectedFormation' => $formation,
                 'status' => $status,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in completion report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la génération du rapport de completion.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in completion report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -236,10 +240,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la génération du rapport.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -254,7 +259,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting dropout report generation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -265,23 +270,26 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Processing dropout report filters', [
                 'formation' => $formation,
                 'reason_filter' => $reasonFilter,
-                'page' => $page
+                'page' => $page,
             ]);
 
             $queryBuilder = $this->enrollmentRepository->createEnrollmentQueryBuilder()
                 ->andWhere('se.status = :status')
-                ->setParameter('status', StudentEnrollment::STATUS_DROPPED_OUT);
+                ->setParameter('status', StudentEnrollment::STATUS_DROPPED_OUT)
+            ;
 
             if ($formation) {
                 $this->logger->debug('Applying formation filter to dropout report', ['formation_id' => $formation]);
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formation);
+                    ->setParameter('formation', $formation)
+                ;
             }
 
             if ($reasonFilter) {
                 $this->logger->debug('Applying reason filter to dropout report', ['reason_filter' => $reasonFilter]);
                 $queryBuilder->andWhere('se.dropoutReason LIKE :reason')
-                             ->setParameter('reason', '%' . $reasonFilter . '%');
+                    ->setParameter('reason', '%' . $reasonFilter . '%')
+                ;
             }
 
             $queryBuilder->orderBy('se.updatedAt', 'DESC');
@@ -290,7 +298,7 @@ class EnrollmentReportController extends AbstractController
             $enrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             // Dropout reasons analysis
@@ -307,7 +315,7 @@ class EnrollmentReportController extends AbstractController
                 'total_dropouts' => $enrollments->getTotalItemCount(),
                 'current_page' => $enrollments->getCurrentPageNumber(),
                 'dropout_reasons_analyzed' => count($dropoutReasons),
-                'formations_available' => count($formations)
+                'formations_available' => count($formations),
             ]);
 
             return $this->render('admin/student/enrollment/reports/dropout.html.twig', [
@@ -317,19 +325,18 @@ class EnrollmentReportController extends AbstractController
                 'selectedFormation' => $formation,
                 'reasonFilter' => $reasonFilter,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in dropout report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la génération du rapport d\'abandons.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in dropout report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -337,10 +344,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la génération du rapport d\'abandons.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -355,7 +363,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting progress report generation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -366,17 +374,19 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Processing progress report filters', [
                 'formation' => $formation,
                 'progress_filter' => $progressFilter,
-                'page' => $page
+                'page' => $page,
             ]);
 
             $queryBuilder = $this->enrollmentRepository->createEnrollmentQueryBuilder()
                 ->andWhere('se.status = :status')
-                ->setParameter('status', StudentEnrollment::STATUS_ENROLLED);
+                ->setParameter('status', StudentEnrollment::STATUS_ENROLLED)
+            ;
 
             if ($formation) {
                 $this->logger->debug('Applying formation filter to progress report', ['formation_id' => $formation]);
                 $queryBuilder->andWhere('f.id = :formation')
-                             ->setParameter('formation', $formation);
+                    ->setParameter('formation', $formation)
+                ;
             }
 
             // Progress filtering
@@ -392,7 +402,8 @@ class EnrollmentReportController extends AbstractController
             } elseif ($progressFilter === 'at_risk') {
                 $this->logger->debug('Applying at-risk filter');
                 $queryBuilder->andWhere('sp.atRiskOfDropout = :at_risk')
-                             ->setParameter('at_risk', true);
+                    ->setParameter('at_risk', true)
+                ;
             }
 
             $queryBuilder->orderBy('sp.completionPercentage', 'ASC');
@@ -401,7 +412,7 @@ class EnrollmentReportController extends AbstractController
             $enrollments = $paginator->paginate(
                 $queryBuilder->getQuery(),
                 $page,
-                20
+                20,
             );
 
             // Progress distribution
@@ -419,7 +430,7 @@ class EnrollmentReportController extends AbstractController
                 'current_page' => $enrollments->getCurrentPageNumber(),
                 'progress_filter_applied' => $progressFilter,
                 'distribution_segments' => count($progressDistribution),
-                'formations_available' => count($formations)
+                'formations_available' => count($formations),
             ]);
 
             return $this->render('admin/student/enrollment/reports/progress.html.twig', [
@@ -429,19 +440,18 @@ class EnrollmentReportController extends AbstractController
                 'selectedFormation' => $formation,
                 'progressFilter' => $progressFilter,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in progress report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la génération du rapport de progression.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in progress report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -449,10 +459,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la génération du rapport de progression.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -467,7 +478,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting Qualiopi compliance report generation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -478,28 +489,28 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Processing Qualiopi report filters', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'formation' => $formation
+                'formation' => $formation,
             ]);
 
             // Qualiopi compliance metrics
             $this->logger->debug('Calculating Qualiopi compliance metrics');
             $qualiopiMetrics = $this->getQualiopiComplianceMetrics($startDate, $endDate, $formation);
             $this->logger->debug('Qualiopi compliance metrics calculated', [
-                'metrics' => array_keys($qualiopiMetrics)
+                'metrics' => array_keys($qualiopiMetrics),
             ]);
 
             // Attendance tracking compliance
             $this->logger->debug('Calculating attendance compliance metrics');
             $attendanceCompliance = $this->getAttendanceComplianceMetrics($startDate, $endDate, $formation);
             $this->logger->debug('Attendance compliance metrics calculated', [
-                'metrics' => array_keys($attendanceCompliance)
+                'metrics' => array_keys($attendanceCompliance),
             ]);
 
             // Student satisfaction tracking
             $this->logger->debug('Calculating satisfaction metrics');
             $satisfactionMetrics = $this->getSatisfactionMetrics($startDate, $endDate, $formation);
             $this->logger->debug('Satisfaction metrics calculated', [
-                'metrics' => array_keys($satisfactionMetrics)
+                'metrics' => array_keys($satisfactionMetrics),
             ]);
 
             $this->logger->debug('Fetching formations for filter dropdown');
@@ -513,9 +524,9 @@ class EnrollmentReportController extends AbstractController
                 'compliance_scores' => [
                     'enrollment_tracking' => $qualiopiMetrics['enrollment_tracking'] ?? 0,
                     'progress_documentation' => $qualiopiMetrics['progress_documentation'] ?? 0,
-                    'attendance_tracking' => $attendanceCompliance['avg_attendance_rate'] ?? 0
+                    'attendance_tracking' => $attendanceCompliance['avg_attendance_rate'] ?? 0,
                 ],
-                'formations_available' => count($formations)
+                'formations_available' => count($formations),
             ]);
 
             return $this->render('admin/student/enrollment/reports/qualiopi.html.twig', [
@@ -529,19 +540,18 @@ class EnrollmentReportController extends AbstractController
                     'formation' => $formation,
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in Qualiopi compliance report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la génération du rapport Qualiopi.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in Qualiopi compliance report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -549,10 +559,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la génération du rapport Qualiopi.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -568,13 +579,13 @@ class EnrollmentReportController extends AbstractController
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'method' => $request->getMethod(),
             'request_params' => $request->isMethod('POST') ? $request->request->all() : $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
             if ($request->isMethod('POST')) {
                 $this->logger->debug('Processing custom report configuration');
-                
+
                 $reportConfig = [
                     'title' => $request->request->get('report_title'),
                     'filters' => $request->request->all('filters'),
@@ -590,20 +601,21 @@ class EnrollmentReportController extends AbstractController
                     'filters_count' => count($reportConfig['filters']),
                     'fields_count' => count($reportConfig['fields']),
                     'group_by' => $reportConfig['groupBy'],
-                    'order_by' => $reportConfig['orderBy']
+                    'order_by' => $reportConfig['orderBy'],
                 ]);
 
                 $this->logger->debug('Generating custom report data');
                 $reportData = $this->generateCustomReport($reportConfig);
                 $this->logger->debug('Custom report data generated', [
-                    'total_records' => $reportData['summary']['total_records'] ?? 0
+                    'total_records' => $reportData['summary']['total_records'] ?? 0,
                 ]);
 
                 if ($reportConfig['format'] === 'export') {
                     $this->logger->info('Exporting custom report', [
                         'format' => 'export',
-                        'title' => $reportConfig['title']
+                        'title' => $reportConfig['title'],
                     ]);
+
                     return $this->exportCustomReport($reportData, $reportConfig);
                 }
 
@@ -612,7 +624,7 @@ class EnrollmentReportController extends AbstractController
                     'execution_time' => round($executionTime, 3),
                     'report_title' => $reportConfig['title'],
                     'total_records' => $reportData['summary']['total_records'] ?? 0,
-                    'format' => $reportConfig['format']
+                    'format' => $reportConfig['format'],
                 ]);
 
                 return $this->render('admin/student/enrollment/reports/custom_results.html.twig', [
@@ -627,37 +639,36 @@ class EnrollmentReportController extends AbstractController
 
             $this->logger->debug('Custom report builder form prepared', [
                 'formations_count' => count($formations),
-                'available_fields_count' => count($availableFields)
+                'available_fields_count' => count($availableFields),
             ]);
 
             return $this->render('admin/student/enrollment/reports/custom.html.twig', [
                 'formations' => $formations,
                 'availableFields' => $availableFields,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in custom report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_method' => $request->getMethod(),
                 'request_params' => $request->isMethod('POST') ? $request->request->all() : $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la génération du rapport personnalisé.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\InvalidArgumentException $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid configuration for custom report', [
                 'error_message' => $e->getMessage(),
                 'request_params' => $request->isMethod('POST') ? $request->request->all() : $request->query->all(),
-                'user_email' => $this->getUser()?->getUserIdentifier()
+                'user_email' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', 'Configuration de rapport invalide: ' . $e->getMessage());
-            return $this->redirectToRoute('admin_enrollment_reports_custom');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_custom');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in custom report', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -666,10 +677,11 @@ class EnrollmentReportController extends AbstractController
                 'request_method' => $request->getMethod(),
                 'request_params' => $request->isMethod('POST') ? $request->request->all() : $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la génération du rapport personnalisé.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -684,7 +696,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting analytics API request', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->query->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -697,7 +709,7 @@ class EnrollmentReportController extends AbstractController
                 'type' => $type,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'formation' => $formation
+                'formation' => $formation,
             ]);
 
             $data = match ($type) {
@@ -713,25 +725,23 @@ class EnrollmentReportController extends AbstractController
                 'execution_time' => round($executionTime, 3),
                 'type' => $type,
                 'data_points' => count($data),
-                'response_size' => strlen(json_encode($data))
+                'response_size' => strlen(json_encode($data)),
             ]);
 
             return new JsonResponse($data);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in analytics API', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->query->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             return new JsonResponse([
                 'error' => 'Database error',
-                'message' => 'Une erreur de base de données s\'est produite.'
+                'message' => 'Une erreur de base de données s\'est produite.',
             ], 500);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in analytics API', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -739,12 +749,12 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->query->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             return new JsonResponse([
                 'error' => 'Internal server error',
-                'message' => 'Une erreur inattendue s\'est produite.'
+                'message' => 'Une erreur inattendue s\'est produite.',
             ], 500);
         }
     }
@@ -759,7 +769,7 @@ class EnrollmentReportController extends AbstractController
         $this->logger->info('Starting enrollment data export', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
             'request_params' => $request->request->all(),
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
         ]);
 
         try {
@@ -771,13 +781,13 @@ class EnrollmentReportController extends AbstractController
                 'format' => $format,
                 'filters_count' => count($filters),
                 'fields_count' => count($fields),
-                'fields' => $fields
+                'fields' => $fields,
             ]);
 
             $this->logger->debug('Fetching enrollments with applied filters');
             $enrollments = $this->enrollmentRepository->findEnrollmentsWithFilters($filters);
             $this->logger->debug('Enrollments fetched for export', [
-                'total_enrollments' => count($enrollments)
+                'total_enrollments' => count($enrollments),
             ]);
 
             $response = $this->generateExportResponse($enrollments, $format, $fields);
@@ -787,33 +797,32 @@ class EnrollmentReportController extends AbstractController
                 'execution_time' => round($executionTime, 3),
                 'format' => $format,
                 'total_records' => count($enrollments),
-                'fields_exported' => count($fields)
+                'fields_exported' => count($fields),
             ]);
 
             return $response;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in enrollment export', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'request_params' => $request->request->all(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de l\'export des données.');
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\InvalidArgumentException $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid export parameters', [
                 'error_message' => $e->getMessage(),
                 'request_params' => $request->request->all(),
-                'user_email' => $this->getUser()?->getUserIdentifier()
+                'user_email' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('warning', 'Paramètres d\'export invalides: ' . $e->getMessage());
-            return $this->redirectToRoute('admin_enrollment_reports_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_enrollment_reports_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in enrollment export', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -821,10 +830,11 @@ class EnrollmentReportController extends AbstractController
                 'error_line' => $e->getLine(),
                 'request_params' => $request->request->all(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'export.');
+
             return $this->redirectToRoute('admin_enrollment_reports_index');
         }
     }
@@ -835,25 +845,27 @@ class EnrollmentReportController extends AbstractController
     private function getFormationAnalytics(?string $formationId): array
     {
         $this->logger->debug('Starting formation analytics calculation', [
-            'formation_id' => $formationId
+            'formation_id' => $formationId,
         ]);
 
         try {
             if (!$formationId) {
                 $this->logger->debug('No formation ID provided, returning empty analytics');
+
                 return [];
             }
 
             $formation = $this->formationRepository->find($formationId);
             if (!$formation) {
                 $this->logger->warning('Formation not found for analytics', [
-                    'formation_id' => $formationId
+                    'formation_id' => $formationId,
                 ]);
+
                 return [];
             }
 
             $this->logger->debug('Calculating formation analytics metrics', [
-                'formation_title' => $formation->getTitle()
+                'formation_title' => $formation->getTitle(),
             ]);
 
             $analytics = [
@@ -870,27 +882,27 @@ class EnrollmentReportController extends AbstractController
                 'total_enrollments' => $analytics['totalEnrollments'],
                 'completion_rate' => $analytics['completionRate'],
                 'dropout_rate' => $analytics['dropoutRate'],
-                'active_enrollments' => $analytics['activeEnrollments']
+                'active_enrollments' => $analytics['activeEnrollments'],
             ]);
 
             return $analytics;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in formation analytics', [
                 'formation_id' => $formationId,
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
-            return [];
 
-        } catch (\Exception $e) {
+            return [];
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in formation analytics', [
                 'formation_id' => $formationId,
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }
@@ -902,7 +914,7 @@ class EnrollmentReportController extends AbstractController
     {
         $this->logger->debug('Starting enrollment trends calculation', [
             'start_date' => $startDate,
-            'end_date' => $endDate
+            'end_date' => $endDate,
         ]);
 
         try {
@@ -917,16 +929,16 @@ class EnrollmentReportController extends AbstractController
 
             $params = [];
             if ($startDate && $endDate) {
-                $sql .= " WHERE se.enrolled_at BETWEEN :start_date AND :end_date";
+                $sql .= ' WHERE se.enrolled_at BETWEEN :start_date AND :end_date';
                 $params['start_date'] = $startDate;
                 $params['end_date'] = $endDate;
                 $this->logger->debug('Applied date range filter to enrollment trends', [
                     'start_date' => $startDate,
-                    'end_date' => $endDate
+                    'end_date' => $endDate,
                 ]);
             }
 
-            $sql .= " GROUP BY DATE(se.enrolled_at) ORDER BY date ASC";
+            $sql .= ' GROUP BY DATE(se.enrolled_at) ORDER BY date ASC';
 
             $this->logger->debug('Executing enrollment trends SQL query');
             $stmt = $this->entityManager->getConnection()->prepare($sql);
@@ -934,29 +946,29 @@ class EnrollmentReportController extends AbstractController
 
             $this->logger->debug('Enrollment trends calculated successfully', [
                 'trends_count' => count($result),
-                'date_range' => ['start' => $startDate, 'end' => $endDate]
+                'date_range' => ['start' => $startDate, 'end' => $endDate],
             ]);
 
             return $result;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in enrollment trends calculation', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
-            return [];
 
-        } catch (\Exception $e) {
+            return [];
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in enrollment trends calculation', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }
@@ -971,7 +983,7 @@ class EnrollmentReportController extends AbstractController
         try {
             $formations = $this->formationRepository->findBy(['isActive' => true]);
             $this->logger->debug('Fetched active formations for completion rates', [
-                'formations_count' => count($formations)
+                'formations_count' => count($formations),
             ]);
 
             $completionRates = [];
@@ -979,7 +991,7 @@ class EnrollmentReportController extends AbstractController
             foreach ($formations as $formation) {
                 $this->logger->debug('Calculating completion rate for formation', [
                     'formation_id' => $formation->getId(),
-                    'formation_title' => $formation->getTitle()
+                    'formation_title' => $formation->getTitle(),
                 ]);
 
                 $formationData = [
@@ -995,30 +1007,30 @@ class EnrollmentReportController extends AbstractController
                     'formation_id' => $formation->getId(),
                     'completion_rate' => $formationData['completion_rate'],
                     'dropout_rate' => $formationData['dropout_rate'],
-                    'total_enrollments' => $formationData['total_enrollments']
+                    'total_enrollments' => $formationData['total_enrollments'],
                 ]);
             }
 
             $this->logger->debug('Completion rates calculation completed successfully', [
-                'formations_analyzed' => count($completionRates)
+                'formations_analyzed' => count($completionRates),
             ]);
 
             return $completionRates;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in completion rates calculation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
-            return [];
 
-        } catch (\Exception $e) {
+            return [];
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in completion rates calculation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }
@@ -1048,7 +1060,7 @@ class EnrollmentReportController extends AbstractController
 
             $this->logger->debug('Dropout analysis calculated successfully', [
                 'dropout_reasons_count' => count($result),
-                'total_analyzed_dropouts' => array_sum(array_column($result, 'count'))
+                'total_analyzed_dropouts' => array_sum(array_column($result, 'count')),
             ]);
 
             // Log detailed breakdown
@@ -1056,26 +1068,26 @@ class EnrollmentReportController extends AbstractController
                 $this->logger->debug('Dropout reason analysis', [
                     'reason' => $dropout['dropout_reason'],
                     'count' => $dropout['count'],
-                    'avg_days_to_dropout' => round((float)$dropout['avg_days_to_dropout'], 2)
+                    'avg_days_to_dropout' => round((float) $dropout['avg_days_to_dropout'], 2),
                 ]);
             }
 
             return $result;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in dropout analysis', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
-            return [];
 
-        } catch (\Exception $e) {
+            return [];
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in dropout analysis', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }
@@ -1097,13 +1109,14 @@ class EnrollmentReportController extends AbstractController
 
         $params = [];
         if ($formationId) {
-            $sql .= " AND s.formation_id = :formation_id";
+            $sql .= ' AND s.formation_id = :formation_id';
             $params['formation_id'] = $formationId;
         }
 
-        $sql .= " GROUP BY se.dropout_reason ORDER BY count DESC";
+        $sql .= ' GROUP BY se.dropout_reason ORDER BY count DESC';
 
         $stmt = $this->entityManager->getConnection()->prepare($sql);
+
         return $stmt->executeQuery($params)->fetchAllAssociative();
     }
 
@@ -1130,13 +1143,14 @@ class EnrollmentReportController extends AbstractController
 
         $params = [];
         if ($formationId) {
-            $sql .= " AND s.formation_id = :formation_id";
+            $sql .= ' AND s.formation_id = :formation_id';
             $params['formation_id'] = $formationId;
         }
 
-        $sql .= " GROUP BY progress_range ORDER BY MIN(sp.completion_percentage)";
+        $sql .= ' GROUP BY progress_range ORDER BY MIN(sp.completion_percentage)';
 
         $stmt = $this->entityManager->getConnection()->prepare($sql);
+
         return $stmt->executeQuery($params)->fetchAllAssociative();
     }
 
@@ -1159,7 +1173,7 @@ class EnrollmentReportController extends AbstractController
                 'at_risk_students' => $indicators['at_risk_students'],
                 'overdue_enrollments' => $indicators['overdue_enrollments'],
                 'missing_progress' => $indicators['missing_progress'],
-                'high_dropout_formations_count' => count($indicators['high_dropout_formations'])
+                'high_dropout_formations_count' => count($indicators['high_dropout_formations']),
             ]);
 
             // Log high dropout formations details
@@ -1167,32 +1181,32 @@ class EnrollmentReportController extends AbstractController
                 foreach ($indicators['high_dropout_formations'] as $formation) {
                     $this->logger->warning('High dropout rate detected', [
                         'formation' => $formation['formation'],
-                        'dropout_rate' => $formation['dropout_rate']
+                        'dropout_rate' => $formation['dropout_rate'],
                     ]);
                 }
             }
 
             return $indicators;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in risk indicators calculation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'at_risk_students' => 0,
                 'overdue_enrollments' => 0,
                 'missing_progress' => 0,
                 'high_dropout_formations' => [],
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error in risk indicators calculation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'at_risk_students' => 0,
                 'overdue_enrollments' => 0,
@@ -1278,7 +1292,7 @@ class EnrollmentReportController extends AbstractController
             'data' => $enrollments,
             'summary' => [
                 'total_records' => count($enrollments),
-                'generated_at' => new \DateTime(),
+                'generated_at' => new DateTime(),
             ],
         ];
     }
@@ -1312,6 +1326,8 @@ class EnrollmentReportController extends AbstractController
 
     /**
      * Get average completion duration for a formation.
+     *
+     * @param mixed $formation
      */
     private function getAverageCompletionDuration($formation): ?float
     {
@@ -1338,7 +1354,7 @@ class EnrollmentReportController extends AbstractController
             'format' => $format,
             'enrollments_count' => count($enrollments),
             'fields_count' => count($fields),
-            'fields' => $fields
+            'fields' => $fields,
         ]);
 
         try {
@@ -1346,28 +1362,30 @@ class EnrollmentReportController extends AbstractController
             $response->setCallback(function () use ($enrollments, $format, $fields) {
                 try {
                     $handle = fopen('php://output', 'w');
-                    
+
                     if (!$handle) {
                         $this->logger->error('Failed to open output stream for export');
-                        throw new \RuntimeException('Cannot open output stream');
+
+                        throw new RuntimeException('Cannot open output stream');
                     }
 
                     if ($format === 'csv') {
                         $this->logger->debug('Generating CSV export');
-                        
+
                         // Write CSV headers
                         $headers = [];
                         foreach ($fields as $field) {
                             $headers[] = $this->getAvailableReportFields()[$field] ?? $field;
                         }
-                        
+
                         if (fputcsv($handle, $headers) === false) {
                             $this->logger->error('Failed to write CSV headers');
-                            throw new \RuntimeException('Cannot write CSV headers');
+
+                            throw new RuntimeException('Cannot write CSV headers');
                         }
 
                         $this->logger->debug('CSV headers written successfully', [
-                            'headers_count' => count($headers)
+                            'headers_count' => count($headers),
                         ]);
 
                         // Write data rows
@@ -1377,32 +1395,32 @@ class EnrollmentReportController extends AbstractController
                             foreach ($fields as $field) {
                                 $row[] = $this->getFieldValue($enrollment, $field);
                             }
-                            
+
                             if (fputcsv($handle, $row) === false) {
                                 $this->logger->error('Failed to write CSV row', [
-                                    'row_number' => $rowCount + 1
+                                    'row_number' => $rowCount + 1,
                                 ]);
-                                throw new \RuntimeException('Cannot write CSV row');
+
+                                throw new RuntimeException('Cannot write CSV row');
                             }
                             $rowCount++;
                         }
 
                         $this->logger->debug('CSV data rows written successfully', [
-                            'rows_written' => $rowCount
+                            'rows_written' => $rowCount,
                         ]);
                     }
 
                     if (fclose($handle) === false) {
                         $this->logger->warning('Failed to properly close output stream');
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error during export response callback', [
                         'error_message' => $e->getMessage(),
                         'error_code' => $e->getCode(),
-                        'stack_trace' => $e->getTraceAsString()
+                        'stack_trace' => $e->getTraceAsString(),
                     ]);
-                    
+
                     // Output error message to user
                     echo "Erreur lors de l'export: " . $e->getMessage();
                 }
@@ -1414,27 +1432,27 @@ class EnrollmentReportController extends AbstractController
 
             $this->logger->debug('Export response configured successfully', [
                 'filename' => $filename,
-                'content_type' => 'application/octet-stream'
+                'content_type' => 'application/octet-stream',
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in export response generation', [
                 'format' => $format,
                 'enrollments_count' => count($enrollments),
                 'fields_count' => count($fields),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
 
             // Return an error response
             $errorResponse = new StreamedResponse();
-            $errorResponse->setCallback(function () use ($e) {
+            $errorResponse->setCallback(static function () use ($e) {
                 echo "Erreur lors de la génération de l'export: " . $e->getMessage();
             });
             $errorResponse->headers->set('Content-Type', 'text/plain');
+
             return $errorResponse;
         }
     }
@@ -1462,17 +1480,16 @@ class EnrollmentReportController extends AbstractController
             $this->logger->debug('Field value extracted successfully', [
                 'field' => $field,
                 'enrollment_id' => $enrollment->getId(),
-                'value_length' => strlen($value)
+                'value_length' => strlen($value),
             ]);
 
             return $value;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error extracting field value for export', [
                 'field' => $field,
                 'enrollment_id' => $enrollment->getId(),
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
 
             return 'N/A'; // Return placeholder value on error

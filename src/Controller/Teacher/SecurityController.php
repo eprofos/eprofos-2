@@ -8,7 +8,9 @@ use App\Entity\User\Teacher;
 use App\Form\User\TeacherRegistrationFormType;
 use App\Repository\User\TeacherRepository;
 use App\Service\User\TeacherService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -44,12 +46,12 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent', 'Unknown');
-        
+
         try {
             $this->logger->info('Teacher login attempt initiated', [
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -62,6 +64,7 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'redirect_target' => 'teacher_dashboard',
                 ]);
+
                 return $this->redirectToRoute('teacher_dashboard');
             }
 
@@ -78,7 +81,7 @@ class SecurityController extends AbstractController
                     'error_type' => get_class($error),
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                 ]);
             } else {
                 $this->logger->debug('Teacher login page displayed', [
@@ -99,7 +102,7 @@ class SecurityController extends AbstractController
                 'error' => $error,
                 'page_title' => 'Connexion Formateur',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in teacher login process', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -108,11 +111,11 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
-            
+
             return $this->render('teacher/security/login.html.twig', [
                 'last_username' => '',
                 'error' => null,
@@ -131,13 +134,13 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $request->headers->get('User-Agent', 'Unknown');
-        
+
         try {
             $this->logger->info('Teacher registration process initiated', [
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -150,17 +153,18 @@ class SecurityController extends AbstractController
                     'ip' => $clientIp,
                     'redirect_target' => 'teacher_dashboard',
                 ]);
+
                 return $this->redirectToRoute('teacher_dashboard');
             }
 
             $teacher = new Teacher();
             $form = $this->createForm(TeacherRegistrationFormType::class, $teacher);
-            
+
             $this->logger->debug('Teacher registration form created', [
                 'form_class' => TeacherRegistrationFormType::class,
                 'ip' => $clientIp,
             ]);
-            
+
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
@@ -181,8 +185,9 @@ class SecurityController extends AbstractController
                             'ip' => $clientIp,
                             'user_agent' => $userAgent,
                         ]);
-                        
+
                         $this->addFlash('error', 'Un compte avec cette adresse email existe déjà.');
+
                         return $this->render('teacher/security/register.html.twig', [
                             'registrationForm' => $form,
                             'page_title' => 'Inscription Formateur',
@@ -202,7 +207,7 @@ class SecurityController extends AbstractController
 
                     // Generate email verification token
                     $teacher->generateEmailVerificationToken();
-                    
+
                     $this->logger->debug('Email verification token generated', [
                         'email' => $teacher->getEmail(),
                         'token_generated' => !empty($teacher->getEmailVerificationToken()),
@@ -220,20 +225,20 @@ class SecurityController extends AbstractController
                         'specialty' => $teacher->getSpecialty(),
                         'ip' => $clientIp,
                         'user_agent' => $userAgent,
-                        'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                        'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                     ]);
 
                     // Send email verification email
                     try {
                         $emailSent = $this->teacherService->sendEmailVerification($teacher);
-                        
+
                         $this->logger->info('Email verification sending attempted', [
                             'teacher_id' => $teacher->getId(),
                             'email' => $teacher->getEmail(),
                             'email_sent' => $emailSent,
                             'service_class' => get_class($this->teacherService),
                         ]);
-                        
+
                         if ($emailSent) {
                             $this->addFlash('success', 'Votre compte formateur a été créé avec succès ! Un email de vérification vous a été envoyé.');
                         } else {
@@ -243,7 +248,7 @@ class SecurityController extends AbstractController
                             ]);
                             $this->addFlash('warning', 'Votre compte formateur a été créé avec succès ! Cependant, nous n\'avons pas pu envoyer l\'email de vérification. Contactez le support si nécessaire.');
                         }
-                    } catch (\Exception $emailException) {
+                    } catch (Exception $emailException) {
                         $this->logger->error('Exception occurred while sending verification email', [
                             'teacher_id' => $teacher->getId(),
                             'email' => $teacher->getEmail(),
@@ -252,7 +257,7 @@ class SecurityController extends AbstractController
                             'file' => $emailException->getFile(),
                             'line' => $emailException->getLine(),
                         ]);
-                        
+
                         $this->addFlash('warning', 'Votre compte formateur a été créé avec succès ! Cependant, nous n\'avons pas pu envoyer l\'email de vérification. Contactez le support si nécessaire.');
                     }
 
@@ -262,19 +267,18 @@ class SecurityController extends AbstractController
                     ]);
 
                     return $this->redirectToRoute('teacher_login');
-                } else {
-                    $formErrors = [];
-                    foreach ($form->getErrors(true) as $error) {
-                        $formErrors[] = $error->getMessage();
-                    }
-                    
-                    $this->logger->warning('Teacher registration form validation failed', [
-                        'email' => $teacher->getEmail(),
-                        'form_errors' => $formErrors,
-                        'ip' => $clientIp,
-                        'user_agent' => $userAgent,
-                    ]);
                 }
+                $formErrors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $formErrors[] = $error->getMessage();
+                }
+
+                $this->logger->warning('Teacher registration form validation failed', [
+                    'email' => $teacher->getEmail(),
+                    'form_errors' => $formErrors,
+                    'ip' => $clientIp,
+                    'user_agent' => $userAgent,
+                ]);
             } else {
                 $this->logger->debug('Teacher registration form displayed', [
                     'ip' => $clientIp,
@@ -286,7 +290,7 @@ class SecurityController extends AbstractController
                 'registrationForm' => $form,
                 'page_title' => 'Inscription Formateur',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in teacher registration process', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -295,14 +299,14 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue lors de l\'inscription. Veuillez réessayer plus tard.');
-            
+
             $teacher = new Teacher();
             $form = $this->createForm(TeacherRegistrationFormType::class, $teacher);
-            
+
             return $this->render('teacher/security/register.html.twig', [
                 'registrationForm' => $form,
                 'page_title' => 'Inscription Formateur',
@@ -331,14 +335,14 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent', 'Unknown');
-        
+
         try {
             $this->logger->info('Teacher email verification attempt initiated', [
                 'token' => substr($token, 0, 8) . '...', // Log only first 8 chars for security
                 'token_length' => strlen($token),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $teacher = $teacherRepository->findByEmailVerificationToken($token);
@@ -352,6 +356,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de vérification invalide ou expiré.');
+
                 return $this->redirectToRoute('teacher_login');
             }
 
@@ -373,6 +378,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('info', 'Votre email est déjà vérifié. Vous pouvez vous connecter.');
+
                 return $this->redirectToRoute('teacher_login');
             }
 
@@ -385,14 +391,14 @@ class SecurityController extends AbstractController
                 'verified_at' => $teacher->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'time_from_registration' => $teacher->getCreatedAt() ? 
-                    (new \DateTime())->getTimestamp() - $teacher->getCreatedAt()->getTimestamp() . ' seconds' : 'unknown',
+                'time_from_registration' => $teacher->getCreatedAt() ?
+                    (new DateTime())->getTimestamp() - $teacher->getCreatedAt()->getTimestamp() . ' seconds' : 'unknown',
             ]);
 
             $this->addFlash('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
 
             return $this->redirectToRoute('teacher_login');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error during teacher email verification', [
                 'token' => substr($token, 0, 8) . '...',
                 'exception_message' => $e->getMessage(),
@@ -402,10 +408,11 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue lors de la vérification. Veuillez réessayer ou contacter le support.');
+
             return $this->redirectToRoute('teacher_login');
         }
     }
@@ -420,18 +427,18 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $request->headers->get('User-Agent', 'Unknown');
-        
+
         try {
             $this->logger->info('Teacher forgot password process initiated', [
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             if ($request->isMethod('POST')) {
                 $email = $request->request->get('email');
-                
+
                 $this->logger->info('Password reset request submitted', [
                     'email' => $email,
                     'ip' => $clientIp,
@@ -445,6 +452,7 @@ class SecurityController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Veuillez saisir votre adresse email.');
+
                     return $this->render('teacher/security/forgot_password.html.twig', [
                         'page_title' => 'Mot de passe oublié',
                     ]);
@@ -458,6 +466,7 @@ class SecurityController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Veuillez saisir une adresse email valide.');
+
                     return $this->render('teacher/security/forgot_password.html.twig', [
                         'page_title' => 'Mot de passe oublié',
                     ]);
@@ -488,14 +497,14 @@ class SecurityController extends AbstractController
                     // Send password reset email
                     try {
                         $emailSent = $this->teacherService->sendPasswordResetEmail($teacher);
-                        
+
                         $this->logger->info('Password reset email sending attempted', [
                             'teacher_id' => $teacher->getId(),
                             'email' => $teacher->getEmail(),
                             'email_sent' => $emailSent,
                             'service_class' => get_class($this->teacherService),
                         ]);
-                    } catch (\Exception $emailException) {
+                    } catch (Exception $emailException) {
                         $this->logger->error('Exception occurred while sending password reset email', [
                             'teacher_id' => $teacher->getId(),
                             'email' => $teacher->getEmail(),
@@ -522,6 +531,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation.');
+
                 return $this->redirectToRoute('teacher_login');
             }
 
@@ -532,7 +542,7 @@ class SecurityController extends AbstractController
             return $this->render('teacher/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in teacher forgot password process', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -541,11 +551,11 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
-            
+
             return $this->render('teacher/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
@@ -562,7 +572,7 @@ class SecurityController extends AbstractController
     {
         $clientIp = $this->getClientIp();
         $userAgent = $request->headers->get('User-Agent', 'Unknown');
-        
+
         try {
             $this->logger->info('Teacher password reset process initiated', [
                 'token' => substr($token, 0, 8) . '...', // Log only first 8 chars for security
@@ -570,7 +580,7 @@ class SecurityController extends AbstractController
                 'method' => $request->getMethod(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $teacher = $teacherRepository->findByPasswordResetToken($token);
@@ -587,12 +597,13 @@ class SecurityController extends AbstractController
                     'teacher_found' => $teacher !== null,
                     'token_valid' => $teacher?->isPasswordResetTokenValid(),
                     'token_expires_at' => $teacher?->getPasswordResetTokenExpiresAt()?->format('Y-m-d H:i:s'),
-                    'current_time' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'current_time' => (new DateTime())->format('Y-m-d H:i:s'),
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
                 ]);
 
                 $this->addFlash('error', 'Token de réinitialisation invalide ou expiré.');
+
                 return $this->redirectToRoute('teacher_login');
             }
 
@@ -625,6 +636,7 @@ class SecurityController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+
                     return $this->render('teacher/security/reset_password.html.twig', [
                         'token' => $token,
                         'page_title' => 'Nouveau mot de passe',
@@ -641,6 +653,7 @@ class SecurityController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Le mot de passe doit contenir au moins 6 caractères.');
+
                     return $this->render('teacher/security/reset_password.html.twig', [
                         'token' => $token,
                         'page_title' => 'Nouveau mot de passe',
@@ -658,6 +671,7 @@ class SecurityController extends AbstractController
                     ]);
 
                     $this->addFlash('error', 'Le mot de passe doit contenir au moins une lettre et un chiffre.');
+
                     return $this->render('teacher/security/reset_password.html.twig', [
                         'token' => $token,
                         'page_title' => 'Nouveau mot de passe',
@@ -681,10 +695,11 @@ class SecurityController extends AbstractController
                     'email' => $teacher->getEmail(),
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'reset_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'reset_at' => (new DateTime())->format('Y-m-d H:i:s'),
                 ]);
 
                 $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès.');
+
                 return $this->redirectToRoute('teacher_login');
             }
 
@@ -699,7 +714,7 @@ class SecurityController extends AbstractController
                 'token' => $token,
                 'page_title' => 'Nouveau mot de passe',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in teacher password reset process', [
                 'token' => substr($token, 0, 8) . '...',
                 'exception_message' => $e->getMessage(),
@@ -709,17 +724,18 @@ class SecurityController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue lors de la réinitialisation. Veuillez réessayer ou contacter le support.');
+
             return $this->redirectToRoute('teacher_login');
         }
     }
 
     /**
      * Get client IP address for logging.
-     * 
+     *
      * Safely retrieves the client's IP address, handling various proxy configurations.
      */
     private function getClientIp(): ?string
@@ -733,11 +749,11 @@ class SecurityController extends AbstractController
 
             // Get the real IP, considering proxies and load balancers
             $ip = $request->getClientIp();
-            
+
             // Log potential security concerns with IP detection
             $forwardedFor = $request->headers->get('X-Forwarded-For');
             $realIp = $request->headers->get('X-Real-IP');
-            
+
             if ($forwardedFor || $realIp) {
                 $this->logger->debug('IP detection with proxy headers', [
                     'detected_ip' => $ip,
@@ -748,12 +764,12 @@ class SecurityController extends AbstractController
             }
 
             return $ip;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Failed to get client IP address', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return 'unknown';
         }
     }
@@ -765,12 +781,13 @@ class SecurityController extends AbstractController
     {
         try {
             $request = $this->container->get('request_stack')->getCurrentRequest();
+
             return $request?->headers->get('User-Agent', 'Unknown') ?? 'Unknown';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->debug('Failed to get user agent', [
                 'exception_message' => $e->getMessage(),
             ]);
-            
+
             return 'Unknown';
         }
     }

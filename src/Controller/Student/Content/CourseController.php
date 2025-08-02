@@ -9,6 +9,10 @@ use App\Entity\User\Student;
 use App\Repository\Training\CourseRepository;
 use App\Service\Security\ContentAccessService;
 use App\Service\Student\ProgressTrackingService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,9 +33,8 @@ class CourseController extends AbstractController
         private readonly CourseRepository $courseRepository,
         private readonly ContentAccessService $contentAccessService,
         private readonly ProgressTrackingService $progressService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * View a specific course with access control.
@@ -57,7 +60,7 @@ class CourseController extends AbstractController
                 'course_order' => $course->getOrderIndex(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for the formation containing this course
@@ -67,11 +70,11 @@ class CourseController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved for course access', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -82,7 +85,7 @@ class CourseController extends AbstractController
 
             $enrollment = null;
             $targetFormationId = $course->getChapter()?->getModule()?->getFormation()?->getId();
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $targetFormationId) {
                     $enrollment = $e;
@@ -102,7 +105,7 @@ class CourseController extends AbstractController
                     'student_id' => $student->getId(),
                     'course_id' => $course->getId(),
                     'target_formation_id' => $targetFormationId,
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -121,7 +124,7 @@ class CourseController extends AbstractController
                         'course_id' => $course->getId(),
                         'student_id' => $student->getId(),
                     ]);
-                } catch (\Exception $progressException) {
+                } catch (Exception $progressException) {
                     $this->logger->error('Failed to record course view for progress tracking', [
                         'enrollment_id' => $enrollment->getId(),
                         'course_id' => $course->getId(),
@@ -152,30 +155,29 @@ class CourseController extends AbstractController
                 'student' => $student,
                 'page_title' => $course->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for course view', [
                 'course_id' => $course->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès au cours.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès au cours.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in course view process', [
                 'course_id' => $course->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès au cours.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès au cours.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during course view', [
                 'course_id' => $course->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -188,8 +190,9 @@ class CourseController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès au cours.');
+
             return $this->redirectToRoute('student_dashboard');
         }
     }

@@ -8,7 +8,6 @@ use App\Entity\Assessment\Question;
 use App\Entity\Assessment\Questionnaire;
 use App\Entity\Assessment\QuestionnaireResponse;
 use App\Entity\Assessment\QuestionResponse;
-
 use App\Repository\Assessment\QuestionnaireRepository;
 use App\Repository\Assessment\QuestionnaireResponseRepository;
 use App\Repository\Training\FormationRepository;
@@ -21,6 +20,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -55,6 +55,7 @@ class QuestionnaireController extends AbstractController
                     'token' => $token,
                     'action' => 'token_validation_failed',
                 ]);
+
                 throw $this->createNotFoundException('Token de questionnaire invalide.');
             }
 
@@ -73,7 +74,7 @@ class QuestionnaireController extends AbstractController
                     'response_id' => $response->getId(),
                     'completed_at' => $response->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
-                
+
                 return $this->render('public/questionnaire/already_completed.html.twig', [
                     'response' => $response,
                 ]);
@@ -88,6 +89,7 @@ class QuestionnaireController extends AbstractController
                     'questionnaire_title' => $questionnaire->getTitle(),
                     'is_active' => $questionnaire->isActive(),
                 ]);
+
                 throw $this->createNotFoundException('Ce questionnaire n\'est plus actif.');
             }
 
@@ -98,10 +100,10 @@ class QuestionnaireController extends AbstractController
                     'response_id' => $response->getId(),
                     'previous_status' => $response->getStatus(),
                 ]);
-                
+
                 $response->markAsStarted();
                 $this->entityManager->flush();
-                
+
                 $this->logger->info('Questionnaire marked as started successfully', [
                     'token' => $token,
                     'response_id' => $response->getId(),
@@ -124,7 +126,6 @@ class QuestionnaireController extends AbstractController
                 'token' => $token,
                 'step' => $currentStep,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error in questionnaire completion', [
                 'token' => $token,
@@ -135,11 +136,12 @@ class QuestionnaireController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement du questionnaire.');
+
             throw $e;
         }
     }
@@ -164,6 +166,7 @@ class QuestionnaireController extends AbstractController
                     'step' => $step,
                     'action' => 'token_validation_failed',
                 ]);
+
                 throw $this->createNotFoundException('Token de questionnaire invalide.');
             }
 
@@ -183,6 +186,7 @@ class QuestionnaireController extends AbstractController
                     'response_id' => $response->getId(),
                     'completed_at' => $response->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
+
                 return $this->redirectToRoute('questionnaire_complete', ['token' => $token]);
             }
 
@@ -204,6 +208,7 @@ class QuestionnaireController extends AbstractController
                     'total_steps' => $totalSteps,
                     'valid_range' => "1-{$totalSteps}",
                 ]);
+
                 throw $this->createNotFoundException('Étape invalide.');
             }
 
@@ -215,7 +220,7 @@ class QuestionnaireController extends AbstractController
                     'current_step' => $response->getCurrentStep(),
                     'allow_back_navigation' => $questionnaire->isAllowBackNavigation(),
                 ]);
-                
+
                 return $this->redirectToRoute('questionnaire_step', [
                     'token' => $token,
                     'step' => $response->getCurrentStep(),
@@ -223,12 +228,12 @@ class QuestionnaireController extends AbstractController
             }
 
             $questions = $questionnaire->getQuestionsForStep($step);
-            
+
             $this->logger->info('Questions loaded for step', [
                 'token' => $token,
                 'step' => $step,
                 'question_count' => count($questions),
-                'question_ids' => array_map(fn($q) => $q->getId(), $questions->toArray()),
+                'question_ids' => array_map(static fn ($q) => $q->getId(), $questions->toArray()),
             ]);
 
             if ($request->isMethod('POST')) {
@@ -263,7 +268,7 @@ class QuestionnaireController extends AbstractController
                             'total_steps' => $totalSteps,
                             'response_id' => $response->getId(),
                         ]);
-                        
+
                         $response->markAsCompleted();
                         $this->entityManager->flush();
 
@@ -275,7 +280,7 @@ class QuestionnaireController extends AbstractController
 
                         return $this->redirectToRoute('questionnaire_completed', ['token' => $token]);
                     }
-                    
+
                     $this->entityManager->flush();
 
                     $this->logger->info('Redirecting to next step', [
@@ -290,7 +295,6 @@ class QuestionnaireController extends AbstractController
                         'token' => $token,
                         'step' => $step + 1,
                     ]);
-
                 } catch (Exception $e) {
                     $this->logger->error('Error processing step submission', [
                         'token' => $token,
@@ -308,7 +312,7 @@ class QuestionnaireController extends AbstractController
             // Get existing responses for this step
             $existingResponses = [];
             $existingQuestionResponses = [];
-            
+
             try {
                 foreach ($questions as $question) {
                     $questionResponse = $response->getResponseForQuestion($question);
@@ -324,7 +328,6 @@ class QuestionnaireController extends AbstractController
                     'existing_responses_count' => count($existingResponses),
                     'question_ids_with_responses' => array_keys($existingResponses),
                 ]);
-
             } catch (Exception $e) {
                 $this->logger->error('Error loading existing responses', [
                     'token' => $token,
@@ -336,7 +339,7 @@ class QuestionnaireController extends AbstractController
             }
 
             $progressPercentage = (int) (($step / $totalSteps) * 100);
-            
+
             $this->logger->info('Rendering questionnaire step template', [
                 'token' => $token,
                 'step' => $step,
@@ -356,7 +359,6 @@ class QuestionnaireController extends AbstractController
                 'existingQuestionResponses' => $existingQuestionResponses,
                 'progressPercentage' => $progressPercentage,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error in questionnaire step processing', [
                 'token' => $token,
@@ -369,11 +371,12 @@ class QuestionnaireController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             $this->addFlash('error', 'Une erreur est survenue lors du traitement de l\'étape.');
+
             throw $e;
         }
     }
@@ -396,6 +399,7 @@ class QuestionnaireController extends AbstractController
                     'token' => $token,
                     'action' => 'completion_token_validation_failed',
                 ]);
+
                 throw $this->createNotFoundException('Token de questionnaire invalide.');
             }
 
@@ -416,7 +420,7 @@ class QuestionnaireController extends AbstractController
                     'status' => $response->getStatus(),
                     'current_step' => $response->getCurrentStep(),
                 ]);
-                
+
                 return $this->redirectToRoute('questionnaire_complete', ['token' => $token]);
             }
 
@@ -430,7 +434,6 @@ class QuestionnaireController extends AbstractController
             return $this->render('public/questionnaire/completed.html.twig', [
                 'response' => $response,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error in questionnaire completion page', [
                 'token' => $token,
@@ -441,11 +444,12 @@ class QuestionnaireController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage de la page de completion.');
+
             throw $e;
         }
     }
@@ -473,6 +477,7 @@ class QuestionnaireController extends AbstractController
                     'token' => $token,
                     'question_id' => $questionId,
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Aucun fichier fourni']);
             }
 
@@ -483,6 +488,7 @@ class QuestionnaireController extends AbstractController
                     'question_id' => $questionId,
                     'filename' => $file->getClientOriginalName(),
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Token invalide']);
             }
 
@@ -501,6 +507,7 @@ class QuestionnaireController extends AbstractController
                     'questionnaire_match' => $question ? ($question->getQuestionnaire() === $response->getQuestionnaire()) : false,
                     'filename' => $file->getClientOriginalName(),
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Question invalide']);
             }
 
@@ -524,7 +531,7 @@ class QuestionnaireController extends AbstractController
                         'file_extension' => $extension,
                         'allowed_types' => $question->getAllowedFileTypes(),
                     ]);
-                    
+
                     return new JsonResponse([
                         'success' => false,
                         'message' => 'Type de fichier non autorisé. Types autorisés : ' . implode(', ', $question->getAllowedFileTypes()),
@@ -541,7 +548,7 @@ class QuestionnaireController extends AbstractController
                     'max_allowed_size' => $question->getMaxFileSize(),
                     'formatted_max_size' => $question->getFormattedMaxFileSize(),
                 ]);
-                
+
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Fichier trop volumineux. Taille maximale : ' . $question->getFormattedMaxFileSize(),
@@ -550,7 +557,7 @@ class QuestionnaireController extends AbstractController
 
             // Create upload directory if it doesn't exist
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/questionnaire_files';
-            
+
             $this->logger->info('Preparing file upload directory', [
                 'token' => $token,
                 'question_id' => $questionId,
@@ -558,7 +565,7 @@ class QuestionnaireController extends AbstractController
                 'dir_exists' => is_dir($uploadDir),
                 'dir_writable' => is_dir($uploadDir) ? is_writable($uploadDir) : null,
             ]);
-            
+
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0755, true)) {
                     $this->logger->error('Failed to create upload directory', [
@@ -566,9 +573,10 @@ class QuestionnaireController extends AbstractController
                         'question_id' => $questionId,
                         'upload_dir' => $uploadDir,
                     ]);
+
                     return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la création du dossier de téléchargement']);
                 }
-                
+
                 $this->logger->info('Upload directory created successfully', [
                     'token' => $token,
                     'upload_dir' => $uploadDir,
@@ -578,7 +586,7 @@ class QuestionnaireController extends AbstractController
             // Generate unique filename
             $filename = uniqid() . '_' . $file->getClientOriginalName();
             $fullPath = $uploadDir . '/' . $filename;
-            
+
             $this->logger->info('Moving uploaded file', [
                 'token' => $token,
                 'question_id' => $questionId,
@@ -586,9 +594,9 @@ class QuestionnaireController extends AbstractController
                 'generated_filename' => $filename,
                 'full_path' => $fullPath,
             ]);
-            
+
             $file->move($uploadDir, $filename);
-            
+
             $this->logger->info('File uploaded successfully', [
                 'token' => $token,
                 'question_id' => $questionId,
@@ -603,7 +611,6 @@ class QuestionnaireController extends AbstractController
                 'filename' => $filename,
                 'originalName' => $file->getClientOriginalName(),
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Critical error during file upload', [
                 'token' => $token,
@@ -615,7 +622,7 @@ class QuestionnaireController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             return new JsonResponse(['success' => false, 'message' => 'Erreur lors du téléchargement']);
         }
     }
@@ -623,7 +630,7 @@ class QuestionnaireController extends AbstractController
     private function handleStepSubmission(Request $request, QuestionnaireResponse $response, $questions, int $step): void
     {
         $data = $request->request->all();
-        
+
         $this->logger->info('Starting step submission processing', [
             'response_id' => $response->getId(),
             'questionnaire_id' => $response->getQuestionnaire()->getId(),
@@ -663,6 +670,7 @@ class QuestionnaireController extends AbstractController
                     'question_type' => $question->getType(),
                 ]);
                 $skippedQuestions++;
+
                 continue;
             }
 
@@ -670,7 +678,7 @@ class QuestionnaireController extends AbstractController
                 // Find or create question response
                 $questionResponse = $response->getResponseForQuestion($question);
                 $isNewResponse = !$questionResponse;
-                
+
                 if (!$questionResponse) {
                     $questionResponse = new QuestionResponse();
                     $questionResponse->setQuestion($question)
@@ -678,7 +686,7 @@ class QuestionnaireController extends AbstractController
                     ;
                     $this->entityManager->persist($questionResponse);
                     $response->addQuestionResponse($questionResponse);
-                    
+
                     $this->logger->info('Created new question response', [
                         'response_id' => $response->getId(),
                         'question_id' => $questionId,
@@ -699,7 +707,7 @@ class QuestionnaireController extends AbstractController
                         if ($responseValue) {
                             $choiceValue = (int) $responseValue;
                             $questionResponse->setChoiceResponse([$choiceValue]);
-                            
+
                             $this->logger->info('Set single choice response', [
                                 'response_id' => $response->getId(),
                                 'question_id' => $questionId,
@@ -712,7 +720,7 @@ class QuestionnaireController extends AbstractController
                         if (is_array($responseValue)) {
                             $choiceValues = array_map('intval', $responseValue);
                             $questionResponse->setChoiceResponse($choiceValues);
-                            
+
                             $this->logger->info('Set multiple choice response', [
                                 'response_id' => $response->getId(),
                                 'question_id' => $questionId,
@@ -727,7 +735,7 @@ class QuestionnaireController extends AbstractController
                         $filename = $data['file_' . $questionId] ?? null;
                         if ($filename) {
                             $questionResponse->setFileResponse($filename);
-                            
+
                             $this->logger->info('Set file upload response', [
                                 'response_id' => $response->getId(),
                                 'question_id' => $questionId,
@@ -740,7 +748,7 @@ class QuestionnaireController extends AbstractController
                         if ($responseValue !== null && $responseValue !== '') {
                             $numberValue = (int) $responseValue;
                             $questionResponse->setNumberResponse($numberValue);
-                            
+
                             $this->logger->info('Set number response', [
                                 'response_id' => $response->getId(),
                                 'question_id' => $questionId,
@@ -755,7 +763,7 @@ class QuestionnaireController extends AbstractController
                             try {
                                 $dateValue = new DateTime($responseValue);
                                 $questionResponse->setDateResponse($dateValue);
-                                
+
                                 $this->logger->info('Set date response', [
                                     'response_id' => $response->getId(),
                                     'question_id' => $questionId,
@@ -776,7 +784,7 @@ class QuestionnaireController extends AbstractController
 
                     default:
                         $questionResponse->setTextResponse($responseValue);
-                        
+
                         $this->logger->info('Set text response', [
                             'response_id' => $response->getId(),
                             'question_id' => $questionId,
@@ -789,7 +797,7 @@ class QuestionnaireController extends AbstractController
                 if ($question->hasChoices() && $question->hasCorrectAnswers()) {
                     $previousScore = $questionResponse->getScoreEarned();
                     $calculatedScore = $questionResponse->calculateScore();
-                    
+
                     $this->logger->info('Calculated question score', [
                         'response_id' => $response->getId(),
                         'question_id' => $questionId,
@@ -800,7 +808,6 @@ class QuestionnaireController extends AbstractController
                 }
 
                 $processedQuestions++;
-
             } catch (Exception $e) {
                 $this->logger->error('Error processing individual question response', [
                     'response_id' => $response->getId(),

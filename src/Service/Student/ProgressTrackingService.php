@@ -6,22 +6,23 @@ namespace App\Service\Student;
 
 use App\Entity\Core\StudentEnrollment;
 use App\Entity\Core\StudentProgress;
+use App\Entity\Training\Chapter;
 use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
+use App\Entity\Training\Module;
 use App\Entity\Training\QCM;
 use DateTime;
-use DateTimeImmutable;
-use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
- * Progress Tracking Service
+ * Progress Tracking Service.
  *
- * Enhanced service for real-time, granular tracking of student advancement 
+ * Enhanced service for real-time, granular tracking of student advancement
  * through all content levels with detailed analytics and Qualiopi-compliant reporting.
- * 
+ *
  * This service implements the requirements from Issue #67 - Progress Tracking Enhancement.
  */
 class ProgressTrackingService
@@ -33,61 +34,61 @@ class ProgressTrackingService
         'first_course_completed' => [
             'title' => 'Premier cours terminé',
             'description' => 'Vous avez terminé votre premier cours !',
-            'points' => 10
+            'points' => 10,
         ],
         'first_exercise_submitted' => [
             'title' => 'Premier exercice soumis',
             'description' => 'Vous avez soumis votre premier exercice !',
-            'points' => 15
+            'points' => 15,
         ],
         'first_qcm_passed' => [
             'title' => 'Premier QCM réussi',
             'description' => 'Vous avez réussi votre premier QCM !',
-            'points' => 20
+            'points' => 20,
         ],
         'chapter_completed' => [
             'title' => 'Chapitre terminé',
             'description' => 'Vous avez terminé un chapitre complet',
-            'points' => 25
+            'points' => 25,
         ],
         'module_completed' => [
             'title' => 'Module terminé',
             'description' => 'Vous avez terminé un module complet',
-            'points' => 50
+            'points' => 50,
         ],
         'formation_halfway' => [
             'title' => 'À mi-parcours',
             'description' => 'Vous avez atteint 50% de votre formation',
-            'points' => 100
+            'points' => 100,
         ],
         'formation_three_quarters' => [
             'title' => 'Trois quarts accomplis',
             'description' => 'Vous avez atteint 75% de votre formation',
-            'points' => 150
+            'points' => 150,
         ],
         'streak_7_days' => [
             'title' => 'Une semaine d\'assiduité',
             'description' => 'Vous vous êtes connecté 7 jours consécutifs',
-            'points' => 30
+            'points' => 30,
         ],
         'streak_30_days' => [
             'title' => 'Un mois d\'assiduité',
             'description' => 'Vous vous êtes connecté 30 jours consécutifs',
-            'points' => 100
+            'points' => 100,
         ],
         'high_engagement' => [
             'title' => 'Étudiant engagé',
             'description' => 'Vous maintenez un score d\'engagement supérieur à 80%',
-            'points' => 75
-        ]
+            'points' => 75,
+        ],
     ];
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
-        #[Autowire('%kernel.project_dir%')] private readonly string $projectDir
-    ) {
-    }
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
+    ) {}
 
     /**
      * Record when a student views a course.
@@ -103,7 +104,7 @@ class ProgressTrackingService
             'student_id' => $studentId,
             'course_id' => $courseId,
             'enrollment_id' => $enrollmentId,
-            'course_title' => $course->getTitle()
+            'course_title' => $course->getTitle(),
         ]);
 
         try {
@@ -111,7 +112,7 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->info('No existing progress found, creating new progress record', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
                 $progress = $this->createProgressForEnrollment($enrollment);
             }
@@ -123,14 +124,14 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'course_id' => $courseId,
                 'existing_progress' => isset($courseProgress[$courseId]),
-                'current_view_count' => $courseProgress[$courseId]['viewCount'] ?? 0
+                'current_view_count' => $courseProgress[$courseId]['viewCount'] ?? 0,
             ]);
 
             // Initialize or update course progress
             if (!isset($courseProgress[$courseId])) {
                 $this->logger->debug('Initializing new course progress entry', [
                     'student_id' => $studentId,
-                    'course_id' => $courseId
+                    'course_id' => $courseId,
                 ]);
                 $courseProgress[$courseId] = [
                     'viewed' => false,
@@ -138,7 +139,7 @@ class ProgressTrackingService
                     'timeSpent' => 0,
                     'viewCount' => 0,
                     'firstViewedAt' => null,
-                    'lastAccessed' => null
+                    'lastAccessed' => null,
                 ];
             }
 
@@ -152,7 +153,7 @@ class ProgressTrackingService
                 $this->logger->info('First time viewing this course', [
                     'student_id' => $studentId,
                     'course_id' => $courseId,
-                    'first_viewed_at' => $courseProgress[$courseId]['firstViewedAt']
+                    'first_viewed_at' => $courseProgress[$courseId]['firstViewedAt'],
                 ]);
             }
 
@@ -162,7 +163,7 @@ class ProgressTrackingService
             $this->logger->debug('Persisting course progress updates', [
                 'student_id' => $studentId,
                 'course_id' => $courseId,
-                'view_count_updated' => $previousViewCount . ' -> ' . $courseProgress[$courseId]['viewCount']
+                'view_count_updated' => $previousViewCount . ' -> ' . $courseProgress[$courseId]['viewCount'],
             ]);
 
             $this->entityManager->persist($progress);
@@ -173,10 +174,9 @@ class ProgressTrackingService
                 'course_id' => $courseId,
                 'enrollment_id' => $enrollmentId,
                 'view_count' => $courseProgress[$courseId]['viewCount'],
-                'is_first_view' => $previousViewCount === 0
+                'is_first_view' => $previousViewCount === 0,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to record course view', [
                 'method' => 'recordCourseView',
                 'student_id' => $studentId,
@@ -186,8 +186,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -208,7 +209,7 @@ class ProgressTrackingService
             'enrollment_id' => $enrollmentId,
             'course_title' => $course->getTitle(),
             'chapter_id' => $course->getChapter()?->getId(),
-            'module_id' => $course->getChapter()?->getModule()?->getId()
+            'module_id' => $course->getChapter()?->getModule()?->getId(),
         ]);
 
         try {
@@ -216,7 +217,7 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->info('No existing progress found, creating new progress record', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
                 $progress = $this->createProgressForEnrollment($enrollment);
             }
@@ -228,14 +229,14 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'course_id' => $courseId,
                 'was_already_completed' => $courseProgress[$courseId]['completed'] ?? false,
-                'was_viewed' => $courseProgress[$courseId]['viewed'] ?? false
+                'was_viewed' => $courseProgress[$courseId]['viewed'] ?? false,
             ]);
 
             // Update course completion
             if (!isset($courseProgress[$courseId])) {
                 $this->logger->info('Course not yet viewed, recording view first', [
                     'student_id' => $studentId,
-                    'course_id' => $courseId
+                    'course_id' => $courseId,
                 ]);
                 $this->recordCourseView($enrollment, $course);
                 $courseProgress = $progress->getCourseProgress();
@@ -252,7 +253,7 @@ class ProgressTrackingService
                     'student_id' => $studentId,
                     'course_id' => $courseId,
                     'chapter_id' => $course->getChapter()?->getId(),
-                    'module_id' => $course->getChapter()?->getModule()?->getId()
+                    'module_id' => $course->getChapter()?->getModule()?->getId(),
                 ]);
 
                 $this->updateChapterProgress($progress, $course->getChapter());
@@ -261,14 +262,14 @@ class ProgressTrackingService
             } else {
                 $this->logger->debug('Course was already completed, skipping parent updates', [
                     'student_id' => $studentId,
-                    'course_id' => $courseId
+                    'course_id' => $courseId,
                 ]);
             }
 
             $this->logger->debug('Persisting course completion updates', [
                 'student_id' => $studentId,
                 'course_id' => $courseId,
-                'completion_percentage' => $progress->getCompletionPercentage()
+                'completion_percentage' => $progress->getCompletionPercentage(),
             ]);
 
             $this->entityManager->persist($progress);
@@ -277,20 +278,19 @@ class ProgressTrackingService
             // Check for milestones
             $this->logger->debug('Checking for milestone achievements', [
                 'student_id' => $studentId,
-                'course_id' => $courseId
+                'course_id' => $courseId,
             ]);
             $milestones = $this->checkMilestones($enrollment);
-            
+
             $this->logger->info('Course completion recorded successfully', [
                 'student_id' => $studentId,
                 'course_id' => $courseId,
                 'enrollment_id' => $enrollmentId,
                 'was_already_completed' => $wasAlreadyCompleted,
                 'milestones_achieved' => array_keys($milestones),
-                'overall_progress' => $progress->getCompletionPercentage()
+                'overall_progress' => $progress->getCompletionPercentage(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to record course completion', [
                 'method' => 'recordCourseCompletion',
                 'student_id' => $studentId,
@@ -300,8 +300,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -322,7 +323,7 @@ class ProgressTrackingService
             'enrollment_id' => $enrollmentId,
             'exercise_title' => $exercise->getTitle(),
             'submission_size' => count($submission),
-            'course_id' => $exercise->getCourse()?->getId()
+            'course_id' => $exercise->getCourse()?->getId(),
         ]);
 
         try {
@@ -330,7 +331,7 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->info('No existing progress found, creating new progress record', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
                 $progress = $this->createProgressForEnrollment($enrollment);
             }
@@ -343,21 +344,21 @@ class ProgressTrackingService
                 'exercise_id' => $exerciseId,
                 'previous_attempts' => $exerciseProgress[$exerciseId]['attempts'] ?? 0,
                 'was_previously_submitted' => $exerciseProgress[$exerciseId]['submitted'] ?? false,
-                'submission_keys' => array_keys($submission)
+                'submission_keys' => array_keys($submission),
             ]);
 
             // Initialize or update exercise progress
             if (!isset($exerciseProgress[$exerciseId])) {
                 $this->logger->debug('Initializing new exercise progress entry', [
                     'student_id' => $studentId,
-                    'exercise_id' => $exerciseId
+                    'exercise_id' => $exerciseId,
                 ]);
                 $exerciseProgress[$exerciseId] = [
                     'attempted' => false,
                     'submitted' => false,
                     'attempts' => 0,
                     'timeSpent' => 0,
-                    'submissions' => []
+                    'submissions' => [],
                 ];
             }
 
@@ -369,7 +370,7 @@ class ProgressTrackingService
             $submissionData = [
                 'submittedAt' => $now->format('Y-m-d H:i:s'),
                 'content' => $submission,
-                'status' => 'submitted'
+                'status' => 'submitted',
             ];
 
             $exerciseProgress[$exerciseId]['submissions'][] = $submissionData;
@@ -378,7 +379,7 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'exercise_id' => $exerciseId,
                 'attempt_number' => $exerciseProgress[$exerciseId]['attempts'],
-                'total_submissions' => count($exerciseProgress[$exerciseId]['submissions'])
+                'total_submissions' => count($exerciseProgress[$exerciseId]['submissions']),
             ]);
 
             $this->setExerciseProgress($progress, $exerciseProgress);
@@ -387,7 +388,7 @@ class ProgressTrackingService
             $this->logger->debug('Persisting exercise submission updates', [
                 'student_id' => $studentId,
                 'exercise_id' => $exerciseId,
-                'attempts_updated' => $previousAttempts . ' -> ' . $exerciseProgress[$exerciseId]['attempts']
+                'attempts_updated' => $previousAttempts . ' -> ' . $exerciseProgress[$exerciseId]['attempts'],
             ]);
 
             $this->entityManager->persist($progress);
@@ -396,7 +397,7 @@ class ProgressTrackingService
             // Check for milestones
             $this->logger->debug('Checking for milestone achievements after exercise submission', [
                 'student_id' => $studentId,
-                'exercise_id' => $exerciseId
+                'exercise_id' => $exerciseId,
             ]);
             $milestones = $this->checkMilestones($enrollment);
 
@@ -406,10 +407,9 @@ class ProgressTrackingService
                 'enrollment_id' => $enrollmentId,
                 'attempt_number' => $exerciseProgress[$exerciseId]['attempts'],
                 'milestones_achieved' => array_keys($milestones),
-                'is_first_submission' => $previousAttempts === 0
+                'is_first_submission' => $previousAttempts === 0,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to record exercise submission', [
                 'method' => 'recordExerciseSubmission',
                 'student_id' => $studentId,
@@ -420,8 +420,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -446,7 +447,7 @@ class ProgressTrackingService
             'passing_score' => $passingScore,
             'passed' => $score >= $passingScore,
             'answers_count' => count($answers),
-            'course_id' => $qcm->getCourse()?->getId()
+            'course_id' => $qcm->getCourse()?->getId(),
         ]);
 
         try {
@@ -454,7 +455,7 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->info('No existing progress found, creating new progress record', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
                 $progress = $this->createProgressForEnrollment($enrollment);
             }
@@ -468,20 +469,20 @@ class ProgressTrackingService
                 'qcm_id' => $qcmId,
                 'previous_attempts' => count($qcmProgress[$qcmId]['attempts'] ?? []),
                 'previous_best_score' => $qcmProgress[$qcmId]['bestScore'] ?? 0,
-                'was_previously_passed' => $qcmProgress[$qcmId]['passed'] ?? false
+                'was_previously_passed' => $qcmProgress[$qcmId]['passed'] ?? false,
             ]);
 
             // Initialize or update QCM progress
             if (!isset($qcmProgress[$qcmId])) {
                 $this->logger->debug('Initializing new QCM progress entry', [
                     'student_id' => $studentId,
-                    'qcm_id' => $qcmId
+                    'qcm_id' => $qcmId,
                 ]);
                 $qcmProgress[$qcmId] = [
                     'attempts' => [],
                     'bestScore' => 0,
                     'passed' => false,
-                    'timeSpent' => 0
+                    'timeSpent' => 0,
                 ];
             }
 
@@ -496,7 +497,7 @@ class ProgressTrackingService
                 'maxScore' => $maxScore,
                 'timeSpent' => 0, // This should be calculated from actual time tracking
                 'answers' => $answers,
-                'passed' => $score >= $passingScore
+                'passed' => $score >= $passingScore,
             ];
 
             $qcmProgress[$qcmId]['attempts'][] = $attempt;
@@ -512,7 +513,7 @@ class ProgressTrackingService
                 'attempt_number' => $attemptNumber,
                 'score_improved' => $scoreImproved,
                 'just_passed' => $justPassed,
-                'new_best_score' => $qcmProgress[$qcmId]['bestScore']
+                'new_best_score' => $qcmProgress[$qcmId]['bestScore'],
             ]);
 
             $this->setQCMProgress($progress, $qcmProgress);
@@ -521,7 +522,7 @@ class ProgressTrackingService
             $this->logger->debug('Persisting QCM attempt updates', [
                 'student_id' => $studentId,
                 'qcm_id' => $qcmId,
-                'best_score_updated' => $previousBestScore . ' -> ' . $qcmProgress[$qcmId]['bestScore']
+                'best_score_updated' => $previousBestScore . ' -> ' . $qcmProgress[$qcmId]['bestScore'],
             ]);
 
             $this->entityManager->persist($progress);
@@ -531,7 +532,7 @@ class ProgressTrackingService
             $this->logger->debug('Checking for milestone achievements after QCM attempt', [
                 'student_id' => $studentId,
                 'qcm_id' => $qcmId,
-                'just_passed' => $justPassed
+                'just_passed' => $justPassed,
             ]);
             $milestones = $this->checkMilestones($enrollment);
 
@@ -545,10 +546,9 @@ class ProgressTrackingService
                 'score_improved' => $scoreImproved,
                 'just_passed' => $justPassed,
                 'milestones_achieved' => array_keys($milestones),
-                'best_score' => $qcmProgress[$qcmId]['bestScore']
+                'best_score' => $qcmProgress[$qcmId]['bestScore'],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to record QCM attempt', [
                 'method' => 'recordQCMAttempt',
                 'student_id' => $studentId,
@@ -560,8 +560,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -583,7 +584,7 @@ class ProgressTrackingService
             'content_type' => $contentType,
             'content_id' => $contentId,
             'seconds_to_add' => $seconds,
-            'minutes_to_add' => ceil($seconds / 60)
+            'minutes_to_add' => ceil($seconds / 60),
         ]);
 
         try {
@@ -592,8 +593,9 @@ class ProgressTrackingService
                     'student_id' => $studentId,
                     'content_type' => $contentType,
                     'content_id' => $contentId,
-                    'seconds' => $seconds
+                    'seconds' => $seconds,
                 ]);
+
                 return;
             }
 
@@ -601,7 +603,7 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->info('No existing progress found, creating new progress record', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
                 $progress = $this->createProgressForEnrollment($enrollment);
             }
@@ -620,7 +622,7 @@ class ProgressTrackingService
                 'content_type' => $contentType,
                 'content_id' => $contentId,
                 'previous_total_time' => $previousTotalTime,
-                'previous_content_time' => $timeTracking[$contentType][$contentId] ?? 0
+                'previous_content_time' => $timeTracking[$contentType][$contentId] ?? 0,
             ]);
 
             if (!isset($timeTracking[$contentType])) {
@@ -640,7 +642,7 @@ class ProgressTrackingService
                 'content_type' => $contentType,
                 'content_id' => $contentId,
                 'total_time_updated' => $previousTotalTime . ' -> ' . $progress->getTotalTimeSpent(),
-                'content_time_updated' => $previousContentTime . ' -> ' . $timeTracking[$contentType][$contentId]
+                'content_time_updated' => $previousContentTime . ' -> ' . $timeTracking[$contentType][$contentId],
             ]);
 
             $this->entityManager->persist($progress);
@@ -654,10 +656,9 @@ class ProgressTrackingService
                 'seconds_added' => $seconds,
                 'minutes_added' => $minutesToAdd,
                 'new_total_time' => $progress->getTotalTimeSpent(),
-                'new_content_time' => $timeTracking[$contentType][$contentId]
+                'new_content_time' => $timeTracking[$contentType][$contentId],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update time spent', [
                 'method' => 'updateTimeSpent',
                 'student_id' => $studentId,
@@ -669,8 +670,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -688,7 +690,7 @@ class ProgressTrackingService
             'method' => 'calculateOverallProgress',
             'student_id' => $studentId,
             'enrollment_id' => $enrollmentId,
-            'formation_id' => $formationId
+            'formation_id' => $formationId,
         ]);
 
         try {
@@ -696,8 +698,9 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->debug('No progress found, returning 0%', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
+
                 return 0.0;
             }
 
@@ -705,8 +708,9 @@ class ProgressTrackingService
             if (!$formation) {
                 $this->logger->warning('No formation found for enrollment', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
+
                 return 0.0;
             }
 
@@ -721,7 +725,7 @@ class ProgressTrackingService
             $this->logger->debug('Starting content enumeration', [
                 'student_id' => $studentId,
                 'formation_id' => $formationId,
-                'formation_title' => $formation->getTitle()
+                'formation_title' => $formation->getTitle(),
             ]);
 
             // Count modules and their completion
@@ -782,20 +786,19 @@ class ProgressTrackingService
                     'chapters' => $chapterCount,
                     'courses' => $courseCount,
                     'exercises' => $exerciseCount,
-                    'qcms' => $qcmCount
+                    'qcms' => $qcmCount,
                 ],
                 'progress_calculation' => [
                     'total_items' => $totalItems,
                     'completed_items' => $completedItems,
                     'previous_progress' => $previousProgress,
                     'new_progress' => $overallProgress,
-                    'progress_increased' => $overallProgress > $previousProgress
-                ]
+                    'progress_increased' => $overallProgress > $previousProgress,
+                ],
             ]);
 
             return $overallProgress;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to calculate overall progress', [
                 'method' => 'calculateOverallProgress',
                 'student_id' => $studentId,
@@ -805,8 +808,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -822,7 +826,7 @@ class ProgressTrackingService
         $this->logger->info('Starting milestone check', [
             'method' => 'checkMilestones',
             'student_id' => $studentId,
-            'enrollment_id' => $enrollmentId
+            'enrollment_id' => $enrollmentId,
         ]);
 
         try {
@@ -830,8 +834,9 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->debug('No progress found, skipping milestone check', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
+
                 return [];
             }
 
@@ -844,14 +849,14 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'existing_milestones' => array_keys($currentMilestones),
                 'overall_progress' => $overallProgress,
-                'engagement_score' => $engagementScore
+                'engagement_score' => $engagementScore,
             ]);
 
             // Check for first course completion
             if (!isset($currentMilestones['first_course_completed']) && $this->hasCompletedFirstCourse($progress)) {
                 $achievedMilestones['first_course_completed'] = self::MILESTONES['first_course_completed'];
                 $this->logger->info('First course completion milestone achieved', [
-                    'student_id' => $studentId
+                    'student_id' => $studentId,
                 ]);
             }
 
@@ -859,7 +864,7 @@ class ProgressTrackingService
             if (!isset($currentMilestones['first_exercise_submitted']) && $this->hasSubmittedFirstExercise($progress)) {
                 $achievedMilestones['first_exercise_submitted'] = self::MILESTONES['first_exercise_submitted'];
                 $this->logger->info('First exercise submission milestone achieved', [
-                    'student_id' => $studentId
+                    'student_id' => $studentId,
                 ]);
             }
 
@@ -867,7 +872,7 @@ class ProgressTrackingService
             if (!isset($currentMilestones['first_qcm_passed']) && $this->hasPassedFirstQCM($progress)) {
                 $achievedMilestones['first_qcm_passed'] = self::MILESTONES['first_qcm_passed'];
                 $this->logger->info('First QCM passed milestone achieved', [
-                    'student_id' => $studentId
+                    'student_id' => $studentId,
                 ]);
             }
 
@@ -875,7 +880,7 @@ class ProgressTrackingService
             if ($this->hasCompletedNewModule($progress, $currentMilestones)) {
                 $achievedMilestones['module_completed'] = self::MILESTONES['module_completed'];
                 $this->logger->info('Module completion milestone achieved', [
-                    'student_id' => $studentId
+                    'student_id' => $studentId,
                 ]);
             }
 
@@ -884,7 +889,7 @@ class ProgressTrackingService
                 $achievedMilestones['formation_halfway'] = self::MILESTONES['formation_halfway'];
                 $this->logger->info('Formation halfway milestone achieved', [
                     'student_id' => $studentId,
-                    'progress' => $overallProgress
+                    'progress' => $overallProgress,
                 ]);
             }
 
@@ -892,7 +897,7 @@ class ProgressTrackingService
                 $achievedMilestones['formation_three_quarters'] = self::MILESTONES['formation_three_quarters'];
                 $this->logger->info('Formation three quarters milestone achieved', [
                     'student_id' => $studentId,
-                    'progress' => $overallProgress
+                    'progress' => $overallProgress,
                 ]);
             }
 
@@ -901,7 +906,7 @@ class ProgressTrackingService
                 $achievedMilestones['high_engagement'] = self::MILESTONES['high_engagement'];
                 $this->logger->info('High engagement milestone achieved', [
                     'student_id' => $studentId,
-                    'engagement_score' => $engagementScore
+                    'engagement_score' => $engagementScore,
                 ]);
             }
 
@@ -914,11 +919,11 @@ class ProgressTrackingService
                 $this->logger->info('New milestones saved', [
                     'student_id' => $studentId,
                     'new_milestones' => array_keys($achievedMilestones),
-                    'total_milestones' => count($newMilestones)
+                    'total_milestones' => count($newMilestones),
                 ]);
             } else {
                 $this->logger->debug('No new milestones achieved', [
-                    'student_id' => $studentId
+                    'student_id' => $studentId,
                 ]);
             }
 
@@ -926,12 +931,11 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'enrollment_id' => $enrollmentId,
                 'milestones_achieved' => array_keys($achievedMilestones),
-                'total_points_earned' => array_sum(array_column($achievedMilestones, 'points'))
+                'total_points_earned' => array_sum(array_column($achievedMilestones, 'points')),
             ]);
 
             return $achievedMilestones;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to check milestones', [
                 'method' => 'checkMilestones',
                 'student_id' => $studentId,
@@ -940,8 +944,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -957,7 +962,7 @@ class ProgressTrackingService
         $this->logger->info('Starting progress report generation', [
             'method' => 'generateProgressReport',
             'student_id' => $studentId,
-            'enrollment_id' => $enrollmentId
+            'enrollment_id' => $enrollmentId,
         ]);
 
         try {
@@ -965,8 +970,9 @@ class ProgressTrackingService
             if (!$progress) {
                 $this->logger->warning('No progress found for enrollment, returning empty report', [
                     'student_id' => $studentId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
                 ]);
+
                 return [];
             }
 
@@ -977,25 +983,25 @@ class ProgressTrackingService
                 'student_id' => $studentId,
                 'formation_id' => $formation?->getId(),
                 'formation_title' => $formation?->getTitle(),
-                'enrollment_status' => $enrollment->getStatus()
+                'enrollment_status' => $enrollment->getStatus(),
             ]);
 
             $report = [
                 'student' => [
                     'id' => $student?->getId(),
                     'name' => $student?->getFullName(),
-                    'email' => $student?->getEmail()
+                    'email' => $student?->getEmail(),
                 ],
                 'formation' => [
                     'id' => $formation?->getId(),
                     'title' => $formation?->getTitle(),
-                    'level' => $formation?->getLevel()
+                    'level' => $formation?->getLevel(),
                 ],
                 'enrollment' => [
                     'id' => $enrollment->getId(),
                     'status' => $enrollment->getStatus(),
                     'enrolledAt' => $enrollment->getEnrolledAt()?->format('Y-m-d H:i:s'),
-                    'completedAt' => $enrollment->getCompletedAt()?->format('Y-m-d H:i:s')
+                    'completedAt' => $enrollment->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ],
                 'progress' => [
                     'completion_percentage' => $progress->getCompletionPercentage(),
@@ -1004,12 +1010,12 @@ class ProgressTrackingService
                     'login_count' => $progress->getLoginCount(),
                     'last_activity' => $progress->getLastActivity()?->format('Y-m-d H:i:s'),
                     'risk_score' => $progress->getRiskScore(),
-                    'at_risk_of_dropout' => $progress->isAtRiskOfDropout()
+                    'at_risk_of_dropout' => $progress->isAtRiskOfDropout(),
                 ],
                 'content_progress' => [
                     'courses' => $this->getCourseProgressSummary($progress),
                     'exercises' => $this->getExerciseProgressSummary($progress),
-                    'qcms' => $this->getQCMProgressSummary($progress)
+                    'qcms' => $this->getQCMProgressSummary($progress),
                 ],
                 'milestones' => $this->getMilestones($progress),
                 'time_tracking' => $this->getTimeSpentTracking($progress),
@@ -1017,8 +1023,8 @@ class ProgressTrackingService
                     'average_session_duration' => $progress->getAverageSessionDuration(),
                     'engagement_trend' => $this->calculateEngagementTrend($progress),
                     'learning_velocity' => $this->calculateLearningVelocity($progress),
-                    'difficulty_areas' => $progress->getDifficultySignals()
-                ]
+                    'difficulty_areas' => $progress->getDifficultySignals(),
+                ],
             ];
 
             $this->logger->info('Progress report generated successfully', [
@@ -1028,12 +1034,11 @@ class ProgressTrackingService
                 'completion_percentage' => $report['progress']['completion_percentage'],
                 'engagement_score' => $report['progress']['engagement_score'],
                 'milestones_count' => count($report['milestones']),
-                'at_risk' => $report['progress']['at_risk_of_dropout']
+                'at_risk' => $report['progress']['at_risk_of_dropout'],
             ]);
 
             return $report;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate progress report', [
                 'method' => 'generateProgressReport',
                 'student_id' => $studentId,
@@ -1042,8 +1047,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1061,28 +1067,27 @@ class ProgressTrackingService
             'method' => 'createProgressForEnrollment',
             'student_id' => $studentId,
             'enrollment_id' => $enrollmentId,
-            'formation_id' => $formationId
+            'formation_id' => $formationId,
         ]);
 
         try {
             $progress = new StudentProgress();
             $progress->setStudent($enrollment->getStudent());
             $progress->setFormation($enrollment->getFormation());
-            
+
             $enrollment->setProgress($progress);
-            
+
             $this->entityManager->persist($progress);
 
             $this->logger->info('StudentProgress record created successfully', [
                 'student_id' => $studentId,
                 'enrollment_id' => $enrollmentId,
                 'formation_id' => $formationId,
-                'progress_id' => $progress->getId()
+                'progress_id' => $progress->getId(),
             ]);
 
             return $progress;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create StudentProgress record', [
                 'method' => 'createProgressForEnrollment',
                 'student_id' => $studentId,
@@ -1092,8 +1097,9 @@ class ProgressTrackingService
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1178,10 +1184,11 @@ class ProgressTrackingService
     /**
      * Update chapter progress based on course completions.
      */
-    private function updateChapterProgress(StudentProgress $progress, ?\App\Entity\Training\Chapter $chapter): void
+    private function updateChapterProgress(StudentProgress $progress, ?Chapter $chapter): void
     {
         if (!$chapter) {
             $this->logger->debug('No chapter provided, skipping chapter progress update');
+
             return;
         }
 
@@ -1192,12 +1199,12 @@ class ProgressTrackingService
             'method' => 'updateChapterProgress',
             'student_id' => $studentId,
             'chapter_id' => $chapterId,
-            'chapter_title' => $chapter->getTitle()
+            'chapter_title' => $chapter->getTitle(),
         ]);
 
         try {
             $chapterProgress = $progress->getChapterProgress();
-            
+
             $totalCourses = $chapter->getCourses()->count();
             $completedCourses = 0;
 
@@ -1209,21 +1216,21 @@ class ProgressTrackingService
 
             $percentage = $totalCourses > 0 ? ($completedCourses / $totalCourses) * 100 : 0;
             $wasCompleted = $chapterProgress[$chapterId]['completed'] ?? false;
-            
+
             if (!isset($chapterProgress[$chapterId])) {
                 $chapterProgress[$chapterId] = [];
             }
-            
+
             $chapterProgress[$chapterId]['percentage'] = $percentage;
             $chapterProgress[$chapterId]['completed'] = $percentage >= 100;
-            
+
             if ($percentage >= 100 && !$wasCompleted) {
                 $chapterProgress[$chapterId]['completedAt'] = (new DateTime())->format('Y-m-d H:i:s');
                 $this->logger->info('Chapter completed', [
                     'student_id' => $studentId,
                     'chapter_id' => $chapterId,
                     'chapter_title' => $chapter->getTitle(),
-                    'completion_percentage' => $percentage
+                    'completion_percentage' => $percentage,
                 ]);
             }
 
@@ -1235,10 +1242,9 @@ class ProgressTrackingService
                 'total_courses' => $totalCourses,
                 'completed_courses' => $completedCourses,
                 'percentage' => $percentage,
-                'just_completed' => $percentage >= 100 && !$wasCompleted
+                'just_completed' => $percentage >= 100 && !$wasCompleted,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update chapter progress', [
                 'method' => 'updateChapterProgress',
                 'student_id' => $studentId,
@@ -1246,8 +1252,9 @@ class ProgressTrackingService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
-                'error_line' => $e->getLine()
+                'error_line' => $e->getLine(),
             ]);
+
             throw $e;
         }
     }
@@ -1255,10 +1262,11 @@ class ProgressTrackingService
     /**
      * Update module progress based on chapter completions.
      */
-    private function updateModuleProgress(StudentProgress $progress, ?\App\Entity\Training\Module $module): void
+    private function updateModuleProgress(StudentProgress $progress, ?Module $module): void
     {
         if (!$module) {
             $this->logger->debug('No module provided, skipping module progress update');
+
             return;
         }
 
@@ -1269,12 +1277,12 @@ class ProgressTrackingService
             'method' => 'updateModuleProgress',
             'student_id' => $studentId,
             'module_id' => $moduleId,
-            'module_title' => $module->getTitle()
+            'module_title' => $module->getTitle(),
         ]);
 
         try {
             $moduleProgress = $progress->getModuleProgress();
-            
+
             $totalChapters = $module->getChapters()->count();
             $completedChapters = 0;
 
@@ -1286,21 +1294,21 @@ class ProgressTrackingService
 
             $percentage = $totalChapters > 0 ? ($completedChapters / $totalChapters) * 100 : 0;
             $wasCompleted = $moduleProgress[$moduleId]['completed'] ?? false;
-            
+
             if (!isset($moduleProgress[$moduleId])) {
                 $moduleProgress[$moduleId] = [];
             }
-            
+
             $moduleProgress[$moduleId]['percentage'] = $percentage;
             $moduleProgress[$moduleId]['completed'] = $percentage >= 100;
-            
+
             if ($percentage >= 100 && !$wasCompleted) {
                 $moduleProgress[$moduleId]['completedAt'] = (new DateTime())->format('Y-m-d H:i:s');
                 $this->logger->info('Module completed', [
                     'student_id' => $studentId,
                     'module_id' => $moduleId,
                     'module_title' => $module->getTitle(),
-                    'completion_percentage' => $percentage
+                    'completion_percentage' => $percentage,
                 ]);
             }
 
@@ -1312,10 +1320,9 @@ class ProgressTrackingService
                 'total_chapters' => $totalChapters,
                 'completed_chapters' => $completedChapters,
                 'percentage' => $percentage,
-                'just_completed' => $percentage >= 100 && !$wasCompleted
+                'just_completed' => $percentage >= 100 && !$wasCompleted,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update module progress', [
                 'method' => 'updateModuleProgress',
                 'student_id' => $studentId,
@@ -1323,8 +1330,9 @@ class ProgressTrackingService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
-                'error_line' => $e->getLine()
+                'error_line' => $e->getLine(),
             ]);
+
             throw $e;
         }
     }
@@ -1338,7 +1346,7 @@ class ProgressTrackingService
 
         $this->logger->debug('Starting overall progress update', [
             'method' => 'updateOverallProgress',
-            'student_id' => $studentId
+            'student_id' => $studentId,
         ]);
 
         try {
@@ -1362,7 +1370,7 @@ class ProgressTrackingService
                 $this->logger->info('Formation completed', [
                     'student_id' => $studentId,
                     'completion_percentage' => $percentage,
-                    'completed_at' => $progress->getCompletedAt()?->format('Y-m-d H:i:s')
+                    'completed_at' => $progress->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
             }
 
@@ -1373,18 +1381,18 @@ class ProgressTrackingService
                 'previous_percentage' => $previousProgress,
                 'new_percentage' => $percentage,
                 'formation_completed' => $percentage >= 100,
-                'just_completed' => $percentage >= 100 && !$previousCompletedAt
+                'just_completed' => $percentage >= 100 && !$previousCompletedAt,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to update overall progress', [
                 'method' => 'updateOverallProgress',
                 'student_id' => $studentId,
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
-                'error_line' => $e->getLine()
+                'error_line' => $e->getLine(),
             ]);
+
             throw $e;
         }
     }
@@ -1395,24 +1403,27 @@ class ProgressTrackingService
     private function isCourseCompleted(StudentProgress $progress, Course $course): bool
     {
         $courseProgress = $progress->getCourseProgress();
+
         return $courseProgress[$course->getId()]['completed'] ?? false;
     }
 
     /**
      * Check if a chapter is completed.
      */
-    private function isChapterCompleted(StudentProgress $progress, \App\Entity\Training\Chapter $chapter): bool
+    private function isChapterCompleted(StudentProgress $progress, Chapter $chapter): bool
     {
         $chapterProgress = $progress->getChapterProgress();
+
         return $chapterProgress[$chapter->getId()]['completed'] ?? false;
     }
 
     /**
      * Check if a module is completed.
      */
-    private function isModuleCompleted(StudentProgress $progress, \App\Entity\Training\Module $module): bool
+    private function isModuleCompleted(StudentProgress $progress, Module $module): bool
     {
         $moduleProgress = $progress->getModuleProgress();
+
         return $moduleProgress[$module->getId()]['completed'] ?? false;
     }
 
@@ -1422,6 +1433,7 @@ class ProgressTrackingService
     private function isExerciseCompleted(StudentProgress $progress, Exercise $exercise): bool
     {
         $exerciseProgress = $this->getExerciseProgress($progress);
+
         return $exerciseProgress[$exercise->getId()]['submitted'] ?? false;
     }
 
@@ -1431,6 +1443,7 @@ class ProgressTrackingService
     private function isQCMCompleted(StudentProgress $progress, QCM $qcm): bool
     {
         $qcmProgress = $this->getQCMProgress($progress);
+
         return $qcmProgress[$qcm->getId()]['passed'] ?? false;
     }
 
@@ -1445,6 +1458,7 @@ class ProgressTrackingService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1459,6 +1473,7 @@ class ProgressTrackingService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1473,6 +1488,7 @@ class ProgressTrackingService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1483,7 +1499,7 @@ class ProgressTrackingService
     {
         $moduleProgress = $progress->getModuleProgress();
         $completedModules = 0;
-        
+
         foreach ($moduleProgress as $module) {
             if ($module['completed'] ?? false) {
                 $completedModules++;
@@ -1492,6 +1508,7 @@ class ProgressTrackingService
 
         // Check if we have more completed modules than recorded in milestones
         $previousCompletedModules = $currentMilestones['completed_modules'] ?? 0;
+
         return $completedModules > $previousCompletedModules;
     }
 
@@ -1505,7 +1522,7 @@ class ProgressTrackingService
             'total' => count($courseProgress),
             'completed' => 0,
             'in_progress' => 0,
-            'not_started' => 0
+            'not_started' => 0,
         ];
 
         foreach ($courseProgress as $course) {
@@ -1531,7 +1548,7 @@ class ProgressTrackingService
             'total' => count($exerciseProgress),
             'submitted' => 0,
             'attempted' => 0,
-            'not_started' => 0
+            'not_started' => 0,
         ];
 
         foreach ($exerciseProgress as $exercise) {
@@ -1558,7 +1575,7 @@ class ProgressTrackingService
             'passed' => 0,
             'failed' => 0,
             'not_attempted' => 0,
-            'average_score' => 0
+            'average_score' => 0,
         ];
 
         $totalScore = 0;
@@ -1592,14 +1609,15 @@ class ProgressTrackingService
         // This would ideally use historical data
         // For now, return based on current engagement score
         $engagementScore = $progress->getEngagementScore();
-        
+
         if ($engagementScore >= 80) {
             return 'high';
-        } elseif ($engagementScore >= 60) {
-            return 'moderate';
-        } else {
-            return 'low';
         }
+        if ($engagementScore >= 60) {
+            return 'moderate';
+        }
+
+        return 'low';
     }
 
     /**
@@ -1609,12 +1627,13 @@ class ProgressTrackingService
     {
         $startedAt = $progress->getStartedAt();
         $completionPercentage = $progress->getCompletionPercentage();
-        
+
         if (!$startedAt || $completionPercentage <= 0) {
             return 0.0;
         }
 
         $daysSinceStart = max(1, (new DateTime())->diff($startedAt)->days);
+
         return round($completionPercentage / $daysSinceStart, 2);
     }
 }

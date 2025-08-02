@@ -376,32 +376,38 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
 
         if (!empty($criteria['status'])) {
             $qb->andWhere('se.status = :status')
-               ->setParameter('status', $criteria['status']);
+                ->setParameter('status', $criteria['status'])
+            ;
         }
 
         if (!empty($criteria['formation'])) {
             $qb->andWhere('f.id = :formation')
-               ->setParameter('formation', $criteria['formation']);
+                ->setParameter('formation', $criteria['formation'])
+            ;
         }
 
         if (!empty($criteria['student'])) {
             $qb->andWhere('st.id = :student')
-               ->setParameter('student', $criteria['student']);
+                ->setParameter('student', $criteria['student'])
+            ;
         }
 
         if (!empty($criteria['enrolledAfter'])) {
             $qb->andWhere('se.enrolledAt >= :enrolledAfter')
-               ->setParameter('enrolledAfter', $criteria['enrolledAfter']);
+                ->setParameter('enrolledAfter', $criteria['enrolledAfter'])
+            ;
         }
 
         if (!empty($criteria['enrolledBefore'])) {
             $qb->andWhere('se.enrolledAt <= :enrolledBefore')
-               ->setParameter('enrolledBefore', $criteria['enrolledBefore']);
+                ->setParameter('enrolledBefore', $criteria['enrolledBefore'])
+            ;
         }
 
         if (isset($criteria['atRisk']) && $criteria['atRisk'] === true) {
             $qb->andWhere('sp.atRiskOfDropout = :at_risk')
-               ->setParameter('at_risk', true);
+                ->setParameter('at_risk', true)
+            ;
         }
 
         $qb->orderBy('se.enrolledAt', 'DESC');
@@ -420,37 +426,44 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
 
         if (!empty($filters['status'])) {
             $qb->andWhere('se.status = :status')
-               ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['formation'])) {
             $qb->andWhere('f.id = :formation')
-               ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         if (!empty($filters['session'])) {
             $qb->andWhere('s.id = :session')
-               ->setParameter('session', $filters['session']);
+                ->setParameter('session', $filters['session'])
+            ;
         }
 
         if (!empty($filters['enrollment_source'])) {
             $qb->andWhere('se.enrollmentSource = :enrollment_source')
-               ->setParameter('enrollment_source', $filters['enrollment_source']);
+                ->setParameter('enrollment_source', $filters['enrollment_source'])
+            ;
         }
 
         if (!empty($filters['enrolled_after'])) {
             $qb->andWhere('se.enrolledAt >= :enrolled_after')
-               ->setParameter('enrolled_after', $filters['enrolled_after']);
+                ->setParameter('enrolled_after', $filters['enrolled_after'])
+            ;
         }
 
         if (!empty($filters['enrolled_before'])) {
             $qb->andWhere('se.enrolledAt <= :enrolled_before')
-               ->setParameter('enrolled_before', $filters['enrolled_before']);
+                ->setParameter('enrolled_before', $filters['enrolled_before'])
+            ;
         }
 
         if (!empty($filters['student_search'])) {
             $qb->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search')
-               ->setParameter('search', '%' . $filters['student_search'] . '%');
+                ->setParameter('search', '%' . $filters['student_search'] . '%')
+            ;
         }
 
         $qb->orderBy('se.enrolledAt', 'DESC');
@@ -464,41 +477,49 @@ class StudentEnrollmentRepository extends ServiceEntityRepository
     public function countEnrollmentsWithFilters(array $filters = []): int
     {
         $qb = $this->createEnrollmentQueryBuilder()
-            ->select('COUNT(se.id)');
+            ->select('COUNT(se.id)')
+        ;
 
         if (!empty($filters['status'])) {
             $qb->andWhere('se.status = :status')
-               ->setParameter('status', $filters['status']);
+                ->setParameter('status', $filters['status'])
+            ;
         }
 
         if (!empty($filters['formation'])) {
             $qb->andWhere('f.id = :formation')
-               ->setParameter('formation', $filters['formation']);
+                ->setParameter('formation', $filters['formation'])
+            ;
         }
 
         if (!empty($filters['session'])) {
             $qb->andWhere('s.id = :session')
-               ->setParameter('session', $filters['session']);
+                ->setParameter('session', $filters['session'])
+            ;
         }
 
         if (!empty($filters['enrollment_source'])) {
             $qb->andWhere('se.enrollmentSource = :enrollment_source')
-               ->setParameter('enrollment_source', $filters['enrollment_source']);
+                ->setParameter('enrollment_source', $filters['enrollment_source'])
+            ;
         }
 
         if (!empty($filters['enrolled_after'])) {
             $qb->andWhere('se.enrolledAt >= :enrolled_after')
-               ->setParameter('enrolled_after', $filters['enrolled_after']);
+                ->setParameter('enrolled_after', $filters['enrolled_after'])
+            ;
         }
 
         if (!empty($filters['enrolled_before'])) {
             $qb->andWhere('se.enrolledAt <= :enrolled_before')
-               ->setParameter('enrolled_before', $filters['enrolled_before']);
+                ->setParameter('enrolled_before', $filters['enrolled_before'])
+            ;
         }
 
         if (!empty($filters['student_search'])) {
             $qb->andWhere('st.firstName LIKE :search OR st.lastName LIKE :search OR st.email LIKE :search')
-               ->setParameter('search', '%' . $filters['student_search'] . '%');
+                ->setParameter('search', '%' . $filters['student_search'] . '%')
+            ;
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();

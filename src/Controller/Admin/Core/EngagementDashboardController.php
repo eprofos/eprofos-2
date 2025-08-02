@@ -18,7 +18,6 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -100,8 +99,8 @@ class EngagementDashboardController extends AbstractController
             $alerts = $this->generateAlerts($engagementMetrics, $attendanceStats, $retentionStats);
             $this->logger->info('EngagementDashboard: Alerts generated', [
                 'alerts_count' => count($alerts),
-                'critical_alerts' => count(array_filter($alerts, fn($alert) => $alert['level'] === 'critical')),
-                'warning_alerts' => count(array_filter($alerts, fn($alert) => $alert['level'] === 'warning')),
+                'critical_alerts' => count(array_filter($alerts, static fn ($alert) => $alert['level'] === 'critical')),
+                'warning_alerts' => count(array_filter($alerts, static fn ($alert) => $alert['level'] === 'warning')),
             ]);
 
             $executionTime = microtime(true) - $startTime;
@@ -119,7 +118,6 @@ class EngagementDashboardController extends AbstractController
                 'poor_attendance_count' => count($poorAttendance),
                 'alerts' => $alerts,
             ]);
-
         } catch (Exception $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: Dashboard generation failed', [
@@ -133,7 +131,7 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la génération du tableau de bord d\'engagement. Veuillez réessayer.');
-            
+
             // Return a safe fallback response
             return $this->render('admin/engagement/dashboard.html.twig', [
                 'engagement_metrics' => [],
@@ -188,7 +186,6 @@ class EngagementDashboardController extends AbstractController
                 'critical_risk_students' => $criticalRisk,
                 'total_count' => count($atRiskStudents),
             ]);
-
         } catch (Exception $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: At-risk students analysis failed', [
@@ -201,7 +198,7 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'analyse des étudiants à risque. Veuillez réessayer.');
-            
+
             return $this->render('admin/engagement/at_risk.html.twig', [
                 'at_risk_students' => [],
                 'critical_risk_students' => [],
@@ -261,7 +258,6 @@ class EngagementDashboardController extends AbstractController
                 'frequent_absentees' => $frequentAbsentees,
                 'recent_absentees' => $recentAbsentees,
             ]);
-
         } catch (Exception $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: Attendance monitoring failed', [
@@ -274,7 +270,7 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'analyse de l\'assiduité. Veuillez réessayer.');
-            
+
             return $this->render('admin/engagement/attendance.html.twig', [
                 'attendance_stats' => [],
                 'poor_attendance_students' => [],
@@ -310,7 +306,7 @@ class EngagementDashboardController extends AbstractController
             $dropoutPatterns = $this->dropoutService->analyzeDropoutPatterns();
             $this->logger->info('EngagementDashboard: Dropout patterns analyzed', [
                 'patterns_identified' => count($dropoutPatterns),
-                'critical_patterns' => array_filter($dropoutPatterns, fn($pattern) => ($pattern['severity'] ?? '') === 'high'),
+                'critical_patterns' => array_filter($dropoutPatterns, static fn ($pattern) => ($pattern['severity'] ?? '') === 'high'),
             ]);
 
             $this->logger->debug('EngagementDashboard: Calculating compliance score');
@@ -341,7 +337,6 @@ class EngagementDashboardController extends AbstractController
                 'dropout_patterns' => $dropoutPatterns,
                 'compliance_score' => $complianceScore,
             ]);
-
         } catch (Exception $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: Qualiopi report generation failed', [
@@ -355,7 +350,7 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur critique est survenue lors de la génération du rapport Qualiopi. Contactez l\'administrateur système.');
-            
+
             return $this->render('admin/engagement/qualiopi_report.html.twig', [
                 'report' => [],
                 'dropout_patterns' => [],
@@ -386,10 +381,10 @@ class EngagementDashboardController extends AbstractController
             $this->logger->debug('EngagementDashboard: Fetching export data from DropoutPreventionService', [
                 'format' => $format,
             ]);
-            
+
             $data = $this->dropoutService->exportRetentionData($format);
             $filename = 'rapport_engagement_' . date('Y-m-d_H-i-s');
-            
+
             $this->logger->info('EngagementDashboard: Export data retrieved successfully', [
                 'data_size' => is_array($data) ? count($data) : 'unknown',
                 'students_count' => isset($data['at_risk_students']) ? count($data['at_risk_students']) : 0,
@@ -399,7 +394,7 @@ class EngagementDashboardController extends AbstractController
             switch ($format) {
                 case 'pdf':
                     $this->logger->debug('EngagementDashboard: Generating PDF export using KnpSnappyBundle');
-                    
+
                     try {
                         // Generate PDF using KnpSnappyBundle
                         $html = $this->renderView('admin/engagement/export_pdf.html.twig', [
@@ -436,18 +431,18 @@ class EngagementDashboardController extends AbstractController
                             'application/pdf',
                             'attachment',
                         );
-
                     } catch (Exception $pdfException) {
                         $this->logger->error('EngagementDashboard: PDF generation failed', [
                             'pdf_error' => $pdfException->getMessage(),
                             'pdf_error_code' => $pdfException->getCode(),
                         ]);
+
                         throw new RuntimeException('PDF generation failed: ' . $pdfException->getMessage(), 0, $pdfException);
                     }
 
                 case 'excel':
                     $this->logger->debug('EngagementDashboard: Generating Excel export using PHPSpreadsheet');
-                    
+
                     try {
                         // Generate Excel using PHPSpreadsheet
                         $spreadsheet = new Spreadsheet();
@@ -525,18 +520,18 @@ class EngagementDashboardController extends AbstractController
                         ]);
 
                         return $response;
-
                     } catch (Exception $excelException) {
                         $this->logger->error('EngagementDashboard: Excel generation failed', [
                             'excel_error' => $excelException->getMessage(),
                             'excel_error_code' => $excelException->getCode(),
                         ]);
+
                         throw new RuntimeException('Excel generation failed: ' . $excelException->getMessage(), 0, $excelException);
                     }
 
                 case 'csv':
                     $this->logger->debug('EngagementDashboard: Generating CSV export');
-                    
+
                     try {
                         // Generate CSV response
                         $response = new Response();
@@ -585,12 +580,12 @@ class EngagementDashboardController extends AbstractController
                         ]);
 
                         return $response;
-
                     } catch (Exception $csvException) {
                         $this->logger->error('EngagementDashboard: CSV generation failed', [
                             'csv_error' => $csvException->getMessage(),
                             'csv_error_code' => $csvException->getCode(),
                         ]);
+
                         throw new RuntimeException('CSV generation failed: ' . $csvException->getMessage(), 0, $csvException);
                     }
             }
@@ -601,7 +596,6 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             return new JsonResponse(['error' => 'Format not supported'], 400);
-
         } catch (Throwable $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: Export operation failed', [
@@ -616,7 +610,7 @@ class EngagementDashboardController extends AbstractController
             ]);
 
             $this->addFlash('error', "Une erreur est survenue lors de l'export {$format}. Veuillez réessayer.");
-            
+
             return new JsonResponse([
                 'error' => 'Export failed',
                 'format' => $format,
@@ -624,9 +618,6 @@ class EngagementDashboardController extends AbstractController
             ], 500);
         }
     }
-
-
-
 
     /**
      * Trigger risk analysis for all students.
@@ -644,7 +635,7 @@ class EngagementDashboardController extends AbstractController
         try {
             $this->logger->debug('EngagementDashboard: Executing comprehensive risk detection');
             $atRiskStudents = $this->dropoutService->detectAtRiskStudents();
-            
+
             $executionTime = microtime(true) - $startTime;
             $this->logger->info('EngagementDashboard: Risk analysis completed successfully', [
                 'at_risk_count' => count($atRiskStudents),
@@ -669,7 +660,6 @@ class EngagementDashboardController extends AbstractController
                 'execution_time_ms' => round($executionTime * 1000, 2),
                 'status' => 'success',
             ]);
-
         } catch (Exception $e) {
             $executionTime = microtime(true) - $startTime;
             $this->logger->error('EngagementDashboard: API risk analysis failed', [
@@ -782,13 +772,12 @@ class EngagementDashboardController extends AbstractController
 
             $this->logger->debug('EngagementDashboard: Alert generation completed', [
                 'total_alerts' => count($alerts),
-                'critical_alerts' => count(array_filter($alerts, fn($alert) => $alert['level'] === 'critical')),
-                'warning_alerts' => count(array_filter($alerts, fn($alert) => $alert['level'] === 'warning')),
-                'info_alerts' => count(array_filter($alerts, fn($alert) => $alert['level'] === 'info')),
+                'critical_alerts' => count(array_filter($alerts, static fn ($alert) => $alert['level'] === 'critical')),
+                'warning_alerts' => count(array_filter($alerts, static fn ($alert) => $alert['level'] === 'warning')),
+                'info_alerts' => count(array_filter($alerts, static fn ($alert) => $alert['level'] === 'info')),
             ]);
 
             return $alerts;
-
         } catch (Exception $e) {
             $this->logger->error('EngagementDashboard: Alert generation failed', [
                 'error_message' => $e->getMessage(),
@@ -926,7 +915,7 @@ class EngagementDashboardController extends AbstractController
                     'current_percentage' => $percentage,
                     'minimum_required' => 65,
                     'improvement_needed' => 65 - $percentage,
-                    'priority_improvements' => array_filter($criteria, fn($criterion) => $criterion['score'] < 20),
+                    'priority_improvements' => array_filter($criteria, static fn ($criterion) => $criterion['score'] < 20),
                 ]);
             }
 
@@ -937,7 +926,6 @@ class EngagementDashboardController extends AbstractController
                 'level' => $level,
                 'criteria' => $criteria,
             ];
-
         } catch (Exception $e) {
             $this->logger->error('EngagementDashboard: Compliance score calculation failed', [
                 'error_message' => $e->getMessage(),

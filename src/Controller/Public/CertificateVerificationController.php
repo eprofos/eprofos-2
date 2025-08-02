@@ -20,9 +20,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class CertificateVerificationController extends AbstractController
 {
     public function __construct(
-        private readonly CertificateService $certificateService
-    ) {
-    }
+        private readonly CertificateService $certificateService,
+    ) {}
 
     /**
      * Certificate verification page.
@@ -37,7 +36,7 @@ class CertificateVerificationController extends AbstractController
      * Verify certificate by verification code.
      */
     #[Route('/verify/{code}', name: 'certificate_verify', methods: ['GET'])]
-    public function verify(?string $code = null, Request $request): Response
+    public function verify(?string $code, Request $request): Response
     {
         // Get verification code from URL parameter or form submission
         $verificationCode = $code ?? $request->query->get('code');

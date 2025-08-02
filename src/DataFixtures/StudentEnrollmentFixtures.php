@@ -8,6 +8,8 @@ use App\Entity\Core\StudentEnrollment;
 use App\Entity\Core\StudentProgress;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -41,7 +43,7 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
         foreach ($students as $student) {
             $matchingRegistrations = array_filter(
                 $sessionRegistrations,
-                static fn (SessionRegistration $registration) => $registration->getEmail() === $student->getEmail()
+                static fn (SessionRegistration $registration) => $registration->getEmail() === $student->getEmail(),
             );
 
             foreach ($matchingRegistrations as $registration) {
@@ -61,8 +63,9 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
                         return false;
                     }
                 }
+
                 return true;
-            }
+            },
         );
 
         // Ensure every student has at least one enrollment
@@ -80,18 +83,19 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
                             return false;
                         }
                     }
+
                     return true;
-                }
+                },
             );
 
             if (!empty($availableRegistrations)) {
                 $randomRegistration = $faker->randomElement($availableRegistrations);
-                
+
                 // Update registration email to match student for realism
                 $randomRegistration->setEmail($student->getEmail());
                 $randomRegistration->setFirstName($student->getFirstName());
                 $randomRegistration->setLastName($student->getLastName());
-                
+
                 $enrollment = $this->createEnrollment($student, $randomRegistration, $studentProgresses, $faker);
                 $manager->persist($enrollment);
                 $createdEnrollments[] = $enrollment;
@@ -109,11 +113,20 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
         }
     }
 
+    public function getDependencies(): array
+    {
+        return [
+            StudentFixtures::class,
+            SessionFixtures::class, // This creates SessionRegistration entities
+            StudentProgressFixtures::class,
+        ];
+    }
+
     private function createEnrollment(
         Student $student,
         SessionRegistration $registration,
         array $studentProgresses,
-        $faker
+        $faker,
     ): StudentEnrollment {
         $enrollment = new StudentEnrollment();
         $enrollment->setStudent($student);
@@ -127,13 +140,13 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
         if ($registration->getConfirmedAt()) {
             $confirmedAt = $registration->getConfirmedAt();
             $daysOffset = $faker->numberBetween(0, 3); // Enrolled within 3 days of confirmation
-            
-            if ($confirmedAt instanceof \DateTimeImmutable) {
+
+            if ($confirmedAt instanceof DateTimeImmutable) {
                 $enrollment->setEnrolledAt($confirmedAt->modify("+{$daysOffset} days"));
-            } elseif ($confirmedAt instanceof \DateTime) {
+            } elseif ($confirmedAt instanceof DateTime) {
                 $mutableDate = clone $confirmedAt;
                 $mutableDate->modify("+{$daysOffset} days");
-                $enrollment->setEnrolledAt(\DateTimeImmutable::createFromMutable($mutableDate));
+                $enrollment->setEnrolledAt(DateTimeImmutable::createFromMutable($mutableDate));
             }
         }
 
@@ -143,13 +156,13 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
             if ($session && $session->getEndDate()) {
                 $endDate = $session->getEndDate();
                 $daysOffset = $faker->numberBetween(0, 7); // Completed within a week of session end
-                
-                if ($endDate instanceof \DateTimeImmutable) {
+
+                if ($endDate instanceof DateTimeImmutable) {
                     $enrollment->setCompletedAt($endDate->modify("+{$daysOffset} days"));
-                } elseif ($endDate instanceof \DateTime) {
+                } elseif ($endDate instanceof DateTime) {
                     $mutableDate = clone $endDate;
                     $mutableDate->modify("+{$daysOffset} days");
-                    $enrollment->setCompletedAt(\DateTimeImmutable::createFromMutable($mutableDate));
+                    $enrollment->setCompletedAt(DateTimeImmutable::createFromMutable($mutableDate));
                 }
             }
         }
@@ -239,14 +252,5 @@ class StudentEnrollmentFixtures extends Fixture implements DependentFixtureInter
         }
 
         return null;
-    }
-
-    public function getDependencies(): array
-    {
-        return [
-            StudentFixtures::class,
-            SessionFixtures::class, // This creates SessionRegistration entities
-            StudentProgressFixtures::class,
-        ];
     }
 }

@@ -11,6 +11,7 @@ use App\Repository\Document\DocumentTypeRepository;
 use App\Repository\Document\DocumentUIComponentRepository;
 use App\Repository\Document\DocumentUITemplateRepository;
 use App\Service\Document\DocumentUITemplateService;
+use DateTimeImmutable;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,16 +46,16 @@ class DocumentUITemplateController extends AbstractController
         $this->logger->info('Admin document UI templates list accessed', [
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_index',
         ]);
 
         try {
             $this->logger->debug('Starting to fetch templates with statistics');
-            
+
             // Get templates with statistics
             $templatesWithStats = $this->uiTemplateService->getTemplatesWithStats();
-            
+
             $this->logger->info('Successfully fetched document UI templates', [
                 'templates_count' => count($templatesWithStats),
                 'user' => $this->getUser()?->getUserIdentifier(),
@@ -82,11 +83,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des modèles UI.');
-            
+
             return $this->redirectToRoute('admin_dashboard');
         }
     }
@@ -100,23 +101,23 @@ class DocumentUITemplateController extends AbstractController
         $this->logger->info('Admin all document UI components list accessed', [
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_all_components',
         ]);
 
         try {
             $this->logger->debug('Starting to fetch all UI components with templates');
-            
+
             // Get all components with their templates
             $components = $componentRepository->findAllWithTemplates();
-            
+
             $this->logger->info('Successfully fetched all UI components', [
                 'total_components' => count($components),
                 'user' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->logger->debug('Processing components grouping by template and zone');
-            
+
             // Group components by template and zone
             $componentsByTemplate = [];
             foreach ($components as $component) {
@@ -159,11 +160,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des composants UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -180,7 +181,7 @@ class DocumentUITemplateController extends AbstractController
             'template_slug' => $uiTemplate->getSlug(),
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_show',
         ]);
 
@@ -192,7 +193,7 @@ class DocumentUITemplateController extends AbstractController
 
             // Get template components
             $components = $uiTemplate->getComponents();
-            
+
             $this->logger->debug('Successfully fetched template components', [
                 'template_id' => $uiTemplate->getId(),
                 'components_count' => $components->count(),
@@ -247,11 +248,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -266,7 +267,7 @@ class DocumentUITemplateController extends AbstractController
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_new',
         ]);
 
@@ -278,11 +279,11 @@ class DocumentUITemplateController extends AbstractController
             // Set default values
             $uiTemplate->setIsActive(true);
             $uiTemplate->setUsageCount(0);
-            
+
             $this->logger->debug('Getting next sort order for new template');
             $nextSortOrder = $this->uiTemplateService->getNextSortOrder();
             $uiTemplate->setSortOrder($nextSortOrder);
-            
+
             $this->logger->debug('Set default values for new template', [
                 'is_active' => true,
                 'usage_count' => 0,
@@ -293,7 +294,7 @@ class DocumentUITemplateController extends AbstractController
             $typeId = $request->query->get('type');
             if ($typeId) {
                 $this->logger->debug('Document type ID provided in query', ['type_id' => $typeId]);
-                
+
                 $documentType = $this->uiTemplateService->getDocumentTypeById((int) $typeId);
                 if ($documentType) {
                     $uiTemplate->setDocumentType($documentType);
@@ -337,13 +338,13 @@ class DocumentUITemplateController extends AbstractController
 
                         return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
                     }
-                    
+
                     $this->logger->error('Failed to create UI template', [
                         'error' => $result['error'],
                         'template_name' => $uiTemplate->getName(),
                         'user' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 } else {
                     $this->logger->warning('UI template creation form validation failed', [
@@ -377,11 +378,11 @@ class DocumentUITemplateController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
                 'request_data' => $request->request->all(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -398,7 +399,7 @@ class DocumentUITemplateController extends AbstractController
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_edit',
         ]);
 
@@ -459,13 +460,13 @@ class DocumentUITemplateController extends AbstractController
 
                         return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
                     }
-                    
+
                     $this->logger->error('Failed to update UI template', [
                         'template_id' => $uiTemplate->getId(),
                         'error' => $result['error'],
                         'user' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 } else {
                     $this->logger->warning('UI template edit form validation failed', [
@@ -504,11 +505,11 @@ class DocumentUITemplateController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
                 'request_data' => $request->request->all(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $uiTemplate->getId()]);
         }
     }
@@ -527,7 +528,7 @@ class DocumentUITemplateController extends AbstractController
             'template_name' => $templateName,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_delete',
         ]);
 
@@ -591,11 +592,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la suppression du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -616,7 +617,7 @@ class DocumentUITemplateController extends AbstractController
             'current_status' => $currentStatus,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_toggle_status',
         ]);
 
@@ -636,7 +637,7 @@ class DocumentUITemplateController extends AbstractController
 
                 if ($result['success']) {
                     $newStatus = $uiTemplate->isActive();
-                    
+
                     $this->logger->info('UI template status toggled successfully', [
                         'template_id' => $templateId,
                         'template_name' => $templateName,
@@ -680,11 +681,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du changement de statut.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -703,7 +704,7 @@ class DocumentUITemplateController extends AbstractController
             'template_name' => $templateName,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_duplicate',
         ]);
 
@@ -730,7 +731,7 @@ class DocumentUITemplateController extends AbstractController
 
                 if ($result['success']) {
                     $duplicatedTemplate = $result['template'];
-                    
+
                     $this->logger->info('UI template duplicated successfully', [
                         'original_template_id' => $templateId,
                         'original_template_name' => $templateName,
@@ -743,14 +744,14 @@ class DocumentUITemplateController extends AbstractController
 
                     return $this->redirectToRoute('admin_document_ui_template_edit', ['id' => $duplicatedTemplate->getId()]);
                 }
-                
+
                 $this->logger->error('Failed to duplicate UI template', [
                     'template_id' => $templateId,
                     'template_name' => $templateName,
                     'error' => $result['error'],
                     'user' => $this->getUser()?->getUserIdentifier(),
                 ]);
-                
+
                 $this->addFlash('error', $result['error']);
             } else {
                 $this->logger->warning('CSRF token validation failed for template duplication', [
@@ -774,11 +775,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la duplication du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -798,7 +799,7 @@ class DocumentUITemplateController extends AbstractController
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_preview',
         ]);
 
@@ -888,11 +889,11 @@ class DocumentUITemplateController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
                 'preview_data' => $previewData ?? [],
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la génération de l\'aperçu.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $templateId]);
         }
     }
@@ -911,7 +912,7 @@ class DocumentUITemplateController extends AbstractController
             'template_name' => $templateName,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_export',
         ]);
 
@@ -932,7 +933,7 @@ class DocumentUITemplateController extends AbstractController
             ]);
 
             $filename = 'ui-template-' . $uiTemplate->getSlug() . '.json';
-            
+
             $this->logger->debug('Preparing export response', [
                 'template_id' => $templateId,
                 'filename' => $filename,
@@ -953,11 +954,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export du modèle UI.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $templateId]);
         }
     }
@@ -972,7 +973,7 @@ class DocumentUITemplateController extends AbstractController
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_import',
         ]);
 
@@ -1026,7 +1027,7 @@ class DocumentUITemplateController extends AbstractController
                                 ]);
 
                                 $documentType = $this->uiTemplateService->getDocumentTypeById((int) $documentTypeId);
-                                
+
                                 if ($documentType) {
                                     $this->logger->debug('Document type found for import', [
                                         'document_type_id' => $documentTypeId,
@@ -1049,7 +1050,7 @@ class DocumentUITemplateController extends AbstractController
 
                             if ($result['success']) {
                                 $importedTemplate = $result['template'];
-                                
+
                                 $this->logger->info('UI template imported successfully', [
                                     'imported_template_id' => $importedTemplate->getId(),
                                     'imported_template_name' => $importedTemplate->getName(),
@@ -1063,13 +1064,13 @@ class DocumentUITemplateController extends AbstractController
                                     'id' => $importedTemplate->getId(),
                                 ]);
                             }
-                            
+
                             $this->logger->error('Failed to import UI template', [
                                 'error' => $result['error'],
                                 'file_name' => $uploadedFile->getClientOriginalName(),
                                 'user' => $this->getUser()?->getUserIdentifier(),
                             ]);
-                            
+
                             $this->addFlash('error', $result['error']);
                         }
                     } catch (Exception $e) {
@@ -1114,11 +1115,11 @@ class DocumentUITemplateController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
                 'request_data' => $request->request->all(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'importation.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -1137,7 +1138,7 @@ class DocumentUITemplateController extends AbstractController
             'template_name' => $templateName,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_components',
         ]);
 
@@ -1195,11 +1196,11 @@ class DocumentUITemplateController extends AbstractController
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des composants.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_show', ['id' => $templateId]);
         }
     }
@@ -1218,7 +1219,7 @@ class DocumentUITemplateController extends AbstractController
             'template_name' => $templateName,
             'user' => $this->getUser()?->getUserIdentifier(),
             'user_roles' => $this->getUser()?->getRoles(),
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'route' => 'admin_document_ui_template_sort_components',
         ]);
 
@@ -1280,7 +1281,7 @@ class DocumentUITemplateController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'user' => $this->getUser()?->getUserIdentifier(),
                 'request_data' => $request->request->all(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             return new JsonResponse([

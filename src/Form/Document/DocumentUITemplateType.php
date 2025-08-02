@@ -328,7 +328,7 @@ class DocumentUITemplateType extends AbstractType
 
         // Add JSON data transformers for the JSON fields
         $jsonTransformer = new JsonToStringTransformer();
-        
+
         $builder->get('layoutConfiguration')->addModelTransformer($jsonTransformer);
         $builder->get('pageSettings')->addModelTransformer($jsonTransformer);
         $builder->get('headerFooterConfig')->addModelTransformer($jsonTransformer);

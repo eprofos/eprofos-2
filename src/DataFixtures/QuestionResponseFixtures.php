@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Entity\Assessment\Question;
-use App\Entity\Assessment\QuestionResponse;
 use App\Entity\Assessment\QuestionnaireResponse;
+use App\Entity\Assessment\QuestionResponse;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -42,14 +42,15 @@ class QuestionResponseFixtures extends Fixture implements DependentFixtureInterf
 
         foreach ($questionnaireResponses as $questionnaireResponse) {
             $questionnaire = $questionnaireResponse->getQuestionnaire();
-            
+
             if (!$questionnaire) {
                 continue;
             }
 
             // Get questions for this questionnaire
             $questions = $manager->getRepository(Question::class)
-                ->findBy(['questionnaire' => $questionnaire]);
+                ->findBy(['questionnaire' => $questionnaire])
+            ;
 
             foreach ($questions as $question) {
                 $questionResponse = new QuestionResponse();
@@ -150,12 +151,12 @@ class QuestionResponseFixtures extends Fixture implements DependentFixtureInterf
     private function generateChoiceResponse(QuestionResponse $questionResponse, Question $question): void
     {
         $options = $question->getOptions();
-        
+
         if ($options->isEmpty()) {
             return;
         }
 
-        $optionIds = $options->map(fn($option) => $option->getId())->toArray();
+        $optionIds = $options->map(static fn ($option) => $option->getId())->toArray();
 
         if ($question->getType() === Question::TYPE_SINGLE_CHOICE) {
             // Single choice: select one option

@@ -9,11 +9,13 @@ use App\Entity\Training\Formation;
 use App\Repository\CRM\ContactRequestRepository;
 use App\Repository\Training\FormationRepository;
 use App\Service\CRM\ProspectManagementService;
+use DateTime;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
@@ -47,13 +49,13 @@ class ContactController extends AbstractController
             $this->logger->info('Contact index page accessed', [
                 'route' => 'public_contact_index',
                 'method' => 'GET',
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // Get formations for quick registration dropdown
             $this->logger->debug('Fetching active formations for contact page');
             $formations = $this->formationRepository->findActiveFormations();
-            
+
             $this->logger->info('Active formations retrieved successfully', [
                 'formations_count' => count($formations),
             ]);
@@ -70,7 +72,7 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de la page de contact.');
-            
+
             // Return a minimal contact page without formations
             return $this->render('public/contact/index.html.twig', [
                 'formations' => [],
@@ -107,7 +109,7 @@ class ContactController extends AbstractController
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
                 'referer' => $request->headers->get('referer'),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $contactRequest = new ContactRequest();
@@ -134,6 +136,7 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du traitement de votre demande de conseil. Veuillez réessayer.');
+
             return $this->redirectToRoute('public_contact_index');
         }
     }
@@ -151,7 +154,7 @@ class ContactController extends AbstractController
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
                 'referer' => $request->headers->get('referer'),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $contactRequest = new ContactRequest();
@@ -178,6 +181,7 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du traitement de votre demande d\'information. Veuillez réessayer.');
+
             return $this->redirectToRoute('public_contact_index');
         }
     }
@@ -196,7 +200,7 @@ class ContactController extends AbstractController
                 'user_agent' => $request->headers->get('user-agent'),
                 'referer' => $request->headers->get('referer'),
                 'formation_id' => $request->request->get('formation_id'),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $contactRequest = new ContactRequest();
@@ -223,6 +227,7 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du traitement de votre inscription rapide. Veuillez réessayer.');
+
             return $this->redirectToRoute('public_contact_index');
         }
     }
@@ -238,7 +243,7 @@ class ContactController extends AbstractController
                 'route' => 'public_contact_formation_quote',
                 'method' => 'GET',
                 'formation_slug' => $slug,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->logger->debug('Searching for formation by slug', [
@@ -274,11 +279,12 @@ class ContactController extends AbstractController
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e; // Re-throw 404 exceptions
             }
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement du formulaire de devis.');
+
             return $this->redirectToRoute('public_contact_index');
         }
     }
@@ -296,7 +302,7 @@ class ContactController extends AbstractController
                 'formation_slug' => $slug,
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             $this->logger->debug('Searching for formation by slug for quote submission', [
@@ -345,11 +351,12 @@ class ContactController extends AbstractController
                 ],
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e; // Re-throw 404 exceptions
             }
 
             $this->addFlash('error', 'Une erreur est survenue lors du traitement de votre demande de devis. Veuillez réessayer.');
+
             return $this->redirectToRoute('public_contact_index');
         }
     }
@@ -459,7 +466,7 @@ class ContactController extends AbstractController
                 'formation_id' => $formation?->getId(),
                 'formation_title' => $formation?->getTitle(),
                 'contact_request_id' => spl_object_id($contactRequest),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // Extract form data
@@ -483,7 +490,7 @@ class ContactController extends AbstractController
             // Handle formation selection for quick registration
             if ($formType === 'quick_registration' && !$formation) {
                 $formationId = $request->request->getInt('formation_id');
-                
+
                 $this->logger->debug('Handling formation selection for quick registration', [
                     'formation_id' => $formationId,
                 ]);
@@ -491,7 +498,7 @@ class ContactController extends AbstractController
                 if ($formationId) {
                     try {
                         $formation = $this->formationRepository->find($formationId);
-                        
+
                         if ($formation) {
                             $contactRequest->setFormation($formation);
                             $this->logger->info('Formation assigned to quick registration', [
@@ -537,7 +544,7 @@ class ContactController extends AbstractController
             if (count($errors) > 0) {
                 $this->logger->warning('Contact request validation failed', [
                     'error_count' => count($errors),
-                    'errors' => array_map(fn($error) => [
+                    'errors' => array_map(static fn ($error) => [
                         'property' => $error->getPropertyPath(),
                         'message' => $error->getMessage(),
                         'invalid_value' => $error->getInvalidValue(),
@@ -564,7 +571,7 @@ class ContactController extends AbstractController
             // Save to database
             $this->logger->debug('Saving contact request to database');
             $this->contactRequestRepository->save($contactRequest, true);
-            
+
             $this->logger->info('Contact request saved successfully', [
                 'contact_request_id' => $contactRequest->getId(),
                 'type' => $contactRequest->getType(),
@@ -618,7 +625,6 @@ class ContactController extends AbstractController
 
             // Success message
             $this->addFlash('success', 'Votre demande a été envoyée avec succès. Nous vous recontacterons dans les plus brefs délais.');
-
         } catch (Exception $e) {
             $this->logger->error('Failed to process contact request', [
                 'error' => $e->getMessage(),
@@ -632,11 +638,12 @@ class ContactController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer.');
-            
+
             // Redirect to appropriate page even on error
             if ($formation) {
                 return $this->redirectToRoute('public_formation_show', ['slug' => $formation->getSlug()]);
             }
+
             return $this->redirectToRoute('public_contact_index');
         }
 
@@ -645,10 +652,12 @@ class ContactController extends AbstractController
             $this->logger->debug('Redirecting to formation page', [
                 'formation_slug' => $formation->getSlug(),
             ]);
+
             return $this->redirectToRoute('public_formation_show', ['slug' => $formation->getSlug()]);
         }
 
         $this->logger->debug('Redirecting to contact index page');
+
         return $this->redirectToRoute('public_contact_index');
     }
 
@@ -667,7 +676,7 @@ class ContactController extends AbstractController
             // Email to EPROFOS team
             $this->logger->debug('Preparing admin notification email');
             $adminEmailContent = $this->generateEmailContent($contactRequest);
-            
+
             $adminEmail = (new Email())
                 ->from('noreply@eprofos.com')
                 ->replyTo($contactRequest->getEmail())
@@ -684,7 +693,7 @@ class ContactController extends AbstractController
             ]);
 
             $this->mailer->send($adminEmail);
-            
+
             $this->logger->info('Admin notification email sent successfully', [
                 'contact_request_id' => $contactRequest->getId(),
             ]);
@@ -692,7 +701,7 @@ class ContactController extends AbstractController
             // Confirmation email to user
             $this->logger->debug('Preparing user confirmation email');
             $confirmationEmailContent = $this->generateConfirmationEmailContent($contactRequest);
-            
+
             $confirmationEmail = (new Email())
                 ->from('contact@eprofos.com')
                 ->to($contactRequest->getEmail())
@@ -707,12 +716,11 @@ class ContactController extends AbstractController
             ]);
 
             $this->mailer->send($confirmationEmail);
-            
+
             $this->logger->info('User confirmation email sent successfully', [
                 'contact_request_id' => $contactRequest->getId(),
                 'user_email' => $contactRequest->getEmail(),
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send contact email', [
                 'error' => $e->getMessage(),
@@ -755,7 +763,7 @@ class ContactController extends AbstractController
 
             if ($contactRequest->getFormation()) {
                 $content .= 'Formation: ' . $contactRequest->getFormation()->getTitle() . "\n";
-                
+
                 $this->logger->debug('Formation included in email content', [
                     'formation_id' => $contactRequest->getFormation()->getId(),
                     'formation_title' => $contactRequest->getFormation()->getTitle(),
@@ -778,7 +786,7 @@ class ContactController extends AbstractController
                 'line' => $e->getLine(),
                 'contact_request_id' => $contactRequest->getId(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -803,7 +811,7 @@ class ContactController extends AbstractController
 
             if ($contactRequest->getFormation()) {
                 $content .= '- Formation: ' . $contactRequest->getFormation()->getTitle() . "\n";
-                
+
                 $this->logger->debug('Formation included in confirmation email', [
                     'formation_id' => $contactRequest->getFormation()->getId(),
                     'formation_title' => $contactRequest->getFormation()->getTitle(),
@@ -830,7 +838,7 @@ class ContactController extends AbstractController
                 'line' => $e->getLine(),
                 'contact_request_id' => $contactRequest->getId(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -871,7 +879,6 @@ class ContactController extends AbstractController
                 'contact_request_id' => $contactRequest->getId(),
                 'recipients' => ['handicap@eprofos.com', 'contact@eprofos.com'],
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Failed to send accessibility notification email', [
                 'error' => $e->getMessage(),
@@ -914,7 +921,7 @@ class ContactController extends AbstractController
 
             if ($contactRequest->getFormation()) {
                 $content .= '- Formation concernée: ' . $contactRequest->getFormation()->getTitle() . "\n";
-                
+
                 $this->logger->debug('Formation included in accessibility notification', [
                     'formation_id' => $contactRequest->getFormation()->getId(),
                     'formation_title' => $contactRequest->getFormation()->getTitle(),
@@ -925,7 +932,7 @@ class ContactController extends AbstractController
             $content .= "Description des besoins d'adaptation:\n";
             $content .= $contactRequest->getMessage() . "\n\n";
             $content .= "Cette demande nécessite un traitement prioritaire par le référent handicap.\n\n";
-            
+
             // Add admin URL if available
             if (isset($_SERVER['HTTP_HOST'])) {
                 $content .= 'Accéder à la demande: ' . $_SERVER['HTTP_HOST'] . '/admin/contact-requests/' . $contactRequest->getId();
@@ -944,7 +951,7 @@ class ContactController extends AbstractController
                 'line' => $e->getLine(),
                 'contact_request_id' => $contactRequest->getId(),
             ]);
-            
+
             throw $e;
         }
     }

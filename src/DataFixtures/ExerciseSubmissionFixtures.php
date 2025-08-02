@@ -7,12 +7,12 @@ namespace App\DataFixtures;
 use App\Entity\Student\ExerciseSubmission;
 use App\Entity\Training\Exercise;
 use App\Entity\User\Student;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Faker\Generator;
-use DateTimeImmutable;
 
 /**
  * ExerciseSubmission fixtures for EPROFOS platform.
@@ -48,9 +48,9 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
             $exercisesToSubmit = $this->faker->randomElements(
                 $exercises,
                 $this->faker->numberBetween(
-                    (int)(count($exercises) * 0.6),
-                    (int)(count($exercises) * 0.8)
-                )
+                    (int) (count($exercises) * 0.6),
+                    (int) (count($exercises) * 0.8),
+                ),
             );
 
             foreach ($exercisesToSubmit as $exercise) {
@@ -129,10 +129,10 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
         }
 
         // Set grading information if graded or reviewed
-        if (in_array($status, [ExerciseSubmission::STATUS_GRADED, ExerciseSubmission::STATUS_REVIEWED])) {
+        if (in_array($status, [ExerciseSubmission::STATUS_GRADED, ExerciseSubmission::STATUS_REVIEWED], true)) {
             $this->addGradingInformation($submission, $exercise, $attemptNumber);
 
-            $gradedAt = $submission->getSubmittedAt() 
+            $gradedAt = $submission->getSubmittedAt()
                 ? $this->faker->dateTimeBetween($submission->getSubmittedAt()->format('Y-m-d H:i:s'), 'now')
                 : $this->faker->dateTimeBetween('-1 week', 'now');
             $submission->setGradedAt(DateTimeImmutable::createFromMutable($gradedAt));
@@ -154,13 +154,13 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
         $description = strtolower($exercise->getDescription() ?? '');
 
         // Check for keywords to determine type
-        if (str_contains($title, 'pratique') || str_contains($description, 'pratique') ||
-            str_contains($title, 'manipulation') || str_contains($description, 'exercice')) {
+        if (str_contains($title, 'pratique') || str_contains($description, 'pratique')
+            || str_contains($title, 'manipulation') || str_contains($description, 'exercice')) {
             return ExerciseSubmission::TYPE_PRACTICAL;
         }
 
-        if (str_contains($title, 'fichier') || str_contains($description, 'document') ||
-            str_contains($title, 'upload') || str_contains($description, 'télécharger')) {
+        if (str_contains($title, 'fichier') || str_contains($description, 'document')
+            || str_contains($title, 'upload') || str_contains($description, 'télécharger')) {
             return ExerciseSubmission::TYPE_FILE;
         }
 
@@ -201,7 +201,7 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
         ];
 
         $content = $this->faker->randomElement($textResponses);
-        
+
         // Sometimes add more detailed content
         if ($this->faker->boolean(40)) {
             $additionalContent = [
@@ -241,7 +241,7 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
         for ($i = 0; $i < $fileCount; $i++) {
             $fileName = $this->faker->randomElement($fileNames) . '_' . $this->faker->numberBetween(1, 999);
             $fileExtension = $this->faker->randomElement($fileTypes);
-            
+
             $files[] = [
                 'name' => $fileName . '.' . $fileExtension,
                 'size' => $this->faker->numberBetween(50000, 5000000), // 50KB to 5MB
@@ -330,12 +330,12 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
     private function addGradingInformation(ExerciseSubmission $submission, Exercise $exercise, int $attemptNumber): void
     {
         $maxPoints = $exercise->getMaxPoints() ?? 20;
-        $passingPoints = $exercise->getPassingPoints() ?? (int)($maxPoints * 0.6);
+        $passingPoints = $exercise->getPassingPoints() ?? (int) ($maxPoints * 0.6);
 
         // Better scores on later attempts
-        $baseScore = $attemptNumber === 1 
-            ? $this->faker->numberBetween((int)($maxPoints * 0.4), $maxPoints)
-            : $this->faker->numberBetween((int)($maxPoints * 0.6), $maxPoints);
+        $baseScore = $attemptNumber === 1
+            ? $this->faker->numberBetween((int) ($maxPoints * 0.4), $maxPoints)
+            : $this->faker->numberBetween((int) ($maxPoints * 0.6), $maxPoints);
 
         $submission->setScore($baseScore);
         $submission->setPassed($baseScore >= $passingPoints);
@@ -379,7 +379,7 @@ class ExerciseSubmissionFixtures extends Fixture implements DependentFixtureInte
         if ($this->faker->boolean(30)) {
             $autoScore = $this->faker->numberBetween($baseScore - 3, $baseScore + 2);
             $submission->setAutoScore($autoScore);
-            
+
             if ($autoScore !== $baseScore) {
                 $submission->setManualScore($baseScore - $autoScore);
             }

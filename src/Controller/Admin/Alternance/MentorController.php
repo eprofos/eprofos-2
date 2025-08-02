@@ -41,7 +41,7 @@ class MentorController extends AbstractController
     {
         $this->logger->info('MentorController: Starting mentor index listing', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
-            'request_parameters' => $request->query->all()
+            'request_parameters' => $request->query->all(),
         ]);
 
         try {
@@ -60,7 +60,7 @@ class MentorController extends AbstractController
             $this->logger->debug('MentorController: Applied filters for mentor listing', [
                 'filters' => $filters,
                 'page' => $page,
-                'per_page' => $perPage
+                'per_page' => $perPage,
             ]);
 
             $mentors = $this->mentorRepository->findPaginatedMentors($filters, $page, $perPage);
@@ -70,7 +70,7 @@ class MentorController extends AbstractController
             $this->logger->debug('MentorController: Retrieved mentors from repository', [
                 'mentors_count' => count($mentors),
                 'total_mentors' => $totalMentors,
-                'total_pages' => $totalPages
+                'total_pages' => $totalPages,
             ]);
 
             // Get mentor statistics
@@ -79,7 +79,7 @@ class MentorController extends AbstractController
             $this->logger->info('MentorController: Successfully loaded mentor index', [
                 'mentors_count' => count($mentors),
                 'total_mentors' => $totalMentors,
-                'statistics' => $statistics
+                'statistics' => $statistics,
             ]);
 
             return $this->render('admin/alternance/mentor/index.html.twig', [
@@ -89,16 +89,16 @@ class MentorController extends AbstractController
                 'filters' => $filters,
                 'statistics' => $statistics,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MentorController: Database error during mentor index listing', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du chargement des mentors.');
+
             return $this->render('admin/alternance/mentor/index.html.twig', [
                 'mentors' => [],
                 'current_page' => 1,
@@ -106,16 +106,16 @@ class MentorController extends AbstractController
                 'filters' => [],
                 'statistics' => [],
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MentorController: Unexpected error during mentor index listing', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des mentors.');
+
             return $this->render('admin/alternance/mentor/index.html.twig', [
                 'mentors' => [],
                 'current_page' => 1,
@@ -131,7 +131,7 @@ class MentorController extends AbstractController
     {
         $this->logger->info('MentorController: Starting new mentor creation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
-            'request_method' => $request->getMethod()
+            'request_method' => $request->getMethod(),
         ]);
 
         try {
@@ -141,14 +141,14 @@ class MentorController extends AbstractController
 
             $this->logger->debug('MentorController: Form created and request handled', [
                 'form_submitted' => $form->isSubmitted(),
-                'form_valid' => $form->isSubmitted() ? $form->isValid() : null
+                'form_valid' => $form->isSubmitted() ? $form->isValid() : null,
             ]);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->logger->info('MentorController: Form submitted and valid, creating new mentor', [
                     'mentor_email' => $mentor->getEmail(),
                     'mentor_first_name' => $mentor->getFirstName(),
-                    'mentor_last_name' => $mentor->getLastName()
+                    'mentor_last_name' => $mentor->getLastName(),
                 ]);
 
                 // Generate authentication credentials
@@ -156,7 +156,7 @@ class MentorController extends AbstractController
 
                 $this->logger->debug('MentorController: Authentication credentials generated', [
                     'mentor_email' => $mentor->getEmail(),
-                    'credentials_generated' => true
+                    'credentials_generated' => true,
                 ]);
 
                 $this->entityManager->persist($mentor);
@@ -165,7 +165,7 @@ class MentorController extends AbstractController
                 $this->logger->info('MentorController: New mentor created successfully', [
                     'mentor_id' => $mentor->getId(),
                     'mentor_email' => $mentor->getEmail(),
-                    'created_by' => $this->getUser()?->getUserIdentifier()
+                    'created_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 // Send invitation email
@@ -173,7 +173,7 @@ class MentorController extends AbstractController
 
                 $this->logger->info('MentorController: Invitation email sent', [
                     'mentor_id' => $mentor->getId(),
-                    'mentor_email' => $mentor->getEmail()
+                    'mentor_email' => $mentor->getEmail(),
                 ]);
 
                 $this->addFlash('success', 'Mentor créé avec succès. Un email d\'invitation a été envoyé.');
@@ -185,7 +185,7 @@ class MentorController extends AbstractController
 
             if ($form->isSubmitted() && !$form->isValid()) {
                 $this->logger->warning('MentorController: Form submitted but invalid', [
-                    'form_errors' => (string) $form->getErrors(true)
+                    'form_errors' => (string) $form->getErrors(true),
                 ]);
             }
 
@@ -193,13 +193,12 @@ class MentorController extends AbstractController
                 'mentor' => $mentor,
                 'form' => $form,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MentorController: Database error during mentor creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la création du mentor : ' . $e->getMessage());
@@ -211,13 +210,12 @@ class MentorController extends AbstractController
                 'mentor' => $mentor,
                 'form' => $form,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MentorController: Unexpected error during mentor creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la création du mentor : ' . $e->getMessage());
@@ -452,15 +450,14 @@ class MentorController extends AbstractController
             ];
 
             $this->logger->debug('MentorController: Mentor statistics calculated', [
-                'statistics' => $statistics
+                'statistics' => $statistics,
             ]);
 
             return $statistics;
-
         } catch (Exception $e) {
             $this->logger->error('MentorController: Error calculating mentor statistics', [
                 'error_message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // Return empty statistics to prevent breaking the page
@@ -481,7 +478,7 @@ class MentorController extends AbstractController
         $this->logger->info('MentorController: Preparing invitation email', [
             'mentor_id' => $mentor->getId(),
             'mentor_email' => $mentor->getEmail(),
-            'credentials_provided' => !empty($credentials)
+            'credentials_provided' => !empty($credentials),
         ]);
 
         try {
@@ -500,15 +497,14 @@ class MentorController extends AbstractController
             $this->logger->info('MentorController: Invitation email sent successfully', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
-                'email_subject' => $email->getSubject()
+                'email_subject' => $email->getSubject(),
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MentorController: Error sending invitation email', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
                 'error_message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;

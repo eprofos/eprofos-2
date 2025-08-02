@@ -42,7 +42,7 @@ class MissionController extends AbstractController
     {
         $this->logger->info('MissionController: Starting mission index listing', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
-            'request_parameters' => $request->query->all()
+            'request_parameters' => $request->query->all(),
         ]);
 
         try {
@@ -61,7 +61,7 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Applied filters for mission listing', [
                 'filters' => $filters,
                 'page' => $page,
-                'per_page' => $perPage
+                'per_page' => $perPage,
             ]);
 
             $missions = $this->missionRepository->findPaginatedMissions($filters, $page, $perPage);
@@ -71,7 +71,7 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Retrieved missions from repository', [
                 'missions_count' => count($missions),
                 'total_missions' => $totalMissions,
-                'total_pages' => $totalPages
+                'total_pages' => $totalPages,
             ]);
 
             // Get mission statistics
@@ -80,7 +80,7 @@ class MissionController extends AbstractController
             $this->logger->info('MissionController: Successfully loaded mission index', [
                 'missions_count' => count($missions),
                 'total_missions' => $totalMissions,
-                'statistics' => $statistics
+                'statistics' => $statistics,
             ]);
 
             return $this->render('admin/alternance/mission/index.html.twig', [
@@ -90,16 +90,16 @@ class MissionController extends AbstractController
                 'filters' => $filters,
                 'statistics' => $statistics,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission index listing', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du chargement des missions.');
+
             return $this->render('admin/alternance/mission/index.html.twig', [
                 'missions' => [],
                 'current_page' => 1,
@@ -107,16 +107,16 @@ class MissionController extends AbstractController
                 'filters' => [],
                 'statistics' => [],
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission index listing', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des missions.');
+
             return $this->render('admin/alternance/mission/index.html.twig', [
                 'missions' => [],
                 'current_page' => 1,
@@ -132,7 +132,7 @@ class MissionController extends AbstractController
     {
         $this->logger->info('MissionController: Starting new mission creation', [
             'user_email' => $this->getUser()?->getUserIdentifier(),
-            'request_method' => $request->getMethod()
+            'request_method' => $request->getMethod(),
         ]);
 
         try {
@@ -142,14 +142,14 @@ class MissionController extends AbstractController
 
             $this->logger->debug('MissionController: Form created and request handled', [
                 'form_submitted' => $form->isSubmitted(),
-                'form_valid' => $form->isSubmitted() ? $form->isValid() : null
+                'form_valid' => $form->isSubmitted() ? $form->isValid() : null,
             ]);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->logger->info('MissionController: Form submitted and valid, persisting new mission', [
                     'mission_title' => $mission->getTitle(),
                     'mission_complexity' => $mission->getComplexity(),
-                    'mission_duration' => $mission->getDuration()
+                    'mission_duration' => $mission->getDuration(),
                 ]);
 
                 $this->entityManager->persist($mission);
@@ -158,7 +158,7 @@ class MissionController extends AbstractController
                 $this->logger->info('MissionController: New mission created successfully', [
                     'mission_id' => $mission->getId(),
                     'mission_title' => $mission->getTitle(),
-                    'created_by' => $this->getUser()?->getUserIdentifier()
+                    'created_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Mission créée avec succès.');
@@ -170,7 +170,7 @@ class MissionController extends AbstractController
 
             if ($form->isSubmitted() && !$form->isValid()) {
                 $this->logger->warning('MissionController: Form submitted but invalid', [
-                    'form_errors' => (string) $form->getErrors(true)
+                    'form_errors' => (string) $form->getErrors(true),
                 ]);
             }
 
@@ -178,13 +178,12 @@ class MissionController extends AbstractController
                 'mission' => $mission,
                 'form' => $form,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la création de la mission : ' . $e->getMessage());
@@ -196,13 +195,12 @@ class MissionController extends AbstractController
                 'mission' => $mission,
                 'form' => $form,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la création de la mission : ' . $e->getMessage());
@@ -223,7 +221,7 @@ class MissionController extends AbstractController
         $this->logger->info('MissionController: Displaying mission details', [
             'mission_id' => $mission->getId(),
             'mission_title' => $mission->getTitle(),
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -232,7 +230,7 @@ class MissionController extends AbstractController
 
             $this->logger->debug('MissionController: Retrieved mission assignments', [
                 'mission_id' => $mission->getId(),
-                'assignments_count' => count($assignments)
+                'assignments_count' => count($assignments),
             ]);
 
             // Get mission progress data
@@ -240,12 +238,12 @@ class MissionController extends AbstractController
 
             $this->logger->debug('MissionController: Retrieved mission progress data', [
                 'mission_id' => $mission->getId(),
-                'progress_data_keys' => array_keys($progressData)
+                'progress_data_keys' => array_keys($progressData),
             ]);
 
             $this->logger->info('MissionController: Successfully loaded mission details', [
                 'mission_id' => $mission->getId(),
-                'assignments_count' => count($assignments)
+                'assignments_count' => count($assignments),
             ]);
 
             return $this->render('admin/alternance/mission/show.html.twig', [
@@ -253,33 +251,33 @@ class MissionController extends AbstractController
                 'assignments' => $assignments,
                 'progress_data' => $progressData,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission show', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du chargement des détails de la mission.');
+
             return $this->render('admin/alternance/mission/show.html.twig', [
                 'mission' => $mission,
                 'assignments' => [],
                 'progress_data' => [],
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission show', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des détails de la mission.');
+
             return $this->render('admin/alternance/mission/show.html.twig', [
                 'mission' => $mission,
                 'assignments' => [],
@@ -295,7 +293,7 @@ class MissionController extends AbstractController
             'mission_id' => $mission->getId(),
             'mission_title' => $mission->getTitle(),
             'user_email' => $this->getUser()?->getUserIdentifier(),
-            'request_method' => $request->getMethod()
+            'request_method' => $request->getMethod(),
         ]);
 
         try {
@@ -304,7 +302,7 @@ class MissionController extends AbstractController
                 'description' => $mission->getDescription(),
                 'complexity' => $mission->getComplexity(),
                 'duration' => $mission->getDuration(),
-                'is_active' => $mission->isActive()
+                'is_active' => $mission->isActive(),
             ];
 
             $form = $this->createForm(CompanyMissionType::class, $mission);
@@ -313,7 +311,7 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Form created and request handled for edit', [
                 'mission_id' => $mission->getId(),
                 'form_submitted' => $form->isSubmitted(),
-                'form_valid' => $form->isSubmitted() ? $form->isValid() : null
+                'form_valid' => $form->isSubmitted() ? $form->isValid() : null,
             ]);
 
             if ($form->isSubmitted() && $form->isValid()) {
@@ -322,21 +320,21 @@ class MissionController extends AbstractController
                     'description' => $mission->getDescription(),
                     'complexity' => $mission->getComplexity(),
                     'duration' => $mission->getDuration(),
-                    'is_active' => $mission->isActive()
+                    'is_active' => $mission->isActive(),
                 ];
 
                 $this->logger->info('MissionController: Form submitted and valid, updating mission', [
                     'mission_id' => $mission->getId(),
                     'original_data' => $originalData,
                     'updated_data' => $updatedData,
-                    'changes' => array_diff_assoc($updatedData, $originalData)
+                    'changes' => array_diff_assoc($updatedData, $originalData),
                 ]);
 
                 $this->entityManager->flush();
 
                 $this->logger->info('MissionController: Mission updated successfully', [
                     'mission_id' => $mission->getId(),
-                    'updated_by' => $this->getUser()?->getUserIdentifier()
+                    'updated_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Mission modifiée avec succès.');
@@ -349,7 +347,7 @@ class MissionController extends AbstractController
             if ($form->isSubmitted() && !$form->isValid()) {
                 $this->logger->warning('MissionController: Form submitted but invalid during edit', [
                     'mission_id' => $mission->getId(),
-                    'form_errors' => (string) $form->getErrors(true)
+                    'form_errors' => (string) $form->getErrors(true),
                 ]);
             }
 
@@ -357,36 +355,36 @@ class MissionController extends AbstractController
                 'mission' => $mission,
                 'form' => $form,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission edit', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la modification de la mission : ' . $e->getMessage());
 
             $form = $this->createForm(CompanyMissionType::class, $mission);
+
             return $this->render('admin/alternance/mission/edit.html.twig', [
                 'mission' => $mission,
                 'form' => $form,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission edit', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la modification de la mission : ' . $e->getMessage());
 
             $form = $this->createForm(CompanyMissionType::class, $mission);
+
             return $this->render('admin/alternance/mission/edit.html.twig', [
                 'mission' => $mission,
                 'form' => $form,
@@ -400,7 +398,7 @@ class MissionController extends AbstractController
         $this->logger->info('MissionController: Displaying mission assignments', [
             'mission_id' => $mission->getId(),
             'mission_title' => $mission->getTitle(),
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -409,44 +407,44 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Retrieved mission assignments', [
                 'mission_id' => $mission->getId(),
                 'assignments_count' => count($assignments),
-                'assignment_statuses' => array_count_values(array_map(fn($a) => $a->getStatus(), $assignments))
+                'assignment_statuses' => array_count_values(array_map(static fn ($a) => $a->getStatus(), $assignments)),
             ]);
 
             $this->logger->info('MissionController: Successfully loaded mission assignments', [
                 'mission_id' => $mission->getId(),
-                'assignments_count' => count($assignments)
+                'assignments_count' => count($assignments),
             ]);
 
             return $this->render('admin/alternance/mission/assignments.html.twig', [
                 'mission' => $mission,
                 'assignments' => $assignments,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during assignments retrieval', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du chargement des assignations.');
+
             return $this->render('admin/alternance/mission/assignments.html.twig', [
                 'mission' => $mission,
                 'assignments' => [],
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during assignments retrieval', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des assignations.');
+
             return $this->render('admin/alternance/mission/assignments.html.twig', [
                 'mission' => $mission,
                 'assignments' => [],
@@ -463,17 +461,18 @@ class MissionController extends AbstractController
             'mission_id' => $mission->getId(),
             'mission_title' => $mission->getTitle(),
             'contract_id' => $contractId,
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             if (!$contractId) {
                 $this->logger->warning('MissionController: Missing contract ID for mission assignment', [
                     'mission_id' => $mission->getId(),
-                    'request_data' => $request->request->all()
+                    'request_data' => $request->request->all(),
                 ]);
 
                 $this->addFlash('error', 'ID du contrat manquant.');
+
                 return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
             }
 
@@ -482,10 +481,11 @@ class MissionController extends AbstractController
             if (!$contract) {
                 $this->logger->warning('MissionController: Contract not found for mission assignment', [
                     'mission_id' => $mission->getId(),
-                    'contract_id' => $contractId
+                    'contract_id' => $contractId,
                 ]);
 
                 $this->addFlash('error', 'Contrat non trouvé.');
+
                 return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
             }
 
@@ -493,7 +493,7 @@ class MissionController extends AbstractController
                 'mission_id' => $mission->getId(),
                 'contract_id' => $contract->getId(),
                 'student_name' => $contract->getStudent()?->getFullName(),
-                'mentor_name' => $contract->getMentor()?->getFullName()
+                'mentor_name' => $contract->getMentor()?->getFullName(),
             ]);
 
             $assignment = $this->assignmentService->assignMissionToContract($mission, $contract);
@@ -502,11 +502,10 @@ class MissionController extends AbstractController
                 'mission_id' => $mission->getId(),
                 'contract_id' => $contract->getId(),
                 'assignment_id' => $assignment->getId(),
-                'assigned_by' => $this->getUser()?->getUserIdentifier()
+                'assigned_by' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Mission assignée avec succès.');
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission assignment', [
                 'mission_id' => $mission->getId(),
@@ -514,11 +513,10 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de l\'assignation : ' . $e->getMessage());
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission assignment', [
                 'mission_id' => $mission->getId(),
@@ -526,7 +524,7 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'assignation : ' . $e->getMessage());
@@ -541,27 +539,27 @@ class MissionController extends AbstractController
         $this->logger->info('MissionController: Starting mission deletion', [
             'mission_id' => $mission->getId(),
             'mission_title' => $mission->getTitle(),
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             if ($this->isCsrfTokenValid('delete' . $mission->getId(), $request->request->get('_token'))) {
-                
                 $this->logger->debug('MissionController: CSRF token valid, checking for assignments', [
-                    'mission_id' => $mission->getId()
+                    'mission_id' => $mission->getId(),
                 ]);
 
                 // Check if mission has assignments
                 $assignments = $this->assignmentRepository->findBy(['mission' => $mission]);
-                
+
                 if (!empty($assignments)) {
                     $this->logger->warning('MissionController: Cannot delete mission with existing assignments', [
                         'mission_id' => $mission->getId(),
                         'assignments_count' => count($assignments),
-                        'assignment_ids' => array_map(fn($a) => $a->getId(), $assignments)
+                        'assignment_ids' => array_map(static fn ($a) => $a->getId(), $assignments),
                     ]);
 
                     $this->addFlash('error', 'Impossible de supprimer une mission avec des assignations.');
+
                     return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
                 }
 
@@ -569,11 +567,11 @@ class MissionController extends AbstractController
                     'id' => $mission->getId(),
                     'title' => $mission->getTitle(),
                     'description' => $mission->getDescription(),
-                    'complexity' => $mission->getComplexity()
+                    'complexity' => $mission->getComplexity(),
                 ];
 
                 $this->logger->info('MissionController: Proceeding with mission deletion', [
-                    'mission_data' => $missionData
+                    'mission_data' => $missionData,
                 ]);
 
                 $this->entityManager->remove($mission);
@@ -581,44 +579,44 @@ class MissionController extends AbstractController
 
                 $this->logger->info('MissionController: Mission deleted successfully', [
                     'deleted_mission' => $missionData,
-                    'deleted_by' => $this->getUser()?->getUserIdentifier()
+                    'deleted_by' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Mission supprimée avec succès.');
-
             } else {
                 $this->logger->warning('MissionController: Invalid CSRF token for mission deletion', [
                     'mission_id' => $mission->getId(),
                     'provided_token' => $request->request->get('_token'),
-                    'user_email' => $this->getUser()?->getUserIdentifier()
+                    'user_email' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
             }
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during mission deletion', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la suppression : ' . $e->getMessage());
-            return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
 
+            return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during mission deletion', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $mission->getId()]);
         }
 
@@ -636,7 +634,7 @@ class MissionController extends AbstractController
             'mission_id' => $assignment->getMission()->getId(),
             'old_status' => $oldStatus,
             'new_status' => $newStatus,
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -644,16 +642,17 @@ class MissionController extends AbstractController
                 $this->logger->warning('MissionController: Invalid status provided for assignment', [
                     'assignment_id' => $assignment->getId(),
                     'provided_status' => $newStatus,
-                    'valid_statuses' => ['assigned', 'in_progress', 'completed', 'cancelled']
+                    'valid_statuses' => ['assigned', 'in_progress', 'completed', 'cancelled'],
                 ]);
 
                 $this->addFlash('error', 'Statut invalide.');
+
                 return $this->redirectToRoute('admin_alternance_mission_show', ['id' => $assignment->getMission()->getId()]);
             }
 
             $this->logger->debug('MissionController: Valid status provided, updating assignment', [
                 'assignment_id' => $assignment->getId(),
-                'status_change' => ['from' => $oldStatus, 'to' => $newStatus]
+                'status_change' => ['from' => $oldStatus, 'to' => $newStatus],
             ]);
 
             $assignment->setStatus($newStatus);
@@ -665,11 +664,10 @@ class MissionController extends AbstractController
                 'assignment_id' => $assignment->getId(),
                 'mission_id' => $assignment->getMission()->getId(),
                 'status_change' => ['from' => $oldStatus, 'to' => $newStatus],
-                'updated_by' => $this->getUser()?->getUserIdentifier()
+                'updated_by' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', 'Statut de l\'assignation modifié avec succès.');
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during assignment status change', [
                 'assignment_id' => $assignment->getId(),
@@ -679,11 +677,10 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du changement de statut : ' . $e->getMessage());
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during assignment status change', [
                 'assignment_id' => $assignment->getId(),
@@ -693,7 +690,7 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors du changement de statut : ' . $e->getMessage());
@@ -711,16 +708,17 @@ class MissionController extends AbstractController
         $this->logger->info('MissionController: Starting bulk actions', [
             'mission_ids' => $missionIds,
             'action' => $action,
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         if (empty($missionIds) || !$action) {
             $this->logger->warning('MissionController: Missing data for bulk actions', [
                 'mission_ids_count' => count($missionIds),
-                'action' => $action
+                'action' => $action,
             ]);
 
             $this->addFlash('error', 'Veuillez sélectionner des missions et une action.');
+
             return $this->redirectToRoute('admin_alternance_mission_index');
         }
 
@@ -731,14 +729,14 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Found missions for bulk action', [
                 'requested_ids' => $missionIds,
                 'found_missions' => count($missions),
-                'action' => $action
+                'action' => $action,
             ]);
 
             foreach ($missions as $mission) {
                 $this->logger->debug('MissionController: Processing bulk action for mission', [
                     'mission_id' => $mission->getId(),
                     'mission_title' => $mission->getTitle(),
-                    'action' => $action
+                    'action' => $action,
                 ]);
 
                 switch ($action) {
@@ -746,7 +744,7 @@ class MissionController extends AbstractController
                         $mission->setIsActive(true);
                         $processed++;
                         $this->logger->debug('MissionController: Activated mission', [
-                            'mission_id' => $mission->getId()
+                            'mission_id' => $mission->getId(),
                         ]);
                         break;
 
@@ -754,14 +752,14 @@ class MissionController extends AbstractController
                         $mission->setIsActive(false);
                         $processed++;
                         $this->logger->debug('MissionController: Deactivated mission', [
-                            'mission_id' => $mission->getId()
+                            'mission_id' => $mission->getId(),
                         ]);
                         break;
 
                     default:
                         $this->logger->warning('MissionController: Unknown bulk action', [
                             'action' => $action,
-                            'mission_id' => $mission->getId()
+                            'mission_id' => $mission->getId(),
                         ]);
                 }
             }
@@ -772,11 +770,10 @@ class MissionController extends AbstractController
                 'action' => $action,
                 'processed_count' => $processed,
                 'total_missions' => count($missions),
-                'user_email' => $this->getUser()?->getUserIdentifier()
+                'user_email' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('success', sprintf('%d mission(s) traitée(s) avec succès.', $processed));
-
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during bulk actions', [
                 'mission_ids' => $missionIds,
@@ -784,11 +781,10 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du traitement : ' . $e->getMessage());
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during bulk actions', [
                 'mission_ids' => $missionIds,
@@ -796,7 +792,7 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors du traitement : ' . $e->getMessage());
@@ -817,19 +813,19 @@ class MissionController extends AbstractController
         $this->logger->info('MissionController: Starting mission export', [
             'format' => $format,
             'filters' => $filters,
-            'user_email' => $this->getUser()?->getUserIdentifier()
+            'user_email' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
             $this->logger->debug('MissionController: Retrieving missions for export', [
-                'filters' => $filters
+                'filters' => $filters,
             ]);
 
             $missions = $this->missionRepository->findForExport($filters);
 
             $this->logger->debug('MissionController: Retrieved missions for export', [
                 'missions_count' => count($missions),
-                'format' => $format
+                'format' => $format,
             ]);
 
             $data = $this->exportMissions($missions, $format);
@@ -838,7 +834,7 @@ class MissionController extends AbstractController
                 'format' => $format,
                 'missions_count' => count($missions),
                 'data_size' => strlen($data),
-                'user_email' => $this->getUser()?->getUserIdentifier()
+                'user_email' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $response = new Response($data);
@@ -846,17 +842,16 @@ class MissionController extends AbstractController
             $response->headers->set('Content-Disposition', 'attachment; filename="missions_export.' . $format . '"');
 
             return $response;
-
         } catch (InvalidArgumentException $e) {
             $this->logger->error('MissionController: Invalid export format', [
                 'format' => $format,
                 'error_message' => $e->getMessage(),
-                'user_email' => $this->getUser()?->getUserIdentifier()
+                'user_email' => $this->getUser()?->getUserIdentifier(),
             ]);
 
             $this->addFlash('error', 'Format d\'export non supporté : ' . $e->getMessage());
-            return $this->redirectToRoute('admin_alternance_mission_index');
 
+            return $this->redirectToRoute('admin_alternance_mission_index');
         } catch (DBALException $e) {
             $this->logger->error('MissionController: Database error during export', [
                 'format' => $format,
@@ -864,12 +859,12 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de l\'export : ' . $e->getMessage());
-            return $this->redirectToRoute('admin_alternance_mission_index');
 
+            return $this->redirectToRoute('admin_alternance_mission_index');
         } catch (Exception $e) {
             $this->logger->error('MissionController: Unexpected error during export', [
                 'format' => $format,
@@ -877,10 +872,11 @@ class MissionController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'user_email' => $this->getUser()?->getUserIdentifier(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_mission_index');
         }
     }
@@ -907,15 +903,14 @@ class MissionController extends AbstractController
             ];
 
             $this->logger->debug('MissionController: Mission statistics calculated', [
-                'statistics' => $statistics
+                'statistics' => $statistics,
             ]);
 
             return $statistics;
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Error calculating mission statistics', [
                 'error_message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // Return empty statistics to prevent breaking the page
@@ -943,14 +938,13 @@ class MissionController extends AbstractController
             $this->logger->debug('MissionController: Calculated completion rate', [
                 'total_assignments' => $totalAssignments,
                 'completed_assignments' => $completedAssignments,
-                'completion_rate' => $rate
+                'completion_rate' => $rate,
             ]);
 
             return $rate;
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Error calculating completion rate', [
-                'error_message' => $e->getMessage()
+                'error_message' => $e->getMessage(),
             ]);
 
             return 0;
@@ -965,14 +959,13 @@ class MissionController extends AbstractController
             $averageDuration = 14.5; // days
 
             $this->logger->debug('MissionController: Calculated average mission duration', [
-                'average_duration' => $averageDuration
+                'average_duration' => $averageDuration,
             ]);
 
             return $averageDuration;
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Error calculating average mission duration', [
-                'error_message' => $e->getMessage()
+                'error_message' => $e->getMessage(),
             ]);
 
             return 0;
@@ -983,7 +976,7 @@ class MissionController extends AbstractController
     {
         $this->logger->debug('MissionController: Starting export data generation', [
             'format' => $format,
-            'missions_count' => count($missions)
+            'missions_count' => count($missions),
         ]);
 
         try {
@@ -1007,7 +1000,7 @@ class MissionController extends AbstractController
                 fputcsv($output, $headers);
 
                 $this->logger->debug('MissionController: CSV headers written', [
-                    'headers' => $headers
+                    'headers' => $headers,
                 ]);
 
                 // Data
@@ -1027,7 +1020,7 @@ class MissionController extends AbstractController
                 }
 
                 $this->logger->debug('MissionController: CSV data written', [
-                    'rows_written' => $rowCount
+                    'rows_written' => $rowCount,
                 ]);
 
                 rewind($output);
@@ -1039,20 +1032,19 @@ class MissionController extends AbstractController
                 }
 
                 $this->logger->debug('MissionController: CSV export completed', [
-                    'content_length' => strlen($content)
+                    'content_length' => strlen($content),
                 ]);
 
                 return $content;
             }
 
             throw new InvalidArgumentException("Format d'export non supporté: {$format}");
-
         } catch (Exception $e) {
             $this->logger->error('MissionController: Error during export data generation', [
                 'format' => $format,
                 'missions_count' => count($missions),
                 'error_message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;

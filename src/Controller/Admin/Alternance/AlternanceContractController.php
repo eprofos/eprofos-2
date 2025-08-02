@@ -117,7 +117,7 @@ class AlternanceContractController extends AbstractController
         try {
             $contract = new AlternanceContract();
             $form = $this->createForm(AlternanceContractType::class, $contract);
-            
+
             $this->logger->debug('AlternanceContractController::new - Form created successfully');
 
             $form->handleRequest($request);
@@ -142,7 +142,7 @@ class AlternanceContractController extends AbstractController
 
                         // Validate contract data
                         $validationErrors = $this->validationService->validateContract($contract);
-                        
+
                         if (!empty($validationErrors)) {
                             $this->logger->warning('AlternanceContractController::new - Contract validation failed', [
                                 'validation_errors' => $validationErrors,
@@ -275,7 +275,7 @@ class AlternanceContractController extends AbstractController
 
         try {
             $form = $this->createForm(AlternanceContractType::class, $contract);
-            
+
             $this->logger->debug('AlternanceContractController::edit - Form created successfully');
 
             $form->handleRequest($request);
@@ -295,7 +295,7 @@ class AlternanceContractController extends AbstractController
 
                         // Validate contract data
                         $validationErrors = $this->validationService->validateContract($contract);
-                        
+
                         if (!empty($validationErrors)) {
                             $this->logger->warning('AlternanceContractController::edit - Contract validation failed', [
                                 'contract_id' => $contract->getId(),

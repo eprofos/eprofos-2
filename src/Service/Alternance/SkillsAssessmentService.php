@@ -13,7 +13,10 @@ use App\Repository\Alternance\SkillsAssessmentRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
  * SkillsAssessmentService.
@@ -82,7 +85,7 @@ class SkillsAssessmentService
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create skills assessment', [
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
@@ -93,10 +96,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to create skills assessment for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -126,11 +129,11 @@ class SkillsAssessmentService
         try {
             // Validate scores
             if ($centerScore !== null && ($centerScore < 0 || $centerScore > 20)) {
-                throw new \InvalidArgumentException("Center score must be between 0 and 20, got: {$centerScore}");
+                throw new InvalidArgumentException("Center score must be between 0 and 20, got: {$centerScore}");
             }
 
             if ($companyScore !== null && ($companyScore < 0 || $companyScore > 20)) {
-                throw new \InvalidArgumentException("Company score must be between 0 and 20, got: {$companyScore}");
+                throw new InvalidArgumentException("Company score must be between 0 and 20, got: {$companyScore}");
             }
 
             $this->logger->debug('Skill evaluation validation passed', [
@@ -145,7 +148,7 @@ class SkillsAssessmentService
                 $currentComments = $assessment->getCenterComments() ?? '';
                 $newComments = $currentComments . "\n" . $skillCode . ': ' . $comments;
                 $assessment->setCenterComments($newComments);
-                
+
                 $this->logger->debug('Added center comments for skill', [
                     'skill_code' => $skillCode,
                     'comments_added' => true,
@@ -157,7 +160,7 @@ class SkillsAssessmentService
                 $currentComments = $assessment->getMentorComments() ?? '';
                 $newComments = $currentComments . "\n" . $skillCode . ': ' . $comments;
                 $assessment->setMentorComments($newComments);
-                
+
                 $this->logger->debug('Added mentor comments for skill', [
                     'skill_code' => $skillCode,
                     'comments_added' => true,
@@ -178,7 +181,7 @@ class SkillsAssessmentService
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to add skill evaluation', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -191,10 +194,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to add skill evaluation '{$skillCode}' to assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -224,7 +227,7 @@ class SkillsAssessmentService
             // Validate overall rating
             $validRatings = ['excellent', 'good', 'satisfactory', 'needs_improvement', 'insufficient'];
             if (!in_array($overallRating, $validRatings, true)) {
-                throw new \InvalidArgumentException("Invalid overall rating: {$overallRating}. Must be one of: " . implode(', ', $validRatings));
+                throw new InvalidArgumentException("Invalid overall rating: {$overallRating}. Must be one of: " . implode(', ', $validRatings));
             }
 
             $this->logger->debug('Overall rating validation passed', [
@@ -274,7 +277,7 @@ class SkillsAssessmentService
             $this->logger->info('Skills assessment completed successfully', $completionStatus);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to complete skills assessment', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -284,10 +287,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to complete skills assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -331,7 +334,7 @@ class SkillsAssessmentService
                 if ($gap['gap'] > 5) {
                     $objective = "Harmoniser l'évaluation de la compétence '{$skillName}'";
                     $actions = "Revoir les critères d'évaluation et organiser une session de calibrage entre centre et entreprise";
-                    
+
                     $this->logger->debug('High gap detected - harmonization needed', [
                         'skill_code' => $skillCode,
                         'gap_value' => $gap['gap'],
@@ -341,7 +344,7 @@ class SkillsAssessmentService
                     $lowerScore = min($gap['center_score'], $gap['company_score']);
                     $objective = "Améliorer la compétence '{$skillName}' (niveau actuel: {$lowerScore}/20)";
                     $actions = 'Formation complémentaire et mise en pratique encadrée';
-                    
+
                     $this->logger->debug('Low score detected - improvement needed', [
                         'skill_code' => $skillCode,
                         'lower_score' => $lowerScore,
@@ -355,7 +358,7 @@ class SkillsAssessmentService
                     $actions,
                     (new DateTime('+3 months'))->format('Y-m-d'),
                 );
-                
+
                 $planItemsAdded++;
             }
 
@@ -364,21 +367,21 @@ class SkillsAssessmentService
                 $score = $scoreData['value'] ?? 0;
                 if ($score < 10) { // Below 50%
                     $skillName = $assessment->getSkillsEvaluated()[$skillCode]['name'] ?? $skillCode;
-                    
+
                     $this->logger->debug('Low center score detected', [
                         'skill_code' => $skillCode,
                         'skill_name' => $skillName,
                         'center_score' => $score,
                         'threshold' => 10,
                     ]);
-                    
+
                     $assessment->addDevelopmentPlanItem(
                         $skillCode,
                         "Renforcer la compétence '{$skillName}'",
                         'Formation intensive et accompagnement personnalisé',
                         (new DateTime('+2 months'))->format('Y-m-d'),
                     );
-                    
+
                     $planItemsAdded++;
                 }
             }
@@ -389,10 +392,9 @@ class SkillsAssessmentService
                 'plan_items_added' => $planItemsAdded,
                 'total_plan_items' => count($assessment->getDevelopmentPlan()),
                 'competency_gaps_processed' => count($competencyGaps),
-                'low_scores_processed' => count(array_filter($centerScores, fn($scoreData) => ($scoreData['value'] ?? 0) < 10)),
+                'low_scores_processed' => count(array_filter($centerScores, static fn ($scoreData) => ($scoreData['value'] ?? 0) < 10)),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate development plan', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -401,10 +403,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to generate development plan for assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -450,7 +452,7 @@ class SkillsAssessmentService
             if ($relatedMission) {
                 $assessment->setRelatedMission($relatedMission);
                 $this->entityManager->flush();
-                
+
                 $this->logger->debug('Related mission assigned to assessment', [
                     'assessment_id' => $assessment->getId(),
                     'mission_id' => $relatedMission->getId(),
@@ -469,7 +471,7 @@ class SkillsAssessmentService
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to create cross-evaluation assessment', [
                 'student_id' => $student->getId(),
                 'center_evaluator_id' => $centerEvaluator->getId(),
@@ -481,10 +483,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to create cross-evaluation assessment for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -502,7 +504,7 @@ class SkillsAssessmentService
 
         try {
             $progressionData = $this->skillsAssessmentRepository->getSkillsProgressionData($student);
-            
+
             $this->logger->info('Skills progression data retrieved successfully', [
                 'student_id' => $student->getId(),
                 'progression_entries' => count($progressionData),
@@ -511,7 +513,7 @@ class SkillsAssessmentService
             ]);
 
             return $progressionData;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to retrieve skills progression', [
                 'student_id' => $student->getId(),
                 'error_message' => $e->getMessage(),
@@ -519,10 +521,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to retrieve skills progression for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -573,7 +575,7 @@ class SkillsAssessmentService
 
             $this->logger->debug('Initialized competency matrix structure', [
                 'categories_count' => count($matrix),
-                'total_skills' => array_sum(array_map(fn($cat) => count($cat['skills']), $matrix)),
+                'total_skills' => array_sum(array_map(static fn ($cat) => count($cat['skills']), $matrix)),
             ]);
 
             $assessedSkillsCount = 0;
@@ -621,7 +623,7 @@ class SkillsAssessmentService
             ]);
 
             return $matrix;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate competency matrix', [
                 'student_id' => $student->getId(),
                 'error_message' => $e->getMessage(),
@@ -629,10 +631,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to generate competency matrix for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -744,7 +746,7 @@ class SkillsAssessmentService
             ]);
 
             return $recommendations;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate assessment recommendations', [
                 'student_id' => $student->getId(),
                 'error_message' => $e->getMessage(),
@@ -752,10 +754,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to generate assessment recommendations for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -773,7 +775,7 @@ class SkillsAssessmentService
 
         try {
             $statistics = $this->skillsAssessmentRepository->getAssessmentStatistics($startDate, $endDate);
-            
+
             $this->logger->info('Assessment statistics retrieved successfully', [
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),
@@ -785,7 +787,7 @@ class SkillsAssessmentService
             ]);
 
             return $statistics;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to retrieve assessment statistics', [
                 'start_date' => $startDate->format('Y-m-d H:i:s'),
                 'end_date' => $endDate->format('Y-m-d H:i:s'),
@@ -794,10 +796,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to retrieve assessment statistics for period {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -808,7 +810,7 @@ class SkillsAssessmentService
     public function detectStudentsRequiringAssessment(): array
     {
         $cutoffDate = new DateTime('-3 months');
-        
+
         $this->logger->info('Detecting students requiring assessment', [
             'cutoff_date' => $cutoffDate->format('Y-m-d H:i:s'),
             'cutoff_months' => 3,
@@ -816,11 +818,11 @@ class SkillsAssessmentService
 
         try {
             $studentsRequiringAssessment = $this->skillsAssessmentRepository->findStudentsRequiringAssessment($cutoffDate);
-            
+
             $this->logger->info('Students requiring assessment detected', [
                 'cutoff_date' => $cutoffDate->format('Y-m-d'),
                 'students_requiring_assessment' => count($studentsRequiringAssessment),
-                'students_details' => array_map(fn($student) => [
+                'students_details' => array_map(static fn ($student) => [
                     'id' => $student['id'],
                     'name' => $student['name'],
                     'last_assessment' => $student['last_assessment_date'] ?? 'never',
@@ -828,7 +830,7 @@ class SkillsAssessmentService
             ]);
 
             return $studentsRequiringAssessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to detect students requiring assessment', [
                 'cutoff_date' => $cutoffDate->format('Y-m-d H:i:s'),
                 'error_message' => $e->getMessage(),
@@ -836,10 +838,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to detect students requiring assessment: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -861,7 +863,7 @@ class SkillsAssessmentService
             // Validate imported data structure
             $requiredFields = ['student_id', 'assessment_type', 'assessment_date', 'skills'];
             $missingFields = [];
-            
+
             foreach ($requiredFields as $field) {
                 if (!isset($assessmentData[$field])) {
                     $missingFields[] = $field;
@@ -869,7 +871,7 @@ class SkillsAssessmentService
             }
 
             if (!empty($missingFields)) {
-                throw new \InvalidArgumentException('Missing required fields in import data: ' . implode(', ', $missingFields));
+                throw new InvalidArgumentException('Missing required fields in import data: ' . implode(', ', $missingFields));
             }
 
             $this->logger->debug('Import data validation passed', [
@@ -886,7 +888,7 @@ class SkillsAssessmentService
             // 2. Creating assessment entity
             // 3. Processing skills data
             // 4. Saving to database
-            
+
             $this->logger->warning('Assessment import feature not yet implemented', [
                 'import_data_received' => true,
                 'data_size' => count($assessmentData),
@@ -896,8 +898,7 @@ class SkillsAssessmentService
 
             // Return placeholder assessment for now
             return new SkillsAssessment();
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to import assessment data', [
                 'data_size' => count($assessmentData),
                 'error_message' => $e->getMessage(),
@@ -905,10 +906,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to import assessment data: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -998,7 +999,7 @@ class SkillsAssessmentService
             ]);
 
             return $exportData;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to export assessment data for Qualiopi compliance', [
                 'student_id' => $student->getId(),
                 'export_start_date' => $startDate->format('Y-m-d H:i:s'),
@@ -1008,10 +1009,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to export assessment data for student {$student->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -1069,7 +1070,7 @@ class SkillsAssessmentService
             ]);
 
             return $analysisResults;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to analyze skills assessment', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -1080,10 +1081,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to analyze skills assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -1147,7 +1148,7 @@ class SkillsAssessmentService
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to approve skills assessment', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -1157,10 +1158,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to approve skills assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -1226,7 +1227,7 @@ class SkillsAssessmentService
             ]);
 
             return $assessment;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to reject skills assessment', [
                 'assessment_id' => $assessment->getId(),
                 'student_id' => $assessment->getStudent()->getId(),
@@ -1236,10 +1237,10 @@ class SkillsAssessmentService
                 'stack_trace' => $e->getTraceAsString(),
             ]);
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Failed to reject skills assessment {$assessment->getId()}: {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }

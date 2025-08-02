@@ -8,9 +8,12 @@ use App\Entity\Student\QCMAttempt;
 use App\Entity\Training\QCM;
 use App\Entity\User\Student;
 use App\Repository\Student\QCMAttemptRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
+use Throwable;
 
 /**
  * Service for handling QCM attempts and scoring.
@@ -20,9 +23,8 @@ class QCMAttemptService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly QCMAttemptRepository $attemptRepository,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * Start a new QCM attempt.
@@ -35,7 +37,7 @@ class QCMAttemptService
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
             'max_attempts' => $qcm->getMaxAttempts(),
-            'time_limit_minutes' => $qcm->getTimeLimitMinutes()
+            'time_limit_minutes' => $qcm->getTimeLimitMinutes(),
         ]);
 
         try {
@@ -44,17 +46,18 @@ class QCMAttemptService
                     'student_id' => $student->getId(),
                     'qcm_id' => $qcm->getId(),
                     'existing_attempts' => $this->attemptRepository->countCompletedAttempts($student, $qcm),
-                    'max_attempts' => $qcm->getMaxAttempts()
+                    'max_attempts' => $qcm->getMaxAttempts(),
                 ]);
-                throw new \InvalidArgumentException('Student cannot start a new attempt for this QCM.');
+
+                throw new InvalidArgumentException('Student cannot start a new attempt for this QCM.');
             }
 
             $nextAttemptNumber = $this->attemptRepository->getNextAttemptNumber($student, $qcm);
-            
+
             $this->logger->info('Creating new QCM attempt entity', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
-                'attempt_number' => $nextAttemptNumber
+                'attempt_number' => $nextAttemptNumber,
             ]);
 
             $attempt = new QCMAttempt();
@@ -71,32 +74,33 @@ class QCMAttemptService
                 'qcm_id' => $qcm->getId(),
                 'attempt_number' => $nextAttemptNumber,
                 'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
-                'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s')
+                'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s'),
             ]);
 
             return $attempt;
-
         } catch (DBALException $e) {
             $this->logger->error('Database error while starting QCM attempt', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to start QCM attempt due to database error: ' . $e->getMessage(), 0, $e);
-        } catch (\InvalidArgumentException $e) {
+
+            throw new RuntimeException('Failed to start QCM attempt due to database error: ' . $e->getMessage(), 0, $e);
+        } catch (InvalidArgumentException $e) {
             // Re-throw validation errors without wrapping
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while starting QCM attempt', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Unexpected error while starting QCM attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Unexpected error while starting QCM attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -108,12 +112,12 @@ class QCMAttemptService
         $this->logger->info('Getting or creating active QCM attempt', [
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $activeAttempt = $this->attemptRepository->findActiveAttempt($student, $qcm);
-            
+
             if ($activeAttempt) {
                 $this->logger->info('Found existing active attempt', [
                     'attempt_id' => $activeAttempt->getId(),
@@ -121,16 +125,16 @@ class QCMAttemptService
                     'qcm_id' => $qcm->getId(),
                     'started_at' => $activeAttempt->getStartedAt()?->format('Y-m-d H:i:s'),
                     'expires_at' => $activeAttempt->getExpiresAt()?->format('Y-m-d H:i:s'),
-                    'has_expired' => $activeAttempt->hasExpired()
+                    'has_expired' => $activeAttempt->hasExpired(),
                 ]);
-                
+
                 // Check if expired
                 if ($activeAttempt->hasExpired()) {
                     $this->logger->warning('Active attempt has expired, expiring it', [
                         'attempt_id' => $activeAttempt->getId(),
                         'student_id' => $student->getId(),
                         'qcm_id' => $qcm->getId(),
-                        'expires_at' => $activeAttempt->getExpiresAt()?->format('Y-m-d H:i:s')
+                        'expires_at' => $activeAttempt->getExpiresAt()?->format('Y-m-d H:i:s'),
                     ]);
                     $this->expireAttempt($activeAttempt);
                     $activeAttempt = null;
@@ -138,14 +142,14 @@ class QCMAttemptService
             } else {
                 $this->logger->info('No active attempt found', [
                     'student_id' => $student->getId(),
-                    'qcm_id' => $qcm->getId()
+                    'qcm_id' => $qcm->getId(),
                 ]);
             }
-            
+
             if (!$activeAttempt) {
                 $this->logger->info('Creating new attempt as no active attempt available', [
                     'student_id' => $student->getId(),
-                    'qcm_id' => $qcm->getId()
+                    'qcm_id' => $qcm->getId(),
                 ]);
                 $activeAttempt = $this->startAttempt($student, $qcm);
             }
@@ -154,27 +158,28 @@ class QCMAttemptService
                 'attempt_id' => $activeAttempt->getId(),
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
-                'status' => $activeAttempt->getStatus()
+                'status' => $activeAttempt->getStatus(),
             ]);
 
             return $activeAttempt;
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Validation error while getting or creating active attempt', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
-                'error_message' => $e->getMessage()
+                'error_message' => $e->getMessage(),
             ]);
+
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while getting or creating active attempt', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to get or create active QCM attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to get or create active QCM attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -189,7 +194,7 @@ class QCMAttemptService
             'qcm_id' => $attempt->getQcm()->getId(),
             'question_index' => $questionIndex,
             'answer_indices' => $answerIndices,
-            'attempt_status' => $attempt->getStatus()
+            'attempt_status' => $attempt->getStatus(),
         ]);
 
         try {
@@ -199,9 +204,10 @@ class QCMAttemptService
                     'student_id' => $attempt->getStudent()->getId(),
                     'qcm_id' => $attempt->getQcm()->getId(),
                     'attempt_status' => $attempt->getStatus(),
-                    'question_index' => $questionIndex
+                    'question_index' => $questionIndex,
                 ]);
-                throw new \InvalidArgumentException('This attempt is not active anymore.');
+
+                throw new InvalidArgumentException('This attempt is not active anymore.');
             }
 
             $attempt->setAnswerForQuestion($questionIndex, $answerIndices);
@@ -212,9 +218,8 @@ class QCMAttemptService
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'question_index' => $questionIndex,
-                'answer_count' => count($answerIndices)
+                'answer_count' => count($answerIndices),
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('Database error while saving QCM answer', [
                 'attempt_id' => $attempt->getId(),
@@ -222,13 +227,14 @@ class QCMAttemptService
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'question_index' => $questionIndex,
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to save answer due to database error: ' . $e->getMessage(), 0, $e);
-        } catch (\InvalidArgumentException $e) {
+
+            throw new RuntimeException('Failed to save answer due to database error: ' . $e->getMessage(), 0, $e);
+        } catch (InvalidArgumentException $e) {
             // Re-throw validation errors without wrapping
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while saving QCM answer', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
@@ -236,9 +242,10 @@ class QCMAttemptService
                 'question_index' => $questionIndex,
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Unexpected error while saving answer: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Unexpected error while saving answer: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -253,7 +260,7 @@ class QCMAttemptService
             'qcm_id' => $attempt->getQcm()->getId(),
             'attempt_status' => $attempt->getStatus(),
             'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
-            'answers_count' => count($attempt->getAnswers() ?? [])
+            'answers_count' => count($attempt->getAnswers() ?? []),
         ]);
 
         try {
@@ -262,31 +269,32 @@ class QCMAttemptService
                     'attempt_id' => $attempt->getId(),
                     'student_id' => $attempt->getStudent()->getId(),
                     'qcm_id' => $attempt->getQcm()->getId(),
-                    'attempt_status' => $attempt->getStatus()
+                    'attempt_status' => $attempt->getStatus(),
                 ]);
-                throw new \InvalidArgumentException('This attempt is not active anymore.');
+
+                throw new InvalidArgumentException('This attempt is not active anymore.');
             }
 
             $this->logger->info('Calculating score for attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
-                'qcm_id' => $attempt->getQcm()->getId()
+                'qcm_id' => $attempt->getQcm()->getId(),
             ]);
 
             // Calculate score
             $attempt->calculateScore();
-            
+
             $this->logger->info('Score calculated, completing attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'calculated_score' => $attempt->getScore(),
-                'passing_score' => $attempt->getQcm()->getPassingScore()
+                'passing_score' => $attempt->getQcm()->getPassingScore(),
             ]);
-            
+
             // Complete the attempt
             $attempt->complete();
-            
+
             $this->entityManager->flush();
 
             $this->logger->info('QCM attempt successfully submitted', [
@@ -297,31 +305,32 @@ class QCMAttemptService
                 'is_passed' => $attempt->isPassed(),
                 'completed_at' => $attempt->getCompletedAt()?->format('Y-m-d H:i:s'),
                 'duration_seconds' => $attempt->getTimeSpent(),
-                'duration_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null
+                'duration_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('Database error while submitting QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to submit attempt due to database error: ' . $e->getMessage(), 0, $e);
-        } catch (\InvalidArgumentException $e) {
+
+            throw new RuntimeException('Failed to submit attempt due to database error: ' . $e->getMessage(), 0, $e);
+        } catch (InvalidArgumentException $e) {
             // Re-throw validation errors without wrapping
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while submitting QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Unexpected error while submitting attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Unexpected error while submitting attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -336,7 +345,7 @@ class QCMAttemptService
             'qcm_id' => $attempt->getQcm()->getId(),
             'current_status' => $attempt->getStatus(),
             'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
-            'time_spent_seconds' => $attempt->getTimeSpent()
+            'time_spent_seconds' => $attempt->getTimeSpent(),
         ]);
 
         try {
@@ -345,9 +354,10 @@ class QCMAttemptService
                     'attempt_id' => $attempt->getId(),
                     'student_id' => $attempt->getStudent()->getId(),
                     'qcm_id' => $attempt->getQcm()->getId(),
-                    'current_status' => $attempt->getStatus()
+                    'current_status' => $attempt->getStatus(),
                 ]);
-                throw new \InvalidArgumentException('Only in-progress attempts can be abandoned.');
+
+                throw new InvalidArgumentException('Only in-progress attempts can be abandoned.');
             }
 
             $attempt->abandon();
@@ -358,31 +368,32 @@ class QCMAttemptService
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'final_time_spent_seconds' => $attempt->getTimeSpent(),
-                'final_time_spent_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null
+                'final_time_spent_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('Database error while abandoning QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to abandon attempt due to database error: ' . $e->getMessage(), 0, $e);
-        } catch (\InvalidArgumentException $e) {
+
+            throw new RuntimeException('Failed to abandon attempt due to database error: ' . $e->getMessage(), 0, $e);
+        } catch (InvalidArgumentException $e) {
             // Re-throw validation errors without wrapping
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while abandoning QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Unexpected error while abandoning attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Unexpected error while abandoning attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -398,7 +409,7 @@ class QCMAttemptService
             'current_status' => $attempt->getStatus(),
             'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
             'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s'),
-            'has_expired' => $attempt->hasExpired()
+            'has_expired' => $attempt->hasExpired(),
         ]);
 
         try {
@@ -407,8 +418,9 @@ class QCMAttemptService
                     'attempt_id' => $attempt->getId(),
                     'student_id' => $attempt->getStudent()->getId(),
                     'qcm_id' => $attempt->getQcm()->getId(),
-                    'current_status' => $attempt->getStatus()
+                    'current_status' => $attempt->getStatus(),
                 ]);
+
                 return; // Already processed
             }
 
@@ -420,28 +432,29 @@ class QCMAttemptService
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'final_time_spent_seconds' => $attempt->getTimeSpent(),
-                'final_time_spent_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null
+                'final_time_spent_minutes' => $attempt->getTimeSpent() ? round($attempt->getTimeSpent() / 60, 2) : null,
             ]);
-
         } catch (DBALException $e) {
             $this->logger->error('Database error while expiring QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode()
+                'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to expire attempt due to database error: ' . $e->getMessage(), 0, $e);
-        } catch (\Throwable $e) {
+
+            throw new RuntimeException('Failed to expire attempt due to database error: ' . $e->getMessage(), 0, $e);
+        } catch (Throwable $e) {
             $this->logger->error('Unexpected error while expiring QCM attempt', [
                 'attempt_id' => $attempt->getId(),
                 'student_id' => $attempt->getStudent()->getId(),
                 'qcm_id' => $attempt->getQcm()->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Unexpected error while expiring attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Unexpected error while expiring attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -454,29 +467,29 @@ class QCMAttemptService
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
-            'max_attempts' => $qcm->getMaxAttempts()
+            'max_attempts' => $qcm->getMaxAttempts(),
         ]);
 
         try {
             $canAttempt = $this->attemptRepository->canStartNewAttempt($student, $qcm);
-            
+
             $this->logger->debug('Student attempt check result', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'can_attempt' => $canAttempt,
                 'completed_attempts' => $this->attemptRepository->countCompletedAttempts($student, $qcm),
-                'max_attempts' => $qcm->getMaxAttempts()
+                'max_attempts' => $qcm->getMaxAttempts(),
             ]);
 
             return $canAttempt;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error checking if student can attempt QCM', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
+
             // Return false on error to be safe
             return false;
         }
@@ -490,29 +503,29 @@ class QCMAttemptService
         $this->logger->debug('Getting student attempts for QCM', [
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $attempts = $this->attemptRepository->findAllByStudentAndQCM($student, $qcm);
-            
+
             $this->logger->debug('Retrieved student attempts', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'attempts_count' => count($attempts),
-                'attempt_ids' => array_map(fn($attempt) => $attempt->getId(), $attempts)
+                'attempt_ids' => array_map(static fn ($attempt) => $attempt->getId(), $attempts),
             ]);
 
             return $attempts;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error getting student attempts for QCM', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to retrieve student attempts: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to retrieve student attempts: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -524,29 +537,29 @@ class QCMAttemptService
         $this->logger->debug('Getting student best score for QCM', [
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $bestScore = $this->attemptRepository->getBestScore($student, $qcm);
-            
+
             $this->logger->debug('Retrieved student best score', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'best_score' => $bestScore,
-                'passing_score' => $qcm->getPassingScore()
+                'passing_score' => $qcm->getPassingScore(),
             ]);
 
             return $bestScore;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error getting student best score for QCM', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to retrieve student best score: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to retrieve student best score: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -559,31 +572,31 @@ class QCMAttemptService
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
-            'passing_score' => $qcm->getPassingScore()
+            'passing_score' => $qcm->getPassingScore(),
         ]);
 
         try {
             $hasPassed = $this->attemptRepository->hasStudentPassed($student, $qcm);
             $bestScore = $this->attemptRepository->getBestScore($student, $qcm);
-            
+
             $this->logger->debug('Student pass check result', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'has_passed' => $hasPassed,
                 'best_score' => $bestScore,
-                'passing_score' => $qcm->getPassingScore()
+                'passing_score' => $qcm->getPassingScore(),
             ]);
 
             return $hasPassed;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error checking if student has passed QCM', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to check if student has passed: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to check if student has passed: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -594,27 +607,27 @@ class QCMAttemptService
     {
         $this->logger->info('Getting QCM statistics', [
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $statistics = $this->attemptRepository->getQCMStatistics($qcm);
-            
+
             $this->logger->info('Retrieved QCM statistics', [
                 'qcm_id' => $qcm->getId(),
-                'statistics' => $statistics
+                'statistics' => $statistics,
             ]);
 
             return $statistics;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error getting QCM statistics', [
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to retrieve QCM statistics: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to retrieve QCM statistics: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -626,27 +639,27 @@ class QCMAttemptService
         $this->logger->info('Getting question statistics for QCM', [
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
-            'questions_count' => count($qcm->getQuestions() ?? [])
+            'questions_count' => count($qcm->getQuestions() ?? []),
         ]);
 
         try {
             $statistics = $this->attemptRepository->getQuestionStatistics($qcm);
-            
+
             $this->logger->info('Retrieved question statistics', [
                 'qcm_id' => $qcm->getId(),
-                'statistics_count' => count($statistics)
+                'statistics_count' => count($statistics),
             ]);
 
             return $statistics;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error getting question statistics for QCM', [
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to retrieve question statistics: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to retrieve question statistics: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -659,31 +672,31 @@ class QCMAttemptService
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
             'qcm_title' => $qcm->getTitle(),
-            'max_attempts' => $qcm->getMaxAttempts()
+            'max_attempts' => $qcm->getMaxAttempts(),
         ]);
 
         try {
             $completedAttempts = $this->attemptRepository->countCompletedAttempts($student, $qcm);
             $remainingAttempts = max(0, $qcm->getMaxAttempts() - $completedAttempts);
-            
+
             $this->logger->debug('Calculated remaining attempts', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'completed_attempts' => $completedAttempts,
                 'max_attempts' => $qcm->getMaxAttempts(),
-                'remaining_attempts' => $remainingAttempts
+                'remaining_attempts' => $remainingAttempts,
             ]);
 
             return $remainingAttempts;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error getting remaining attempts for student', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to calculate remaining attempts: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to calculate remaining attempts: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -696,33 +709,32 @@ class QCMAttemptService
 
         try {
             $expiredAttempts = $this->attemptRepository->findExpiredAttempts();
-            
+
             $this->logger->info('Found expired attempts to process', [
                 'expired_attempts_count' => count($expiredAttempts),
-                'expired_attempt_ids' => array_map(fn($attempt) => $attempt->getId(), $expiredAttempts)
+                'expired_attempt_ids' => array_map(static fn ($attempt) => $attempt->getId(), $expiredAttempts),
             ]);
-            
+
             $processedCount = 0;
-            
+
             foreach ($expiredAttempts as $attempt) {
                 try {
                     $this->logger->debug('Processing expired attempt', [
                         'attempt_id' => $attempt->getId(),
                         'student_id' => $attempt->getStudent()->getId(),
                         'qcm_id' => $attempt->getQcm()->getId(),
-                        'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s')
+                        'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s'),
                     ]);
-                    
+
                     $this->expireAttempt($attempt);
                     $processedCount++;
-                    
-                } catch (\Throwable $attemptError) {
+                } catch (Throwable $attemptError) {
                     $this->logger->error('Error processing individual expired attempt', [
                         'attempt_id' => $attempt->getId(),
                         'student_id' => $attempt->getStudent()->getId(),
                         'qcm_id' => $attempt->getQcm()->getId(),
                         'error_message' => $attemptError->getMessage(),
-                        'error_class' => get_class($attemptError)
+                        'error_class' => get_class($attemptError),
                     ]);
                     // Continue processing other attempts
                 }
@@ -731,18 +743,18 @@ class QCMAttemptService
             $this->logger->info('Completed processing expired QCM attempts', [
                 'total_found' => count($expiredAttempts),
                 'successfully_processed' => $processedCount,
-                'failed_processing' => count($expiredAttempts) - $processedCount
+                'failed_processing' => count($expiredAttempts) - $processedCount,
             ]);
 
             return $processedCount;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Error processing expired QCM attempts', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to process expired attempts: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to process expired attempts: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -756,81 +768,81 @@ class QCMAttemptService
             'qcm_title' => $qcm->getTitle(),
             'randomize_questions' => $qcm->isRandomizeQuestions(),
             'randomize_answers' => $qcm->isRandomizeAnswers(),
-            'questions_count' => count($qcm->getQuestions() ?? [])
+            'questions_count' => count($qcm->getQuestions() ?? []),
         ]);
 
         try {
             $questions = $qcm->getQuestions();
-            
+
             if ($qcm->isRandomizeQuestions()) {
                 $this->logger->debug('Randomizing question order', [
                     'qcm_id' => $qcm->getId(),
-                    'original_questions_count' => count($questions)
+                    'original_questions_count' => count($questions),
                 ]);
                 shuffle($questions);
             }
-            
+
             // Randomize answers if enabled
             if ($qcm->isRandomizeAnswers()) {
                 $this->logger->debug('Randomizing answer order for each question', [
                     'qcm_id' => $qcm->getId(),
-                    'questions_count' => count($questions)
+                    'questions_count' => count($questions),
                 ]);
-                
+
                 foreach ($questions as $questionIndex => &$question) {
                     if (isset($question['answers'])) {
                         $originalAnswers = $question['answers'];
                         $correctAnswers = $question['correct_answers'] ?? [];
-                        
+
                         // Create mapping of old indices to new indices
                         $indices = array_keys($originalAnswers);
                         shuffle($indices);
-                        
+
                         $newAnswers = [];
                         $newCorrectAnswers = [];
-                        
+
                         foreach ($indices as $newIndex => $oldIndex) {
                             $newAnswers[$newIndex] = $originalAnswers[$oldIndex];
-                            
+
                             // Update correct answer indices
-                            if (in_array($oldIndex, $correctAnswers)) {
+                            if (in_array($oldIndex, $correctAnswers, true)) {
                                 $newCorrectAnswers[] = $newIndex;
                             }
                         }
-                        
+
                         $question['answers'] = $newAnswers;
                         $question['correct_answers'] = $newCorrectAnswers;
                         $question['_answer_mapping'] = array_flip($indices); // Store mapping for answer processing
-                        
+
                         $this->logger->debug('Randomized answers for question', [
                             'qcm_id' => $qcm->getId(),
                             'question_index' => $questionIndex,
                             'original_answers_count' => count($originalAnswers),
                             'new_answers_count' => count($newAnswers),
                             'original_correct_answers' => $correctAnswers,
-                            'new_correct_answers' => $newCorrectAnswers
+                            'new_correct_answers' => $newCorrectAnswers,
                         ]);
                     }
                 }
             }
-            
+
             $this->logger->info('Successfully randomized questions', [
                 'qcm_id' => $qcm->getId(),
                 'final_questions_count' => count($questions),
                 'randomized_questions' => $qcm->isRandomizeQuestions(),
-                'randomized_answers' => $qcm->isRandomizeAnswers()
+                'randomized_answers' => $qcm->isRandomizeAnswers(),
             ]);
-            
-            return $questions;
 
-        } catch (\Throwable $e) {
+            return $questions;
+        } catch (Throwable $e) {
             $this->logger->error('Error randomizing questions for QCM', [
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new \RuntimeException('Failed to randomize questions: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to randomize questions: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -842,12 +854,12 @@ class QCMAttemptService
         $this->logger->debug('Getting active attempt for student', [
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $attempt = $this->attemptRepository->findActiveAttempt($student, $qcm);
-            
+
             if ($attempt) {
                 $this->logger->debug('Found active attempt, checking expiration', [
                     'attempt_id' => $attempt->getId(),
@@ -855,35 +867,36 @@ class QCMAttemptService
                     'qcm_id' => $qcm->getId(),
                     'started_at' => $attempt->getStartedAt()?->format('Y-m-d H:i:s'),
                     'expires_at' => $attempt->getExpiresAt()?->format('Y-m-d H:i:s'),
-                    'has_expired' => $attempt->hasExpired()
+                    'has_expired' => $attempt->hasExpired(),
                 ]);
-                
+
                 if ($attempt->hasExpired()) {
                     $this->logger->info('Active attempt has expired, expiring it', [
                         'attempt_id' => $attempt->getId(),
                         'student_id' => $student->getId(),
-                        'qcm_id' => $qcm->getId()
+                        'qcm_id' => $qcm->getId(),
                     ]);
                     $this->expireAttempt($attempt);
+
                     return null;
                 }
             } else {
                 $this->logger->debug('No active attempt found for student', [
                     'student_id' => $student->getId(),
-                    'qcm_id' => $qcm->getId()
+                    'qcm_id' => $qcm->getId(),
                 ]);
             }
-            
-            return $attempt;
 
-        } catch (\Throwable $e) {
+            return $attempt;
+        } catch (Throwable $e) {
             $this->logger->error('Error getting active attempt for student', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to get active attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to get active attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -895,12 +908,12 @@ class QCMAttemptService
         $this->logger->debug('Getting latest attempt for student', [
             'student_id' => $student->getId(),
             'qcm_id' => $qcm->getId(),
-            'qcm_title' => $qcm->getTitle()
+            'qcm_title' => $qcm->getTitle(),
         ]);
 
         try {
             $attempt = $this->attemptRepository->findLatestAttempt($student, $qcm);
-            
+
             if ($attempt) {
                 $this->logger->debug('Found latest attempt', [
                     'attempt_id' => $attempt->getId(),
@@ -908,25 +921,25 @@ class QCMAttemptService
                     'qcm_id' => $qcm->getId(),
                     'attempt_status' => $attempt->getStatus(),
                     'attempt_score' => $attempt->getScore(),
-                    'completed_at' => $attempt->getCompletedAt()?->format('Y-m-d H:i:s')
+                    'completed_at' => $attempt->getCompletedAt()?->format('Y-m-d H:i:s'),
                 ]);
             } else {
                 $this->logger->debug('No latest attempt found for student', [
                     'student_id' => $student->getId(),
-                    'qcm_id' => $qcm->getId()
+                    'qcm_id' => $qcm->getId(),
                 ]);
             }
-            
-            return $attempt;
 
-        } catch (\Throwable $e) {
+            return $attempt;
+        } catch (Throwable $e) {
             $this->logger->error('Error getting latest attempt for student', [
                 'student_id' => $student->getId(),
                 'qcm_id' => $qcm->getId(),
                 'error_message' => $e->getMessage(),
-                'error_class' => get_class($e)
+                'error_class' => get_class($e),
             ]);
-            throw new \RuntimeException('Failed to get latest attempt: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Failed to get latest attempt: ' . $e->getMessage(), 0, $e);
         }
     }
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Teacher;
 
 use App\Entity\User\Teacher;
+use DateTimeImmutable;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -47,7 +47,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Add real data once course assignment system is implemented
@@ -75,7 +75,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/index.html.twig', $dashboardData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -120,7 +119,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -135,7 +134,6 @@ class DashboardController extends AbstractController
                 'teacher' => $teacher,
                 'page_title' => 'Mon Profil',
             ]);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -179,7 +177,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when course assignment system is ready
@@ -202,7 +200,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/courses.html.twig', $coursesData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -246,7 +243,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when student enrollment system is ready
@@ -269,7 +266,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/students.html.twig', $studentsData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -313,7 +309,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when session management system is ready
@@ -336,7 +332,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/sessions.html.twig', $sessionsData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -380,7 +375,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when resource management system is ready
@@ -404,7 +399,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/resources.html.twig', $resourcesData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -448,7 +442,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when analytics system is ready
@@ -476,7 +470,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/analytics.html.twig', $analyticsData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -520,7 +513,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // TODO: Implement when notification system is ready
@@ -546,7 +539,6 @@ class DashboardController extends AbstractController
             ]);
 
             return $this->render('teacher/dashboard/notifications.html.twig', $notificationsData);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
@@ -590,7 +582,7 @@ class DashboardController extends AbstractController
                 'teacher_email' => $teacher->getEmail(),
                 'ip_address' => $this->getClientIp(),
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -605,7 +597,6 @@ class DashboardController extends AbstractController
                 'teacher' => $teacher,
                 'page_title' => 'Paramètres',
             ]);
-
         } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 

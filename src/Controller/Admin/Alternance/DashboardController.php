@@ -136,6 +136,7 @@ class DashboardController extends AbstractController
 
             if ($request->isXmlHttpRequest()) {
                 $this->logger->debug('Returning metrics as JSON response');
+
                 return $this->json($metrics);
             }
 

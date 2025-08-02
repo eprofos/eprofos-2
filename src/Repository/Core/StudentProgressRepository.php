@@ -340,7 +340,8 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->setParameter('min', $min)
             ->setParameter('max', $max)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
@@ -355,7 +356,8 @@ class StudentProgressRepository extends ServiceEntityRepository
             ->where('se.status = :enrolled')
             ->setParameter('enrolled', 'enrolled')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return $result ? round((float) $result, 2) : 0.0;
     }

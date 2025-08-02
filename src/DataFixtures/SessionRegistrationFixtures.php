@@ -8,13 +8,13 @@ use App\Entity\CRM\Prospect;
 use App\Entity\Training\Session;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Student;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Faker\Generator;
-use DateTimeImmutable;
-use DateTime;
 
 /**
  * SessionRegistration fixtures for EPROFOS platform.
@@ -131,26 +131,26 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
 
         // Set createdAt using proper DateTime manipulation
         $sessionStart = $session->getStartDate();
-        
+
         // Convert to mutable DateTime for calculations
         if ($sessionStart instanceof DateTimeImmutable) {
             $sessionStartMutable = new DateTime($sessionStart->format('Y-m-d H:i:s'));
         } else {
             $sessionStartMutable = clone $sessionStart;
         }
-        
+
         // Simple approach: create registration 1-30 days before session
         $startDate = new DateTime($sessionStartMutable->format('Y-m-d H:i:s'));
         $startDate->modify('-30 days');
         $endDate = new DateTime($sessionStartMutable->format('Y-m-d H:i:s'));
         $endDate->modify('-1 hour');
-        
+
         // Ensure start date is before end date
         if ($startDate >= $endDate) {
             $startDate = new DateTime($sessionStartMutable->format('Y-m-d H:i:s'));
             $startDate->modify('-31 days');
         }
-        
+
         $createdAt = $this->faker->dateTimeBetween($startDate, $endDate);
         $registration->setCreatedAt(DateTimeImmutable::createFromMutable($createdAt));
         $registration->setUpdatedAt(DateTimeImmutable::createFromMutable($createdAt));
@@ -159,7 +159,7 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
         if (!empty($prospects) && $this->faker->boolean(60)) {
             $prospect = $this->faker->randomElement($prospects);
             $registration->setProspect($prospect);
-            
+
             // Use prospect's information
             $registration->setFirstName($prospect->getFirstName());
             $registration->setLastName($prospect->getLastName());
@@ -197,19 +197,19 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
         $registration->setStatus($status);
 
         // Set confirmation date for confirmed registrations
-        if (in_array($status, ['confirmed', 'attended', 'no_show'])) {
+        if (in_array($status, ['confirmed', 'attended', 'no_show'], true)) {
             // Ensure we have valid date range
             $createdAt = $registration->getCreatedAt();
             $sessionStart = $session->getStartDate();
-            
+
             // Convert to mutable DateTime for calculations
             $createdAtMutable = new DateTime($createdAt->format('Y-m-d H:i:s'));
             $sessionStartMutable = new DateTime($sessionStart->format('Y-m-d H:i:s'));
             $nowMutable = new DateTime();
-            
+
             // Determine end date for confirmation
             $endDate = min($nowMutable, $sessionStartMutable);
-            
+
             // Only set confirmedAt if we have a valid range
             if ($createdAtMutable < $endDate) {
                 $confirmedAt = $this->faker->dateTimeBetween($createdAtMutable, $endDate);
@@ -265,23 +265,23 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
         if ($this->faker->boolean(30)) {
             $additionalData = [
                 'registration_source' => $this->faker->randomElement([
-                    'Site web', 'Recommandation', 'Téléphone', 'Email', 'Salon professionnel', 'Partenaire'
+                    'Site web', 'Recommandation', 'Téléphone', 'Email', 'Salon professionnel', 'Partenaire',
                 ]),
                 'dietary_requirements' => $this->faker->optional(0.3)->randomElement([
-                    'Végétarien', 'Végan', 'Sans gluten', 'Halal', 'Casher', 'Allergies alimentaires'
+                    'Végétarien', 'Végan', 'Sans gluten', 'Halal', 'Casher', 'Allergies alimentaires',
                 ]),
                 'transport_mode' => $this->faker->randomElement([
-                    'Voiture personnelle', 'Transport en commun', 'Train', 'Avion', 'Covoiturage', 'Vélo'
+                    'Voiture personnelle', 'Transport en commun', 'Train', 'Avion', 'Covoiturage', 'Vélo',
                 ]),
                 'experience_level' => $this->faker->randomElement([
-                    'Débutant', 'Intermédiaire', 'Avancé', 'Expert'
+                    'Débutant', 'Intermédiaire', 'Avancé', 'Expert',
                 ]),
                 'motivation' => $this->faker->optional(0.4)->randomElement([
                     'Évolution professionnelle',
                     'Reconversion',
                     'Mise à jour des compétences',
                     'Obligation légale',
-                    'Curiosité personnelle'
+                    'Curiosité personnelle',
                 ]),
             ];
             $registration->setAdditionalData(array_filter($additionalData));
@@ -299,14 +299,14 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
         if ($this->faker->boolean(90)) {
             $startDate = $registration->getConfirmedAt() ?: $registration->getCreatedAt();
             $now = new DateTime();
-            
+
             // Convert to mutable DateTime for calculations
             if ($startDate instanceof DateTimeImmutable) {
                 $startDateMutable = new DateTime($startDate->format('Y-m-d H:i:s'));
             } else {
                 $startDateMutable = clone $startDate;
             }
-            
+
             // Simple approach: always deliver documents between confirmation and now (or +7 days if future)
             if ($startDateMutable <= $now) {
                 // Past or present confirmation - deliver between then and now
@@ -317,7 +317,7 @@ class SessionRegistrationFixtures extends Fixture implements DependentFixtureInt
                 $endDate->modify('+7 days');
                 $deliveredAt = $this->faker->dateTimeBetween($startDateMutable, $endDate);
             }
-            
+
             $registration->setDocumentsDeliveredAt($deliveredAt);
 
             // Documents acknowledged (70% chance if delivered)

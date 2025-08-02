@@ -8,6 +8,8 @@ use App\Entity\Document\DocumentCategory;
 use App\Form\Document\DocumentCategoryType;
 use App\Repository\Document\DocumentCategoryRepository;
 use App\Service\Document\DocumentCategoryService;
+use DateTimeImmutable;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,7 +45,7 @@ class DocumentCategoryController extends AbstractController
             'user_identifier' => $userIdentifier,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -75,7 +77,7 @@ class DocumentCategoryController extends AbstractController
                     ['label' => 'Catégories de documents', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving document categories tree', [
                 'user_identifier' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -83,7 +85,7 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des catégories de documents.');
@@ -116,7 +118,7 @@ class DocumentCategoryController extends AbstractController
             'category_slug' => $documentCategory->getSlug(),
             'user_identifier' => $userIdentifier,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -164,7 +166,7 @@ class DocumentCategoryController extends AbstractController
                     ['label' => $documentCategory->getName(), 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying document category details', [
                 'category_id' => $categoryId,
                 'category_name' => $documentCategory->getName(),
@@ -174,7 +176,7 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage des détails de la catégorie.');
@@ -198,7 +200,7 @@ class DocumentCategoryController extends AbstractController
             'user_identifier' => $userIdentifier,
             'request_method' => $requestMethod,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -236,7 +238,7 @@ class DocumentCategoryController extends AbstractController
                             'requested_parent_id' => $parentId,
                         ]);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error finding parent category', [
                         'user_identifier' => $userIdentifier,
                         'parent_id' => $parentId,
@@ -285,15 +287,14 @@ class DocumentCategoryController extends AbstractController
                         $this->addFlash('success', 'La catégorie de document a été créée avec succès.');
 
                         return $this->redirectToRoute('admin_document_category_show', ['id' => $documentCategory->getId()]);
-                    } else {
-                        $this->logger->error('Failed to create document category', [
-                            'user_identifier' => $userIdentifier,
-                            'category_name' => $documentCategory->getName(),
-                            'service_error' => $result['error'],
-                        ]);
-
-                        $this->addFlash('error', $result['error']);
                     }
+                    $this->logger->error('Failed to create document category', [
+                        'user_identifier' => $userIdentifier,
+                        'category_name' => $documentCategory->getName(),
+                        'service_error' => $result['error'],
+                    ]);
+
+                    $this->addFlash('error', $result['error']);
                 } else {
                     $this->logger->warning('Document category form validation failed', [
                         'user_identifier' => $userIdentifier,
@@ -318,7 +319,7 @@ class DocumentCategoryController extends AbstractController
                     ['label' => 'Nouvelle', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error in document category creation', [
                 'user_identifier' => $userIdentifier,
                 'request_method' => $requestMethod,
@@ -327,25 +328,13 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur critique est survenue lors de la création de la catégorie.');
 
             return $this->redirectToRoute('admin_document_category_index');
         }
-    }
-
-    /**
-     * Extract form errors as an array for logging purposes.
-     */
-    private function getFormErrorsAsArray($form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return $errors;
     }
 
     /**
@@ -365,7 +354,7 @@ class DocumentCategoryController extends AbstractController
             'user_identifier' => $userIdentifier,
             'request_method' => $requestMethod,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -439,16 +428,15 @@ class DocumentCategoryController extends AbstractController
                         $this->addFlash('success', 'La catégorie de document a été modifiée avec succès.');
 
                         return $this->redirectToRoute('admin_document_category_show', ['id' => $documentCategory->getId()]);
-                    } else {
-                        $this->logger->error('Failed to update document category', [
-                            'category_id' => $categoryId,
-                            'user_identifier' => $userIdentifier,
-                            'service_error' => $result['error'],
-                            'attempted_changes' => $changes,
-                        ]);
-
-                        $this->addFlash('error', $result['error']);
                     }
+                    $this->logger->error('Failed to update document category', [
+                        'category_id' => $categoryId,
+                        'user_identifier' => $userIdentifier,
+                        'service_error' => $result['error'],
+                        'attempted_changes' => $changes,
+                    ]);
+
+                    $this->addFlash('error', $result['error']);
                 } else {
                     $this->logger->warning('Document category edit form validation failed', [
                         'category_id' => $categoryId,
@@ -476,7 +464,7 @@ class DocumentCategoryController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error in document category edit', [
                 'category_id' => $categoryId,
                 'category_name' => $documentCategory->getName(),
@@ -487,7 +475,7 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur critique est survenue lors de la modification de la catégorie.');
@@ -512,7 +500,7 @@ class DocumentCategoryController extends AbstractController
             'category_name' => $categoryName,
             'user_identifier' => $userIdentifier,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -563,7 +551,7 @@ class DocumentCategoryController extends AbstractController
                         'category_name' => $categoryName,
                         'user_identifier' => $userIdentifier,
                         'deleted_category_data' => $categoryData,
-                        'timestamp' => new \DateTimeImmutable(),
+                        'timestamp' => new DateTimeImmutable(),
                     ]);
 
                     $this->addFlash('success', 'La catégorie de document a été supprimée avec succès.');
@@ -591,7 +579,7 @@ class DocumentCategoryController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_document_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during document category deletion', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -601,7 +589,7 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur critique est survenue lors de la suppression de la catégorie.');
@@ -629,7 +617,7 @@ class DocumentCategoryController extends AbstractController
             'expected_new_status' => !$currentStatus,
             'user_identifier' => $userIdentifier,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -665,7 +653,7 @@ class DocumentCategoryController extends AbstractController
                         'previous_status' => $currentStatus,
                         'new_status' => $newStatus,
                         'service_message' => $result['message'],
-                        'timestamp' => new \DateTimeImmutable(),
+                        'timestamp' => new DateTimeImmutable(),
                     ]);
 
                     $this->addFlash('success', $result['message']);
@@ -693,7 +681,7 @@ class DocumentCategoryController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_document_category_index');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during document category status toggle', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -704,7 +692,7 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur critique est survenue lors du changement de statut.');
@@ -731,7 +719,7 @@ class DocumentCategoryController extends AbstractController
             'current_parent_id' => $currentParentId,
             'user_identifier' => $userIdentifier,
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
         ]);
 
         try {
@@ -790,7 +778,7 @@ class DocumentCategoryController extends AbstractController
                         'new_parent_name' => $newParent->getName(),
                         'new_parent_level' => $newParent->getLevel(),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error finding new parent category', [
                         'category_id' => $categoryId,
                         'user_identifier' => $userIdentifier,
@@ -822,7 +810,7 @@ class DocumentCategoryController extends AbstractController
                     'new_parent_id' => $newParent?->getId(),
                     'new_parent_name' => $newParent?->getName(),
                     'new_level' => $documentCategory->getLevel(),
-                    'timestamp' => new \DateTimeImmutable(),
+                    'timestamp' => new DateTimeImmutable(),
                 ]);
 
                 return $this->json([
@@ -835,19 +823,18 @@ class DocumentCategoryController extends AbstractController
                         'parent_id' => $newParent?->getId(),
                     ],
                 ]);
-            } else {
-                $this->logger->error('Failed to move document category', [
-                    'category_id' => $categoryId,
-                    'category_name' => $categoryName,
-                    'user_identifier' => $userIdentifier,
-                    'current_parent_id' => $currentParentId,
-                    'requested_parent_id' => $newParent?->getId(),
-                    'service_error' => $result['error'],
-                ]);
-
-                return $this->json(['success' => false, 'error' => $result['error']], 400);
             }
-        } catch (\Exception $e) {
+            $this->logger->error('Failed to move document category', [
+                'category_id' => $categoryId,
+                'category_name' => $categoryName,
+                'user_identifier' => $userIdentifier,
+                'current_parent_id' => $currentParentId,
+                'requested_parent_id' => $newParent?->getId(),
+                'service_error' => $result['error'],
+            ]);
+
+            return $this->json(['success' => false, 'error' => $result['error']], 400);
+        } catch (Exception $e) {
             $this->logger->error('Critical error during document category move operation', [
                 'category_id' => $categoryId,
                 'category_name' => $categoryName,
@@ -858,13 +845,28 @@ class DocumentCategoryController extends AbstractController
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             return $this->json([
                 'success' => false,
-                'error' => 'Une erreur critique est survenue lors du déplacement de la catégorie.'
+                'error' => 'Une erreur critique est survenue lors du déplacement de la catégorie.',
             ], 500);
         }
+    }
+
+    /**
+     * Extract form errors as an array for logging purposes.
+     *
+     * @param mixed $form
+     */
+    private function getFormErrorsAsArray($form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true, true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return $errors;
     }
 }

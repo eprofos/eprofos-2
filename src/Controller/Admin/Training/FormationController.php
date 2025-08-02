@@ -8,6 +8,7 @@ use App\Entity\Training\Formation;
 use App\Form\Training\FormationType;
 use App\Repository\Training\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -41,7 +42,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin formations list access started', [
             'user' => $userIdentifier,
             'request_uri' => $request->getRequestUri(),
@@ -95,7 +96,7 @@ class FormationController extends AbstractController
                     'user' => $userIdentifier,
                     'search_term' => $activeFilters['search'],
                 ]);
-                
+
                 $queryBuilder
                     ->andWhere('f.title LIKE :search OR f.description LIKE :search')
                     ->setParameter('search', '%' . $activeFilters['search'] . '%')
@@ -108,7 +109,7 @@ class FormationController extends AbstractController
                     'user' => $userIdentifier,
                     'category_slug' => $activeFilters['category'],
                 ]);
-                
+
                 $queryBuilder
                     ->andWhere('c.slug = :category')
                     ->setParameter('category', $activeFilters['category'])
@@ -121,7 +122,7 @@ class FormationController extends AbstractController
                     'user' => $userIdentifier,
                     'level' => $activeFilters['level'],
                 ]);
-                
+
                 $queryBuilder
                     ->andWhere('f.level = :level')
                     ->setParameter('level', $activeFilters['level'])
@@ -134,7 +135,7 @@ class FormationController extends AbstractController
                     'user' => $userIdentifier,
                     'format' => $activeFilters['format'],
                 ]);
-                
+
                 $queryBuilder
                     ->andWhere('f.format = :format')
                     ->setParameter('format', $activeFilters['format'])
@@ -149,7 +150,7 @@ class FormationController extends AbstractController
                     'status' => $activeFilters['status'],
                     'is_active_value' => $isActive,
                 ]);
-                
+
                 $queryBuilder
                     ->andWhere('f.isActive = :status')
                     ->setParameter('status', $isActive)
@@ -246,8 +247,7 @@ class FormationController extends AbstractController
                     ['label' => 'Formations', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in admin formations list', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -260,7 +260,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des formations. Veuillez réessayer.');
-            
+
             // Return basic template with empty data in case of error
             return $this->render('admin/formation/index.html.twig', [
                 'formations' => [],
@@ -285,7 +285,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin formation details view started', [
             'user' => $userIdentifier,
             'formation_id' => $formation->getId(),
@@ -325,8 +325,7 @@ class FormationController extends AbstractController
                     ['label' => $formation->getTitle(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in admin formation details view', [
                 'user' => $userIdentifier,
                 'formation_id' => $formation->getId(),
@@ -340,7 +339,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails de la formation.');
-            
+
             return $this->redirectToRoute('admin_formation_index');
         }
     }
@@ -353,7 +352,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin new formation process started', [
             'user' => $userIdentifier,
             'method' => $request->getMethod(),
@@ -364,7 +363,7 @@ class FormationController extends AbstractController
         try {
             $formation = new Formation();
             $form = $this->createForm(FormationType::class, $formation);
-            
+
             $this->logger->debug('Formation form created', [
                 'user' => $userIdentifier,
                 'form_name' => $form->getName(),
@@ -385,7 +384,7 @@ class FormationController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $formErrors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Formation form validation failed', [
                         'user' => $userIdentifier,
                         'form_errors' => $formErrors,
@@ -406,7 +405,7 @@ class FormationController extends AbstractController
                     // Generate slug from title
                     $originalSlug = $this->slugger->slug($formation->getTitle())->lower()->toString();
                     $formation->setSlug($originalSlug);
-                    
+
                     $this->logger->debug('Formation slug generated', [
                         'user' => $userIdentifier,
                         'formation_title' => $formation->getTitle(),
@@ -431,7 +430,7 @@ class FormationController extends AbstractController
                         try {
                             $imageFile->move($uploadDirectory, $newFilename);
                             $formation->setImage($newFilename);
-                            
+
                             $this->logger->info('Formation image uploaded successfully', [
                                 'user' => $userIdentifier,
                                 'original_filename' => $imageFile->getClientOriginalName(),
@@ -439,7 +438,6 @@ class FormationController extends AbstractController
                                 'upload_directory' => $uploadDirectory,
                                 'file_size' => $imageFile->getSize(),
                             ]);
-                            
                         } catch (FileException $e) {
                             $this->logger->error('Failed to upload formation image', [
                                 'user' => $userIdentifier,
@@ -450,7 +448,7 @@ class FormationController extends AbstractController
                                 'error_code' => $e->getCode(),
                                 'stack_trace' => $e->getTraceAsString(),
                             ]);
-                            
+
                             $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
                         }
                     } else {
@@ -514,8 +512,7 @@ class FormationController extends AbstractController
                     ['label' => 'Nouvelle formation', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in new formation process', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -529,7 +526,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création de la formation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_formation_index');
         }
     }
@@ -542,7 +539,7 @@ class FormationController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin formation edit process started', [
             'user' => $userIdentifier,
             'formation_id' => $formation->getId(),
@@ -578,7 +575,7 @@ class FormationController extends AbstractController
             ]);
 
             $form = $this->createForm(FormationType::class, $formation);
-            
+
             $this->logger->debug('Formation edit form created', [
                 'user' => $userIdentifier,
                 'formation_id' => $formation->getId(),
@@ -600,7 +597,7 @@ class FormationController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $formErrors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Formation edit form validation failed', [
                         'user' => $userIdentifier,
                         'formation_id' => $formation->getId(),
@@ -624,7 +621,7 @@ class FormationController extends AbstractController
                     if ($originalTitle !== $formation->getTitle()) {
                         $newSlug = $this->slugger->slug($formation->getTitle())->lower()->toString();
                         $formation->setSlug($newSlug);
-                        
+
                         $this->logger->info('Formation slug updated due to title change', [
                             'user' => $userIdentifier,
                             'formation_id' => $formation->getId(),
@@ -651,7 +648,7 @@ class FormationController extends AbstractController
                         if ($originalImage) {
                             $uploadDirectory = $this->getParameter('formations_images_directory') ?? 'public/uploads/formations';
                             $oldImagePath = $uploadDirectory . '/' . $originalImage;
-                            
+
                             try {
                                 if (file_exists($oldImagePath)) {
                                     unlink($oldImagePath);
@@ -669,7 +666,7 @@ class FormationController extends AbstractController
                                         'image_name' => $originalImage,
                                     ]);
                                 }
-                            } catch (\Exception $e) {
+                            } catch (Exception $e) {
                                 $this->logger->error('Failed to delete old formation image', [
                                     'user' => $userIdentifier,
                                     'formation_id' => $formation->getId(),
@@ -688,7 +685,7 @@ class FormationController extends AbstractController
                         try {
                             $imageFile->move($uploadDirectory, $newFilename);
                             $formation->setImage($newFilename);
-                            
+
                             $this->logger->info('New formation image uploaded successfully', [
                                 'user' => $userIdentifier,
                                 'formation_id' => $formation->getId(),
@@ -698,7 +695,6 @@ class FormationController extends AbstractController
                                 'file_size' => $imageFile->getSize(),
                                 'replaced_image' => $originalImage,
                             ]);
-                            
                         } catch (FileException $e) {
                             $this->logger->error('Failed to upload new formation image', [
                                 'user' => $userIdentifier,
@@ -710,7 +706,7 @@ class FormationController extends AbstractController
                                 'error_code' => $e->getCode(),
                                 'stack_trace' => $e->getTraceAsString(),
                             ]);
-                            
+
                             $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
                         }
                     } else {
@@ -797,8 +793,7 @@ class FormationController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in formation edit process', [
                 'user' => $userIdentifier,
                 'formation_id' => $formation->getId(),
@@ -813,7 +808,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification de la formation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_formation_index');
         }
     }
@@ -830,7 +825,7 @@ class FormationController extends AbstractController
         $formationTitle = $formation->getTitle();
         $formationSlug = $formation->getSlug();
         $formationImage = $formation->getImage();
-        
+
         $this->logger->info('Admin formation deletion process started', [
             'user' => $userIdentifier,
             'formation_id' => $formationId,
@@ -845,7 +840,7 @@ class FormationController extends AbstractController
         try {
             $csrfToken = $request->getPayload()->get('_token');
             $expectedTokenId = 'delete' . $formationId;
-            
+
             $this->logger->debug('Validating CSRF token for formation deletion', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -864,6 +859,7 @@ class FormationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+
                 return $this->redirectToRoute('admin_formation_index');
             }
 
@@ -875,7 +871,7 @@ class FormationController extends AbstractController
             // Check if formation has contact requests
             $contactRequestsCount = $formation->getContactRequests()->count();
             $modulesCount = $formation->getModules()->count();
-            
+
             $this->logger->debug('Checking formation dependencies before deletion', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -894,6 +890,7 @@ class FormationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Impossible de supprimer cette formation car elle a des demandes de contact associées.');
+
                 return $this->redirectToRoute('admin_formation_index');
             }
 
@@ -908,7 +905,7 @@ class FormationController extends AbstractController
             if ($formationImage) {
                 $uploadDirectory = $this->getParameter('formations_images_directory') ?? 'public/uploads/formations';
                 $imagePath = $uploadDirectory . '/' . $formationImage;
-                
+
                 $this->logger->debug('Attempting to delete formation image file', [
                     'user' => $userIdentifier,
                     'formation_id' => $formationId,
@@ -936,7 +933,7 @@ class FormationController extends AbstractController
                             'image_name' => $formationImage,
                         ]);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to delete formation image file', [
                         'user' => $userIdentifier,
                         'formation_id' => $formationId,
@@ -979,8 +976,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('success', 'La formation a été supprimée avec succès.');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in formation deletion process', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1011,7 +1007,7 @@ class FormationController extends AbstractController
         $formationId = $formation->getId();
         $formationTitle = $formation->getTitle();
         $currentStatus = $formation->isActive();
-        
+
         $this->logger->info('Admin formation toggle status process started', [
             'user' => $userIdentifier,
             'formation_id' => $formationId,
@@ -1026,7 +1022,7 @@ class FormationController extends AbstractController
         try {
             $csrfToken = $request->getPayload()->get('_token');
             $expectedTokenId = 'toggle_status' . $formationId;
-            
+
             $this->logger->debug('Validating CSRF token for formation status toggle', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1045,6 +1041,7 @@ class FormationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+
                 return $this->redirectToRoute('admin_formation_index');
             }
 
@@ -1055,7 +1052,7 @@ class FormationController extends AbstractController
 
             $newStatus = !$currentStatus;
             $formation->setIsActive($newStatus);
-            
+
             $this->logger->debug('Formation status changed in memory', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1067,7 +1064,7 @@ class FormationController extends AbstractController
             $entityManager->flush();
 
             $status = $newStatus ? 'activée' : 'désactivée';
-            
+
             $endTime = microtime(true);
             $this->logger->info('Formation status toggled successfully', [
                 'user' => $userIdentifier,
@@ -1081,8 +1078,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('success', "La formation a été {$status} avec succès.");
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in formation status toggle process', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1114,7 +1110,7 @@ class FormationController extends AbstractController
         $formationId = $formation->getId();
         $formationTitle = $formation->getTitle();
         $currentFeaturedStatus = $formation->isFeatured();
-        
+
         $this->logger->info('Admin formation toggle featured status process started', [
             'user' => $userIdentifier,
             'formation_id' => $formationId,
@@ -1129,7 +1125,7 @@ class FormationController extends AbstractController
         try {
             $csrfToken = $request->getPayload()->get('_token');
             $expectedTokenId = 'toggle_featured' . $formationId;
-            
+
             $this->logger->debug('Validating CSRF token for formation featured status toggle', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1148,6 +1144,7 @@ class FormationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+
                 return $this->redirectToRoute('admin_formation_index');
             }
 
@@ -1158,7 +1155,7 @@ class FormationController extends AbstractController
 
             $newFeaturedStatus = !$currentFeaturedStatus;
             $formation->setIsFeatured($newFeaturedStatus);
-            
+
             $this->logger->debug('Formation featured status changed in memory', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,
@@ -1170,7 +1167,7 @@ class FormationController extends AbstractController
             $entityManager->flush();
 
             $status = $newFeaturedStatus ? 'mise en avant' : 'retirée de la mise en avant';
-            
+
             $endTime = microtime(true);
             $this->logger->info('Formation featured status toggled successfully', [
                 'user' => $userIdentifier,
@@ -1184,8 +1181,7 @@ class FormationController extends AbstractController
             ]);
 
             $this->addFlash('success', "La formation a été {$status} avec succès.");
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in formation featured status toggle process', [
                 'user' => $userIdentifier,
                 'formation_id' => $formationId,

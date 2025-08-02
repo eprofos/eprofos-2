@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -126,6 +127,7 @@ class CompanyController extends AbstractController
                 $this->logger->warning('CompanyController::show - Company not found', [
                     'siret' => $siret,
                 ]);
+
                 throw $this->createNotFoundException('Entreprise non trouvée');
             }
 
@@ -169,7 +171,7 @@ class CompanyController extends AbstractController
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
@@ -199,6 +201,7 @@ class CompanyController extends AbstractController
                 $this->logger->warning('CompanyController::mentors - Company not found', [
                     'siret' => $siret,
                 ]);
+
                 throw $this->createNotFoundException('Entreprise non trouvée');
             }
 
@@ -237,7 +240,7 @@ class CompanyController extends AbstractController
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
@@ -274,6 +277,7 @@ class CompanyController extends AbstractController
                 $this->logger->warning('CompanyController::contracts - Company not found', [
                     'siret' => $siret,
                 ]);
+
                 throw $this->createNotFoundException('Entreprise non trouvée');
             }
 
@@ -336,7 +340,7 @@ class CompanyController extends AbstractController
                 'request_params' => $request->query->all(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
@@ -366,6 +370,7 @@ class CompanyController extends AbstractController
                 $this->logger->warning('CompanyController::statistics - Company not found', [
                     'siret' => $siret,
                 ]);
+
                 throw $this->createNotFoundException('Entreprise non trouvée');
             }
 
@@ -412,7 +417,7 @@ class CompanyController extends AbstractController
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
@@ -444,11 +449,12 @@ class CompanyController extends AbstractController
                     'format' => $format,
                     'allowed_formats' => ['csv', 'xlsx'],
                 ]);
+
                 throw new InvalidArgumentException("Format d'export non supporté: {$format}");
             }
 
             $companies = $this->getCompaniesData($search);
-            
+
             $this->logger->debug('CompanyController::export - Retrieved companies for export', [
                 'companies_count' => count($companies),
                 'search_term' => $search,
@@ -851,6 +857,7 @@ class CompanyController extends AbstractController
         try {
             if (empty($contracts)) {
                 $this->logger->debug('CompanyController::calculateAverageContractDuration - No contracts provided');
+
                 return 0;
             }
 
@@ -895,6 +902,7 @@ class CompanyController extends AbstractController
         try {
             if (empty($mentors)) {
                 $this->logger->debug('CompanyController::getNewestMentor - No mentors provided');
+
                 return null;
             }
 
@@ -930,6 +938,7 @@ class CompanyController extends AbstractController
         try {
             if (empty($contracts)) {
                 $this->logger->debug('CompanyController::getOldestContract - No contracts provided');
+
                 return null;
             }
 

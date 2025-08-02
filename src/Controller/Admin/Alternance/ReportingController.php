@@ -1108,6 +1108,7 @@ class ReportingController extends AbstractController
 
             // Return default range (last year) as fallback
             $now = new DateTime();
+
             return [
                 'start' => (clone $now)->modify('-1 year'),
                 'end' => $now,
@@ -1274,7 +1275,6 @@ class ReportingController extends AbstractController
             // 1. Create a ScheduledReport entity
             // 2. Save it to the database
             // 3. Schedule it with a job queue system (Symfony Messenger, etc.)
-
         } catch (Exception $e) {
             $this->logger->error('Error scheduling automatic report', [
                 'error_message' => $e->getMessage(),

@@ -7,17 +7,19 @@ namespace App\Controller\Student;
 use App\Entity\User\Student;
 use App\Form\User\StudentRegistrationFormType;
 use App\Repository\User\StudentRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Form\FormInterface;
 
 /**
  * Student Security Controller.
@@ -45,7 +47,7 @@ class SecurityController extends AbstractController
     {
         try {
             $request = $this->requestStack->getCurrentRequest();
-            
+
             $this->logger->info('Student login page accessed', [
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request?->headers->get('User-Agent'),
@@ -60,6 +62,7 @@ class SecurityController extends AbstractController
                     'email' => $user->getUserIdentifier(),
                     'ip' => $this->getClientIp(),
                 ]);
+
                 return $this->redirectToRoute('student_dashboard');
             }
 
@@ -76,7 +79,7 @@ class SecurityController extends AbstractController
                     'error_class' => get_class($error),
                     'ip' => $this->getClientIp(),
                     'user_agent' => $request?->headers->get('User-Agent'),
-                    'timestamp' => new \DateTimeImmutable(),
+                    'timestamp' => new DateTimeImmutable(),
                 ]);
             } else {
                 $this->logger->debug('Student login form displayed', [
@@ -96,9 +99,9 @@ class SecurityController extends AbstractController
                 'error' => $error,
                 'page_title' => 'Connexion Étudiant',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $request = $this->requestStack->getCurrentRequest();
-            
+
             $this->logger->error('Exception occurred in student login', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -107,11 +110,11 @@ class SecurityController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request?->headers->get('User-Agent'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer.');
-            
+
             // Fallback to basic login template
             return $this->render('student/security/login.html.twig', [
                 'last_username' => '',
@@ -135,7 +138,7 @@ class SecurityController extends AbstractController
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
                 'referer' => $request->headers->get('Referer'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             // If user is already authenticated, redirect to dashboard
@@ -146,12 +149,13 @@ class SecurityController extends AbstractController
                     'email' => $user->getUserIdentifier(),
                     'ip' => $this->getClientIp(),
                 ]);
+
                 return $this->redirectToRoute('student_dashboard');
             }
 
             $student = new Student();
             $form = $this->createForm(StudentRegistrationFormType::class, $student);
-            
+
             $this->logger->debug('Student registration form created', [
                 'form_name' => $form->getName(),
                 'ip' => $this->getClientIp(),
@@ -184,9 +188,9 @@ class SecurityController extends AbstractController
                             'existing_student_id' => $existingStudent->getId(),
                             'ip' => $this->getClientIp(),
                         ]);
-                        
+
                         $this->addFlash('error', 'Un compte avec cette adresse email existe déjà.');
-                        
+
                         return $this->render('student/security/register.html.twig', [
                             'registrationForm' => $form,
                             'page_title' => 'Inscription Étudiant',
@@ -212,7 +216,7 @@ class SecurityController extends AbstractController
 
                     // Save the student
                     $this->entityManager->beginTransaction();
-                    
+
                     try {
                         $this->entityManager->persist($student);
                         $this->entityManager->flush();
@@ -225,7 +229,7 @@ class SecurityController extends AbstractController
                             'last_name' => $student->getLastName(),
                             'ip' => $this->getClientIp(),
                             'user_agent' => $request->headers->get('User-Agent'),
-                            'timestamp' => new \DateTimeImmutable(),
+                            'timestamp' => new DateTimeImmutable(),
                         ]);
 
                         // TODO: Send email verification email
@@ -238,10 +242,9 @@ class SecurityController extends AbstractController
                         $this->addFlash('success', 'Votre compte a été créé avec succès ! Un email de vérification vous a été envoyé.');
 
                         return $this->redirectToRoute('student_login');
-                        
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->entityManager->rollback();
-                        
+
                         $this->logger->error('Database error during student registration', [
                             'exception_message' => $e->getMessage(),
                             'exception_class' => get_class($e),
@@ -250,9 +253,9 @@ class SecurityController extends AbstractController
                             'email' => $student->getEmail(),
                             'ip' => $this->getClientIp(),
                         ]);
-                        
+
                         $this->addFlash('error', 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.');
-                        
+
                         return $this->render('student/security/register.html.twig', [
                             'registrationForm' => $form,
                             'page_title' => 'Inscription Étudiant',
@@ -270,8 +273,7 @@ class SecurityController extends AbstractController
                 'registrationForm' => $form,
                 'page_title' => 'Inscription Étudiant',
             ]);
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception occurred in student registration', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -280,15 +282,15 @@ class SecurityController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
-            
+
             // Create a new form for fallback
             $student = new Student();
             $form = $this->createForm(StudentRegistrationFormType::class, $student);
-            
+
             return $this->render('student/security/register.html.twig', [
                 'registrationForm' => $form,
                 'page_title' => 'Inscription Étudiant',
@@ -317,14 +319,14 @@ class SecurityController extends AbstractController
     {
         try {
             $request = $this->requestStack->getCurrentRequest();
-            
+
             $this->logger->info('Email verification attempt', [
                 'token' => $token,
                 'token_length' => strlen($token),
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request?->headers->get('User-Agent'),
                 'referer' => $request?->headers->get('Referer'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $student = $studentRepository->findByEmailVerificationToken($token);
@@ -337,6 +339,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de vérification invalide ou expiré.');
+
                 return $this->redirectToRoute('student_login');
             }
 
@@ -350,7 +353,7 @@ class SecurityController extends AbstractController
 
             // Begin transaction for email verification
             $this->entityManager->beginTransaction();
-            
+
             try {
                 $student->verifyEmail();
                 $this->entityManager->flush();
@@ -361,16 +364,15 @@ class SecurityController extends AbstractController
                     'email' => $student->getEmail(),
                     'ip' => $this->getClientIp(),
                     'user_agent' => $request?->headers->get('User-Agent'),
-                    'verification_timestamp' => new \DateTimeImmutable(),
+                    'verification_timestamp' => new DateTimeImmutable(),
                 ]);
 
                 $this->addFlash('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
 
                 return $this->redirectToRoute('student_login');
-                
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->entityManager->rollback();
-                
+
                 $this->logger->error('Database error during email verification', [
                     'exception_message' => $e->getMessage(),
                     'exception_class' => get_class($e),
@@ -379,14 +381,14 @@ class SecurityController extends AbstractController
                     'token' => $token,
                     'ip' => $this->getClientIp(),
                 ]);
-                
+
                 $this->addFlash('error', 'Une erreur est survenue lors de la vérification. Veuillez réessayer.');
+
                 return $this->redirectToRoute('student_login');
             }
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $request = $this->requestStack->getCurrentRequest();
-            
+
             $this->logger->error('Exception occurred in email verification', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -396,10 +398,11 @@ class SecurityController extends AbstractController
                 'token' => $token,
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request?->headers->get('User-Agent'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
+
             return $this->redirectToRoute('student_login');
         }
     }
@@ -418,12 +421,12 @@ class SecurityController extends AbstractController
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
                 'referer' => $request->headers->get('Referer'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             if ($request->isMethod('POST')) {
                 $email = $request->request->get('email');
-                
+
                 $this->logger->info('Password reset request submitted', [
                     'email' => $email,
                     'ip' => $this->getClientIp(),
@@ -448,7 +451,7 @@ class SecurityController extends AbstractController
                             ]);
 
                             $this->entityManager->beginTransaction();
-                            
+
                             try {
                                 $student->generatePasswordResetToken();
                                 $this->entityManager->flush();
@@ -468,10 +471,9 @@ class SecurityController extends AbstractController
                                     'email' => $student->getEmail(),
                                     'reset_token' => $student->getPasswordResetToken(),
                                 ]);
-                                
-                            } catch (\Exception $e) {
+                            } catch (Exception $e) {
                                 $this->entityManager->rollback();
-                                
+
                                 $this->logger->error('Database error during password reset token generation', [
                                     'exception_message' => $e->getMessage(),
                                     'exception_class' => get_class($e),
@@ -502,8 +504,9 @@ class SecurityController extends AbstractController
                     'email' => $email,
                     'ip' => $this->getClientIp(),
                 ]);
-                
+
                 $this->addFlash('success', 'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation.');
+
                 return $this->redirectToRoute('student_login');
             }
 
@@ -514,8 +517,7 @@ class SecurityController extends AbstractController
             return $this->render('student/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception occurred in forgot password', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -524,11 +526,11 @@ class SecurityController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
-            
+
             return $this->render('student/security/forgot_password.html.twig', [
                 'page_title' => 'Mot de passe oublié',
             ]);
@@ -551,7 +553,7 @@ class SecurityController extends AbstractController
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
                 'referer' => $request->headers->get('Referer'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $student = $studentRepository->findByPasswordResetToken($token);
@@ -564,6 +566,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de réinitialisation invalide ou expiré.');
+
                 return $this->redirectToRoute('student_login');
             }
 
@@ -577,6 +580,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de réinitialisation invalide ou expiré.');
+
                 return $this->redirectToRoute('student_login');
             }
 
@@ -637,7 +641,7 @@ class SecurityController extends AbstractController
                 ]);
 
                 $this->entityManager->beginTransaction();
-                
+
                 try {
                     $hashedPassword = $this->passwordHasher->hashPassword($student, $newPassword);
                     $student->setPassword($hashedPassword);
@@ -651,16 +655,15 @@ class SecurityController extends AbstractController
                         'email' => $student->getEmail(),
                         'ip' => $this->getClientIp(),
                         'user_agent' => $request->headers->get('User-Agent'),
-                        'reset_timestamp' => new \DateTimeImmutable(),
+                        'reset_timestamp' => new DateTimeImmutable(),
                     ]);
 
                     $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès.');
 
                     return $this->redirectToRoute('student_login');
-                    
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->entityManager->rollback();
-                    
+
                     $this->logger->error('Database error during password reset', [
                         'exception_message' => $e->getMessage(),
                         'exception_class' => get_class($e),
@@ -668,9 +671,9 @@ class SecurityController extends AbstractController
                         'email' => $student->getEmail(),
                         'ip' => $this->getClientIp(),
                     ]);
-                    
+
                     $this->addFlash('error', 'Une erreur est survenue lors de la réinitialisation. Veuillez réessayer.');
-                    
+
                     return $this->render('student/security/reset_password.html.twig', [
                         'token' => $token,
                         'page_title' => 'Nouveau mot de passe',
@@ -688,8 +691,7 @@ class SecurityController extends AbstractController
                 'token' => $token,
                 'page_title' => 'Nouveau mot de passe',
             ]);
-            
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception occurred in password reset', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -699,10 +701,11 @@ class SecurityController extends AbstractController
                 'token' => $token,
                 'ip' => $this->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTimeImmutable(),
+                'timestamp' => new DateTimeImmutable(),
             ]);
 
             $this->addFlash('error', 'Une erreur technique est survenue. Veuillez réessayer plus tard.');
+
             return $this->redirectToRoute('student_login');
         }
     }
@@ -727,19 +730,19 @@ class SecurityController extends AbstractController
     private function getFormErrorsAsArray(FormInterface $form): array
     {
         $errors = [];
-        
+
         // Get form errors
         foreach ($form->getErrors() as $error) {
             $errors[] = $error->getMessage();
         }
-        
+
         // Get field errors
         foreach ($form->all() as $fieldName => $formField) {
             foreach ($formField->getErrors() as $error) {
                 $errors[$fieldName] = $error->getMessage();
             }
         }
-        
+
         return $errors;
     }
 }

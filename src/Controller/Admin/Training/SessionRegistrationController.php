@@ -125,7 +125,6 @@ class SessionRegistrationController extends AbstractController
                 'total_pages' => $totalPages,
                 'total_registrations' => $totalRegistrations,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error loading session registrations index page', [
                 'user' => $userIdentifier,
@@ -139,7 +138,7 @@ class SessionRegistrationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors du chargement de la liste des inscriptions.');
-            
+
             // Return empty result in case of error
             return $this->render('admin/session_registration/index.html.twig', [
                 'registrations' => [],
@@ -190,7 +189,6 @@ class SessionRegistrationController extends AbstractController
             return $this->render('admin/session_registration/show.html.twig', [
                 'registration' => $registration,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error loading registration details', [
                 'user' => $userIdentifier,
@@ -205,7 +203,7 @@ class SessionRegistrationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors du chargement des détails de l\'inscription.');
-            
+
             return $this->redirectToRoute('admin_session_registration_index');
         }
     }
@@ -246,7 +244,7 @@ class SessionRegistrationController extends AbstractController
                 // Get current session before changes for logging
                 $session = $registration->getSession();
                 $previousRegistrationsCount = $session->getConfirmedRegistrationsCount();
-                
+
                 $this->logger->debug('Current session state before confirmation', [
                     'user' => $userIdentifier,
                     'registration_id' => $registrationId,
@@ -312,7 +310,6 @@ class SessionRegistrationController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'L\'inscription a été confirmée.');
-                
             } else {
                 $this->logger->warning('Invalid CSRF token for registration confirmation', [
                     'user' => $userIdentifier,
@@ -323,7 +320,6 @@ class SessionRegistrationController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error confirming registration', [
                 'user' => $userIdentifier,
@@ -381,7 +377,7 @@ class SessionRegistrationController extends AbstractController
                 // Get current session before changes for logging
                 $session = $registration->getSession();
                 $previousRegistrationsCount = $session->getConfirmedRegistrationsCount();
-                
+
                 $this->logger->debug('Current session state before cancellation', [
                     'user' => $userIdentifier,
                     'registration_id' => $registrationId,
@@ -447,7 +443,6 @@ class SessionRegistrationController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'L\'inscription a été annulée.');
-                
             } else {
                 $this->logger->warning('Invalid CSRF token for registration cancellation', [
                     'user' => $userIdentifier,
@@ -458,7 +453,6 @@ class SessionRegistrationController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error cancelling registration', [
                 'user' => $userIdentifier,
@@ -516,7 +510,7 @@ class SessionRegistrationController extends AbstractController
                 ]);
 
                 $validStatuses = ['pending', 'confirmed', 'cancelled', 'attended', 'no_show'];
-                
+
                 $this->logger->debug('Validating requested status', [
                     'user' => $userIdentifier,
                     'registration_id' => $registrationId,
@@ -530,7 +524,7 @@ class SessionRegistrationController extends AbstractController
                     $session = $registration->getSession();
                     $previousStatus = $registration->getStatus();
                     $previousRegistrationsCount = $session->getConfirmedRegistrationsCount();
-                    
+
                     $this->logger->debug('Current state before status update', [
                         'user' => $userIdentifier,
                         'registration_id' => $registrationId,
@@ -601,7 +595,6 @@ class SessionRegistrationController extends AbstractController
                     ]);
 
                     $this->addFlash('success', 'Le statut de l\'inscription a été modifié.');
-                    
                 } else {
                     $this->logger->warning('Invalid status provided for registration update', [
                         'user' => $userIdentifier,
@@ -612,7 +605,6 @@ class SessionRegistrationController extends AbstractController
 
                     $this->addFlash('error', 'Statut invalide fourni.');
                 }
-                
             } else {
                 $this->logger->warning('Invalid CSRF token for registration status update', [
                     'user' => $userIdentifier,
@@ -623,7 +615,6 @@ class SessionRegistrationController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error updating registration status', [
                 'user' => $userIdentifier,
@@ -692,7 +683,7 @@ class SessionRegistrationController extends AbstractController
                 // Get current session before deletion for logging
                 $session = $registration->getSession();
                 $previousRegistrationsCount = $session->getConfirmedRegistrationsCount();
-                
+
                 $this->logger->debug('Current session state before deletion', [
                     'user' => $userIdentifier,
                     'registration_id' => $registrationId,
@@ -753,7 +744,6 @@ class SessionRegistrationController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'L\'inscription a été supprimée.');
-                
             } else {
                 $this->logger->warning('Invalid CSRF token for registration deletion', [
                     'user' => $userIdentifier,
@@ -763,9 +753,9 @@ class SessionRegistrationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+
                 return $this->redirectToRoute('admin_session_registration_show', ['id' => $registrationId]);
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error deleting registration', [
                 'user' => $userIdentifier,
@@ -780,6 +770,7 @@ class SessionRegistrationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors de la suppression de l\'inscription.');
+
             return $this->redirectToRoute('admin_session_registration_show', ['id' => $registrationId]);
         }
 
@@ -895,7 +886,6 @@ class SessionRegistrationController extends AbstractController
 
                     fputcsv($output, $csvRow, ';');
                     $rowsWritten++;
-
                 } catch (Exception $e) {
                     $this->logger->warning('Error writing CSV row for registration', [
                         'user' => $userIdentifier,
@@ -903,7 +893,7 @@ class SessionRegistrationController extends AbstractController
                         'error_message' => $e->getMessage(),
                         'row_number' => $rowsWritten + 1,
                     ]);
-                    
+
                     // Continue with next registration instead of failing the entire export
                     continue;
                 }
@@ -927,7 +917,6 @@ class SessionRegistrationController extends AbstractController
             ]);
 
             return $response;
-
         } catch (Exception $e) {
             $this->logger->error('Error exporting session registrations', [
                 'user' => $userIdentifier,
@@ -941,7 +930,7 @@ class SessionRegistrationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'export des inscriptions.');
-            
+
             return $this->redirectToRoute('admin_session_registration_index');
         }
     }

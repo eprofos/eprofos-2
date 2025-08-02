@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Entity\Core;
 
+use App\Entity\Training\Formation;
+use App\Entity\Training\Session;
 use App\Entity\Training\SessionRegistration;
 use App\Entity\User\Student;
 use App\Repository\Core\StudentEnrollmentRepository;
 use DateTimeImmutable;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -35,8 +36,11 @@ class StudentEnrollment
      * Available enrollment status options.
      */
     public const STATUS_ENROLLED = 'enrolled';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_DROPPED_OUT = 'dropped_out';
+
     public const STATUS_SUSPENDED = 'suspended';
 
     /**
@@ -66,7 +70,7 @@ class StudentEnrollment
     #[Assert\NotBlank(message: 'Le statut d\'inscription est obligatoire')]
     #[Assert\Choice(
         choices: [self::STATUS_ENROLLED, self::STATUS_COMPLETED, self::STATUS_DROPPED_OUT, self::STATUS_SUSPENDED],
-        message: 'Statut d\'inscription invalide'
+        message: 'Statut d\'inscription invalide',
     )]
     private string $status = self::STATUS_ENROLLED;
 
@@ -79,7 +83,7 @@ class StudentEnrollment
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'La raison d\'abandon ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'La raison d\'abandon ne peut pas dépasser {{ limit }} caractères',
     )]
     private ?string $dropoutReason = null;
 
@@ -116,7 +120,7 @@ class StudentEnrollment
     #[ORM\Column(length: 50, nullable: true)]
     #[Assert\Length(
         max: 50,
-        maxMessage: 'La source d\'inscription ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'La source d\'inscription ne peut pas dépasser {{ limit }} caractères',
     )]
     private ?string $enrollmentSource = 'manual';
 
@@ -126,7 +130,7 @@ class StudentEnrollment
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'Les notes administratives ne peuvent pas dépasser {{ limit }} caractères'
+        maxMessage: 'Les notes administratives ne peuvent pas dépasser {{ limit }} caractères',
     )]
     private ?string $adminNotes = null;
 
@@ -145,7 +149,7 @@ class StudentEnrollment
             '%s - %s (%s)',
             $this->student?->getFullName() ?? 'Étudiant inconnu',
             $this->sessionRegistration?->getSession()?->getName() ?? 'Session inconnue',
-            $this->getStatusLabel()
+            $this->getStatusLabel(),
         );
     }
 
@@ -384,7 +388,7 @@ class StudentEnrollment
     /**
      * Get the formation from the session registration.
      */
-    public function getFormation(): ?\App\Entity\Training\Formation
+    public function getFormation(): ?Formation
     {
         return $this->sessionRegistration?->getSession()?->getFormation();
     }
@@ -392,7 +396,7 @@ class StudentEnrollment
     /**
      * Get the session from the session registration.
      */
-    public function getSession(): ?\App\Entity\Training\Session
+    public function getSession(): ?Session
     {
         return $this->sessionRegistration?->getSession();
     }
@@ -445,7 +449,7 @@ class StudentEnrollment
     public function getEnrollmentDuration(): int
     {
         $endDate = $this->completedAt ?? new DateTimeImmutable();
-        
+
         return $this->enrolledAt->diff($endDate)->days;
     }
 

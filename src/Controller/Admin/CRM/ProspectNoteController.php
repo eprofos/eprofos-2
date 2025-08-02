@@ -10,7 +10,9 @@ use App\Form\CRM\ProspectNoteType;
 use App\Repository\CRM\ProspectNoteRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -160,8 +162,7 @@ class ProspectNoteController extends AbstractController
                     ['label' => 'Notes prospects', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect notes index', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -178,7 +179,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des notes prospects.');
-            
+
             // Fallback: try to render with minimal data
             try {
                 return $this->render('admin/prospect_note/index.html.twig', [
@@ -196,11 +197,12 @@ class ProspectNoteController extends AbstractController
                         ['label' => 'Notes prospects', 'url' => null],
                     ],
                 ]);
-            } catch (\Exception $renderException) {
+            } catch (Exception $renderException) {
                 $this->logger->critical('Failed to render fallback template', [
                     'render_error' => $renderException->getMessage(),
                     'original_error' => $e->getMessage(),
                 ]);
+
                 throw $e; // Re-throw original exception if fallback fails
             }
         }
@@ -254,8 +256,7 @@ class ProspectNoteController extends AbstractController
                     ['label' => 'Note #' . $note->getId(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying prospect note details', [
                 'note_id' => $note->getId(),
                 'error_message' => $e->getMessage(),
@@ -267,6 +268,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage des détails de la note.');
+
             return $this->redirectToRoute('admin_prospect_note_index');
         }
     }
@@ -298,10 +300,11 @@ class ProspectNoteController extends AbstractController
         try {
             $note = new ProspectNote();
             $currentUser = $this->getUser();
-            
+
             if (!$currentUser) {
                 $this->logger->error('No authenticated user found when creating note');
-                throw new \RuntimeException('Utilisateur non authentifié');
+
+                throw new RuntimeException('Utilisateur non authentifié');
             }
 
             $note->setCreatedBy($currentUser);
@@ -347,7 +350,7 @@ class ProspectNoteController extends AbstractController
                     if ($note->isCompleted() && $note->getProspect()) {
                         $oldLastContact = $note->getProspect()->getLastContactDate();
                         $note->getProspect()->setLastContactDate(new DateTime());
-                        
+
                         $this->logger->info('Updated prospect last contact date', [
                             'prospect_id' => $note->getProspect()->getId(),
                             'old_last_contact' => $oldLastContact?->format('Y-m-d H:i:s'),
@@ -379,29 +382,30 @@ class ProspectNoteController extends AbstractController
                         $this->logger->debug('Redirecting to prospect show page', [
                             'prospect_id' => $prospect->getId(),
                         ]);
+
                         return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
                     }
 
                     $this->logger->debug('Redirecting to note show page', [
                         'note_id' => $note->getId(),
                     ]);
-                    return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
-                } else {
-                    // Log form validation errors
-                    $formErrors = [];
-                    foreach ($form->getErrors(true) as $error) {
-                        $formErrors[] = [
-                            'field' => $error->getOrigin()?->getName(),
-                            'message' => $error->getMessage(),
-                        ];
-                    }
 
-                    $this->logger->warning('Form validation failed for new note', [
-                        'errors' => $formErrors,
-                        'prospect_id' => $prospect?->getId(),
-                        'admin' => $this->getUser()?->getUserIdentifier(),
-                    ]);
+                    return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
                 }
+                // Log form validation errors
+                $formErrors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $formErrors[] = [
+                        'field' => $error->getOrigin()?->getName(),
+                        'message' => $error->getMessage(),
+                    ];
+                }
+
+                $this->logger->warning('Form validation failed for new note', [
+                    'errors' => $formErrors,
+                    'prospect_id' => $prospect?->getId(),
+                    'admin' => $this->getUser()?->getUserIdentifier(),
+                ]);
             }
 
             $breadcrumb = [
@@ -429,8 +433,7 @@ class ProspectNoteController extends AbstractController
                 'page_title' => $prospect ? 'Nouvelle note pour ' . $prospect->getFullName() : 'Nouvelle note',
                 'breadcrumb' => $breadcrumb,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating new prospect note', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -444,12 +447,12 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création de la note.');
-            
+
             // Redirect based on context
             if ($prospect) {
                 return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
             }
-            
+
             return $this->redirectToRoute('admin_prospect_note_index');
         }
     }
@@ -514,7 +517,7 @@ class ProspectNoteController extends AbstractController
                     if ($originalData['is_private'] !== $note->isPrivate()) {
                         $changes['is_private'] = ['from' => $originalData['is_private'], 'to' => $note->isPrivate()];
                     }
-                    
+
                     $newScheduledAt = $note->getScheduledAt()?->format('Y-m-d H:i:s');
                     if ($originalData['scheduled_at'] !== $newScheduledAt) {
                         $changes['scheduled_at'] = ['from' => $originalData['scheduled_at'], 'to' => $newScheduledAt];
@@ -530,7 +533,7 @@ class ProspectNoteController extends AbstractController
                     if ($note->isCompleted() && $note->getProspect()) {
                         $oldLastContact = $note->getProspect()->getLastContactDate();
                         $note->getProspect()->setLastContactDate(new DateTime());
-                        
+
                         $this->logger->info('Updated prospect last contact date on note completion', [
                             'prospect_id' => $note->getProspect()->getId(),
                             'old_last_contact' => $oldLastContact?->format('Y-m-d H:i:s'),
@@ -555,22 +558,21 @@ class ProspectNoteController extends AbstractController
                     $this->addFlash('success', 'La note a été modifiée avec succès.');
 
                     return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
-                } else {
-                    // Log form validation errors
-                    $formErrors = [];
-                    foreach ($form->getErrors(true) as $error) {
-                        $formErrors[] = [
-                            'field' => $error->getOrigin()?->getName(),
-                            'message' => $error->getMessage(),
-                        ];
-                    }
-
-                    $this->logger->warning('Form validation failed for note edit', [
-                        'note_id' => $note->getId(),
-                        'errors' => $formErrors,
-                        'admin' => $this->getUser()?->getUserIdentifier(),
-                    ]);
                 }
+                // Log form validation errors
+                $formErrors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $formErrors[] = [
+                        'field' => $error->getOrigin()?->getName(),
+                        'message' => $error->getMessage(),
+                    ];
+                }
+
+                $this->logger->warning('Form validation failed for note edit', [
+                    'note_id' => $note->getId(),
+                    'errors' => $formErrors,
+                    'admin' => $this->getUser()?->getUserIdentifier(),
+                ]);
             }
 
             $this->logger->debug('Rendering edit form', [
@@ -589,8 +591,7 @@ class ProspectNoteController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error editing prospect note', [
                 'note_id' => $note->getId(),
                 'error_message' => $e->getMessage(),
@@ -604,6 +605,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification de la note.');
+
             return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
         }
     }
@@ -672,8 +674,7 @@ class ProspectNoteController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error deleting prospect note', [
                 'note_id' => $note->getId(),
                 'error_message' => $e->getMessage(),
@@ -719,12 +720,13 @@ class ProspectNoteController extends AbstractController
                     'note_id' => $note->getId(),
                 ]);
                 $this->addFlash('error', 'Statut invalide fourni.');
+
                 return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
             }
 
             if ($this->isCsrfTokenValid($expectedToken, $csrfToken)) {
                 $oldStatus = $note->getStatus();
-                
+
                 // Validate status transition
                 $validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
                 if (!in_array($newStatus, $validStatuses, true)) {
@@ -734,6 +736,7 @@ class ProspectNoteController extends AbstractController
                         'valid_statuses' => $validStatuses,
                     ]);
                     $this->addFlash('error', 'Statut invalide.');
+
                     return $this->redirectToRoute('admin_prospect_note_show', ['id' => $note->getId()]);
                 }
 
@@ -744,7 +747,7 @@ class ProspectNoteController extends AbstractController
                 if ($note->isCompleted() && $note->getProspect()) {
                     $oldLastContact = $note->getProspect()->getLastContactDate();
                     $note->getProspect()->setLastContactDate(new DateTime());
-                    
+
                     $this->logger->info('Updated prospect last contact date on status change', [
                         'prospect_id' => $note->getProspect()->getId(),
                         'old_last_contact' => $oldLastContact?->format('Y-m-d H:i:s'),
@@ -774,8 +777,7 @@ class ProspectNoteController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating prospect note status', [
                 'note_id' => $note->getId(),
                 'error_message' => $e->getMessage(),
@@ -844,8 +846,7 @@ class ProspectNoteController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error toggling prospect note importance', [
                 'note_id' => $note->getId(),
                 'error_message' => $e->getMessage(),
@@ -918,8 +919,7 @@ class ProspectNoteController extends AbstractController
                     ['label' => 'Tâches en attente', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error fetching pending tasks', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -930,7 +930,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des tâches en attente.');
-            
+
             // Fallback with empty data
             return $this->render('admin/prospect_note/pending_tasks.html.twig', [
                 'pending_notes' => [],
@@ -996,8 +996,7 @@ class ProspectNoteController extends AbstractController
                     ['label' => 'Notes importantes', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error fetching important notes', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -1008,7 +1007,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des notes importantes.');
-            
+
             // Fallback with empty data
             return $this->render('admin/prospect_note/important.html.twig', [
                 'important_notes' => [],
@@ -1101,7 +1100,7 @@ class ProspectNoteController extends AbstractController
 
                     fputcsv($output, $row, ';');
                     $exportedCount++;
-                } catch (\Exception $rowException) {
+                } catch (Exception $rowException) {
                     $errorCount++;
                     $this->logger->warning('Error exporting note row', [
                         'note_id' => $note->getId(),
@@ -1127,8 +1126,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error exporting prospect notes', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -1139,6 +1137,7 @@ class ProspectNoteController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export des notes.');
+
             return $this->redirectToRoute('admin_prospect_note_index');
         }
     }

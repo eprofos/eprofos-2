@@ -251,6 +251,7 @@ class DocumentMetadataService
                     'key' => $documentMetadata->getMetaKey(),
                     'document_id' => $documentMetadata->getDocument()?->getId(),
                 ]);
+
                 return ['success' => false, 'error' => $validation['error']];
             }
 
@@ -266,6 +267,7 @@ class DocumentMetadataService
                     'data_type' => $documentMetadata->getDataType(),
                     'key' => $documentMetadata->getMetaKey(),
                 ]);
+
                 return ['success' => false, 'error' => $valueValidation['error']];
             }
 
@@ -332,6 +334,7 @@ class DocumentMetadataService
                     'metadata_id' => $documentMetadata->getId(),
                     'key' => $documentMetadata->getMetaKey(),
                 ]);
+
                 return ['success' => false, 'error' => $validation['error']];
             }
 
@@ -347,6 +350,7 @@ class DocumentMetadataService
                     'value' => $documentMetadata->getMetaValue(),
                     'data_type' => $documentMetadata->getDataType(),
                 ]);
+
                 return ['success' => false, 'error' => $valueValidation['error']];
             }
 
@@ -399,7 +403,7 @@ class DocumentMetadataService
 
             $this->logger->debug('Removing metadata from entity manager');
             $this->entityManager->remove($documentMetadata);
-            
+
             $this->logger->debug('Flushing metadata deletion to database');
             $this->entityManager->flush();
 
@@ -439,6 +443,7 @@ class DocumentMetadataService
 
             if (empty($ids)) {
                 $this->logger->warning('Bulk delete called with empty IDs array');
+
                 return ['success' => false, 'error' => 'Aucun ID fourni pour la suppression en masse.'];
             }
 
@@ -670,12 +675,13 @@ class DocumentMetadataService
 
     /**
      * Get available metadata keys with optional search.
-     * 
+     *
      * Returns all unique metadata keys currently in use, along with
      * their usage statistics. Used for autocomplete functionality
      * in admin forms to help users choose consistent key names.
-     * 
+     *
      * @param string $search Optional search term to filter keys
+     *
      * @return array Array of associative arrays with 'key' and 'usage_count'
      */
     public function getAvailableMetadataKeys(string $search = ''): array
@@ -787,6 +793,7 @@ class DocumentMetadataService
                 $this->logger->warning('Metadata validation failed: empty key', [
                     'metadata_id' => $documentMetadata->getId(),
                 ]);
+
                 return ['valid' => false, 'error' => 'La clé de métadonnée est requise.'];
             }
 
@@ -795,6 +802,7 @@ class DocumentMetadataService
                     'metadata_id' => $documentMetadata->getId(),
                     'key' => $documentMetadata->getMetaKey(),
                 ]);
+
                 return ['valid' => false, 'error' => 'Le document associé est requis.'];
             }
 
@@ -812,6 +820,7 @@ class DocumentMetadataService
                     'document_id' => $documentMetadata->getDocument()->getId(),
                     'existing_metadata_id' => $existingMetadata->getId(),
                 ]);
+
                 return ['valid' => false, 'error' => 'Cette clé de métadonnée existe déjà pour ce document.'];
             }
 
@@ -860,6 +869,7 @@ class DocumentMetadataService
                     'key' => $documentMetadata->getMetaKey(),
                     'data_type' => $dataType,
                 ]);
+
                 return ['valid' => false, 'error' => 'Cette métadonnée est obligatoire.'];
             }
 
@@ -872,11 +882,12 @@ class DocumentMetadataService
 
                 switch ($dataType) {
                     case DocumentMetadata::TYPE_INTEGER:
-                        if (!is_numeric($value) || (int) $value != $value) {
+                        if (!is_numeric($value) || (int) $value !== $value) {
                             $this->logger->warning('Integer validation failed', [
                                 'value' => $value,
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être un nombre entier.'];
                         }
                         break;
@@ -887,6 +898,7 @@ class DocumentMetadataService
                                 'value' => $value,
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être un nombre décimal.'];
                         }
                         break;
@@ -899,6 +911,7 @@ class DocumentMetadataService
                                 'allowed_values' => $allowedValues,
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être un booléen (true/false, 1/0, oui/non).'];
                         }
                         break;
@@ -916,6 +929,7 @@ class DocumentMetadataService
                                 'error' => $dateException->getMessage(),
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être une date valide.'];
                         }
                         break;
@@ -933,6 +947,7 @@ class DocumentMetadataService
                                 'error' => $dateTimeException->getMessage(),
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être une date et heure valide.'];
                         }
                         break;
@@ -947,6 +962,7 @@ class DocumentMetadataService
                                 'json_error_code' => $jsonError,
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être un JSON valide.'];
                         }
                         $this->logger->debug('JSON validation successful', [
@@ -961,6 +977,7 @@ class DocumentMetadataService
                                 'value' => $value,
                                 'metadata_id' => $documentMetadata->getId(),
                             ]);
+
                             return ['valid' => false, 'error' => 'La valeur doit être une URL valide.'];
                         }
                         $this->logger->debug('URL validation successful', [

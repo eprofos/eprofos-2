@@ -6,14 +6,19 @@ namespace App\Controller\Admin\Training;
 
 use App\Entity\Training\Formation;
 use App\Service\Training\FormationScheduleService;
+use DomainException;
+use Exception;
+use InvalidArgumentException;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Twig\Error\Error;
 
 /**
  * Admin Formation Schedule Controller.
@@ -72,7 +77,7 @@ class FormationScheduleController extends AbstractController
                     ['label' => 'Planning', 'url' => null],
                 ],
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument error while calculating formation schedule', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -80,8 +85,9 @@ class FormationScheduleController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de configuration de la formation : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_formation_show', ['id' => $formation->getId()]);
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             $this->logger->error('Domain error while calculating formation schedule', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -89,8 +95,9 @@ class FormationScheduleController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur métier : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_formation_show', ['id' => $formation->getId()]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error while displaying formation schedule', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -101,6 +108,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'affichage du planning.');
+
             return $this->redirectToRoute('admin_formation_index');
         }
     }
@@ -193,7 +201,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             return new PdfResponse($pdfContent, $filename);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument error while generating formation schedule PDF', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -201,7 +209,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             throw new BadRequestHttpException('Erreur de configuration de la formation : ' . $e->getMessage(), $e);
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             $this->logger->error('Domain error while generating formation schedule PDF', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -209,7 +217,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             throw new BadRequestHttpException('Erreur métier : ' . $e->getMessage(), $e);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->logger->error('Runtime error during PDF generation (likely wkhtmltopdf issue)', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -217,7 +225,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             throw new BadRequestHttpException('Erreur de génération PDF : ' . $e->getMessage(), $e);
-        } catch (\Twig\Error\Error $e) {
+        } catch (Error $e) {
             $this->logger->error('Twig template error while generating formation schedule PDF', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),
@@ -225,7 +233,7 @@ class FormationScheduleController extends AbstractController
             ]);
 
             throw new BadRequestHttpException('Erreur de template : ' . $e->getMessage(), $e);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error while generating formation schedule PDF', [
                 'formation_id' => $formation->getId(),
                 'error_message' => $e->getMessage(),

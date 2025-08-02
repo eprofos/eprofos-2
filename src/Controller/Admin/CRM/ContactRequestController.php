@@ -8,6 +8,7 @@ use App\Entity\CRM\ContactRequest;
 use App\Form\CRM\ContactRequestType;
 use App\Repository\CRM\ContactRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -80,7 +81,8 @@ class ContactRequestController extends AbstractController
                     'filter_value' => $status,
                 ]);
                 $queryBuilder->andWhere('cr.status = :status')
-                    ->setParameter('status', $status);
+                    ->setParameter('status', $status)
+                ;
             }
 
             if ($type) {
@@ -90,7 +92,8 @@ class ContactRequestController extends AbstractController
                     'filter_value' => $type,
                 ]);
                 $queryBuilder->andWhere('cr.type = :type')
-                    ->setParameter('type', $type);
+                    ->setParameter('type', $type)
+                ;
             }
 
             // Execute query and measure performance
@@ -154,8 +157,7 @@ class ContactRequestController extends AbstractController
                     ['label' => 'Demandes de contact', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request index action', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -257,8 +259,7 @@ class ContactRequestController extends AbstractController
                     ['label' => 'Demande #' . $contactRequest->getId(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request show action', [
                 'user' => $userIdentifier,
                 'contact_request_id' => $contactRequestId,
@@ -272,7 +273,7 @@ class ContactRequestController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails de la demande de contact. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_contact_request_index');
         }
     }
@@ -374,13 +375,12 @@ class ContactRequestController extends AbstractController
                     $this->addFlash('success', 'La demande de contact a été modifiée avec succès.');
 
                     return $this->redirectToRoute('admin_contact_request_show', ['id' => $contactRequest->getId()]);
-                } else {
-                    $this->logger->warning('Contact request edit form validation failed', [
-                        'user' => $userIdentifier,
-                        'contact_request_id' => $contactRequestId,
-                        'form_errors' => (string) $form->getErrors(true),
-                    ]);
                 }
+                $this->logger->warning('Contact request edit form validation failed', [
+                    'user' => $userIdentifier,
+                    'contact_request_id' => $contactRequestId,
+                    'form_errors' => (string) $form->getErrors(true),
+                ]);
             }
 
             $totalExecutionTime = microtime(true) - $requestStartTime;
@@ -404,8 +404,7 @@ class ContactRequestController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request edit action', [
                 'user' => $userIdentifier,
                 'contact_request_id' => $contactRequestId,
@@ -420,7 +419,7 @@ class ContactRequestController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification de la demande de contact. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_contact_request_show', ['id' => $contactRequest->getId()]);
         }
     }
@@ -497,8 +496,7 @@ class ContactRequestController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request status update action', [
                 'user' => $userIdentifier,
                 'contact_request_id' => $contactRequestId,
@@ -603,8 +601,7 @@ class ContactRequestController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request delete action', [
                 'user' => $userIdentifier,
                 'contact_request_id' => $contactRequestId,
@@ -726,8 +723,7 @@ class ContactRequestController extends AbstractController
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in contact request export action', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -740,7 +736,7 @@ class ContactRequestController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export des demandes de contact. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_contact_request_index');
         }
     }

@@ -8,6 +8,9 @@ use App\Entity\User\Teacher;
 use App\Form\User\TeacherType;
 use App\Repository\User\TeacherRepository;
 use App\Service\User\TeacherService;
+use DateTime;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -45,12 +48,12 @@ class TeacherController extends AbstractController
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $clientIp = $request->getClientIp();
-        
+
         $this->logger->info('Admin teachers list accessed - START', [
             'user' => $userIdentifier,
             'ip' => $clientIp,
             'user_agent' => $request->headers->get('User-Agent'),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -83,7 +86,7 @@ class TeacherController extends AbstractController
                 'filters' => $filters,
             ]);
             $teachers = $teacherRepository->findWithFilters($filters, $page, $limit);
-            
+
             $this->logger->debug('Executing countWithFilters query', [
                 'user' => $userIdentifier,
                 'filters' => $filters,
@@ -111,7 +114,7 @@ class TeacherController extends AbstractController
             $statistics = $teacherRepository->getStatistics();
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->info('Admin teachers list accessed - SUCCESS', [
                 'user' => $userIdentifier,
                 'ip' => $clientIp,
@@ -132,7 +135,6 @@ class TeacherController extends AbstractController
                 'specialties' => $specialties ?? [],
                 'statistics' => $statistics ?? [],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in teachers list', [
                 'user' => $userIdentifier,
@@ -145,7 +147,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors du chargement des formateurs.');
-            
+
             return $this->render('admin/teacher/index.html.twig', [
                 'teachers' => [],
                 'current_page' => 1,
@@ -155,10 +157,9 @@ class TeacherController extends AbstractController
                 'specialties' => [],
                 'statistics' => [],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Unexpected error in teachers list', [
                 'user' => $userIdentifier,
                 'ip' => $clientIp,
@@ -173,7 +174,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du chargement des formateurs.');
-            
+
             return $this->render('admin/teacher/index.html.twig', [
                 'teachers' => [],
                 'current_page' => 1,
@@ -193,13 +194,13 @@ class TeacherController extends AbstractController
     public function show(Teacher $teacher): Response
     {
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin teacher details viewed - START', [
             'teacher_id' => $teacher->getId(),
             'teacher_email' => $teacher->getEmail(),
             'teacher_name' => $teacher->getFirstName() . ' ' . $teacher->getLastName(),
             'viewed_by' => $userIdentifier,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -224,8 +225,7 @@ class TeacherController extends AbstractController
             return $this->render('admin/teacher/show.html.twig', [
                 'teacher' => $teacher,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying teacher details', [
                 'teacher_id' => $teacher->getId(),
                 'viewed_by' => $userIdentifier,
@@ -237,7 +237,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'affichage des détails du formateur.');
-            
+
             return $this->redirectToRoute('admin_teacher_index');
         }
     }
@@ -250,23 +250,23 @@ class TeacherController extends AbstractController
     {
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $clientIp = $request->getClientIp();
-        
+
         $this->logger->info('New teacher creation accessed', [
             'accessed_by' => $userIdentifier,
             'ip' => $clientIp,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
             $teacher = new Teacher();
             $form = $this->createForm(TeacherType::class, $teacher);
-            
+
             $this->logger->debug('Teacher form created', [
                 'form_name' => $form->getName(),
                 'accessed_by' => $userIdentifier,
             ]);
-            
+
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
@@ -286,7 +286,7 @@ class TeacherController extends AbstractController
                     // Hash password if provided
                     $plainPassword = $form->get('plainPassword')->getData();
                     $passwordGenerated = false;
-                    
+
                     if ($plainPassword) {
                         $this->logger->debug('Using provided password for new teacher', [
                             'teacher_email' => $teacher->getEmail(),
@@ -300,13 +300,13 @@ class TeacherController extends AbstractController
                         $hashedPassword = $this->passwordHasher->hashPassword($teacher, $randomPassword);
                         $teacher->setPassword($hashedPassword);
                         $passwordGenerated = true;
-                        
+
                         $this->logger->info('Generated temporary password for new teacher', [
                             'teacher_email' => $teacher->getEmail(),
                             'password_length' => strlen($randomPassword),
                             'submitted_by' => $userIdentifier,
                         ]);
-                        
+
                         $this->addFlash('info', 'Un mot de passe temporaire a été généré : ' . $randomPassword);
                     }
 
@@ -332,13 +332,12 @@ class TeacherController extends AbstractController
                     $this->addFlash('success', 'Formateur créé avec succès.');
 
                     return $this->redirectToRoute('admin_teacher_show', ['id' => $teacher->getId()]);
-                } else {
-                    $this->logger->warning('Invalid teacher creation form submitted', [
-                        'form_errors' => (string) $form->getErrors(true, false),
-                        'submitted_by' => $userIdentifier,
-                        'attempted_email' => $teacher->getEmail(),
-                    ]);
                 }
+                $this->logger->warning('Invalid teacher creation form submitted', [
+                    'form_errors' => (string) $form->getErrors(true, false),
+                    'submitted_by' => $userIdentifier,
+                    'attempted_email' => $teacher->getEmail(),
+                ]);
             } else {
                 $this->logger->debug('Teacher creation form displayed', [
                     'accessed_by' => $userIdentifier,
@@ -349,8 +348,7 @@ class TeacherController extends AbstractController
                 'teacher' => $teacher,
                 'form' => $form,
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Duplicate email constraint violation during teacher creation', [
                 'attempted_email' => $teacher->getEmail() ?? 'unknown',
                 'created_by' => $userIdentifier,
@@ -360,12 +358,11 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Un formateur avec cette adresse email existe déjà.');
-            
+
             return $this->render('admin/teacher/new.html.twig', [
                 'teacher' => $teacher ?? new Teacher(),
                 'form' => $form ?? $this->createForm(TeacherType::class, new Teacher()),
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during teacher creation', [
                 'attempted_email' => $teacher->getEmail() ?? 'unknown',
@@ -377,13 +374,12 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la création du formateur.');
-            
+
             return $this->render('admin/teacher/new.html.twig', [
                 'teacher' => $teacher ?? new Teacher(),
                 'form' => $form ?? $this->createForm(TeacherType::class, new Teacher()),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during teacher creation', [
                 'attempted_email' => $teacher->getEmail() ?? 'unknown',
                 'created_by' => $userIdentifier,
@@ -396,7 +392,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la création du formateur.');
-            
+
             return $this->render('admin/teacher/new.html.twig', [
                 'teacher' => new Teacher(),
                 'form' => $this->createForm(TeacherType::class, new Teacher()),
@@ -412,14 +408,14 @@ class TeacherController extends AbstractController
     {
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $clientIp = $request->getClientIp();
-        
+
         $this->logger->info('Teacher edit accessed', [
             'teacher_id' => $teacher->getId(),
             'teacher_email' => $teacher->getEmail(),
             'edited_by' => $userIdentifier,
             'ip' => $clientIp,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -436,13 +432,13 @@ class TeacherController extends AbstractController
             ];
 
             $form = $this->createForm(TeacherType::class, $teacher);
-            
+
             $this->logger->debug('Teacher edit form created', [
                 'teacher_id' => $teacher->getId(),
                 'form_name' => $form->getName(),
                 'edited_by' => $userIdentifier,
             ]);
-            
+
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
@@ -455,14 +451,14 @@ class TeacherController extends AbstractController
 
                 if ($form->isValid()) {
                     $passwordChanged = false;
-                    
+
                     // Update password if provided
                     $plainPassword = $form->get('plainPassword')->getData();
                     if ($plainPassword) {
                         $hashedPassword = $this->passwordHasher->hashPassword($teacher, $plainPassword);
                         $teacher->setPassword($hashedPassword);
                         $passwordChanged = true;
-                        
+
                         $this->logger->info('Teacher password updated', [
                             'teacher_id' => $teacher->getId(),
                             'edited_by' => $userIdentifier,
@@ -512,13 +508,12 @@ class TeacherController extends AbstractController
                     $this->addFlash('success', 'Formateur modifié avec succès.');
 
                     return $this->redirectToRoute('admin_teacher_show', ['id' => $teacher->getId()]);
-                } else {
-                    $this->logger->warning('Invalid teacher edit form submitted', [
-                        'teacher_id' => $teacher->getId(),
-                        'form_errors' => (string) $form->getErrors(true, false),
-                        'edited_by' => $userIdentifier,
-                    ]);
                 }
+                $this->logger->warning('Invalid teacher edit form submitted', [
+                    'teacher_id' => $teacher->getId(),
+                    'form_errors' => (string) $form->getErrors(true, false),
+                    'edited_by' => $userIdentifier,
+                ]);
             } else {
                 $this->logger->debug('Teacher edit form displayed', [
                     'teacher_id' => $teacher->getId(),
@@ -530,8 +525,7 @@ class TeacherController extends AbstractController
                 'teacher' => $teacher,
                 'form' => $form,
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Duplicate email constraint violation during teacher edit', [
                 'teacher_id' => $teacher->getId(),
                 'attempted_email' => $teacher->getEmail(),
@@ -542,12 +536,11 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Un formateur avec cette adresse email existe déjà.');
-            
+
             return $this->render('admin/teacher/edit.html.twig', [
                 'teacher' => $teacher,
                 'form' => $form ?? $this->createForm(TeacherType::class, $teacher),
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during teacher edit', [
                 'teacher_id' => $teacher->getId(),
@@ -559,13 +552,12 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la modification du formateur.');
-            
+
             return $this->render('admin/teacher/edit.html.twig', [
                 'teacher' => $teacher,
                 'form' => $form ?? $this->createForm(TeacherType::class, $teacher),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during teacher edit', [
                 'teacher_id' => $teacher->getId(),
                 'edited_by' => $userIdentifier,
@@ -578,7 +570,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la modification du formateur.');
-            
+
             return $this->render('admin/teacher/edit.html.twig', [
                 'teacher' => $teacher,
                 'form' => $this->createForm(TeacherType::class, $teacher),
@@ -597,19 +589,19 @@ class TeacherController extends AbstractController
         $teacherId = $teacher->getId();
         $teacherEmail = $teacher->getEmail();
         $teacherName = $teacher->getFirstName() . ' ' . $teacher->getLastName();
-        
+
         $this->logger->info('Teacher deletion attempted', [
             'teacher_id' => $teacherId,
             'teacher_email' => $teacherEmail,
             'teacher_name' => $teacherName,
             'deleted_by' => $userIdentifier,
             'ip' => $clientIp,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
             $token = $request->request->get('_token');
-            
+
             $this->logger->debug('Validating CSRF token for teacher deletion', [
                 'teacher_id' => $teacherId,
                 'token_provided' => !empty($token),
@@ -662,8 +654,7 @@ class TeacherController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_teacher_index');
-
-        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException $e) {
+        } catch (ForeignKeyConstraintViolationException $e) {
             $this->logger->error('Foreign key constraint violation during teacher deletion', [
                 'teacher_id' => $teacherId,
                 'teacher_email' => $teacherEmail,
@@ -674,9 +665,8 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Impossible de supprimer ce formateur car il est lié à d\'autres données (formations, sessions, etc.).');
-            
-            return $this->redirectToRoute('admin_teacher_index');
 
+            return $this->redirectToRoute('admin_teacher_index');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during teacher deletion', [
                 'teacher_id' => $teacherId,
@@ -689,10 +679,9 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de la suppression du formateur.');
-            
-            return $this->redirectToRoute('admin_teacher_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_teacher_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during teacher deletion', [
                 'teacher_id' => $teacherId,
                 'teacher_email' => $teacherEmail,
@@ -706,7 +695,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de la suppression du formateur.');
-            
+
             return $this->redirectToRoute('admin_teacher_index');
         }
     }
@@ -925,10 +914,10 @@ class TeacherController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Teachers CSV export started', [
             'exported_by' => $userIdentifier,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         try {
@@ -1017,7 +1006,6 @@ class TeacherController extends AbstractController
             ]);
 
             return $response;
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during teachers export', [
                 'exported_by' => $userIdentifier,
@@ -1027,12 +1015,11 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de l\'export des formateurs.');
-            
-            return $this->redirectToRoute('admin_teacher_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_teacher_index');
+        } catch (Exception $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Unexpected error during teachers export', [
                 'exported_by' => $userIdentifier,
                 'execution_time_ms' => $executionTime,
@@ -1044,7 +1031,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'export des formateurs.');
-            
+
             return $this->redirectToRoute('admin_teacher_index');
         }
     }
@@ -1057,7 +1044,7 @@ class TeacherController extends AbstractController
     {
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $clientIp = $request->getClientIp();
-        
+
         $action = $request->request->get('action');
         $teacherIds = $request->request->all('teacher_ids');
 
@@ -1067,7 +1054,7 @@ class TeacherController extends AbstractController
             'teacher_count' => count($teacherIds ?? []),
             'performed_by' => $userIdentifier,
             'ip' => $clientIp,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
         ]);
 
         if (empty($teacherIds) || empty($action)) {
@@ -1079,6 +1066,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Aucun formateur sélectionné ou action non spécifiée.');
+
             return $this->redirectToRoute('admin_teacher_index');
         }
 
@@ -1090,7 +1078,7 @@ class TeacherController extends AbstractController
             ]);
 
             $teachers = $teacherRepository->findBy(['id' => $teacherIds]);
-            $foundTeacherIds = array_map(fn($teacher) => $teacher->getId(), $teachers);
+            $foundTeacherIds = array_map(static fn ($teacher) => $teacher->getId(), $teachers);
             $missingTeacherIds = array_diff($teacherIds, $foundTeacherIds);
 
             if (!empty($missingTeacherIds)) {
@@ -1175,7 +1163,7 @@ class TeacherController extends AbstractController
                             ]);
                             break;
                     }
-                } catch (\Exception $teacherError) {
+                } catch (Exception $teacherError) {
                     $errors[] = "Erreur pour {$teacher->getEmail()}: {$teacherError->getMessage()}";
                     $this->logger->error('Error processing individual teacher in bulk action', [
                         'action' => $action,
@@ -1205,7 +1193,7 @@ class TeacherController extends AbstractController
 
             $successMessage = "{$count} formateur(s) {$actionLabels[$action]}.";
             if (!empty($errors)) {
-                $successMessage .= " Erreurs: " . implode(', ', $errors);
+                $successMessage .= ' Erreurs: ' . implode(', ', $errors);
             }
 
             $this->addFlash('success', $successMessage);
@@ -1218,7 +1206,6 @@ class TeacherController extends AbstractController
                 'performed_by' => $userIdentifier,
                 'ip' => $clientIp,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during bulk action', [
                 'action' => $action,
@@ -1231,8 +1218,7 @@ class TeacherController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur de base de données lors de l\'action groupée : ' . $e->getMessage());
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during bulk action', [
                 'action' => $action,
                 'teacher_ids' => $teacherIds,
@@ -1259,19 +1245,19 @@ class TeacherController extends AbstractController
         try {
             $forwardedFor = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null;
             $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? null;
-            
+
             $this->logger->debug('Client IP detection', [
                 'HTTP_X_FORWARDED_FOR' => $forwardedFor,
                 'REMOTE_ADDR' => $remoteAddr,
                 'detected_ip' => $forwardedFor ?? $remoteAddr,
             ]);
-            
+
             return $forwardedFor ?? $remoteAddr;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Failed to detect client IP', [
                 'error' => $e->getMessage(),
             ]);
-            
+
             return null;
         }
     }

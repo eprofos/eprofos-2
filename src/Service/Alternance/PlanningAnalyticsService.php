@@ -10,8 +10,9 @@ use App\Repository\Training\FormationRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Exception;
+use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -37,7 +38,7 @@ class PlanningAnalyticsService
     {
         $operationId = uniqid('analytics_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting analytics data generation', [
             'operation_id' => $operationId,
             'period' => $period,
@@ -100,10 +101,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'period_stats',
                 ]);
-                
+
                 $periodStats = $this->getPeriodStatistics($startDate, $formation);
                 $result['period_stats'] = $periodStats;
-                
+
                 $this->logger->debug('Period statistics generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'period_stats',
@@ -118,7 +119,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['period_stats'] = [
                     'total_sessions' => 0,
                     'attendance_rate' => 0.0,
@@ -133,10 +134,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'trends',
                 ]);
-                
+
                 $trends = $this->getTrendData($period, $formation);
                 $result['trends'] = $trends;
-                
+
                 $this->logger->debug('Trends data generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'trends',
@@ -152,7 +153,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['trends'] = [
                     'attendance' => [],
                     'completion' => [],
@@ -165,10 +166,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'distribution',
                 ]);
-                
+
                 $distribution = $this->getDistributionData($startDate, $formation);
                 $result['distribution'] = $distribution;
-                
+
                 $this->logger->debug('Distribution data generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'distribution',
@@ -184,7 +185,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['distribution'] = [
                     'by_formation' => [],
                     'by_rhythm' => [],
@@ -197,10 +198,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'chart_data',
                 ]);
-                
+
                 $chartData = $this->prepareChartData($result['distribution']);
                 $result['chart_data'] = $chartData;
-                
+
                 $this->logger->debug('Chart data prepared successfully', [
                     'operation_id' => $operationId,
                     'component' => 'chart_data',
@@ -216,7 +217,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['chart_data'] = [
                     'formation_labels' => [],
                     'formation_values' => [],
@@ -231,10 +232,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'formation_details',
                 ]);
-                
+
                 $formationDetails = $this->getFormationDetails($startDate, $formation);
                 $result['formation_details'] = $formationDetails;
-                
+
                 $this->logger->debug('Formation details generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'formation_details',
@@ -249,7 +250,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['formation_details'] = [];
             }
 
@@ -259,10 +260,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'mentor_performance',
                 ]);
-                
+
                 $mentorPerformance = $this->getMentorPerformance($startDate);
                 $result['mentor_performance'] = $mentorPerformance;
-                
+
                 $this->logger->debug('Mentor performance generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'mentor_performance',
@@ -277,7 +278,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['mentor_performance'] = [];
             }
 
@@ -287,10 +288,10 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'component' => 'duration_analysis',
                 ]);
-                
+
                 $durationAnalysis = $this->getDurationAnalysis($startDate, $formation);
                 $result['duration_analysis'] = $durationAnalysis;
-                
+
                 $this->logger->debug('Duration analysis generated successfully', [
                     'operation_id' => $operationId,
                     'component' => 'duration_analysis',
@@ -305,7 +306,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['duration_analysis'] = [];
             }
 
@@ -336,10 +337,9 @@ class PlanningAnalyticsService
             ]);
 
             return $result;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in analytics data generation', [
                 'operation_id' => $operationId,
                 'period' => $period,
@@ -398,7 +398,7 @@ class PlanningAnalyticsService
     {
         $operationId = uniqid('planning_stats_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting planning statistics generation', [
             'operation_id' => $operationId,
             'method' => __METHOD__,
@@ -423,9 +423,9 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'step' => 'contract_statistics',
                 ]);
-                
+
                 $contractStats = $this->contractRepository->getContractStatistics();
-                
+
                 $this->logger->debug('Contract statistics retrieved successfully', [
                     'operation_id' => $operationId,
                     'step' => 'contract_statistics',
@@ -438,7 +438,6 @@ class PlanningAnalyticsService
                 $result['total_contracts'] = (int) ($contractStats['total'] ?? 0);
                 $result['active_contracts'] = (int) ($contractStats['active'] ?? 0);
                 $completedContracts = (int) ($contractStats['completed'] ?? 0);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch contract statistics', [
                     'operation_id' => $operationId,
@@ -449,7 +448,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $completedContracts = 0;
             }
 
@@ -460,9 +459,9 @@ class PlanningAnalyticsService
                     'step' => 'recent_activity',
                     'limit' => 5,
                 ]);
-                
+
                 $recentActivity = $this->contractRepository->findRecentActivity(5);
-                
+
                 $this->logger->debug('Recent activity retrieved', [
                     'operation_id' => $operationId,
                     'step' => 'recent_activity',
@@ -474,7 +473,7 @@ class PlanningAnalyticsService
                 $formattedActivity = [];
                 foreach ($recentActivity as $index => $activity) {
                     try {
-                        $this->logger->debug("Processing activity item", [
+                        $this->logger->debug('Processing activity item', [
                             'operation_id' => $operationId,
                             'step' => 'format_activity',
                             'activity_index' => $index,
@@ -486,8 +485,8 @@ class PlanningAnalyticsService
                         $date = null;
                         if (isset($activity['updatedAt'])) {
                             if ($activity['updatedAt'] instanceof DateTimeInterface) {
-                                $date = $activity['updatedAt'] instanceof DateTime 
-                                    ? $activity['updatedAt'] 
+                                $date = $activity['updatedAt'] instanceof DateTime
+                                    ? $activity['updatedAt']
                                     : new DateTime($activity['updatedAt']->format('Y-m-d H:i:s'));
                             } elseif (is_string($activity['updatedAt'])) {
                                 $date = new DateTime($activity['updatedAt']);
@@ -495,7 +494,7 @@ class PlanningAnalyticsService
                         }
 
                         if (!$date) {
-                            $this->logger->warning("Invalid or missing date for activity, using current date", [
+                            $this->logger->warning('Invalid or missing date for activity, using current date', [
                                 'operation_id' => $operationId,
                                 'activity_index' => $index,
                                 'updated_at_value' => $activity['updatedAt'] ?? 'not_set',
@@ -513,16 +512,15 @@ class PlanningAnalyticsService
                             'date' => $date,
                         ];
 
-                        $this->logger->debug("Activity processed successfully", [
+                        $this->logger->debug('Activity processed successfully', [
                             'operation_id' => $operationId,
                             'activity_index' => $index,
                             'type' => $activityType,
                             'description_length' => strlen($activityDescription),
                             'date' => $date->format('Y-m-d H:i:s'),
                         ]);
-                        
                     } catch (Throwable $e) {
-                        $this->logger->warning("Failed to process activity item", [
+                        $this->logger->warning('Failed to process activity item', [
                             'operation_id' => $operationId,
                             'step' => 'format_activity',
                             'activity_index' => $index,
@@ -537,14 +535,13 @@ class PlanningAnalyticsService
                 }
 
                 $result['recent_changes'] = $formattedActivity;
-                
+
                 $this->logger->debug('Recent activity formatting completed', [
                     'operation_id' => $operationId,
                     'step' => 'recent_activity',
                     'formatted_count' => count($formattedActivity),
                     'success_rate' => count($recentActivity) > 0 ? (count($formattedActivity) / count($recentActivity)) * 100 : 100,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch or format recent activity', [
                     'operation_id' => $operationId,
@@ -555,7 +552,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $result['recent_changes'] = [];
             }
 
@@ -569,8 +566,8 @@ class PlanningAnalyticsService
                 ]);
 
                 // Calculate completion rate
-                $result['completion_rate'] = $result['total_contracts'] > 0 
-                    ? round(($completedContracts / $result['total_contracts']) * 100, 1) 
+                $result['completion_rate'] = $result['total_contracts'] > 0
+                    ? round(($completedContracts / $result['total_contracts']) * 100, 1)
                     : 0.0;
 
                 $this->logger->debug('Completion rate calculated', [
@@ -579,7 +576,6 @@ class PlanningAnalyticsService
                     'total_contracts' => $result['total_contracts'],
                     'completed_contracts' => $completedContracts,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate completion rate', [
                     'operation_id' => $operationId,
@@ -587,7 +583,7 @@ class PlanningAnalyticsService
                     'error' => $e->getMessage(),
                     'error_class' => get_class($e),
                 ]);
-                
+
                 $result['completion_rate'] = 0.0;
             }
 
@@ -598,16 +594,15 @@ class PlanningAnalyticsService
                     'step' => 'ending_soon',
                     'days_ahead' => 30,
                 ]);
-                
+
                 $endingSoon = $this->contractRepository->findEndingSoon(30);
                 $result['upcoming_sessions'] = count($endingSoon);
-                
+
                 $this->logger->debug('Contracts ending soon fetched', [
                     'operation_id' => $operationId,
                     'step' => 'ending_soon',
                     'count' => $result['upcoming_sessions'],
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch contracts ending soon', [
                     'operation_id' => $operationId,
@@ -617,7 +612,7 @@ class PlanningAnalyticsService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $result['upcoming_sessions'] = 0;
             }
 
@@ -628,16 +623,15 @@ class PlanningAnalyticsService
                     'step' => 'inactive_contracts',
                     'days_back' => 14,
                 ]);
-                
+
                 $withoutActivity = $this->contractRepository->findContractsWithoutRecentActivity(14);
                 $result['conflicts'] = count($withoutActivity);
-                
+
                 $this->logger->debug('Contracts without recent activity fetched', [
                     'operation_id' => $operationId,
                     'step' => 'inactive_contracts',
                     'count' => $result['conflicts'],
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch contracts without recent activity', [
                     'operation_id' => $operationId,
@@ -647,7 +641,7 @@ class PlanningAnalyticsService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $result['conflicts'] = 0;
             }
 
@@ -657,17 +651,16 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'step' => 'attendance_rate',
                 ]);
-                
+
                 $startDate = new DateTime('-1 month');
                 $result['average_attendance'] = $this->calculateAttendanceRate($startDate, null);
-                
+
                 $this->logger->debug('Attendance rate calculated', [
                     'operation_id' => $operationId,
                     'step' => 'attendance_rate',
                     'rate' => $result['average_attendance'],
                     'period_start' => $startDate->format('Y-m-d'),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate attendance rate', [
                     'operation_id' => $operationId,
@@ -677,7 +670,7 @@ class PlanningAnalyticsService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $result['average_attendance'] = 85.0; // Default fallback
             }
 
@@ -704,10 +697,9 @@ class PlanningAnalyticsService
             ]);
 
             return $result;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in planning statistics generation', [
                 'operation_id' => $operationId,
                 'execution_time_ms' => $executionTime,
@@ -748,7 +740,7 @@ class PlanningAnalyticsService
     {
         $operationId = uniqid('export_data_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting export data generation', [
             'operation_id' => $operationId,
             'format' => $format,
@@ -764,7 +756,8 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'provided_format' => $format,
                 ]);
-                throw new \InvalidArgumentException('Export format cannot be empty');
+
+                throw new InvalidArgumentException('Export format cannot be empty');
             }
 
             if ($formation !== null && !is_numeric($formation)) {
@@ -788,7 +781,7 @@ class PlanningAnalyticsService
                     'step' => 'build_query',
                     'has_formation_filter' => $formation !== null,
                 ]);
-                
+
                 $qb = $this->contractRepository->createQueryBuilder('ac')
                     ->leftJoin('ac.student', 's')
                     ->leftJoin('ac.session', 'sess')
@@ -802,7 +795,7 @@ class PlanningAnalyticsService
                         'operation_id' => $operationId,
                         'formation_id' => $formation,
                     ]);
-                    
+
                     $qb->andWhere('f.id = :formation')
                         ->setParameter('formation', $formation)
                     ;
@@ -814,7 +807,6 @@ class PlanningAnalyticsService
                     'dql' => $qb->getDQL(),
                     'parameters' => $qb->getParameters()->toArray(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to build export query', [
                     'operation_id' => $operationId,
@@ -824,6 +816,7 @@ class PlanningAnalyticsService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
+
                 throw $e;
             }
 
@@ -833,16 +826,15 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'step' => 'execute_query',
                 ]);
-                
+
                 $contracts = $qb->getQuery()->getResult();
-                
+
                 $this->logger->debug('Contracts retrieved for export', [
                     'operation_id' => $operationId,
                     'step' => 'execute_query',
                     'contracts_count' => count($contracts),
                     'memory_usage_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to execute export query', [
                     'operation_id' => $operationId,
@@ -853,6 +845,7 @@ class PlanningAnalyticsService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -870,7 +863,7 @@ class PlanningAnalyticsService
             foreach ($contracts as $index => $contract) {
                 try {
                     if ($index % 100 === 0 && $index > 0) {
-                        $this->logger->debug("Export progress update", [
+                        $this->logger->debug('Export progress update', [
                             'operation_id' => $operationId,
                             'processed' => $index,
                             'total' => count($contracts),
@@ -887,10 +880,12 @@ class PlanningAnalyticsService
                             'contract_class' => $contract ? get_class($contract) : 'null',
                         ]);
                         $processingErrors++;
+
                         continue;
                     }
 
                     $contractId = null;
+
                     try {
                         $contractId = $contract->getId();
                     } catch (Throwable $e) {
@@ -900,10 +895,11 @@ class PlanningAnalyticsService
                             'error' => $e->getMessage(),
                         ]);
                         $processingErrors++;
+
                         continue;
                     }
 
-                    $this->logger->debug("Processing contract for export", [
+                    $this->logger->debug('Processing contract for export', [
                         'operation_id' => $operationId,
                         'contract_index' => $index,
                         'contract_id' => $contractId,
@@ -927,7 +923,7 @@ class PlanningAnalyticsService
 
                     // Student name
                     try {
-                        $contractData['student_name'] = method_exists($contract, 'getStudentFullName') 
+                        $contractData['student_name'] = method_exists($contract, 'getStudentFullName')
                             ? ($contract->getStudentFullName() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -941,7 +937,7 @@ class PlanningAnalyticsService
 
                     // Formation title
                     try {
-                        $contractData['formation'] = method_exists($contract, 'getFormationTitle') 
+                        $contractData['formation'] = method_exists($contract, 'getFormationTitle')
                             ? ($contract->getFormationTitle() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -955,7 +951,7 @@ class PlanningAnalyticsService
 
                     // Company name
                     try {
-                        $contractData['company'] = method_exists($contract, 'getCompanyName') 
+                        $contractData['company'] = method_exists($contract, 'getCompanyName')
                             ? ($contract->getCompanyName() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -995,7 +991,7 @@ class PlanningAnalyticsService
 
                     // Status
                     try {
-                        $contractData['status'] = method_exists($contract, 'getStatusLabel') 
+                        $contractData['status'] = method_exists($contract, 'getStatusLabel')
                             ? ($contract->getStatusLabel() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -1009,7 +1005,7 @@ class PlanningAnalyticsService
 
                     // Contract type
                     try {
-                        $contractData['contract_type'] = method_exists($contract, 'getContractTypeLabel') 
+                        $contractData['contract_type'] = method_exists($contract, 'getContractTypeLabel')
                             ? ($contract->getContractTypeLabel() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -1023,10 +1019,10 @@ class PlanningAnalyticsService
 
                     // Hours
                     try {
-                        $contractData['center_hours'] = method_exists($contract, 'getWeeklyCenterHours') 
+                        $contractData['center_hours'] = method_exists($contract, 'getWeeklyCenterHours')
                             ? (int) ($contract->getWeeklyCenterHours() ?? 0)
                             : 0;
-                        $contractData['company_hours'] = method_exists($contract, 'getWeeklyCompanyHours') 
+                        $contractData['company_hours'] = method_exists($contract, 'getWeeklyCompanyHours')
                             ? (int) ($contract->getWeeklyCompanyHours() ?? 0)
                             : 0;
                     } catch (Throwable $e) {
@@ -1040,7 +1036,7 @@ class PlanningAnalyticsService
 
                     // Mentor
                     try {
-                        $contractData['mentor'] = method_exists($contract, 'getMentorFullName') 
+                        $contractData['mentor'] = method_exists($contract, 'getMentorFullName')
                             ? ($contract->getMentorFullName() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -1054,7 +1050,7 @@ class PlanningAnalyticsService
 
                     // Duration
                     try {
-                        $contractData['duration'] = method_exists($contract, 'getFormattedDuration') 
+                        $contractData['duration'] = method_exists($contract, 'getFormattedDuration')
                             ? ($contract->getFormattedDuration() ?? 'N/A')
                             : 'N/A';
                     } catch (Throwable $e) {
@@ -1070,14 +1066,13 @@ class PlanningAnalyticsService
                     $successfullyProcessed++;
 
                     if ($index < 5) {
-                        $this->logger->debug("Sample contract data processed", [
+                        $this->logger->debug('Sample contract data processed', [
                             'operation_id' => $operationId,
                             'contract_index' => $index,
                             'contract_id' => $contractId,
                             'sample_data' => $contractData,
                         ]);
                     }
-                    
                 } catch (Throwable $e) {
                     $processingErrors++;
                     $this->logger->warning("Failed to process contract at index {$index}", [
@@ -1114,10 +1109,9 @@ class PlanningAnalyticsService
             ]);
 
             return $exportData;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in export data generation', [
                 'operation_id' => $operationId,
                 'format' => $format,
@@ -1150,7 +1144,7 @@ class PlanningAnalyticsService
     private function getPeriodStatistics(DateTime $startDate, ?string $formation): array
     {
         $operationId = uniqid('period_stats_', true);
-        
+
         $this->logger->debug('Starting period statistics calculation', [
             'operation_id' => $operationId,
             'start_date' => $startDate->format('Y-m-d H:i:s'),
@@ -1175,16 +1169,15 @@ class PlanningAnalyticsService
                     'start_date' => $startDate->format('Y-m-d H:i:s'),
                     'formation_filter' => $formation,
                 ]);
-                
+
                 $totalContracts = $this->contractRepository->countContractsCreatedSince($startDate, $formation);
                 $result['total_sessions'] = (int) $totalContracts;
-                
+
                 $this->logger->debug('Total contracts counted successfully', [
                     'operation_id' => $operationId,
                     'step' => 'total_contracts',
                     'count' => $totalContracts,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to count total contracts', [
                     'operation_id' => $operationId,
@@ -1207,15 +1200,14 @@ class PlanningAnalyticsService
                     'start_date' => $startDate->format('Y-m-d H:i:s'),
                     'formation_filter' => $formation,
                 ]);
-                
+
                 $completedContracts = $this->contractRepository->countContractsCompletedSince($startDate, $formation);
-                
+
                 $this->logger->debug('Completed contracts counted successfully', [
                     'operation_id' => $operationId,
                     'step' => 'completed_contracts',
                     'count' => $completedContracts,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to count completed contracts', [
                     'operation_id' => $operationId,
@@ -1238,16 +1230,15 @@ class PlanningAnalyticsService
                     'start_date' => $startDate->format('Y-m-d H:i:s'),
                     'formation_filter' => $formation,
                 ]);
-                
+
                 $attendanceRate = $this->calculateAttendanceRate($startDate, $formation);
                 $result['attendance_rate'] = (float) $attendanceRate;
-                
+
                 $this->logger->debug('Attendance rate calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'attendance_rate',
                     'rate' => $attendanceRate,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate attendance rate', [
                     'operation_id' => $operationId,
@@ -1282,7 +1273,7 @@ class PlanningAnalyticsService
                 }
 
                 $result['completion_rate'] = $completionRate;
-                
+
                 $this->logger->debug('Completion rate calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'completion_rate',
@@ -1293,7 +1284,6 @@ class PlanningAnalyticsService
                         'percentage' => $completionRate,
                     ],
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate completion rate', [
                     'operation_id' => $operationId,
@@ -1319,7 +1309,7 @@ class PlanningAnalyticsService
                 // Calculate satisfaction rate (simulated based on completion rate for now)
                 $satisfactionRate = min(5.0, round(3.5 + ($result['completion_rate'] / 100) * 1.5, 1));
                 $result['satisfaction_rate'] = $satisfactionRate;
-                
+
                 $this->logger->debug('Satisfaction rate calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'satisfaction_rate',
@@ -1327,7 +1317,6 @@ class PlanningAnalyticsService
                     'base_score' => 3.5,
                     'completion_bonus' => ($result['completion_rate'] / 100) * 1.5,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate satisfaction rate', [
                     'operation_id' => $operationId,
@@ -1355,7 +1344,6 @@ class PlanningAnalyticsService
             ]);
 
             return $result;
-            
         } catch (Throwable $e) {
             $this->logger->error('Failed to calculate period statistics', [
                 'operation_id' => $operationId,
@@ -1787,7 +1775,7 @@ class PlanningAnalyticsService
     private function calculateAttendanceRate(DateTime $startDate, ?string $formation): float
     {
         $operationId = uniqid('attendance_rate_', true);
-        
+
         $this->logger->debug('Starting attendance rate calculation', [
             'operation_id' => $operationId,
             'start_date' => $startDate->format('Y-m-d H:i:s'),
@@ -1803,7 +1791,8 @@ class PlanningAnalyticsService
                     'start_date_type' => gettype($startDate),
                     'start_date_value' => $startDate,
                 ]);
-                throw new \InvalidArgumentException('Start date must be a DateTime object');
+
+                throw new InvalidArgumentException('Start date must be a DateTime object');
             }
 
             if ($formation !== null && !is_numeric($formation)) {
@@ -1822,7 +1811,7 @@ class PlanningAnalyticsService
                     'start_date' => $startDate->format('Y-m-d H:i:s'),
                     'has_formation_filter' => $formation !== null,
                 ]);
-                
+
                 $qb = $this->attendanceRepository->createQueryBuilder('ar')
                     ->select('COUNT(ar.id) as total_records, 
                              SUM(CASE WHEN ar.status IN (:present_statuses) THEN 1 ELSE 0 END) as present_count')
@@ -1836,7 +1825,7 @@ class PlanningAnalyticsService
                         'operation_id' => $operationId,
                         'formation_id' => $formation,
                     ]);
-                    
+
                     $qb->leftJoin('ar.session', 's')
                         ->leftJoin('s.formation', 'f')
                         ->andWhere('f.id = :formation')
@@ -1850,7 +1839,7 @@ class PlanningAnalyticsService
                     'dql' => $qb->getDQL(),
                     'parameters' => $qb->getParameters()->toArray(),
                 ]);
-                
+
                 $result = $qb->getQuery()->getOneOrNullResult();
 
                 $this->logger->debug('Attendance query executed', [
@@ -1897,7 +1886,6 @@ class PlanningAnalyticsService
                     'start_date' => $startDate->format('Y-m-d H:i:s'),
                     'formation' => $formation,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to execute attendance query, falling back to contract-based calculation', [
                     'operation_id' => $operationId,
@@ -1916,7 +1904,7 @@ class PlanningAnalyticsService
                     'operation_id' => $operationId,
                     'step' => 'contract_based_calculation',
                 ]);
-                
+
                 $activeContracts = $this->contractRepository->countByStatus('active');
                 $totalContracts = $this->contractRepository->count([]);
 
@@ -1956,9 +1944,8 @@ class PlanningAnalyticsService
                     'step' => 'no_data_fallback',
                     'default_rate' => 90.0,
                 ]);
-                
+
                 return 90.0; // Default attendance rate when no data is available
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate attendance rate from contract activity', [
                     'operation_id' => $operationId,
@@ -1968,16 +1955,15 @@ class PlanningAnalyticsService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $this->logger->info('Using ultimate fallback attendance rate', [
                     'operation_id' => $operationId,
                     'step' => 'ultimate_fallback',
                     'fallback_rate' => 85.0,
                 ]);
-                
+
                 return 85.0; // Ultimate fallback
             }
-            
         } catch (Throwable $e) {
             $this->logger->error('Critical failure in attendance rate calculation', [
                 'operation_id' => $operationId,
@@ -2110,7 +2096,6 @@ class PlanningAnalyticsService
             ]);
 
             return $activityType;
-            
         } catch (Throwable $e) {
             $this->logger->warning('Failed to determine activity type, using default', [
                 'activity_data' => $activity,
@@ -2141,16 +2126,16 @@ class PlanningAnalyticsService
             // Extract and validate student information
             $studentFirstName = '';
             $studentLastName = '';
-            
+
             if (isset($activity['studentFirstName'])) {
-                $studentFirstName = is_string($activity['studentFirstName']) 
-                    ? trim($activity['studentFirstName']) 
+                $studentFirstName = is_string($activity['studentFirstName'])
+                    ? trim($activity['studentFirstName'])
                     : (string) $activity['studentFirstName'];
             }
-            
+
             if (isset($activity['studentLastName'])) {
-                $studentLastName = is_string($activity['studentLastName']) 
-                    ? trim($activity['studentLastName']) 
+                $studentLastName = is_string($activity['studentLastName'])
+                    ? trim($activity['studentLastName'])
                     : (string) $activity['studentLastName'];
             }
 
@@ -2167,11 +2152,11 @@ class PlanningAnalyticsService
             // Extract and validate company information
             $companyName = '';
             if (isset($activity['companyName'])) {
-                $companyName = is_string($activity['companyName']) 
-                    ? trim($activity['companyName']) 
+                $companyName = is_string($activity['companyName'])
+                    ? trim($activity['companyName'])
                     : (string) $activity['companyName'];
             }
-            
+
             if (empty($companyName)) {
                 $companyName = 'Entreprise inconnue';
                 $this->logger->debug('No valid company name found, using default', [
@@ -2183,8 +2168,8 @@ class PlanningAnalyticsService
             // Extract and validate status
             $status = '';
             if (isset($activity['status'])) {
-                $status = is_string($activity['status']) 
-                    ? trim($activity['status']) 
+                $status = is_string($activity['status'])
+                    ? trim($activity['status'])
                     : (string) $activity['status'];
             }
 
@@ -2215,7 +2200,6 @@ class PlanningAnalyticsService
             ]);
 
             return $description;
-            
         } catch (Throwable $e) {
             $this->logger->warning('Failed to generate activity description, using fallback', [
                 'activity_data' => $activity,

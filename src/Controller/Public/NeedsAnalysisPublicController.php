@@ -8,11 +8,13 @@ use App\Entity\Analysis\NeedsAnalysisRequest;
 use App\Form\Analysis\CompanyNeedsAnalysisType;
 use App\Form\Analysis\IndividualNeedsAnalysisType;
 use App\Service\Analysis\NeedsAnalysisService;
+use DateTime;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -119,7 +121,6 @@ class NeedsAnalysisPublicController extends AbstractController
             }
 
             return $this->handleIndividualForm($needsAnalysisRequest, $request);
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error in needs analysis form', [
                 'token' => $token,
@@ -132,21 +133,19 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
 
             // Re-throw if it's a not found exception
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             // For other exceptions, show a generic error page
             $this->addFlash('error', 'Une erreur inattendue est survenue. Veuillez réessayer ou contacter le support.');
-            
+
             return $this->render('public/needs_analysis/error.html.twig', [
                 'token' => $token,
                 'error_message' => 'Service temporairement indisponible',
             ]);
         }
     }
-
-
 
     /**
      * Display success page after form submission.
@@ -168,6 +167,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     'token' => $token,
                     'ip' => $request->getClientIp(),
                 ]);
+
                 throw $this->createNotFoundException('Lien invalide ou expiré.');
             }
 
@@ -182,7 +182,7 @@ class NeedsAnalysisPublicController extends AbstractController
 
             // Determine the type based on which analysis exists
             $type = $needsAnalysisRequest->getCompanyAnalysis() ? 'company' : 'individual';
-            
+
             $this->logger->debug('Determined analysis type for success page', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'determined_type' => $type,
@@ -192,7 +192,6 @@ class NeedsAnalysisPublicController extends AbstractController
                 'request' => $needsAnalysisRequest,
                 'type' => $type,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error displaying success page', [
                 'token' => $token,
@@ -204,13 +203,13 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
 
             // Re-throw if it's a not found exception
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             // For other exceptions, redirect to error page
             $this->addFlash('error', 'Une erreur est survenue lors de l\'affichage de la page de confirmation.');
-            
+
             return $this->render('public/needs_analysis/error.html.twig', [
                 'token' => $token,
                 'error_message' => 'Erreur d\'affichage de la confirmation',
@@ -233,7 +232,7 @@ class NeedsAnalysisPublicController extends AbstractController
         try {
             // Check if analysis already exists
             $existingAnalysis = $needsAnalysisRequest->getCompanyAnalysis();
-            
+
             $this->logger->debug('Checking for existing company analysis', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'has_existing_analysis' => $existingAnalysis !== null,
@@ -273,7 +272,7 @@ class NeedsAnalysisPublicController extends AbstractController
 
                 try {
                     $analysisData = $form->getData();
-                    
+
                     $this->logger->debug('Form data extracted', [
                         'request_id' => $needsAnalysisRequest->getId(),
                         'data_type' => gettype($analysisData),
@@ -282,7 +281,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     ]);
 
                     $convertedData = $this->convertFormDataToArray($analysisData);
-                    
+
                     $this->logger->debug('Form data converted to array', [
                         'request_id' => $needsAnalysisRequest->getId(),
                         'converted_data_keys' => array_keys($convertedData),
@@ -304,13 +303,12 @@ class NeedsAnalysisPublicController extends AbstractController
                         'token' => $needsAnalysisRequest->getToken(),
                         'ip' => $request->getClientIp(),
                         'user_agent' => $request->headers->get('User-Agent'),
-                        'submission_time' => (new \DateTime())->format('Y-m-d H:i:s'),
+                        'submission_time' => (new DateTime())->format('Y-m-d H:i:s'),
                     ]);
 
                     return $this->redirectToRoute('needs_analysis_public_success', [
                         'token' => $needsAnalysisRequest->getToken(),
                     ]);
-
                 } catch (Exception $e) {
                     $this->logger->error('Failed to submit company analysis to service', [
                         'request_id' => $needsAnalysisRequest->getId(),
@@ -324,7 +322,6 @@ class NeedsAnalysisPublicController extends AbstractController
 
                     $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi du formulaire. Veuillez réessayer.');
                 }
-
             } elseif ($form->isSubmitted()) {
                 // Log validation errors for debugging
                 $this->logger->warning('Company form validation failed', [
@@ -359,7 +356,6 @@ class NeedsAnalysisPublicController extends AbstractController
                 'request' => $needsAnalysisRequest,
                 'existing_analysis' => $existingAnalysis,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error in company form handler', [
                 'request_id' => $needsAnalysisRequest->getId(),
@@ -373,7 +369,7 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue est survenue. Veuillez réessayer.');
-            
+
             return $this->render('public/needs_analysis/error.html.twig', [
                 'token' => $needsAnalysisRequest->getToken(),
                 'error_message' => 'Erreur lors du traitement du formulaire entreprise',
@@ -396,7 +392,7 @@ class NeedsAnalysisPublicController extends AbstractController
         try {
             // Check if analysis already exists
             $existingAnalysis = $needsAnalysisRequest->getIndividualAnalysis();
-            
+
             $this->logger->debug('Checking for existing individual analysis', [
                 'request_id' => $needsAnalysisRequest->getId(),
                 'has_existing_analysis' => $existingAnalysis !== null,
@@ -436,7 +432,7 @@ class NeedsAnalysisPublicController extends AbstractController
 
                 try {
                     $analysisData = $form->getData();
-                    
+
                     $this->logger->debug('Form data extracted', [
                         'request_id' => $needsAnalysisRequest->getId(),
                         'data_type' => gettype($analysisData),
@@ -445,7 +441,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     ]);
 
                     $convertedData = $this->convertFormDataToArray($analysisData);
-                    
+
                     $this->logger->debug('Form data converted to array', [
                         'request_id' => $needsAnalysisRequest->getId(),
                         'converted_data_keys' => array_keys($convertedData),
@@ -467,13 +463,12 @@ class NeedsAnalysisPublicController extends AbstractController
                         'token' => $needsAnalysisRequest->getToken(),
                         'ip' => $request->getClientIp(),
                         'user_agent' => $request->headers->get('User-Agent'),
-                        'submission_time' => (new \DateTime())->format('Y-m-d H:i:s'),
+                        'submission_time' => (new DateTime())->format('Y-m-d H:i:s'),
                     ]);
 
                     return $this->redirectToRoute('needs_analysis_public_success', [
                         'token' => $needsAnalysisRequest->getToken(),
                     ]);
-
                 } catch (Exception $e) {
                     $this->logger->error('Failed to submit individual analysis to service', [
                         'request_id' => $needsAnalysisRequest->getId(),
@@ -487,7 +482,6 @@ class NeedsAnalysisPublicController extends AbstractController
 
                     $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi du formulaire. Veuillez réessayer.');
                 }
-
             } elseif ($form->isSubmitted()) {
                 // Log validation errors for debugging
                 $this->logger->warning('Individual form validation failed', [
@@ -522,7 +516,6 @@ class NeedsAnalysisPublicController extends AbstractController
                 'request' => $needsAnalysisRequest,
                 'existing_analysis' => $existingAnalysis,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error in individual form handler', [
                 'request_id' => $needsAnalysisRequest->getId(),
@@ -536,7 +529,7 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue est survenue. Veuillez réessayer.');
-            
+
             return $this->render('public/needs_analysis/error.html.twig', [
                 'token' => $needsAnalysisRequest->getToken(),
                 'error_message' => 'Erreur lors du traitement du formulaire individuel',
@@ -565,7 +558,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     'array_keys' => array_keys($formData),
                     'array_size' => count($formData),
                 ]);
-                
+
                 // Log sensitive information carefully (avoid logging actual values)
                 $sanitizedData = [];
                 foreach ($formData as $key => $value) {
@@ -575,11 +568,11 @@ class NeedsAnalysisPublicController extends AbstractController
                         'is_empty' => empty($value),
                     ];
                 }
-                
+
                 $this->logger->debug('Form data structure analysis', [
                     'fields' => $sanitizedData,
                 ]);
-                
+
                 return $formData;
             }
 
@@ -595,6 +588,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     $this->logger->debug('Converted object to array using toArray method', [
                         'converted_keys' => array_keys($convertedData),
                     ]);
+
                     return $convertedData;
                 }
 
@@ -603,6 +597,7 @@ class NeedsAnalysisPublicController extends AbstractController
                 $this->logger->debug('Converted object to array using get_object_vars', [
                     'converted_keys' => array_keys($convertedData),
                 ]);
+
                 return $convertedData;
             }
 
@@ -612,6 +607,7 @@ class NeedsAnalysisPublicController extends AbstractController
                     'scalar_type' => gettype($formData),
                     'scalar_value_length' => is_string($formData) ? strlen($formData) : 'n/a',
                 ]);
+
                 return ['value' => $formData];
             }
 
@@ -622,7 +618,6 @@ class NeedsAnalysisPublicController extends AbstractController
             ]);
 
             return [];
-
         } catch (Exception $e) {
             $this->logger->error('Error converting form data to array', [
                 'error' => $e->getMessage(),

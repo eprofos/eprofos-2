@@ -13,6 +13,7 @@ use App\Repository\CRM\ProspectRepository;
 use App\Repository\User\AdminRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +43,7 @@ class ProspectController extends AbstractController
     {
         $requestStartTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin prospects list access initiated', [
             'user' => $userIdentifier,
             'request_id' => uniqid('prospect_index_', true),
@@ -92,7 +93,8 @@ class ProspectController extends AbstractController
                     'filter_value' => $status,
                 ]);
                 $queryBuilder->andWhere('p.status = :status')
-                    ->setParameter('status', $status);
+                    ->setParameter('status', $status)
+                ;
             }
 
             if ($priority) {
@@ -102,7 +104,8 @@ class ProspectController extends AbstractController
                     'filter_value' => $priority,
                 ]);
                 $queryBuilder->andWhere('p.priority = :priority')
-                    ->setParameter('priority', $priority);
+                    ->setParameter('priority', $priority)
+                ;
             }
 
             if ($source) {
@@ -112,7 +115,8 @@ class ProspectController extends AbstractController
                     'filter_value' => $source,
                 ]);
                 $queryBuilder->andWhere('p.source = :source')
-                    ->setParameter('source', $source);
+                    ->setParameter('source', $source)
+                ;
             }
 
             if ($assignedTo) {
@@ -122,7 +126,8 @@ class ProspectController extends AbstractController
                     'filter_value' => $assignedTo,
                 ]);
                 $queryBuilder->andWhere('p.assignedTo = :assignedTo')
-                    ->setParameter('assignedTo', $assignedTo);
+                    ->setParameter('assignedTo', $assignedTo)
+                ;
             }
 
             if ($search) {
@@ -221,8 +226,7 @@ class ProspectController extends AbstractController
                     ['label' => 'Prospects', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect index action', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -241,7 +245,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de la liste des prospects. Veuillez réessayer.');
-            
+
             // Return a minimal view with error state
             return $this->render('admin/prospect/index.html.twig', [
                 'prospects' => [],
@@ -352,8 +356,7 @@ class ProspectController extends AbstractController
                     ['label' => $prospect->getFullName(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect show action', [
                 'user' => $userIdentifier,
                 'prospect_id' => $prospectId,
@@ -368,7 +371,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails du prospect. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_prospect_index');
         }
     }
@@ -392,7 +395,7 @@ class ProspectController extends AbstractController
 
         try {
             $prospect = new Prospect();
-            
+
             $this->logger->debug('Creating prospect form', [
                 'user' => $userIdentifier,
                 'action' => 'form_creation',
@@ -450,18 +453,17 @@ class ProspectController extends AbstractController
                     $this->addFlash('success', 'Le prospect a été créé avec succès.');
 
                     return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
-                } else {
-                    $this->logger->warning('Prospect form validation failed', [
-                        'user' => $userIdentifier,
-                        'form_errors' => (string) $form->getErrors(true),
-                        'submitted_data' => [
-                            'first_name' => $prospect->getFirstName(),
-                            'last_name' => $prospect->getLastName(),
-                            'email' => $prospect->getEmail(),
-                            'company' => $prospect->getCompany(),
-                        ],
-                    ]);
                 }
+                $this->logger->warning('Prospect form validation failed', [
+                    'user' => $userIdentifier,
+                    'form_errors' => (string) $form->getErrors(true),
+                    'submitted_data' => [
+                        'first_name' => $prospect->getFirstName(),
+                        'last_name' => $prospect->getLastName(),
+                        'email' => $prospect->getEmail(),
+                        'company' => $prospect->getCompany(),
+                    ],
+                ]);
             }
 
             $totalExecutionTime = microtime(true) - $requestStartTime;
@@ -483,8 +485,7 @@ class ProspectController extends AbstractController
                     ['label' => 'Nouveau', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect new action', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -499,7 +500,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création du prospect. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_prospect_index');
         }
     }
@@ -605,13 +606,12 @@ class ProspectController extends AbstractController
                     $this->addFlash('success', 'Le prospect a été modifié avec succès.');
 
                     return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
-                } else {
-                    $this->logger->warning('Prospect edit form validation failed', [
-                        'user' => $userIdentifier,
-                        'prospect_id' => $prospectId,
-                        'form_errors' => (string) $form->getErrors(true),
-                    ]);
                 }
+                $this->logger->warning('Prospect edit form validation failed', [
+                    'user' => $userIdentifier,
+                    'prospect_id' => $prospectId,
+                    'form_errors' => (string) $form->getErrors(true),
+                ]);
             }
 
             $totalExecutionTime = microtime(true) - $requestStartTime;
@@ -635,8 +635,7 @@ class ProspectController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect edit action', [
                 'user' => $userIdentifier,
                 'prospect_id' => $prospectId,
@@ -652,7 +651,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification du prospect. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
         }
     }
@@ -740,8 +739,7 @@ class ProspectController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect delete action', [
                 'user' => $userIdentifier,
                 'prospect_id' => $prospectId,
@@ -867,14 +865,13 @@ class ProspectController extends AbstractController
                     $this->addFlash('success', 'La note a été ajoutée avec succès.');
 
                     return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
-                } else {
-                    $this->logger->warning('Prospect note form validation failed', [
-                        'user' => $userIdentifier,
-                        'prospect_id' => $prospectId,
-                        'form_errors' => (string) $form->getErrors(true),
-                        'note_type' => $note->getType(),
-                    ]);
                 }
+                $this->logger->warning('Prospect note form validation failed', [
+                    'user' => $userIdentifier,
+                    'prospect_id' => $prospectId,
+                    'form_errors' => (string) $form->getErrors(true),
+                    'note_type' => $note->getType(),
+                ]);
             }
 
             $totalExecutionTime = microtime(true) - $requestStartTime;
@@ -898,8 +895,7 @@ class ProspectController extends AbstractController
                     ['label' => 'Ajouter une note', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect add note action', [
                 'user' => $userIdentifier,
                 'prospect_id' => $prospectId,
@@ -915,7 +911,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout de la note. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_prospect_show', ['id' => $prospect->getId()]);
         }
     }
@@ -1027,8 +1023,7 @@ class ProspectController extends AbstractController
             ]);
 
             return $response;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in prospect export action', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -1041,7 +1036,7 @@ class ProspectController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export des prospects. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('admin_prospect_index');
         }
     }

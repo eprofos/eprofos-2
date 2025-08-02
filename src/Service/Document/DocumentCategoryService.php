@@ -6,9 +6,14 @@ namespace App\Service\Document;
 
 use App\Entity\Document\DocumentCategory;
 use App\Repository\Document\DocumentCategoryRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
@@ -130,7 +135,7 @@ class DocumentCategoryService
                 'success' => true,
                 'category' => $category,
             ];
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Unique constraint violation during category creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -143,7 +148,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Une catégorie avec ces informations existe déjà.',
             ];
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error during category creation', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -156,7 +161,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Erreur de base de données lors de la création de la catégorie.',
             ];
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for category creation', [
                 'error_message' => $e->getMessage(),
                 'category_name' => $category->getName(),
@@ -278,7 +283,7 @@ class DocumentCategoryService
                 'success' => true,
                 'category' => $category,
             ];
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Unique constraint violation during category update', [
                 'error_message' => $e->getMessage(),
                 'category_id' => $category->getId(),
@@ -291,7 +296,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Conflit de données lors de la mise à jour de la catégorie.',
             ];
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error during category update', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -304,7 +309,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Erreur de base de données lors de la mise à jour.',
             ];
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument during category update', [
                 'error_message' => $e->getMessage(),
                 'category_id' => $category->getId(),
@@ -358,7 +363,7 @@ class DocumentCategoryService
                     'category_id' => $category->getId(),
                     'category_name' => $category->getName(),
                     'documents_count' => $documentsCount,
-                    'document_ids' => $category->getDocuments()->map(fn($doc) => $doc->getId())->toArray(),
+                    'document_ids' => $category->getDocuments()->map(static fn ($doc) => $doc->getId())->toArray(),
                 ]);
 
                 return [
@@ -418,7 +423,7 @@ class DocumentCategoryService
             return [
                 'success' => true,
             ];
-        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException $e) {
+        } catch (ForeignKeyConstraintViolationException $e) {
             $this->logger->error('Foreign key constraint violation during category deletion', [
                 'error_message' => $e->getMessage(),
                 'category_id' => $category->getId(),
@@ -431,7 +436,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Impossible de supprimer cette catégorie car elle est référencée par d\'autres éléments.',
             ];
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error during category deletion', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -468,24 +473,24 @@ class DocumentCategoryService
     public function getCategoryTreeWithStats(): array
     {
         $this->logger->info('Getting category tree with statistics');
-        
+
         try {
             $categories = $this->documentCategoryRepository->findCategoryTree();
-            
+
             $this->logger->debug('Retrieved categories for tree', [
                 'categories_count' => count($categories),
-                'category_ids' => array_map(fn($cat) => $cat->getId(), $categories),
+                'category_ids' => array_map(static fn ($cat) => $cat->getId(), $categories),
             ]);
 
             $treeWithStats = $this->buildTreeWithStats($categories);
-            
+
             $this->logger->info('Built category tree with statistics', [
                 'root_categories_count' => count($treeWithStats),
                 'total_categories_processed' => $this->countCategoriesInTree($treeWithStats),
             ]);
 
             return $treeWithStats;
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error getting category tree', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -544,7 +549,7 @@ class DocumentCategoryService
 
             $category->setParent($newParent);
             $this->updateCategoryLevel($category);
-            
+
             $this->logger->debug('Updated category hierarchy', [
                 'category_id' => $category->getId(),
                 'old_level' => $oldLevel,
@@ -593,7 +598,7 @@ class DocumentCategoryService
                 'success' => true,
                 'category' => $category,
             ];
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Slug conflict during category move', [
                 'error_message' => $e->getMessage(),
                 'category_id' => $category->getId(),
@@ -606,7 +611,7 @@ class DocumentCategoryService
                 'success' => false,
                 'error' => 'Conflit de slug lors du déplacement de la catégorie.',
             ];
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error during category move', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -643,7 +648,7 @@ class DocumentCategoryService
     public function toggleActiveStatus(DocumentCategory $category): array
     {
         $oldStatus = $category->isActive();
-        
+
         $this->logger->info('Starting category status toggle', [
             'category_id' => $category->getId(),
             'category_name' => $category->getName(),
@@ -655,7 +660,7 @@ class DocumentCategoryService
         try {
             $category->setIsActive(!$category->isActive());
             $newStatus = $category->isActive();
-            
+
             $this->logger->debug('Toggled category status', [
                 'category_id' => $category->getId(),
                 'old_status' => $oldStatus,
@@ -679,7 +684,7 @@ class DocumentCategoryService
                 'success' => true,
                 'message' => "La catégorie a été {$status} avec succès.",
             ];
-        } catch (\Doctrine\ORM\Exception\ORMException $e) {
+        } catch (ORMException $e) {
             $this->logger->error('ORM error during status toggle', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -729,7 +734,7 @@ class DocumentCategoryService
             // Add parent slug prefix if has parent
             if ($parent) {
                 $baseSlug = $parent->getSlug() . '/' . $baseSlug;
-                
+
                 $this->logger->debug('Added parent slug prefix', [
                     'parent_slug' => $parent->getSlug(),
                     'base_slug' => $baseSlug,
@@ -742,19 +747,20 @@ class DocumentCategoryService
             while ($this->documentCategoryRepository->findBySlug($slug)) {
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
-                
+
                 $this->logger->debug('Slug already exists, trying variation', [
                     'attempted_slug' => $slug,
                     'counter' => $counter,
                 ]);
-                
+
                 if ($counter > 100) {
                     $this->logger->warning('Too many slug variations attempted', [
                         'name' => $name,
                         'base_slug' => $baseSlug,
                         'counter' => $counter,
                     ]);
-                    throw new \RuntimeException('Unable to generate unique slug after 100 attempts');
+
+                    throw new RuntimeException('Unable to generate unique slug after 100 attempts');
                 }
             }
 
@@ -773,7 +779,7 @@ class DocumentCategoryService
                 'parent_id' => $parent?->getId(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -784,7 +790,7 @@ class DocumentCategoryService
     private function updateCategoryLevel(DocumentCategory $category): void
     {
         $oldLevel = $category->getLevel();
-        
+
         if ($category->getParent()) {
             $category->setLevel($category->getParent()->getLevel() + 1);
         } else {
@@ -815,7 +821,7 @@ class DocumentCategoryService
         foreach ($category->getChildren() as $child) {
             $oldLevel = $child->getLevel();
             $child->setLevel($category->getLevel() + 1);
-            
+
             $this->logger->debug('Updated child category level', [
                 'child_id' => $child->getId(),
                 'child_name' => $child->getName(),
@@ -823,7 +829,7 @@ class DocumentCategoryService
                 'new_level' => $child->getLevel(),
                 'parent_id' => $category->getId(),
             ]);
-            
+
             $this->updateChildrenLevels($child);
         }
     }
@@ -843,18 +849,19 @@ class DocumentCategoryService
 
         while ($parent) {
             $depth++;
-            
+
             if ($parent->getId() === $ancestor->getId()) {
                 $this->logger->debug('Descendant relationship confirmed', [
                     'category_id' => $category->getId(),
                     'ancestor_id' => $ancestor->getId(),
                     'depth' => $depth,
                 ]);
+
                 return true;
             }
-            
+
             $parent = $parent->getParent();
-            
+
             // Prevent infinite loops
             if ($depth > 50) {
                 $this->logger->warning('Deep hierarchy detected during descendant check', [
@@ -890,7 +897,7 @@ class DocumentCategoryService
             $documentsCount = $category->getDocuments()->count();
             $childrenCount = $category->getChildren()->count();
             $totalDocuments = $this->getTotalDocumentCount($category);
-            
+
             $categoryStats = [
                 'category' => $category,
                 'document_count' => $documentsCount,
@@ -937,11 +944,11 @@ class DocumentCategoryService
         if (preg_match('/table "([^"]+)"/', $errorMessage, $matches)) {
             return $matches[1];
         }
-        
+
         if (preg_match('/constraint "([^"]+)"/', $errorMessage, $matches)) {
             return $matches[1];
         }
-        
+
         return null;
     }
 
@@ -961,7 +968,7 @@ class DocumentCategoryService
                 'slug' => $current->getSlug(),
                 'level' => $current->getLevel(),
             ];
-            
+
             $current = $current->getParent();
             $depth++;
         }
@@ -975,13 +982,13 @@ class DocumentCategoryService
     private function countCategoriesInTree(array $tree): int
     {
         $count = count($tree);
-        
+
         foreach ($tree as $item) {
             if (isset($item['children']) && is_array($item['children'])) {
                 $count += $this->countCategoriesInTree($item['children']);
             }
         }
-        
+
         return $count;
     }
 }

@@ -697,9 +697,7 @@ class Session
      */
     public function getConfirmedRegistrations(): Collection
     {
-        return $this->registrations->filter(function(SessionRegistration $registration) {
-            return $registration->getStatus() === 'confirmed';
-        });
+        return $this->registrations->filter(static fn (SessionRegistration $registration) => $registration->getStatus() === 'confirmed');
     }
 
     /**

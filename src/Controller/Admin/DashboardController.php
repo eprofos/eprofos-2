@@ -122,10 +122,9 @@ class DashboardController extends AbstractController
             ]);
 
             return $response;
-
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->error('Error occurred while rendering admin dashboard', [
                 'user' => $userIdentifier,
                 'error_message' => $e->getMessage(),
@@ -145,9 +144,9 @@ class DashboardController extends AbstractController
             $this->logger->debug('Request context during error', [
                 'query_parameters' => $request->query->all(),
                 'request_headers' => $request->headers->all(),
-                'server_parameters' => array_filter($request->server->all(), function($key) {
+                'server_parameters' => array_filter($request->server->all(), static function ($key) {
                     // Filter sensitive server parameters
-                    return !in_array(strtolower($key), ['php_auth_pw', 'auth_password', 'password']);
+                    return !in_array(strtolower($key), ['php_auth_pw', 'auth_password', 'password'], true);
                 }, ARRAY_FILTER_USE_KEY),
             ]);
 
@@ -155,20 +154,19 @@ class DashboardController extends AbstractController
             if ($this->container->get('kernel')->getEnvironment() === 'dev') {
                 // In development, let the exception bubble up for detailed error page
                 throw $e;
-            } else {
-                // In production, log error and show user-friendly message
-                $this->logger->critical('Admin dashboard critical error in production', [
-                    'user' => $userIdentifier,
-                    'error_message' => $e->getMessage(),
-                    'ip' => $clientIp,
-                ]);
-
-                // Return error page
-                return $this->render('admin/error/500.html.twig', [
-                    'error_message' => 'Une erreur est survenue lors du chargement du dashboard.',
-                    'error_code' => 'ADMIN_DASHBOARD_ERROR',
-                ], new Response('', Response::HTTP_INTERNAL_SERVER_ERROR));
             }
+            // In production, log error and show user-friendly message
+            $this->logger->critical('Admin dashboard critical error in production', [
+                'user' => $userIdentifier,
+                'error_message' => $e->getMessage(),
+                'ip' => $clientIp,
+            ]);
+
+            // Return error page
+            return $this->render('admin/error/500.html.twig', [
+                'error_message' => 'Une erreur est survenue lors du chargement du dashboard.',
+                'error_code' => 'ADMIN_DASHBOARD_ERROR',
+            ], new Response('', Response::HTTP_INTERNAL_SERVER_ERROR));
         }
     }
 

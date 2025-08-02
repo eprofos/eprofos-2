@@ -8,7 +8,9 @@ use App\Entity\Alternance\CompanyMission;
 use App\Entity\User\Mentor;
 use App\Entity\User\Student;
 use App\Repository\Alternance\CompanyMissionRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
@@ -64,6 +66,7 @@ class CompanyMissionService
                     'provided_data' => array_keys($data),
                     'supervisor_id' => $supervisor->getId(),
                 ]);
+
                 throw new RuntimeException('Validation failed: ' . implode(', ', $validationErrors));
             }
 
@@ -184,7 +187,6 @@ class CompanyMissionService
             ]);
 
             return $mission;
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during mission creation', [
                 'error_message' => $e->getMessage(),
@@ -192,8 +194,9 @@ class CompanyMissionService
                 'data_provided' => array_keys($data),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during mission creation', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
@@ -203,6 +206,7 @@ class CompanyMissionService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to create mission: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -238,13 +242,14 @@ class CompanyMissionService
                 $this->logger->debug('Validating updated mission data');
                 $validationData = array_merge($originalData, $data);
                 $validationErrors = $this->validateMissionData($validationData);
-                
+
                 if (!empty($validationErrors)) {
                     $this->logger->error('Mission update validation failed', [
                         'mission_id' => $mission->getId(),
                         'errors' => $validationErrors,
                         'provided_updates' => array_keys($data),
                     ]);
+
                     throw new RuntimeException('Validation failed: ' . implode(', ', $validationErrors));
                 }
                 $this->logger->debug('Mission update validation successful');
@@ -334,11 +339,11 @@ class CompanyMissionService
                     'term' => $mission->getTerm(),
                     'complexity' => $mission->getComplexity(),
                 ]);
-                
+
                 $orderIndex = $this->missionRepository->getNextOrderIndex($mission->getTerm(), $mission->getComplexity());
                 $oldOrderIndex = $mission->getOrderIndex();
                 $mission->setOrderIndex($orderIndex);
-                
+
                 $this->logger->debug('Order index recalculated', [
                     'mission_id' => $mission->getId(),
                     'old_order_index' => $oldOrderIndex,
@@ -425,7 +430,6 @@ class CompanyMissionService
             ]);
 
             return $mission;
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during mission update', [
                 'mission_id' => $mission->getId(),
@@ -433,8 +437,9 @@ class CompanyMissionService
                 'data_provided' => array_keys($data),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during mission update', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
@@ -444,6 +449,7 @@ class CompanyMissionService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to update mission: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -478,6 +484,7 @@ class CompanyMissionService
                     'mission_title' => $mission->getTitle(),
                     'active_assignments_count' => $activeAssignments,
                 ]);
+
                 throw new RuntimeException('Cannot delete mission with active assignments. Complete or suspend assignments first.');
             }
 
@@ -495,17 +502,17 @@ class CompanyMissionService
                 'title' => $mission->getTitle(),
                 'supervisor_id' => $mission->getSupervisor()->getId(),
                 'supervisor_name' => $mission->getSupervisor()->getFullName(),
-                'deactivated_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'deactivated_at' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
-
         } catch (RuntimeException $e) {
             $this->logger->error('Runtime exception during mission deletion', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Unexpected exception during mission deletion', [
                 'mission_id' => $mission->getId(),
                 'error_message' => $e->getMessage(),
@@ -514,6 +521,7 @@ class CompanyMissionService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to delete mission: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -754,8 +762,7 @@ class CompanyMissionService
             ]);
 
             return $clonedMission;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Exception during mission cloning', [
                 'original_mission_id' => $originalMission->getId(),
                 'error_message' => $e->getMessage(),
@@ -765,6 +772,7 @@ class CompanyMissionService
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw new RuntimeException('Failed to clone mission: ' . $e->getMessage(), 0, $e);
         }
     }

@@ -34,22 +34,22 @@ class TokenGeneratorService
     {
         try {
             $this->logger->info('Starting token generation');
-            
+
             $token = Uuid::v4()->toRfc4122();
-            
+
             $this->logger->info('Token generated successfully', [
                 'token_length' => strlen($token),
                 'token_format' => 'uuid_v4_rfc4122',
                 'short_token' => substr($token, 0, 8) . '...',
             ]);
-            
+
             return $token;
         } catch (Exception $e) {
             $this->logger->error('Failed to generate token', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw new InvalidArgumentException('Unable to generate secure token: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -64,7 +64,7 @@ class TokenGeneratorService
                 'expiration_days' => $days,
                 'default_days' => self::DEFAULT_EXPIRATION_DAYS,
             ]);
-            
+
             if ($days <= 0) {
                 $this->logger->warning('Invalid expiration days provided, using default', [
                     'provided_days' => $days,
@@ -72,15 +72,15 @@ class TokenGeneratorService
                 ]);
                 $days = self::DEFAULT_EXPIRATION_DAYS;
             }
-            
+
             $expirationDate = new DateTimeImmutable("+{$days} days");
-            
+
             $this->logger->info('Expiration date generated successfully', [
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
                 'days_from_now' => $days,
                 'timezone' => $expirationDate->getTimezone()->getName(),
             ]);
-            
+
             return $expirationDate;
         } catch (Exception $e) {
             $this->logger->error('Failed to generate expiration date', [
@@ -88,7 +88,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw new InvalidArgumentException('Unable to generate expiration date: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -103,14 +103,14 @@ class TokenGeneratorService
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
                 'current_time' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
-            
+
             $isExpired = $expirationDate < new DateTimeImmutable();
-            
+
             $this->logger->debug('Token expiration check completed', [
                 'is_expired' => $isExpired,
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
             ]);
-            
+
             return $isExpired;
         } catch (Exception $e) {
             $this->logger->error('Error checking token expiration', [
@@ -118,7 +118,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // In case of error, consider token as expired for security
             return true;
         }
@@ -133,7 +133,7 @@ class TokenGeneratorService
             $this->logger->debug('Calculating remaining days', [
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
             ]);
-            
+
             $now = new DateTimeImmutable();
 
             if ($expirationDate < $now) {
@@ -141,12 +141,13 @@ class TokenGeneratorService
                     'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
                     'current_time' => $now->format('Y-m-d H:i:s'),
                 ]);
+
                 return 0;
             }
 
             $interval = $now->diff($expirationDate);
             $remainingDays = $interval->days;
-            
+
             $this->logger->debug('Remaining days calculated', [
                 'remaining_days' => $remainingDays,
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
@@ -160,7 +161,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return 0 for security in case of error
             return 0;
         }
@@ -176,10 +177,10 @@ class TokenGeneratorService
                 'expiration_date' => $expirationDate->format('Y-m-d H:i:s'),
                 'warning_days' => $warningDays,
             ]);
-            
+
             $remainingDays = $this->getRemainingDays($expirationDate);
             $isExpiringSoon = $remainingDays > 0 && $remainingDays <= $warningDays;
-            
+
             $this->logger->debug('Token expiration soon check completed', [
                 'remaining_days' => $remainingDays,
                 'warning_days' => $warningDays,
@@ -194,7 +195,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Consider as expiring soon for safety
             return true;
         }
@@ -209,21 +210,21 @@ class TokenGeneratorService
             $this->logger->info('Generating token with expiration', [
                 'expiration_days' => $days,
             ]);
-            
+
             $token = $this->generateToken();
             $expiresAt = $this->generateExpirationDate($days);
-            
+
             $result = [
                 'token' => $token,
                 'expires_at' => $expiresAt,
             ];
-            
+
             $this->logger->info('Token with expiration generated successfully', [
                 'short_token' => substr($token, 0, 8) . '...',
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
                 'expiration_days' => $days,
             ]);
-            
+
             return $result;
         } catch (Exception $e) {
             $this->logger->error('Failed to generate token with expiration', [
@@ -231,7 +232,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw new InvalidArgumentException('Unable to generate token with expiration: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -246,16 +247,16 @@ class TokenGeneratorService
                 'token_length' => strlen($token),
                 'short_token' => substr($token, 0, 8) . '...',
             ]);
-            
+
             $uuid = Uuid::fromString($token);
             $isValid = $uuid->toRfc4122() === $token;
-            
+
             $this->logger->debug('Token format validation completed', [
                 'is_valid' => $isValid,
                 'short_token' => substr($token, 0, 8) . '...',
                 'expected_format' => 'uuid_v4_rfc4122',
             ]);
-            
+
             return $isValid;
         } catch (InvalidArgumentException $e) {
             $this->logger->warning('Invalid token format detected', [
@@ -263,7 +264,7 @@ class TokenGeneratorService
                 'short_token' => substr($token, 0, 8) . '...',
                 'error' => $e->getMessage(),
             ]);
-            
+
             return false;
         } catch (Exception $e) {
             $this->logger->error('Unexpected error during token validation', [
@@ -272,7 +273,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return false;
         }
     }
@@ -285,7 +286,7 @@ class TokenGeneratorService
         $this->logger->debug('Retrieving default expiration days', [
             'default_days' => self::DEFAULT_EXPIRATION_DAYS,
         ]);
-        
+
         return self::DEFAULT_EXPIRATION_DAYS;
     }
 
@@ -300,7 +301,7 @@ class TokenGeneratorService
                 'created_at' => $createdAt->format('Y-m-d H:i:s'),
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
             ]);
-            
+
             $now = new DateTimeImmutable();
 
             // If expired, return 100%
@@ -309,6 +310,7 @@ class TokenGeneratorService
                     'current_time' => $now->format('Y-m-d H:i:s'),
                     'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
                 ]);
+
                 return 100.0;
             }
 
@@ -318,6 +320,7 @@ class TokenGeneratorService
                     'current_time' => $now->format('Y-m-d H:i:s'),
                     'created_at' => $createdAt->format('Y-m-d H:i:s'),
                 ]);
+
                 return 0.0;
             }
 
@@ -329,11 +332,12 @@ class TokenGeneratorService
                     'created_at' => $createdAt->format('Y-m-d H:i:s'),
                     'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
                 ]);
+
                 return 0.0;
             }
 
             $percentage = min(100.0, ($elapsedDuration / $totalDuration) * 100);
-            
+
             $this->logger->debug('Expiration percentage calculated', [
                 'percentage' => $percentage,
                 'total_duration_days' => $totalDuration,
@@ -348,7 +352,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return 100% for safety in case of error
             return 100.0;
         }
@@ -363,7 +367,7 @@ class TokenGeneratorService
             $this->logger->debug('Getting expiration status', [
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
             ]);
-            
+
             $remainingDays = $this->getRemainingDays($expiresAt);
 
             if ($remainingDays === 0) {
@@ -395,7 +399,7 @@ class TokenGeneratorService
                     'days' => $remainingDays,
                 ];
             }
-            
+
             $this->logger->debug('Expiration status determined', [
                 'status' => $status['status'],
                 'remaining_days' => $remainingDays,
@@ -409,7 +413,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return expired status for safety
             return [
                 'status' => 'expired',
@@ -429,21 +433,22 @@ class TokenGeneratorService
             $this->logger->info('Generating multiple tokens', [
                 'requested_count' => $count,
             ]);
-            
+
             if ($count <= 0) {
                 $this->logger->warning('Invalid token count requested', [
                     'requested_count' => $count,
                 ]);
+
                 throw new InvalidArgumentException('Token count must be greater than 0');
             }
-            
+
             if ($count > 1000) {
                 $this->logger->warning('Large token count requested', [
                     'requested_count' => $count,
                     'max_recommended' => 1000,
                 ]);
             }
-            
+
             $tokens = [];
             $generated = 0;
             $attempts = 0;
@@ -451,7 +456,7 @@ class TokenGeneratorService
 
             while ($generated < $count && $attempts < $maxAttempts) {
                 $token = $this->generateToken();
-                
+
                 if (!in_array($token, $tokens, true)) {
                     $tokens[] = $token;
                     $generated++;
@@ -462,19 +467,20 @@ class TokenGeneratorService
                         'short_token' => substr($token, 0, 8) . '...',
                     ]);
                 }
-                
+
                 $attempts++;
             }
-            
+
             if ($generated < $count) {
                 $this->logger->error('Failed to generate required number of unique tokens', [
                     'requested_count' => $count,
                     'generated_count' => $generated,
                     'attempts' => $attempts,
                 ]);
+
                 throw new InvalidArgumentException("Could not generate {$count} unique tokens after {$attempts} attempts");
             }
-            
+
             $this->logger->info('Multiple tokens generated successfully', [
                 'requested_count' => $count,
                 'generated_count' => $generated,
@@ -489,7 +495,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw new InvalidArgumentException('Unable to generate multiple tokens: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -503,17 +509,18 @@ class TokenGeneratorService
             $this->logger->debug('Creating short token for display', [
                 'original_length' => strlen($token),
             ]);
-            
+
             if (!$this->isValidTokenFormat($token)) {
                 $this->logger->warning('Invalid token format for short token creation', [
                     'token_length' => strlen($token),
                     'partial_token' => substr($token, 0, 16) . '...',
                 ]);
+
                 return 'Invalid';
             }
 
             $shortToken = substr($token, 0, 8) . '...';
-            
+
             $this->logger->debug('Short token created successfully', [
                 'short_token' => $shortToken,
                 'original_length' => strlen($token),
@@ -526,7 +533,7 @@ class TokenGeneratorService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return 'Error';
         }
     }

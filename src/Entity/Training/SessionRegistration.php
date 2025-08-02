@@ -525,12 +525,12 @@ class SessionRegistration
         return $this;
     }
 
-    public function getLinkedStudent(): ?\App\Entity\User\Student
+    public function getLinkedStudent(): ?Student
     {
         return $this->linkedStudent;
     }
 
-    public function setLinkedStudent(?\App\Entity\User\Student $linkedStudent): static
+    public function setLinkedStudent(?Student $linkedStudent): static
     {
         $this->linkedStudent = $linkedStudent;
 
@@ -560,7 +560,7 @@ class SessionRegistration
     /**
      * Link a student to this registration.
      */
-    public function linkStudent(\App\Entity\User\Student $student): static
+    public function linkStudent(Student $student): static
     {
         $this->linkedStudent = $student;
         $this->linkedAt = new DateTimeImmutable();

@@ -11,6 +11,7 @@ use App\Form\Alternance\MissionAssignmentType;
 use App\Repository\Alternance\CompanyMissionRepository;
 use App\Repository\Alternance\MissionAssignmentRepository;
 use App\Service\Alternance\MissionAssignmentService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -46,7 +47,7 @@ class AssignmentController extends AbstractController
         try {
             /** @var Mentor $mentor */
             $mentor = $this->getUser();
-            
+
             $this->logger->info('Mentor assignments index accessed', [
                 'mentor_id' => $mentor->getId(),
                 'mentor_email' => $mentor->getEmail(),
@@ -139,7 +140,7 @@ class AssignmentController extends AbstractController
 
             // Get statistics
             $stats = $this->getAssignmentStats($mentor);
-            
+
             $this->logger->debug('Assignment statistics calculated', [
                 'mentor_id' => $mentor->getId(),
                 'stats' => $stats,
@@ -219,7 +220,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des assignations. Veuillez réessayer.');
-            
+
             // Return a basic view with empty data in case of error
             return $this->render('mentor/assignments/index.html.twig', [
                 'assignments' => [],
@@ -281,7 +282,7 @@ class AssignmentController extends AbstractController
                     'assignment_supervisor_id' => $assignment->getMission()->getSupervisor()?->getId(),
                     'attempt_type' => 'unauthorized_assignment_access',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette assignation.');
             }
 
@@ -317,7 +318,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de l\'assignation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('mentor_assignments_index');
         }
     }
@@ -407,7 +408,7 @@ class AssignmentController extends AbstractController
                         'assignment_id' => $createdAssignment->getId(),
                         'mission_id' => $createdAssignment->getMission()->getId(),
                         'student_id' => $createdAssignment->getStudent()->getId(),
-                        'creation_timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'creation_timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ]);
 
                     $this->addFlash('success', 'Assignation créée avec succès !');
@@ -458,7 +459,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création de l\'assignation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('mentor_assignments_index');
         }
     }
@@ -492,7 +493,7 @@ class AssignmentController extends AbstractController
                     'assignment_supervisor_id' => $assignment->getMission()->getSupervisor()?->getId(),
                     'attempt_type' => 'unauthorized_assignment_edit',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette assignation.');
             }
 
@@ -576,7 +577,7 @@ class AssignmentController extends AbstractController
                         'assignment_id' => $assignment->getId(),
                         'mission_id' => $assignment->getMission()->getId(),
                         'student_id' => $assignment->getStudent()->getId(),
-                        'update_timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'update_timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ]);
 
                     $this->addFlash('success', 'Assignation mise à jour avec succès !');
@@ -632,7 +633,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification de l\'assignation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('mentor_assignments_index');
         }
     }
@@ -665,7 +666,7 @@ class AssignmentController extends AbstractController
                     'assignment_supervisor_id' => $assignment->getMission()->getSupervisor()?->getId(),
                     'attempt_type' => 'unauthorized_progress_update',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette assignation.');
             }
 
@@ -701,7 +702,7 @@ class AssignmentController extends AbstractController
                             'to' => $status,
                         ],
                     ],
-                    'update_timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                    'update_timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                 ]);
 
                 $this->addFlash('success', 'Progression mise à jour avec succès !');
@@ -740,7 +741,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la mise à jour de la progression. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('mentor_assignments_index');
         }
     }
@@ -777,7 +778,7 @@ class AssignmentController extends AbstractController
                     'assignment_supervisor_id' => $assignment->getMission()->getSupervisor()?->getId(),
                     'attempt_type' => 'unauthorized_assignment_completion',
                 ]);
-                
+
                 throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette assignation.');
             }
 
@@ -792,7 +793,7 @@ class AssignmentController extends AbstractController
                     'completion_details' => [
                         'previous_status' => $assignment->getStatus(),
                         'final_completion_rate' => $assignment->getCompletionRate(),
-                        'completion_timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'completion_timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                         'mission_title' => $assignment->getMission()->getTitle(),
                         'mentor_rating' => $assignment->getMentorRating(),
                         'student_satisfaction' => $assignment->getStudentSatisfaction(),
@@ -800,7 +801,7 @@ class AssignmentController extends AbstractController
                     'duration_analysis' => [
                         'start_date' => $assignment->getStartDate()?->format('Y-m-d'),
                         'end_date' => $assignment->getEndDate()?->format('Y-m-d'),
-                        'actual_completion_date' => (new \DateTimeImmutable())->format('Y-m-d'),
+                        'actual_completion_date' => (new DateTimeImmutable())->format('Y-m-d'),
                     ],
                 ]);
 
@@ -840,7 +841,7 @@ class AssignmentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la finalisation de l\'assignation. Veuillez réessayer.');
-            
+
             return $this->redirectToRoute('mentor_assignments_index');
         }
     }
@@ -917,7 +918,7 @@ class AssignmentController extends AbstractController
             $this->logger->debug('Assignment statistics calculated successfully', [
                 'mentor_id' => $mentor->getId(),
                 'statistics' => $stats,
-                'calculation_timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'calculation_timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
 
             return $stats;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use DateTime;
+use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +18,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  *
  * Handles authentication for the admin interface.
  * Provides login and logout functionality for admin users with comprehensive logging.
- * 
+ *
  * Security Features:
  * - Detailed logging of all authentication attempts
  * - IP address and user agent tracking
@@ -32,7 +34,7 @@ class SecurityController extends AbstractController
     ) {
         // Log controller instantiation for debugging
         $this->logger->debug('Admin SecurityController instantiated', [
-            'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             'class' => self::class,
         ]);
     }
@@ -48,14 +50,14 @@ class SecurityController extends AbstractController
         $clientIp = $this->getClientIp();
         $userAgent = $this->getUserAgent();
         $requestMethod = $this->getRequestMethod();
-        
+
         try {
             $this->logger->info('Admin login page accessed', [
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
                 'method' => $requestMethod,
                 'route' => 'admin_login',
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // If admin is already authenticated, redirect to dashboard
@@ -66,9 +68,9 @@ class SecurityController extends AbstractController
                     'admin_class' => get_class($admin),
                     'ip' => $clientIp,
                     'redirect_to' => 'admin_dashboard',
-                    'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                 ]);
-                
+
                 return $this->redirectToRoute('admin_dashboard');
             }
 
@@ -80,14 +82,14 @@ class SecurityController extends AbstractController
 
             if ($error) {
                 $securityContext = $this->getSecurityContext($clientIp, $userAgent, $lastAdminUsername);
-                
+
                 $this->logger->warning('Admin login authentication failed', [
                     'username' => $lastAdminUsername,
                     'error_message' => $error->getMessage(),
                     'error_class' => get_class($error),
                     'ip' => $clientIp,
                     'user_agent' => $userAgent,
-                    'attempt_timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'attempt_timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                     'session_id' => $this->getSessionId(),
                     'security_context' => $securityContext,
                     'referer' => $this->getReferer(),
@@ -100,7 +102,7 @@ class SecurityController extends AbstractController
                         'ip' => $clientIp,
                         'user_agent' => $userAgent,
                         'threat_indicators' => $securityContext['threat_indicators'],
-                        'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                        'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                     ]);
                 }
             } else {
@@ -123,8 +125,7 @@ class SecurityController extends AbstractController
                 'error' => $error,
                 'page_title' => 'Connexion Admin',
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in admin login process', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -133,7 +134,7 @@ class SecurityController extends AbstractController
                 'stack_trace' => $e->getTraceAsString(),
                 'ip' => $clientIp,
                 'user_agent' => $userAgent,
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
             // Return a generic error page to avoid exposing sensitive information
@@ -157,21 +158,20 @@ class SecurityController extends AbstractController
         try {
             $admin = $this->getUser();
             $clientIp = $this->getClientIp();
-            
+
             $this->logger->info('Admin logout initiated', [
                 'admin_username' => $admin ? $admin->getUserIdentifier() : 'unknown',
                 'ip' => $clientIp,
                 'user_agent' => $this->getUserAgent(),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
                 'session_id' => $this->getSessionId(),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during admin logout logging', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
                 'ip' => $this->getClientIp(),
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ]);
         }
 
@@ -188,11 +188,12 @@ class SecurityController extends AbstractController
 
             if (!$request) {
                 $this->logger->debug('No current request found for IP detection');
+
                 return null;
             }
 
             $ip = $request->getClientIp();
-            
+
             $this->logger->debug('Client IP detected', [
                 'ip' => $ip,
                 'forwarded_for' => $request->headers->get('X-Forwarded-For'),
@@ -200,13 +201,12 @@ class SecurityController extends AbstractController
             ]);
 
             return $ip;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting client IP', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return null;
         }
     }
@@ -224,13 +224,12 @@ class SecurityController extends AbstractController
             }
 
             return $request->headers->get('User-Agent');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting user agent', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return null;
         }
     }
@@ -248,13 +247,12 @@ class SecurityController extends AbstractController
             }
 
             return $request->getMethod();
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting request method', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return null;
         }
     }
@@ -272,19 +270,18 @@ class SecurityController extends AbstractController
             }
 
             $session = $request->getSession();
-            
+
             if (!$session->isStarted()) {
                 return null;
             }
 
             return $session->getId();
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting session ID', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return null;
         }
     }
@@ -302,13 +299,12 @@ class SecurityController extends AbstractController
             }
 
             return $request->headers->get('Referer');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error getting referer', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
             ]);
-            
+
             return null;
         }
     }
@@ -322,7 +318,7 @@ class SecurityController extends AbstractController
             $context = [
                 'is_suspicious' => false,
                 'threat_indicators' => [],
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ];
 
             // Check for suspicious IP patterns
@@ -343,12 +339,12 @@ class SecurityController extends AbstractController
             if ($userAgent) {
                 $suspiciousPatterns = [
                     'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget', 'python',
-                    'automated', 'scanner', 'exploit', 'nikto', 'sqlmap'
+                    'automated', 'scanner', 'exploit', 'nikto', 'sqlmap',
                 ];
 
                 foreach ($suspiciousPatterns as $pattern) {
                     if (stripos($userAgent, $pattern) !== false) {
-                        $context['threat_indicators'][] = "suspicious_user_agent:$pattern";
+                        $context['threat_indicators'][] = "suspicious_user_agent:{$pattern}";
                         $context['is_suspicious'] = true;
                         break;
                     }
@@ -368,16 +364,16 @@ class SecurityController extends AbstractController
             if ($username) {
                 $suspiciousUsernames = [
                     'admin', 'administrator', 'root', 'test', 'guest', 'user',
-                    'demo', 'default', '123', 'password', 'null', 'undefined'
+                    'demo', 'default', '123', 'password', 'null', 'undefined',
                 ];
 
-                if (in_array(strtolower($username), $suspiciousUsernames)) {
+                if (in_array(strtolower($username), $suspiciousUsernames, true)) {
                     $context['threat_indicators'][] = 'common_username_attempt';
                     $context['is_suspicious'] = true;
                 }
 
                 // Check for SQL injection attempts in username
-                if (preg_match('/[\'";\\\\]|union|select|drop|insert|update|delete/i', $username)) {
+                if (preg_match('/[\'";\\\]|union|select|drop|insert|update|delete/i', $username)) {
                     $context['threat_indicators'][] = 'sql_injection_attempt';
                     $context['is_suspicious'] = true;
                 }
@@ -390,8 +386,7 @@ class SecurityController extends AbstractController
             }
 
             return $context;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error analyzing security context', [
                 'exception_message' => $e->getMessage(),
                 'exception_class' => get_class($e),
@@ -403,7 +398,7 @@ class SecurityController extends AbstractController
             return [
                 'is_suspicious' => false,
                 'threat_indicators' => ['analysis_error'],
-                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'timestamp' => (new DateTime())->format('Y-m-d H:i:s'),
             ];
         }
     }

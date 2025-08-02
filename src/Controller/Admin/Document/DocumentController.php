@@ -8,6 +8,7 @@ use App\Entity\Document\Document;
 use App\Form\Document\DocumentType as DocumentFormType;
 use App\Repository\Document\DocumentRepository;
 use App\Service\Document\DocumentService;
+use DateTimeImmutable;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -65,7 +66,7 @@ class DocumentController extends AbstractController
             // Build query with filters
             $this->logger->debug('Building document query with filters');
             $queryBuilder = $documentRepository->createAdminQueryBuilder($filters);
-            
+
             // Get total count for pagination
             $this->logger->debug('Calculating total items count');
             $totalItems = count($queryBuilder->getQuery()->getResult());
@@ -76,7 +77,7 @@ class DocumentController extends AbstractController
                 'first_result' => ($page - 1) * $limit,
                 'max_results' => $limit,
             ]);
-            
+
             $documents = $queryBuilder
                 ->setFirstResult(($page - 1) * $limit)
                 ->setMaxResults($limit)
@@ -124,7 +125,6 @@ class DocumentController extends AbstractController
                 'filters' => $filters,
                 'stats' => $stats,
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error in document index', [
                 'error_message' => $e->getMessage(),
@@ -135,7 +135,7 @@ class DocumentController extends AbstractController
                 'page' => $page ?? 1,
             ]);
             $this->addFlash('error', 'Erreur de base de données lors de la récupération des documents.');
-            
+
             return $this->render('admin/document/index.html.twig', [
                 'documents' => [],
                 'current_page' => 1,
@@ -144,8 +144,7 @@ class DocumentController extends AbstractController
                 'filters' => [],
                 'stats' => ['total' => 0, 'published' => 0, 'draft' => 0, 'review' => 0],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error in document index', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
@@ -163,7 +162,7 @@ class DocumentController extends AbstractController
                 ],
             ]);
             $this->addFlash('error', 'Une erreur inattendue est survenue lors du chargement des documents.');
-            
+
             return $this->render('admin/document/index.html.twig', [
                 'documents' => [],
                 'current_page' => 1,
@@ -211,15 +210,14 @@ class DocumentController extends AbstractController
                 'document_id' => $document->getId(),
                 'document_title' => $document->getTitle(),
                 'accessed_by_user' => $this->getUser()?->getUserIdentifier(),
-                'access_timestamp' => new \DateTimeImmutable(),
+                'access_timestamp' => new DateTimeImmutable(),
                 'execution_time' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
             ]);
 
             return $this->render('admin/document/show.html.twig', [
                 'document' => $document,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying document', [
                 'document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -232,8 +230,9 @@ class DocumentController extends AbstractController
                     'user_identifier' => $this->getUser()?->getUserIdentifier(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Erreur lors de l\'affichage du document.');
+
             return $this->redirectToRoute('admin_document_index');
         }
     }
@@ -279,7 +278,7 @@ class DocumentController extends AbstractController
                             'user' => $this->getUser()?->getUserIdentifier(),
                         ]);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error pre-selecting document type', [
                         'type_id' => $typeId,
                         'error_message' => $e->getMessage(),
@@ -318,7 +317,7 @@ class DocumentController extends AbstractController
 
                 if ($form->isValid()) {
                     $this->logger->debug('Form validation passed, attempting to create document');
-                    
+
                     try {
                         $startTime = microtime(true);
                         $result = $this->documentService->createDocument($document);
@@ -347,9 +346,10 @@ class DocumentController extends AbstractController
                             ]);
 
                             $this->addFlash('success', 'Document créé avec succès.');
+
                             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
                         }
-                        
+
                         // Log service errors
                         foreach ($result['errors'] as $error) {
                             $this->logger->warning('Document creation service error', [
@@ -359,7 +359,6 @@ class DocumentController extends AbstractController
                             ]);
                             $this->addFlash('error', $error);
                         }
-
                     } catch (Exception $e) {
                         $this->logger->error('Exception during document creation', [
                             'error_message' => $e->getMessage(),
@@ -395,8 +394,7 @@ class DocumentController extends AbstractController
                 'document' => $document,
                 'form' => $form,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document creation process', [
                 'error_message' => $e->getMessage(),
                 'error_class' => get_class($e),
@@ -414,32 +412,11 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
+
             return $this->redirectToRoute('admin_document_index');
         }
-    }
-
-    /**
-     * Helper method to extract form errors as array for logging.
-     */
-    private function getFormErrorsAsArray($form): array
-    {
-        $errors = [];
-        
-        // Get form-level errors
-        foreach ($form->getErrors() as $error) {
-            $errors['form'][] = $error->getMessage();
-        }
-        
-        // Get field-level errors
-        foreach ($form->all() as $child) {
-            foreach ($child->getErrors() as $error) {
-                $errors[$child->getName()][] = $error->getMessage();
-            }
-        }
-        
-        return $errors;
     }
 
     /**
@@ -597,7 +574,7 @@ class DocumentController extends AbstractController
                             $message = 'Document modifié avec succès.';
                             if (isset($result['new_version'])) {
                                 $message .= sprintf(' Nouvelle version %s créée.', $result['new_version']->getVersion());
-                                
+
                                 $this->logger->info('New document version created during update', [
                                     'document_id' => $document->getId(),
                                     'new_version' => $result['new_version']->getVersion(),
@@ -617,9 +594,10 @@ class DocumentController extends AbstractController
                             ]);
 
                             $this->addFlash('success', $message);
+
                             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
                         }
-                        
+
                         // Log service errors
                         foreach ($result['errors'] as $error) {
                             $this->logger->warning('Document update service error', [
@@ -629,7 +607,6 @@ class DocumentController extends AbstractController
                             ]);
                             $this->addFlash('error', $error);
                         }
-
                     } catch (Exception $e) {
                         $this->logger->error('Exception during document update', [
                             'document_id' => $document->getId(),
@@ -663,8 +640,7 @@ class DocumentController extends AbstractController
                 'document' => $document,
                 'form' => $form,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document edit process', [
                 'document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -682,8 +658,9 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
+
             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
         }
     }
@@ -761,7 +738,7 @@ class DocumentController extends AbstractController
                         $this->logger->info('Document deleted successfully', [
                             'deleted_document' => $documentInfo,
                             'deleted_by' => $this->getUser()?->getUserIdentifier(),
-                            'deletion_timestamp' => new \DateTimeImmutable(),
+                            'deletion_timestamp' => new DateTimeImmutable(),
                             'total_execution_time' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                         ]);
 
@@ -783,7 +760,6 @@ class DocumentController extends AbstractController
 
                         return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
                     }
-
                 } catch (Exception $e) {
                     $this->logger->error('Exception during document deletion', [
                         'document_id' => $document->getId(),
@@ -809,10 +785,10 @@ class DocumentController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document deletion process', [
                 'document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -830,8 +806,9 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
+
             return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
         }
 
@@ -914,7 +891,7 @@ class DocumentController extends AbstractController
                             ],
                             'published_at' => $document->getPublishedAt()?->format('Y-m-d H:i:s'),
                             'published_by' => $this->getUser()?->getUserIdentifier(),
-                            'publication_timestamp' => new \DateTimeImmutable(),
+                            'publication_timestamp' => new DateTimeImmutable(),
                             'total_execution_time' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                         ]);
 
@@ -929,7 +906,6 @@ class DocumentController extends AbstractController
                             $this->addFlash('error', $error);
                         }
                     }
-
                 } catch (Exception $e) {
                     $this->logger->error('Exception during document publish', [
                         'document_id' => $document->getId(),
@@ -953,8 +929,7 @@ class DocumentController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document publish process', [
                 'document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -972,7 +947,7 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
         }
 
@@ -1055,7 +1030,7 @@ class DocumentController extends AbstractController
                             ],
                             'was_published' => $originalPublishedAt !== null,
                             'archived_by' => $this->getUser()?->getUserIdentifier(),
-                            'archive_timestamp' => new \DateTimeImmutable(),
+                            'archive_timestamp' => new DateTimeImmutable(),
                             'total_execution_time' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                         ]);
 
@@ -1070,7 +1045,6 @@ class DocumentController extends AbstractController
                             $this->addFlash('error', $error);
                         }
                     }
-
                 } catch (Exception $e) {
                     $this->logger->error('Exception during document archive', [
                         'document_id' => $document->getId(),
@@ -1094,8 +1068,7 @@ class DocumentController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document archive process', [
                 'document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -1113,7 +1086,7 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
         }
 
@@ -1195,7 +1168,7 @@ class DocumentController extends AbstractController
 
                     if ($result['success']) {
                         $duplicateDocument = $result['document'];
-                        
+
                         $this->logger->info('Document duplicated successfully', [
                             'source_document' => $sourceDocumentInfo,
                             'duplicate_document' => [
@@ -1208,14 +1181,15 @@ class DocumentController extends AbstractController
                                 'created_by' => $duplicateDocument->getCreatedBy()?->getFullName(),
                             ],
                             'duplicated_by' => $this->getUser()?->getUserIdentifier(),
-                            'duplication_timestamp' => new \DateTimeImmutable(),
+                            'duplication_timestamp' => new DateTimeImmutable(),
                             'total_execution_time' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                         ]);
 
                         $this->addFlash('success', 'Document dupliqué avec succès.');
+
                         return $this->redirectToRoute('admin_document_edit', ['id' => $duplicateDocument->getId()]);
                     }
-                    
+
                     // Log service errors
                     foreach ($result['errors'] as $error) {
                         $this->logger->warning('Document duplication service error', [
@@ -1225,7 +1199,6 @@ class DocumentController extends AbstractController
                         ]);
                         $this->addFlash('error', $error);
                     }
-
                 } catch (Exception $e) {
                     $this->logger->error('Exception during document duplication', [
                         'source_document_id' => $document->getId(),
@@ -1249,8 +1222,7 @@ class DocumentController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Critical error in document duplication process', [
                 'source_document_id' => $document->getId(),
                 'error_message' => $e->getMessage(),
@@ -1268,10 +1240,34 @@ class DocumentController extends AbstractController
                     'ip_address' => $request->getClientIp(),
                 ],
             ]);
-            
+
             $this->addFlash('error', 'Une erreur critique est survenue. Veuillez réessayer.');
         }
 
         return $this->redirectToRoute('admin_document_show', ['id' => $document->getId()]);
+    }
+
+    /**
+     * Helper method to extract form errors as array for logging.
+     *
+     * @param mixed $form
+     */
+    private function getFormErrorsAsArray($form): array
+    {
+        $errors = [];
+
+        // Get form-level errors
+        foreach ($form->getErrors() as $error) {
+            $errors['form'][] = $error->getMessage();
+        }
+
+        // Get field-level errors
+        foreach ($form->all() as $child) {
+            foreach ($child->getErrors() as $error) {
+                $errors[$child->getName()][] = $error->getMessage();
+            }
+        }
+
+        return $errors;
     }
 }

@@ -7,7 +7,6 @@ namespace App\Repository\Student;
 use App\Entity\Student\Certificate;
 use App\Entity\Training\Formation;
 use App\Entity\User\Student;
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -193,7 +192,8 @@ class CertificateRepository extends ServiceEntityRepository
         $totalCount = $this->createQueryBuilder('c')
             ->select('COUNT(c.id)')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Get issued count
         $issuedCount = $this->createQueryBuilder('c')
@@ -201,7 +201,8 @@ class CertificateRepository extends ServiceEntityRepository
             ->where('c.status = :status')
             ->setParameter('status', Certificate::STATUS_ISSUED)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Get revoked count
         $revokedCount = $this->createQueryBuilder('c')
@@ -209,7 +210,8 @@ class CertificateRepository extends ServiceEntityRepository
             ->where('c.status = :status')
             ->setParameter('status', Certificate::STATUS_REVOKED)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         // Get reissued count
         $reissuedCount = $this->createQueryBuilder('c')
@@ -217,7 +219,8 @@ class CertificateRepository extends ServiceEntityRepository
             ->where('c.status = :status')
             ->setParameter('status', Certificate::STATUS_REISSUED)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
 
         return [
             'total_certificates' => (int) $totalCount,
@@ -235,7 +238,7 @@ class CertificateRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('c')
             ->select([
                 'c.grade',
-                'COUNT(c.id) as count'
+                'COUNT(c.id) as count',
             ])
             ->where('c.status != :revoked')
             ->setParameter('revoked', Certificate::STATUS_REVOKED)
@@ -260,7 +263,7 @@ class CertificateRepository extends ServiceEntityRepository
         $startDate = (new DateTimeImmutable())->modify("-{$months} months");
 
         // Use native SQL query since DQL doesn't support YEAR/MONTH functions
-        $sql = "
+        $sql = '
             SELECT 
                 EXTRACT(YEAR FROM issued_at) as year,
                 EXTRACT(MONTH FROM issued_at) as month,
@@ -270,18 +273,18 @@ class CertificateRepository extends ServiceEntityRepository
             AND status != :revoked
             GROUP BY EXTRACT(YEAR FROM issued_at), EXTRACT(MONTH FROM issued_at)
             ORDER BY year ASC, month ASC
-        ";
+        ';
 
         $connection = $this->getEntityManager()->getConnection();
         $stmt = $connection->prepare($sql);
         $result = $stmt->executeQuery([
             'startDate' => $startDate->format('Y-m-d H:i:s'),
-            'revoked' => Certificate::STATUS_REVOKED
+            'revoked' => Certificate::STATUS_REVOKED,
         ])->fetchAllAssociative();
 
         $trends = [];
         foreach ($result as $row) {
-            $monthKey = sprintf('%04d-%02d', (int)$row['year'], (int)$row['month']);
+            $monthKey = sprintf('%04d-%02d', (int) $row['year'], (int) $row['month']);
             $trends[$monthKey] = (int) $row['count'];
         }
 
@@ -335,7 +338,7 @@ class CertificateRepository extends ServiceEntityRepository
             ->select([
                 'f.id as formation_id',
                 'f.title as formation_title',
-                'COUNT(c.id) as certificate_count'
+                'COUNT(c.id) as certificate_count',
             ])
             ->leftJoin('c.formation', 'f')
             ->where('c.status != :revoked')
@@ -384,7 +387,7 @@ class CertificateRepository extends ServiceEntityRepository
     public function getAverageScoresByFormation(): array
     {
         // Use native SQL query since DQL doesn't support CAST function properly
-        $sql = "
+        $sql = '
             SELECT 
                 f.id as formation_id,
                 f.title as formation_title,
@@ -397,12 +400,12 @@ class CertificateRepository extends ServiceEntityRepository
             GROUP BY f.id, f.title
             HAVING COUNT(c.id) > 0
             ORDER BY average_score DESC
-        ";
+        ';
 
         $connection = $this->getEntityManager()->getConnection();
         $stmt = $connection->prepare($sql);
         $result = $stmt->executeQuery([
-            'revoked' => Certificate::STATUS_REVOKED
+            'revoked' => Certificate::STATUS_REVOKED,
         ])->fetchAllAssociative();
 
         $scores = [];

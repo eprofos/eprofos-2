@@ -17,7 +17,7 @@ class JsonToStringTransformer implements DataTransformerInterface
      */
     public function transform(mixed $value): string
     {
-        if (null === $value || [] === $value) {
+        if ($value === null || $value === []) {
             return '';
         }
 

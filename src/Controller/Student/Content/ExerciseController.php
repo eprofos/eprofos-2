@@ -9,6 +9,10 @@ use App\Entity\User\Student;
 use App\Repository\Training\ExerciseRepository;
 use App\Service\Security\ContentAccessService;
 use App\Service\Student\ExerciseSubmissionService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,9 +35,8 @@ class ExerciseController extends AbstractController
         private readonly ExerciseRepository $exerciseRepository,
         private readonly ContentAccessService $contentAccessService,
         private readonly ExerciseSubmissionService $submissionService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * View a specific exercise with access control.
@@ -61,7 +64,7 @@ class ExerciseController extends AbstractController
                 'exercise_max_attempts' => $exercise->getMaxAttempts(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for the formation containing this exercise
@@ -71,11 +74,11 @@ class ExerciseController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved for exercise access', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -86,7 +89,7 @@ class ExerciseController extends AbstractController
 
             $enrollment = null;
             $targetFormationId = $exercise->getCourse()?->getChapter()?->getModule()?->getFormation()?->getId();
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $targetFormationId) {
                     $enrollment = $e;
@@ -106,7 +109,7 @@ class ExerciseController extends AbstractController
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
                     'target_formation_id' => $targetFormationId,
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -131,14 +134,14 @@ class ExerciseController extends AbstractController
                     'can_attempt' => $canAttempt,
                     'remaining_attempts' => $exercise->getMaxAttempts() ? ($exercise->getMaxAttempts() - count($submissions)) : 'unlimited',
                 ]);
-            } catch (\Exception $submissionException) {
+            } catch (Exception $submissionException) {
                 $this->logger->error('Failed to retrieve exercise submission information', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
                     'error' => $submissionException->getMessage(),
                     'trace' => $submissionException->getTraceAsString(),
                 ]);
-                
+
                 // Set default values to prevent template errors
                 $submissions = [];
                 $bestScore = null;
@@ -169,30 +172,29 @@ class ExerciseController extends AbstractController
                 'can_attempt' => $canAttempt ?? false,
                 'page_title' => $exercise->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for exercise view', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès à l\'exercice.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès à l\'exercice.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in exercise view process', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès à l\'exercice.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès à l\'exercice.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during exercise view', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -205,8 +207,9 @@ class ExerciseController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès à l\'exercice.');
+
             return $this->redirectToRoute('student_dashboard');
         }
     }
@@ -232,7 +235,7 @@ class ExerciseController extends AbstractController
                 'action' => $request->request->get('action', 'progress'),
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Check if student can attempt this exercise
@@ -243,21 +246,22 @@ class ExerciseController extends AbstractController
 
             try {
                 $canAttempt = $this->submissionService->canStudentAttempt($student, $exercise);
-                
+
                 $this->logger->debug('Student exercise attempt eligibility checked', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
                     'can_attempt' => $canAttempt,
                 ]);
-            } catch (\Exception $eligibilityException) {
+            } catch (Exception $eligibilityException) {
                 $this->logger->error('Failed to check exercise attempt eligibility', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
                     'error' => $eligibilityException->getMessage(),
                     'trace' => $eligibilityException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la vérification des droits d\'accès à l\'exercice.');
+
                 return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
             }
 
@@ -267,8 +271,9 @@ class ExerciseController extends AbstractController
                     'exercise_id' => $exercise->getId(),
                     'reason' => 'Eligibility check failed',
                 ]);
-                
+
                 $this->addFlash('error', 'Vous ne pouvez plus démarrer cette exercice.');
+
                 return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
             }
 
@@ -280,7 +285,7 @@ class ExerciseController extends AbstractController
 
             try {
                 $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
-                
+
                 $this->logger->info('Exercise submission retrieved/created', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
@@ -288,22 +293,23 @@ class ExerciseController extends AbstractController
                     'submission_status' => $submission->getStatus(),
                     'attempt_number' => $submission->getAttemptNumber(),
                 ]);
-            } catch (\Exception $submissionException) {
+            } catch (Exception $submissionException) {
                 $this->logger->error('Failed to get or create exercise submission', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
                     'error' => $submissionException->getMessage(),
                     'trace' => $submissionException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la création de la soumission d\'exercice.');
+
                 return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
             }
 
             if ($request->isMethod('POST')) {
                 $submissionData = $request->request->all();
                 $action = $request->request->get('action', 'save');
-                
+
                 $this->logger->debug('Processing exercise submission data', [
                     'student_id' => $student->getId(),
                     'exercise_id' => $exercise->getId(),
@@ -312,39 +318,39 @@ class ExerciseController extends AbstractController
                     'data_keys' => array_keys($submissionData),
                     'data_count' => count($submissionData),
                 ]);
-                
+
                 try {
                     $this->submissionService->saveSubmissionData($submission, $submissionData);
-                    
+
                     $this->logger->info('Exercise submission data saved', [
                         'student_id' => $student->getId(),
                         'exercise_id' => $exercise->getId(),
                         'submission_id' => $submission->getId(),
                         'action' => $action,
                     ]);
-                    
+
                     if ($action === 'submit') {
                         $this->logger->info('Submitting exercise for final evaluation', [
                             'student_id' => $student->getId(),
                             'exercise_id' => $exercise->getId(),
                             'submission_id' => $submission->getId(),
                         ]);
-                        
+
                         $this->submissionService->submitExercise($submission);
-                        
+
                         $this->logger->info('Exercise submitted successfully for evaluation', [
                             'student_id' => $student->getId(),
                             'exercise_id' => $exercise->getId(),
                             'submission_id' => $submission->getId(),
                         ]);
-                        
+
                         $this->addFlash('success', 'Exercice soumis avec succès!');
+
                         return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
                     }
-                    
+
                     $this->addFlash('success', 'Progression sauvegardée.');
-                    
-                } catch (\Exception $saveException) {
+                } catch (Exception $saveException) {
                     $this->logger->error('Failed to save exercise submission data', [
                         'student_id' => $student->getId(),
                         'exercise_id' => $exercise->getId(),
@@ -353,7 +359,7 @@ class ExerciseController extends AbstractController
                         'error' => $saveException->getMessage(),
                         'trace' => $saveException->getTraceAsString(),
                     ]);
-                    
+
                     $this->addFlash('error', 'Erreur lors de la sauvegarde: ' . $saveException->getMessage());
                 }
             }
@@ -370,30 +376,29 @@ class ExerciseController extends AbstractController
                 'student' => $student,
                 'page_title' => 'Exercice: ' . $exercise->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for exercise start', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour le démarrage de l\'exercice.');
-            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour le démarrage de l\'exercice.');
+
+            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in exercise start process', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique de démarrage de l\'exercice.');
-            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique de démarrage de l\'exercice.');
+
+            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during exercise start', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -406,8 +411,9 @@ class ExerciseController extends AbstractController
                 'request_uri' => $request->getRequestUri(),
                 'request_method' => $request->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors du démarrage de l\'exercice.');
+
             return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
         }
     }
@@ -428,43 +434,43 @@ class ExerciseController extends AbstractController
                 'student_id' => $student->getId(),
                 'content_length' => strlen($request->getContent()),
                 'ip_address' => $request->getClientIp(),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
-                
+
                 $this->logger->debug('Exercise submission retrieved for autosave', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'submission_id' => $submission->getId(),
                 ]);
-            } catch (\Exception $submissionException) {
+            } catch (Exception $submissionException) {
                 $this->logger->error('Failed to get or create submission for autosave', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'error' => $submissionException->getMessage(),
                     'trace' => $submissionException->getTraceAsString(),
                 ]);
-                
+
                 return new JsonResponse([
-                    'success' => false, 
-                    'message' => 'Erreur lors de la récupération de la soumission'
+                    'success' => false,
+                    'message' => 'Erreur lors de la récupération de la soumission',
                 ], 500);
             }
-            
+
             $data = json_decode($request->getContent(), true);
-            
+
             if ($data === null) {
                 $this->logger->warning('Invalid JSON data received for autosave', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'raw_content' => $request->getContent(),
                 ]);
-                
+
                 return new JsonResponse([
-                    'success' => false, 
-                    'message' => 'Données JSON invalides'
+                    'success' => false,
+                    'message' => 'Données JSON invalides',
                 ], 400);
             }
 
@@ -475,38 +481,35 @@ class ExerciseController extends AbstractController
                 'data_keys' => array_keys($data),
                 'data_count' => count($data),
             ]);
-            
+
             $this->submissionService->saveSubmissionData($submission, $data);
-            
+
             $this->logger->info('Autosave completed successfully', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $student->getId(),
                 'submission_id' => $submission->getId(),
             ]);
-            
-            return new JsonResponse(['success' => true, 'message' => 'Sauvegardé automatiquement']);
 
-        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => true, 'message' => 'Sauvegardé automatiquement']);
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in exercise autosave', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return new JsonResponse(['success' => false, 'message' => 'Paramètres invalides'], 400);
 
-        } catch (\LogicException $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Paramètres invalides'], 400);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in exercise autosave', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            return new JsonResponse(['success' => false, 'message' => 'Erreur de logique'], 500);
 
-        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur de logique'], 500);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during exercise autosave', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -517,7 +520,7 @@ class ExerciseController extends AbstractController
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -540,33 +543,34 @@ class ExerciseController extends AbstractController
                 'student_email' => $student->getEmail(),
                 'ip_address' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $submission = $this->submissionService->getOrCreateSubmission($student, $exercise);
-                
+
                 $this->logger->debug('Exercise submission retrieved for final submission', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'submission_id' => $submission->getId(),
                     'current_status' => $submission->getStatus(),
                 ]);
-            } catch (\Exception $submissionException) {
+            } catch (Exception $submissionException) {
                 $this->logger->error('Failed to get or create submission for final submission', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'error' => $submissionException->getMessage(),
                     'trace' => $submissionException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la récupération de la soumission.');
+
                 return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
             }
-            
+
             // Save final data
             $submissionData = $request->request->all();
-            
+
             $this->logger->debug('Saving final submission data', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $student->getId(),
@@ -574,48 +578,45 @@ class ExerciseController extends AbstractController
                 'data_keys' => array_keys($submissionData),
                 'data_count' => count($submissionData),
             ]);
-            
+
             $this->submissionService->saveSubmissionData($submission, $submissionData);
-            
+
             // Submit for grading
             $this->logger->info('Submitting exercise for final grading', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $student->getId(),
                 'submission_id' => $submission->getId(),
             ]);
-            
+
             $this->submissionService->submitExercise($submission);
-            
+
             $this->logger->info('Exercise submitted successfully for final grading', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $student->getId(),
                 'submission_id' => $submission->getId(),
                 'final_status' => $submission->getStatus(),
             ]);
-            
-            $this->addFlash('success', 'Exercice soumis avec succès pour évaluation!');
 
-        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('success', 'Exercice soumis avec succès pour évaluation!');
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument in exercise final submission', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour la soumission de l\'exercice.');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour la soumission de l\'exercice.');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in exercise final submission', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur de logique lors de la soumission de l\'exercice.');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur de logique lors de la soumission de l\'exercice.');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during exercise final submission', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -628,7 +629,7 @@ class ExerciseController extends AbstractController
                 'request_uri' => $request->getRequestUri(),
                 'request_method' => $request->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Erreur lors de la soumission: ' . $e->getMessage());
         }
 
@@ -654,19 +655,19 @@ class ExerciseController extends AbstractController
                 'submission_id' => $submissionId,
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             try {
                 $submissions = $this->submissionService->getStudentSubmissions($student, $exercise);
-                
+
                 $this->logger->debug('Retrieved student submissions for result view', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'total_submissions' => count($submissions),
                     'target_submission_id' => $submissionId,
                 ]);
-            } catch (\Exception $submissionException) {
+            } catch (Exception $submissionException) {
                 $this->logger->error('Failed to retrieve student submissions for result view', [
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
@@ -674,13 +675,14 @@ class ExerciseController extends AbstractController
                     'error' => $submissionException->getMessage(),
                     'trace' => $submissionException->getTraceAsString(),
                 ]);
-                
+
                 $this->addFlash('error', 'Erreur lors de la récupération des soumissions.');
+
                 return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
             }
 
             $submission = null;
-            
+
             foreach ($submissions as $s) {
                 if ($s->getId() === $submissionId) {
                     $submission = $s;
@@ -693,10 +695,11 @@ class ExerciseController extends AbstractController
                     'exercise_id' => $exercise->getId(),
                     'student_id' => $student->getId(),
                     'submission_id' => $submissionId,
-                    'available_submission_ids' => array_map(fn($s) => $s->getId(), $submissions),
+                    'available_submission_ids' => array_map(static fn ($s) => $s->getId(), $submissions),
                 ]);
-                
+
                 $this->addFlash('error', 'Soumission introuvable.');
+
                 throw $this->createNotFoundException('Submission not found');
             }
 
@@ -715,8 +718,7 @@ class ExerciseController extends AbstractController
                 'student' => $student,
                 'page_title' => 'Résultat: ' . $exercise->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for exercise result view', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -724,11 +726,11 @@ class ExerciseController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'affichage du résultat.');
-            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'affichage du résultat.');
+
+            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in exercise result view', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -736,11 +738,11 @@ class ExerciseController extends AbstractController
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur de logique lors de l\'affichage du résultat.');
-            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur de logique lors de l\'affichage du résultat.');
+
+            return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during exercise result view', [
                 'exercise_id' => $exercise->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -754,8 +756,9 @@ class ExerciseController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'affichage du résultat.');
+
             return $this->redirectToRoute('student_exercise_view', ['id' => $exercise->getId()]);
         }
     }

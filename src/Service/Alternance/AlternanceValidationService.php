@@ -6,9 +6,8 @@ namespace App\Service\Alternance;
 
 use App\Entity\Alternance\AlternanceContract;
 use App\Entity\Alternance\AlternanceProgram;
-use Psr\Log\LoggerInterface;
 use Exception;
-use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 /**
@@ -22,6 +21,7 @@ class AlternanceValidationService
     public function __construct(
         private LoggerInterface $logger,
     ) {}
+
     /**
      * Validate contract for Qualiopi compliance.
      *
@@ -261,7 +261,6 @@ class AlternanceValidationService
             ]);
 
             return $result;
-
         } catch (Exception $e) {
             $this->logger->critical('Unexpected error during contract validation', [
                 'contract_id' => $contract->getId(),
@@ -271,12 +270,13 @@ class AlternanceValidationService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la validation du contrat %s: %s', 
-                    $contract->getId() ?: 'nouveau', 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la validation du contrat %s: %s',
+                    $contract->getId() ?: 'nouveau',
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -562,7 +562,6 @@ class AlternanceValidationService
             ]);
 
             return $result;
-
         } catch (Exception $e) {
             $this->logger->critical('Unexpected error during program validation', [
                 'program_id' => $program->getId(),
@@ -572,12 +571,13 @@ class AlternanceValidationService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la validation du programme %s: %s', 
-                    $program->getId() ?: 'nouveau', 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la validation du programme %s: %s',
+                    $program->getId() ?: 'nouveau',
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -613,7 +613,7 @@ class AlternanceValidationService
                 ]);
 
                 $result = ['errors' => $errors, 'warnings' => $warnings, 'is_compliant' => false];
-                
+
                 $this->logger->warning('Session validation terminated early due to alternance configuration', [
                     'session_id' => method_exists($session, 'getId') ? $session->getId() : 'unknown',
                     'validation_result' => $result,
@@ -784,7 +784,6 @@ class AlternanceValidationService
             ]);
 
             return $result;
-
         } catch (Exception $e) {
             $this->logger->critical('Unexpected error during session validation for alternance', [
                 'session_id' => method_exists($session, 'getId') ? $session->getId() : 'unknown',
@@ -795,11 +794,12 @@ class AlternanceValidationService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la validation de la session pour l\'alternance: %s', 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la validation de la session pour l\'alternance: %s',
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -865,7 +865,7 @@ class AlternanceValidationService
                         'error' => $e->getMessage(),
                         'exception_class' => get_class($e),
                     ]);
-                    
+
                     $report['sections']['contract'] = [
                         'errors' => ['Erreur lors de la validation du contrat: ' . $e->getMessage()],
                         'warnings' => [],
@@ -907,7 +907,7 @@ class AlternanceValidationService
                         'error' => $e->getMessage(),
                         'exception_class' => get_class($e),
                     ]);
-                    
+
                     $report['sections']['program'] = [
                         'errors' => ['Erreur lors de la validation du programme: ' . $e->getMessage()],
                         'warnings' => [],
@@ -951,7 +951,7 @@ class AlternanceValidationService
                         'error' => $e->getMessage(),
                         'exception_class' => get_class($e),
                     ]);
-                    
+
                     $report['sections']['session'] = [
                         'errors' => ['Erreur lors de la validation de la session: ' . $e->getMessage()],
                         'warnings' => [],
@@ -979,7 +979,6 @@ class AlternanceValidationService
             ]);
 
             return $report;
-
         } catch (Exception $e) {
             $this->logger->critical('Unexpected error during comprehensive validation report generation', [
                 'contract_id' => $contract?->getId(),
@@ -991,11 +990,12 @@ class AlternanceValidationService
             ]);
 
             throw new RuntimeException(
-                sprintf('Erreur inattendue lors de la génération du rapport de validation: %s', 
-                    $e->getMessage()
+                sprintf(
+                    'Erreur inattendue lors de la génération du rapport de validation: %s',
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -1081,6 +1081,7 @@ class AlternanceValidationService
                     'siret' => $siret,
                     'expected_format' => '14 digits',
                 ]);
+
                 return false;
             }
 
@@ -1088,7 +1089,7 @@ class AlternanceValidationService
             try {
                 $weeks = $contract->getDurationInWeeks();
                 $contractType = $contract->getContractType();
-                
+
                 $this->logger->debug('Validating duration minimums', [
                     'contract_id' => $contract->getId(),
                     'duration_weeks' => $weeks,
@@ -1102,6 +1103,7 @@ class AlternanceValidationService
                         'minimum_required' => 26,
                         'contract_type' => $contractType,
                     ]);
+
                     return false;
                 }
 
@@ -1112,6 +1114,7 @@ class AlternanceValidationService
                         'minimum_required' => 12,
                         'contract_type' => $contractType,
                     ]);
+
                     return false;
                 }
             } catch (Exception $e) {
@@ -1120,6 +1123,7 @@ class AlternanceValidationService
                     'error' => $e->getMessage(),
                     'exception_class' => get_class($e),
                 ]);
+
                 return false;
             }
 
@@ -1141,13 +1145,14 @@ class AlternanceValidationService
                     'has_mentor' => $mentor !== null,
                     'has_pedagogical_supervisor' => $pedagogicalSupervisor !== null,
                 ]);
+
                 return false;
             }
 
             // Check weekly hours
             try {
                 $totalHours = $contract->getTotalWeeklyHours();
-                
+
                 $this->logger->debug('Validating weekly hours requirements', [
                     'contract_id' => $contract->getId(),
                     'total_weekly_hours' => $totalHours,
@@ -1162,6 +1167,7 @@ class AlternanceValidationService
                         'minimum_required' => 20,
                         'maximum_allowed' => 35,
                     ]);
+
                     return false;
                 }
             } catch (Exception $e) {
@@ -1170,6 +1176,7 @@ class AlternanceValidationService
                     'error' => $e->getMessage(),
                     'exception_class' => get_class($e),
                 ]);
+
                 return false;
             }
 
@@ -1182,7 +1189,6 @@ class AlternanceValidationService
             ]);
 
             return true;
-
         } catch (Exception $e) {
             $this->logger->critical('Unexpected error during legal minimums check', [
                 'contract_id' => $contract->getId(),

@@ -14,7 +14,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,11 +41,11 @@ class DocumentUIComponentController extends AbstractController
     public function index(int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $userId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Document UI components list accessed', [
             'template_id' => $templateId,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'index',
             'controller' => 'DocumentUIComponentController',
         ]);
@@ -64,7 +63,7 @@ class DocumentUIComponentController extends AbstractController
                     'template_id' => $templateId,
                     'user' => $userId,
                 ]);
-                
+
                 throw $this->createNotFoundException('Template not found');
             }
 
@@ -111,7 +110,7 @@ class DocumentUIComponentController extends AbstractController
                     ['label' => 'Composants', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving document UI components', [
                 'template_id' => $templateId,
                 'user' => $userId,
@@ -122,7 +121,7 @@ class DocumentUIComponentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des composants.');
-            
+
             return $this->redirectToRoute('admin_document_ui_template_index');
         }
     }
@@ -135,7 +134,7 @@ class DocumentUIComponentController extends AbstractController
     {
         $userId = $this->getUser()?->getUserIdentifier();
         $componentId = $component->getId();
-        
+
         $this->logger->info('Document UI component details accessed', [
             'template_id' => $templateId,
             'component_id' => $componentId,
@@ -143,7 +142,7 @@ class DocumentUIComponentController extends AbstractController
             'component_type' => $component->getType(),
             'component_zone' => $component->getZone(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'show',
         ]);
 
@@ -165,7 +164,7 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
@@ -197,7 +196,7 @@ class DocumentUIComponentController extends AbstractController
                     ['label' => $component->getName(), 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying document UI component details', [
                 'template_id' => $templateId,
                 'component_id' => $componentId,
@@ -209,7 +208,7 @@ class DocumentUIComponentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails du composant.');
-            
+
             return $this->redirectToRoute('admin_document_ui_component_index', ['templateId' => $templateId]);
         }
     }
@@ -221,11 +220,11 @@ class DocumentUIComponentController extends AbstractController
     public function new(Request $request, int $templateId, DocumentUIComponentRepository $componentRepository): Response
     {
         $userId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Starting new document UI component creation', [
             'template_id' => $templateId,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'new',
             'method' => $request->getMethod(),
         ]);
@@ -243,7 +242,7 @@ class DocumentUIComponentController extends AbstractController
                     'template_id' => $templateId,
                     'user' => $userId,
                 ]);
-                
+
                 throw $this->createNotFoundException('Template not found');
             }
 
@@ -255,7 +254,7 @@ class DocumentUIComponentController extends AbstractController
 
             $component = new DocumentUIComponent();
             $component->setUiTemplate($template);
-            
+
             $nextSortOrder = $componentRepository->getNextSortOrder($template);
             $component->setSortOrder($nextSortOrder);
 
@@ -263,7 +262,7 @@ class DocumentUIComponentController extends AbstractController
             $zone = $request->query->get('zone');
             if ($zone && in_array($zone, array_keys(DocumentUITemplate::ZONES), true)) {
                 $component->setZone($zone);
-                
+
                 $this->logger->debug('Pre-filled zone from query parameter', [
                     'template_id' => $templateId,
                     'user' => $userId,
@@ -312,7 +311,7 @@ class DocumentUIComponentController extends AbstractController
 
                     if ($result['success']) {
                         $componentId = $component->getId();
-                        
+
                         $this->logger->info('Document UI component created successfully', [
                             'template_id' => $templateId,
                             'component_id' => $componentId,
@@ -329,7 +328,7 @@ class DocumentUIComponentController extends AbstractController
                             'id' => $componentId,
                         ]);
                     }
-                    
+
                     $this->logger->warning('Component creation failed via UI template service', [
                         'template_id' => $templateId,
                         'user' => $userId,
@@ -340,7 +339,7 @@ class DocumentUIComponentController extends AbstractController
                             'zone' => $component->getZone(),
                         ],
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 }
             }
@@ -360,7 +359,7 @@ class DocumentUIComponentController extends AbstractController
                     ['label' => 'Nouveau', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in document UI component creation process', [
                 'template_id' => $templateId,
                 'user' => $userId,
@@ -372,7 +371,7 @@ class DocumentUIComponentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création du composant.');
-            
+
             return $this->redirectToRoute('admin_document_ui_component_index', ['templateId' => $templateId]);
         }
     }
@@ -385,14 +384,14 @@ class DocumentUIComponentController extends AbstractController
     {
         $userId = $this->getUser()?->getUserIdentifier();
         $componentId = $component->getId();
-        
+
         $this->logger->info('Starting document UI component edit', [
             'template_id' => $templateId,
             'component_id' => $componentId,
             'component_name' => $component->getName(),
             'component_type' => $component->getType(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'edit',
             'method' => $request->getMethod(),
         ]);
@@ -415,7 +414,7 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
@@ -525,7 +524,7 @@ class DocumentUIComponentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification du composant.');
-            
+
             return $this->redirectToRoute('admin_document_ui_component_show', [
                 'templateId' => $templateId,
                 'id' => $componentId,
@@ -542,7 +541,7 @@ class DocumentUIComponentController extends AbstractController
         $userId = $this->getUser()?->getUserIdentifier();
         $componentId = $component->getId();
         $componentName = $component->getName();
-        
+
         $this->logger->info('Document UI component deletion attempt', [
             'template_id' => $templateId,
             'component_id' => $componentId,
@@ -550,7 +549,7 @@ class DocumentUIComponentController extends AbstractController
             'component_type' => $component->getType(),
             'component_zone' => $component->getZone(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'delete',
         ]);
 
@@ -572,13 +571,13 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'delete' . $componentId;
-            
+
             $this->logger->debug('CSRF token validation for component deletion', [
                 'template_id' => $templateId,
                 'component_id' => $componentId,
@@ -619,7 +618,7 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'token_provided' => !empty($token),
                 ]);
-                
+
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
         } catch (Exception $e) {
@@ -650,7 +649,7 @@ class DocumentUIComponentController extends AbstractController
         $componentId = $component->getId();
         $componentName = $component->getName();
         $currentStatus = $component->isActive();
-        
+
         $this->logger->info('Document UI component status toggle attempt', [
             'template_id' => $templateId,
             'component_id' => $componentId,
@@ -658,7 +657,7 @@ class DocumentUIComponentController extends AbstractController
             'current_status' => $currentStatus,
             'target_status' => !$currentStatus,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'toggle_status',
         ]);
 
@@ -680,13 +679,13 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'toggle' . $componentId;
-            
+
             $this->logger->debug('CSRF token validation for component status toggle', [
                 'template_id' => $templateId,
                 'component_id' => $componentId,
@@ -709,7 +708,7 @@ class DocumentUIComponentController extends AbstractController
                 $this->entityManager->flush();
 
                 $statusText = $newStatus ? 'activé' : 'désactivé';
-                
+
                 $this->logger->info('Document UI component status toggled successfully', [
                     'template_id' => $templateId,
                     'component_id' => $componentId,
@@ -728,7 +727,7 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'token_provided' => !empty($token),
                 ]);
-                
+
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
         } catch (Exception $e) {
@@ -759,7 +758,7 @@ class DocumentUIComponentController extends AbstractController
         $userId = $this->getUser()?->getUserIdentifier();
         $sourceComponentId = $component->getId();
         $sourceComponentName = $component->getName();
-        
+
         $this->logger->info('Document UI component duplication attempt', [
             'template_id' => $templateId,
             'source_component_id' => $sourceComponentId,
@@ -767,7 +766,7 @@ class DocumentUIComponentController extends AbstractController
             'source_component_type' => $component->getType(),
             'source_component_zone' => $component->getZone(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'duplicate',
         ]);
 
@@ -789,13 +788,13 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'duplicate' . $sourceComponentId;
-            
+
             $this->logger->debug('CSRF token validation for component duplication', [
                 'template_id' => $templateId,
                 'source_component_id' => $sourceComponentId,
@@ -854,16 +853,15 @@ class DocumentUIComponentController extends AbstractController
                     'templateId' => $templateId,
                     'id' => $clonedComponentId,
                 ]);
-            } else {
-                $this->logger->warning('Invalid CSRF token for component duplication', [
-                    'template_id' => $templateId,
-                    'source_component_id' => $sourceComponentId,
-                    'user' => $userId,
-                    'token_provided' => !empty($token),
-                ]);
-                
-                $this->addFlash('error', 'Token de sécurité invalide.');
             }
+            $this->logger->warning('Invalid CSRF token for component duplication', [
+                'template_id' => $templateId,
+                'source_component_id' => $sourceComponentId,
+                'user' => $userId,
+                'token_provided' => !empty($token),
+            ]);
+
+            $this->addFlash('error', 'Token de sécurité invalide.');
         } catch (Exception $e) {
             $this->logger->error('Error during document UI component duplication', [
                 'template_id' => $templateId,
@@ -890,14 +888,14 @@ class DocumentUIComponentController extends AbstractController
     {
         $userId = $this->getUser()?->getUserIdentifier();
         $componentId = $component->getId();
-        
+
         $this->logger->info('Document UI component preview accessed', [
             'template_id' => $templateId,
             'component_id' => $componentId,
             'component_name' => $component->getName(),
             'component_type' => $component->getType(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'preview',
             'method' => $request->getMethod(),
         ]);
@@ -920,7 +918,7 @@ class DocumentUIComponentController extends AbstractController
                     'user' => $userId,
                     'actual_template_id' => $template?->getId(),
                 ]);
-                
+
                 throw $this->createNotFoundException('Component not found in this template');
             }
 
@@ -986,12 +984,11 @@ class DocumentUIComponentController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la génération de l\'aperçu du composant.');
-            
+
             return $this->redirectToRoute('admin_document_ui_component_show', [
                 'templateId' => $templateId,
                 'id' => $componentId,
             ]);
         }
     }
-
 }

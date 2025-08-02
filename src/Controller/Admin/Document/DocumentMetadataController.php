@@ -8,6 +8,7 @@ use App\Entity\Document\DocumentMetadata;
 use App\Form\Document\DocumentMetadataType;
 use App\Repository\Document\DocumentMetadataRepository;
 use App\Service\Document\DocumentMetadataService;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,7 +91,7 @@ class DocumentMetadataController extends AbstractController
                     ['label' => 'Métadonnées', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error loading document metadata list', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -154,7 +155,7 @@ class DocumentMetadataController extends AbstractController
                     ['label' => $documentMetadata->getMetaKey(), 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error rendering document metadata details', [
                 'metadata_id' => $metadataId,
                 'error' => $e->getMessage(),
@@ -260,7 +261,7 @@ class DocumentMetadataController extends AbstractController
                     ['label' => 'Nouvelle', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document metadata creation', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -352,7 +353,7 @@ class DocumentMetadataController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document metadata edit', [
                 'metadata_id' => $metadataId,
                 'error' => $e->getMessage(),
@@ -426,7 +427,7 @@ class DocumentMetadataController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document metadata deletion', [
                 'metadata_id' => $metadataId,
                 'error' => $e->getMessage(),
@@ -515,7 +516,7 @@ class DocumentMetadataController extends AbstractController
 
                 $this->addFlash('error', 'Token CSRF invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during bulk metadata deletion', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -575,7 +576,7 @@ class DocumentMetadataController extends AbstractController
             ]);
 
             return $result['response'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during metadata export', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -629,7 +630,7 @@ class DocumentMetadataController extends AbstractController
             ]);
 
             return $this->json($statistics);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving metadata statistics', [
                 'key' => $key,
                 'error' => $e->getMessage(),
@@ -643,15 +644,14 @@ class DocumentMetadataController extends AbstractController
 
     /**
      * Get available metadata keys (AJAX).
-     * 
+     *
      * Provides autocomplete data for metadata key fields in forms.
      * Returns available keys with usage statistics, sorted by popularity.
      * Used by:
      * - New metadata form (autocomplete datalist)
-     * - Edit metadata form (autocomplete datalist) 
+     * - Edit metadata form (autocomplete datalist)
      * - Index page filter (autocomplete datalist)
-     * 
-     * @param string $search Optional search term to filter keys
+     *
      * @return JsonResponse Array of objects with 'key' and 'usage_count' fields
      */
     #[Route('/keys', name: 'admin_document_metadata_keys', methods: ['GET'])]
@@ -692,7 +692,7 @@ class DocumentMetadataController extends AbstractController
             ]);
 
             return $this->json($keys);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving available metadata keys', [
                 'search' => $search,
                 'error' => $e->getMessage(),

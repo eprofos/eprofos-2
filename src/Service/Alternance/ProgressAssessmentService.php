@@ -12,6 +12,7 @@ use App\Repository\Core\StudentProgressRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -39,7 +40,7 @@ class ProgressAssessmentService
     ): ProgressAssessment {
         $operationId = uniqid('create_assessment_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting progress assessment creation', [
             'operation_id' => $operationId,
             'student_id' => $student->getId(),
@@ -57,7 +58,8 @@ class ProgressAssessmentService
                     'student_valid' => $student !== null,
                     'student_id' => $student?->getId(),
                 ]);
-                throw new \InvalidArgumentException('Valid student is required for assessment creation');
+
+                throw new InvalidArgumentException('Valid student is required for assessment creation');
             }
 
             if (!$period) {
@@ -65,7 +67,8 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'period_provided' => $period,
                 ]);
-                throw new \InvalidArgumentException('Valid period is required for assessment creation');
+
+                throw new InvalidArgumentException('Valid period is required for assessment creation');
             }
 
             $this->logger->debug('Input parameters validated successfully', [
@@ -80,7 +83,7 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'step' => 'create_entity',
                 ]);
-                
+
                 $assessment = new ProgressAssessment();
                 $assessment->setStudent($student)
                     ->setPeriod($period)
@@ -90,7 +93,6 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'step' => 'create_entity',
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to create progress assessment entity', [
                     'operation_id' => $operationId,
@@ -100,6 +102,7 @@ class ProgressAssessmentService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
+
                 throw $e;
             }
 
@@ -109,9 +112,9 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'step' => 'calculate_progression',
                 ]);
-                
+
                 $this->calculateProgression($assessment);
-                
+
                 $this->logger->debug('Progression calculation completed successfully', [
                     'operation_id' => $operationId,
                     'step' => 'calculate_progression',
@@ -119,7 +122,6 @@ class ProgressAssessmentService
                     'company_progression' => $assessment->getCompanyProgression(),
                     'overall_progression' => $assessment->getOverallProgression(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate progression for new assessment', [
                     'operation_id' => $operationId,
@@ -141,16 +143,15 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'step' => 'persist_assessment',
                 ]);
-                
+
                 $this->entityManager->persist($assessment);
                 $this->entityManager->flush();
-                
+
                 $this->logger->debug('Assessment persisted successfully', [
                     'operation_id' => $operationId,
                     'step' => 'persist_assessment',
                     'assessment_id' => $assessment->getId(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to persist progress assessment', [
                     'operation_id' => $operationId,
@@ -161,6 +162,7 @@ class ProgressAssessmentService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -182,10 +184,9 @@ class ProgressAssessmentService
             ]);
 
             return $assessment;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in progress assessment creation', [
                 'operation_id' => $operationId,
                 'student_id' => $student?->getId(),
@@ -198,7 +199,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             throw $e;
         }
     }
@@ -210,7 +211,7 @@ class ProgressAssessmentService
     {
         $operationId = uniqid('calc_progression_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting progression calculation', [
             'operation_id' => $operationId,
             'assessment_id' => $assessment->getId(),
@@ -227,11 +228,12 @@ class ProgressAssessmentService
                     'assessment_valid' => $assessment !== null,
                     'student_valid' => $assessment?->getStudent() !== null,
                 ]);
-                throw new \InvalidArgumentException('Valid assessment with student is required');
+
+                throw new InvalidArgumentException('Valid assessment with student is required');
             }
 
             $student = $assessment->getStudent();
-            
+
             $this->logger->debug('Assessment validated, searching for student progress', [
                 'operation_id' => $operationId,
                 'student_id' => $student->getId(),
@@ -240,9 +242,10 @@ class ProgressAssessmentService
 
             // Find student progress with detailed error handling
             $studentProgress = null;
+
             try {
                 $studentProgress = $this->studentProgressRepository->findOneBy(['student' => $student]);
-                
+
                 $this->logger->debug('Student progress search completed', [
                     'operation_id' => $operationId,
                     'student_id' => $student->getId(),
@@ -250,7 +253,6 @@ class ProgressAssessmentService
                     'progress_found' => $studentProgress !== null,
                     'progress_id' => $studentProgress?->getId(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to search for student progress', [
                     'operation_id' => $operationId,
@@ -278,7 +280,7 @@ class ProgressAssessmentService
                 $assessment->calculateRiskLevel();
 
                 $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-                
+
                 $this->logger->info('Progression calculation completed with default values', [
                     'operation_id' => $operationId,
                     'student_id' => $student->getId(),
@@ -296,17 +298,16 @@ class ProgressAssessmentService
                     'step' => 'center_progression',
                     'student_progress_id' => $studentProgress->getId(),
                 ]);
-                
+
                 $centerProgression = (float) $studentProgress->getCompletionPercentage();
                 $assessment->setCenterProgression(number_format($centerProgression, 2));
-                
+
                 $this->logger->debug('Center progression calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'center_progression',
                     'raw_percentage' => $studentProgress->getCompletionPercentage(),
                     'formatted_progression' => $centerProgression,
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate center progression', [
                     'operation_id' => $operationId,
@@ -317,7 +318,7 @@ class ProgressAssessmentService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $assessment->setCenterProgression('0.00');
             }
 
@@ -328,17 +329,16 @@ class ProgressAssessmentService
                     'step' => 'company_progression',
                     'student_progress_id' => $studentProgress->getId(),
                 ]);
-                
+
                 $companyProgression = $this->calculateCompanyProgression($studentProgress);
                 $assessment->setCompanyProgression(number_format($companyProgression, 2));
-                
+
                 $this->logger->debug('Company progression calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'company_progression',
                     'calculated_progression' => $companyProgression,
                     'formatted_progression' => number_format($companyProgression, 2),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate company progression', [
                     'operation_id' => $operationId,
@@ -349,7 +349,7 @@ class ProgressAssessmentService
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                 ]);
-                
+
                 $assessment->setCompanyProgression('0.00');
             }
 
@@ -361,15 +361,14 @@ class ProgressAssessmentService
                     'center_progression' => $assessment->getCenterProgression(),
                     'company_progression' => $assessment->getCompanyProgression(),
                 ]);
-                
+
                 $assessment->calculateOverallProgression();
-                
+
                 $this->logger->debug('Overall progression calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'overall_progression',
                     'overall_progression' => $assessment->getOverallProgression(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate overall progression', [
                     'operation_id' => $operationId,
@@ -389,15 +388,14 @@ class ProgressAssessmentService
                     'step' => 'skills_matrix',
                     'student_progress_id' => $studentProgress->getId(),
                 ]);
-                
+
                 $this->updateSkillsMatrix($assessment, $studentProgress);
-                
+
                 $this->logger->debug('Skills matrix updated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'skills_matrix',
                     'skills_count' => count($assessment->getSkillsMatrix() ?? []),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to update skills matrix', [
                     'operation_id' => $operationId,
@@ -418,15 +416,14 @@ class ProgressAssessmentService
                     'step' => 'risk_level',
                     'overall_progression' => $assessment->getOverallProgression(),
                 ]);
-                
+
                 $assessment->calculateRiskLevel();
-                
+
                 $this->logger->debug('Risk level calculated successfully', [
                     'operation_id' => $operationId,
                     'step' => 'risk_level',
                     'risk_level' => $assessment->getRiskLevel(),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to calculate risk level', [
                     'operation_id' => $operationId,
@@ -456,10 +453,9 @@ class ProgressAssessmentService
             ]);
 
             return $assessment;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in progression calculation', [
                 'operation_id' => $operationId,
                 'assessment_id' => $assessment?->getId(),
@@ -472,7 +468,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             throw $e;
         }
     }
@@ -488,7 +484,7 @@ class ProgressAssessmentService
     ): ProgressAssessment {
         $operationId = uniqid('update_objectives_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting objectives update', [
             'operation_id' => $operationId,
             'assessment_id' => $assessment->getId(),
@@ -508,7 +504,8 @@ class ProgressAssessmentService
                     'assessment_valid' => $assessment !== null,
                     'assessment_id' => $assessment?->getId(),
                 ]);
-                throw new \InvalidArgumentException('Valid assessment is required for objectives update');
+
+                throw new InvalidArgumentException('Valid assessment is required for objectives update');
             }
 
             $this->logger->debug('Assessment validated, processing objectives', [
@@ -519,7 +516,7 @@ class ProgressAssessmentService
             // Process completed objectives
             $completedSuccessCount = 0;
             $completedErrorCount = 0;
-            
+
             foreach ($completedObjectives as $index => $objective) {
                 try {
                     $this->logger->debug("Processing completed objective {$index}", [
@@ -539,13 +536,14 @@ class ProgressAssessmentService
                             'objective_data' => $objective,
                         ]);
                         $completedErrorCount++;
+
                         continue;
                     }
 
                     $category = $objective['category'] ?? 'general';
                     $objectiveText = $objective['objective'];
                     $completedAt = null;
-                    
+
                     if (isset($objective['completed_at'])) {
                         try {
                             $completedAt = new DateTime($objective['completed_at']);
@@ -561,7 +559,7 @@ class ProgressAssessmentService
 
                     $assessment->addCompletedObjective($category, $objectiveText, $completedAt);
                     $completedSuccessCount++;
-                    
+
                     $this->logger->debug("Completed objective {$index} processed successfully", [
                         'operation_id' => $operationId,
                         'objective_index' => $index,
@@ -569,7 +567,6 @@ class ProgressAssessmentService
                         'objective_length' => strlen($objectiveText),
                         'has_completed_at' => $completedAt !== null,
                     ]);
-                    
                 } catch (Throwable $e) {
                     $completedErrorCount++;
                     $this->logger->warning("Failed to process completed objective {$index}", [
@@ -587,7 +584,7 @@ class ProgressAssessmentService
             // Process pending objectives
             $pendingSuccessCount = 0;
             $pendingErrorCount = 0;
-            
+
             foreach ($pendingObjectives as $index => $objective) {
                 try {
                     $this->logger->debug("Processing pending objective {$index}", [
@@ -608,6 +605,7 @@ class ProgressAssessmentService
                             'objective_data' => $objective,
                         ]);
                         $pendingErrorCount++;
+
                         continue;
                     }
 
@@ -629,7 +627,7 @@ class ProgressAssessmentService
 
                     $assessment->addPendingObjective($category, $objectiveText, $targetDate, $priority);
                     $pendingSuccessCount++;
-                    
+
                     $this->logger->debug("Pending objective {$index} processed successfully", [
                         'operation_id' => $operationId,
                         'objective_index' => $index,
@@ -638,7 +636,6 @@ class ProgressAssessmentService
                         'target_date' => $targetDate,
                         'priority' => $priority,
                     ]);
-                    
                 } catch (Throwable $e) {
                     $pendingErrorCount++;
                     $this->logger->warning("Failed to process pending objective {$index}", [
@@ -656,7 +653,7 @@ class ProgressAssessmentService
             // Process upcoming objectives
             $upcomingSuccessCount = 0;
             $upcomingErrorCount = 0;
-            
+
             foreach ($upcomingObjectives as $index => $objective) {
                 try {
                     $this->logger->debug("Processing upcoming objective {$index}", [
@@ -676,6 +673,7 @@ class ProgressAssessmentService
                             'objective_data' => $objective,
                         ]);
                         $upcomingErrorCount++;
+
                         continue;
                     }
 
@@ -685,7 +683,7 @@ class ProgressAssessmentService
 
                     $assessment->addUpcomingObjective($category, $objectiveText, $startDate);
                     $upcomingSuccessCount++;
-                    
+
                     $this->logger->debug("Upcoming objective {$index} processed successfully", [
                         'operation_id' => $operationId,
                         'objective_index' => $index,
@@ -693,7 +691,6 @@ class ProgressAssessmentService
                         'objective_length' => strlen($objectiveText),
                         'start_date' => $startDate,
                     ]);
-                    
                 } catch (Throwable $e) {
                     $upcomingErrorCount++;
                     $this->logger->warning("Failed to process upcoming objective {$index}", [
@@ -714,14 +711,13 @@ class ProgressAssessmentService
                     'operation_id' => $operationId,
                     'step' => 'flush_changes',
                 ]);
-                
+
                 $this->entityManager->flush();
-                
+
                 $this->logger->debug('Objectives changes flushed successfully', [
                     'operation_id' => $operationId,
                     'step' => 'flush_changes',
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to flush objectives changes', [
                     'operation_id' => $operationId,
@@ -732,6 +728,7 @@ class ProgressAssessmentService
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
+
                 throw $e;
             }
 
@@ -765,10 +762,9 @@ class ProgressAssessmentService
             ]);
 
             return $assessment;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in objectives update', [
                 'operation_id' => $operationId,
                 'assessment_id' => $assessment?->getId(),
@@ -786,7 +782,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             throw $e;
         }
     }
@@ -840,7 +836,7 @@ class ProgressAssessmentService
     {
         $operationId = uniqid('progress_report_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting progress report generation', [
             'operation_id' => $operationId,
             'student_id' => $student->getId(),
@@ -860,7 +856,8 @@ class ProgressAssessmentService
                     'student_valid' => $student !== null,
                     'student_id' => $student?->getId(),
                 ]);
-                throw new \InvalidArgumentException('Valid student is required for progress report');
+
+                throw new InvalidArgumentException('Valid student is required for progress report');
             }
 
             if (!$startDate || !$endDate) {
@@ -869,7 +866,8 @@ class ProgressAssessmentService
                     'start_date_valid' => $startDate !== null,
                     'end_date_valid' => $endDate !== null,
                 ]);
-                throw new \InvalidArgumentException('Valid date range is required for progress report');
+
+                throw new InvalidArgumentException('Valid date range is required for progress report');
             }
 
             if ($startDate > $endDate) {
@@ -878,7 +876,8 @@ class ProgressAssessmentService
                     'start_date' => $startDate->format('Y-m-d'),
                     'end_date' => $endDate->format('Y-m-d'),
                 ]);
-                throw new \InvalidArgumentException('Start date must be before or equal to end date');
+
+                throw new InvalidArgumentException('Start date must be before or equal to end date');
             }
 
             $this->logger->debug('Input parameters validated successfully', [
@@ -912,6 +911,7 @@ class ProgressAssessmentService
 
             // Fetch assessments with detailed error handling
             $assessments = [];
+
             try {
                 $this->logger->debug('Fetching assessments for date range', [
                     'operation_id' => $operationId,
@@ -920,15 +920,14 @@ class ProgressAssessmentService
                     'start_date' => $startDate->format('Y-m-d'),
                     'end_date' => $endDate->format('Y-m-d'),
                 ]);
-                
+
                 $assessments = $this->progressAssessmentRepository->findByStudentAndDateRange($student, $startDate, $endDate);
-                
+
                 $this->logger->debug('Assessments fetched successfully', [
                     'operation_id' => $operationId,
                     'step' => 'fetch_assessments',
                     'assessments_count' => count($assessments),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch assessments for progress report', [
                     'operation_id' => $operationId,
@@ -947,6 +946,7 @@ class ProgressAssessmentService
 
             // Fetch progression trend with detailed error handling
             $trend = [];
+
             try {
                 $this->logger->debug('Fetching progression trend data', [
                     'operation_id' => $operationId,
@@ -954,16 +954,15 @@ class ProgressAssessmentService
                     'student_id' => $student->getId(),
                     'months_back' => 6,
                 ]);
-                
+
                 $trend = $this->progressAssessmentRepository->getStudentProgressionTrend($student, 6);
-                
+
                 $this->logger->debug('Progression trend fetched successfully', [
                     'operation_id' => $operationId,
                     'step' => 'fetch_trend',
                     'trend_data_keys' => array_keys($trend),
                     'overall_progression_points' => count($trend['overall_progression'] ?? []),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch progression trend', [
                     'operation_id' => $operationId,
@@ -1011,7 +1010,7 @@ class ProgressAssessmentService
                     // Process each assessment
                     $processedCount = 0;
                     $processingErrors = 0;
-                    
+
                     foreach ($assessments as $index => $assessment) {
                         try {
                             $this->logger->debug("Processing assessment {$index}", [
@@ -1033,7 +1032,7 @@ class ProgressAssessmentService
 
                             $report['assessments'][] = $assessmentData;
                             $processedCount++;
-                            
+
                             $this->logger->debug("Assessment {$index} processed successfully", [
                                 'operation_id' => $operationId,
                                 'assessment_index' => $index,
@@ -1041,7 +1040,6 @@ class ProgressAssessmentService
                                 'overall_progression' => $assessmentData['overall_progression'],
                                 'risk_level' => $assessmentData['risk_level'],
                             ]);
-                            
                         } catch (Throwable $e) {
                             $processingErrors++;
                             $this->logger->warning("Failed to process assessment {$index}", [
@@ -1072,15 +1070,14 @@ class ProgressAssessmentService
                             'step' => 'generate_recommendations',
                             'latest_assessment_id' => $latestAssessment->getId(),
                         ]);
-                        
+
                         $report['recommendations'] = $this->generateRecommendations($latestAssessment);
-                        
+
                         $this->logger->debug('Recommendations generated successfully', [
                             'operation_id' => $operationId,
                             'step' => 'generate_recommendations',
                             'recommendations_count' => count($report['recommendations']),
                         ]);
-                        
                     } catch (Throwable $e) {
                         $this->logger->error('Failed to generate recommendations', [
                             'operation_id' => $operationId,
@@ -1093,7 +1090,6 @@ class ProgressAssessmentService
                         ]);
                         $report['recommendations'] = [];
                     }
-                    
                 } catch (Throwable $e) {
                     $this->logger->error('Failed to process assessments for report', [
                         'operation_id' => $operationId,
@@ -1142,10 +1138,9 @@ class ProgressAssessmentService
             ]);
 
             return $report;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in progress report generation', [
                 'operation_id' => $operationId,
                 'student_id' => $student?->getId(),
@@ -1159,7 +1154,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             throw $e;
         }
     }
@@ -1171,7 +1166,7 @@ class ProgressAssessmentService
     {
         $operationId = uniqid('detect_at_risk_', true);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting at-risk students detection', [
             'operation_id' => $operationId,
             'risk_threshold' => $riskThreshold,
@@ -1197,21 +1192,21 @@ class ProgressAssessmentService
 
             // Fetch at-risk assessments
             $atRiskAssessments = [];
+
             try {
                 $this->logger->debug('Fetching assessments with high risk levels', [
                     'operation_id' => $operationId,
                     'step' => 'fetch_at_risk_assessments',
                     'risk_threshold' => $riskThreshold,
                 ]);
-                
+
                 $atRiskAssessments = $this->progressAssessmentRepository->findStudentsAtRisk($riskThreshold);
-                
+
                 $this->logger->debug('At-risk assessments fetched successfully', [
                     'operation_id' => $operationId,
                     'step' => 'fetch_at_risk_assessments',
                     'assessments_count' => count($atRiskAssessments),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to fetch at-risk assessments', [
                     'operation_id' => $operationId,
@@ -1254,6 +1249,7 @@ class ProgressAssessmentService
                             'student_valid' => $assessment?->getStudent() !== null,
                         ]);
                         $processingErrors++;
+
                         continue;
                     }
 
@@ -1261,6 +1257,7 @@ class ProgressAssessmentService
 
                     // Generate risk factors analysis
                     $riskFactors = [];
+
                     try {
                         $this->logger->debug("Generating risk factors for assessment {$index}", [
                             'operation_id' => $operationId,
@@ -1268,15 +1265,14 @@ class ProgressAssessmentService
                             'assessment_id' => $assessment->getId(),
                             'step' => 'risk_factors_analysis',
                         ]);
-                        
+
                         $riskFactors = $assessment->getRiskFactorsAnalysis();
-                        
+
                         $this->logger->debug("Risk factors generated successfully for assessment {$index}", [
                             'operation_id' => $operationId,
                             'assessment_index' => $index,
                             'risk_factors_count' => count($riskFactors),
                         ]);
-                        
                     } catch (Throwable $e) {
                         $this->logger->warning("Failed to generate risk factors for assessment {$index}", [
                             'operation_id' => $operationId,
@@ -1290,6 +1286,7 @@ class ProgressAssessmentService
 
                     // Generate recommendations
                     $recommendations = [];
+
                     try {
                         $this->logger->debug("Generating recommendations for assessment {$index}", [
                             'operation_id' => $operationId,
@@ -1297,15 +1294,14 @@ class ProgressAssessmentService
                             'assessment_id' => $assessment->getId(),
                             'step' => 'recommendations',
                         ]);
-                        
+
                         $recommendations = $this->generateRecommendations($assessment);
-                        
+
                         $this->logger->debug("Recommendations generated successfully for assessment {$index}", [
                             'operation_id' => $operationId,
                             'assessment_index' => $index,
                             'recommendations_count' => count($recommendations),
                         ]);
-                        
                     } catch (Throwable $e) {
                         $this->logger->warning("Failed to generate recommendations for assessment {$index}", [
                             'operation_id' => $operationId,
@@ -1339,7 +1335,6 @@ class ProgressAssessmentService
                         'risk_factors_count' => count($riskFactors),
                         'recommendations_count' => count($recommendations),
                     ]);
-                    
                 } catch (Throwable $e) {
                     $processingErrors++;
                     $this->logger->warning("Failed to process at-risk assessment {$index}", [
@@ -1372,10 +1367,9 @@ class ProgressAssessmentService
             ]);
 
             return $studentsAtRisk;
-            
         } catch (Throwable $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->critical('Critical failure in at-risk students detection', [
                 'operation_id' => $operationId,
                 'risk_threshold' => $riskThreshold,
@@ -1387,7 +1381,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             throw $e;
         }
     }
@@ -1629,7 +1623,7 @@ class ProgressAssessmentService
     private function calculateCompanyProgression(StudentProgress $studentProgress): float
     {
         $operationId = uniqid('company_progression_', true);
-        
+
         $this->logger->debug('Starting company progression calculation', [
             'operation_id' => $operationId,
             'student_progress_id' => $studentProgress->getId(),
@@ -1644,20 +1638,22 @@ class ProgressAssessmentService
                     'student_progress_valid' => $studentProgress !== null,
                     'student_progress_id' => $studentProgress?->getId(),
                 ]);
+
                 return 0.0;
             }
 
             // Get mission progress data
             $missionProgress = [];
+
             try {
                 $this->logger->debug('Retrieving mission progress data', [
                     'operation_id' => $operationId,
                     'student_progress_id' => $studentProgress->getId(),
                     'step' => 'get_mission_progress',
                 ]);
-                
+
                 $missionProgress = $studentProgress->getMissionProgress();
-                
+
                 $this->logger->debug('Mission progress data retrieved', [
                     'operation_id' => $operationId,
                     'student_progress_id' => $studentProgress->getId(),
@@ -1665,7 +1661,6 @@ class ProgressAssessmentService
                     'mission_count' => count($missionProgress ?? []),
                     'has_mission_data' => !empty($missionProgress),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to retrieve mission progress data', [
                     'operation_id' => $operationId,
@@ -1685,6 +1680,7 @@ class ProgressAssessmentService
                     'student_progress_id' => $studentProgress->getId(),
                     'reason' => 'empty_mission_progress',
                 ]);
+
                 return 0.0;
             }
 
@@ -1718,6 +1714,7 @@ class ProgressAssessmentService
                             'mission_value' => $mission,
                         ]);
                         $invalidMissions++;
+
                         continue;
                     }
 
@@ -1761,7 +1758,6 @@ class ProgressAssessmentService
                         'weight' => $weight,
                         'contribution' => $completionRate * $weight,
                     ]);
-                    
                 } catch (Throwable $e) {
                     $invalidMissions++;
                     $this->logger->warning("Failed to process mission {$index}", [
@@ -1797,7 +1793,6 @@ class ProgressAssessmentService
             ]);
 
             return $finalProgression;
-            
         } catch (Throwable $e) {
             $this->logger->error('Critical failure in company progression calculation', [
                 'operation_id' => $operationId,
@@ -1809,7 +1804,7 @@ class ProgressAssessmentService
                 'trace' => $e->getTraceAsString(),
                 'method' => __METHOD__,
             ]);
-            
+
             // Return default value to prevent crashes
             return 0.0;
         }
@@ -1821,7 +1816,7 @@ class ProgressAssessmentService
     private function updateSkillsMatrix(ProgressAssessment $assessment, StudentProgress $studentProgress): void
     {
         $operationId = uniqid('update_skills_', true);
-        
+
         $this->logger->debug('Starting skills matrix update', [
             'operation_id' => $operationId,
             'assessment_id' => $assessment->getId(),
@@ -1837,6 +1832,7 @@ class ProgressAssessmentService
                     'assessment_valid' => $assessment !== null,
                     'assessment_id' => $assessment?->getId(),
                 ]);
+
                 return;
             }
 
@@ -1846,20 +1842,22 @@ class ProgressAssessmentService
                     'student_progress_valid' => $studentProgress !== null,
                     'student_progress_id' => $studentProgress?->getId(),
                 ]);
+
                 return;
             }
 
             // Get skills acquired data
             $skillsAcquired = [];
+
             try {
                 $this->logger->debug('Retrieving skills acquired data', [
                     'operation_id' => $operationId,
                     'student_progress_id' => $studentProgress->getId(),
                     'step' => 'get_skills_acquired',
                 ]);
-                
+
                 $skillsAcquired = $studentProgress->getSkillsAcquired();
-                
+
                 $this->logger->debug('Skills acquired data retrieved', [
                     'operation_id' => $operationId,
                     'student_progress_id' => $studentProgress->getId(),
@@ -1867,7 +1865,6 @@ class ProgressAssessmentService
                     'skills_count' => count($skillsAcquired ?? []),
                     'has_skills_data' => !empty($skillsAcquired),
                 ]);
-                
             } catch (Throwable $e) {
                 $this->logger->error('Failed to retrieve skills acquired data', [
                     'operation_id' => $operationId,
@@ -1887,6 +1884,7 @@ class ProgressAssessmentService
                     'assessment_id' => $assessment->getId(),
                     'student_progress_id' => $studentProgress->getId(),
                 ]);
+
                 return;
             }
 
@@ -1914,12 +1912,13 @@ class ProgressAssessmentService
 
                     // Validate skill code
                     if (empty($skillCode) || !is_string($skillCode)) {
-                        $this->logger->warning("Invalid skill code", [
+                        $this->logger->warning('Invalid skill code', [
                             'operation_id' => $operationId,
                             'skill_code' => $skillCode,
                             'skill_code_type' => gettype($skillCode),
                         ]);
                         $skippedSkillsCount++;
+
                         continue;
                     }
 
@@ -1932,6 +1931,7 @@ class ProgressAssessmentService
                             'skill_data_value' => $skillData,
                         ]);
                         $skippedSkillsCount++;
+
                         continue;
                     }
 
@@ -1986,7 +1986,7 @@ class ProgressAssessmentService
                     try {
                         $assessment->updateSkillInMatrix($skillCode, $skillName, $skillLevel, $acquiredAt);
                         $updatedSkillsCount++;
-                        
+
                         $this->logger->debug("Skill updated successfully: {$skillCode}", [
                             'operation_id' => $operationId,
                             'skill_code' => $skillCode,
@@ -1994,7 +1994,6 @@ class ProgressAssessmentService
                             'skill_level' => $skillLevel,
                             'has_acquired_at' => $acquiredAt !== null,
                         ]);
-                        
                     } catch (Throwable $e) {
                         $errorSkillsCount++;
                         $this->logger->error("Failed to update skill in matrix: {$skillCode}", [
@@ -2006,7 +2005,6 @@ class ProgressAssessmentService
                             'error_class' => get_class($e),
                         ]);
                     }
-                    
                 } catch (Throwable $e) {
                     $errorSkillsCount++;
                     $this->logger->warning("Failed to process skill: {$skillCode}", [
@@ -2033,7 +2031,6 @@ class ProgressAssessmentService
                     'success_rate' => count($skillsAcquired) > 0 ? round(($updatedSkillsCount / count($skillsAcquired)) * 100, 2) : 100,
                 ],
             ]);
-            
         } catch (Throwable $e) {
             $this->logger->error('Critical failure in skills matrix update', [
                 'operation_id' => $operationId,
@@ -2296,14 +2293,14 @@ class ProgressAssessmentService
     {
         try {
             $riskLevels = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-            
+
             foreach ($studentsAtRisk as $studentData) {
                 $riskLevel = $studentData['risk_level'] ?? 0;
                 if ($riskLevel >= 1 && $riskLevel <= 5) {
                     $riskLevels[$riskLevel]++;
                 }
             }
-            
+
             return [
                 'total_students' => count($studentsAtRisk),
                 'by_risk_level' => $riskLevels,
@@ -2316,7 +2313,7 @@ class ProgressAssessmentService
                 'error' => $e->getMessage(),
                 'students_count' => count($studentsAtRisk),
             ]);
-            
+
             return [
                 'total_students' => count($studentsAtRisk),
                 'by_risk_level' => [],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\DataTransformer;
 
+use JsonException;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 
@@ -19,7 +20,7 @@ class JsonToArrayTransformer implements DataTransformerInterface
      */
     public function transform(mixed $value): string
     {
-        if (null === $value || [] === $value) {
+        if ($value === null || $value === []) {
             return '';
         }
 
@@ -29,7 +30,7 @@ class JsonToArrayTransformer implements DataTransformerInterface
 
         try {
             return json_encode($value, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             throw new TransformationFailedException('Could not encode array to JSON: ' . $e->getMessage());
         }
     }
@@ -45,8 +46,9 @@ class JsonToArrayTransformer implements DataTransformerInterface
 
         try {
             $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+
             return is_array($decoded) ? $decoded : null;
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             throw new TransformationFailedException('Could not decode JSON string: ' . $e->getMessage());
         }
     }

@@ -13,6 +13,7 @@ use App\Repository\Core\StudentEnrollmentRepository;
 use App\Repository\Training\SessionRegistrationRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -33,14 +34,13 @@ class StudentEnrollmentService
         private SessionRegistrationRepository $sessionRegistrationRepository,
         private MailerInterface $mailer,
         private Environment $twig,
-        private LoggerInterface $logger
-    ) {
-    }
+        private LoggerInterface $logger,
+    ) {}
 
     /**
      * Link a student to a session registration and create enrollment.
      *
-     * @throws \Exception If enrollment validation fails
+     * @throws Exception If enrollment validation fails
      */
     public function linkStudentToSessionRegistration(Student $student, SessionRegistration $registration): StudentEnrollment
     {
@@ -70,7 +70,8 @@ class StudentEnrollmentService
                     'session_end_date' => $registration->getSession()->getEndDate()?->format('Y-m-d H:i:s'),
                     'session_capacity' => $registration->getSession()->getMaxCapacity(),
                 ]);
-                throw new \Exception('Student is not eligible for enrollment in this session');
+
+                throw new Exception('Student is not eligible for enrollment in this session');
             }
 
             // Check if registration is already linked
@@ -87,7 +88,8 @@ class StudentEnrollmentService
                     'linked_student_email' => $registration->getLinkedStudent()->getEmail(),
                     'attempting_student_id' => $student->getId(),
                 ]);
-                throw new \Exception('Session registration is already linked to another student');
+
+                throw new Exception('Session registration is already linked to another student');
             }
 
             // Check for duplicate enrollment
@@ -98,7 +100,7 @@ class StudentEnrollmentService
 
             $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSessionRegistration(
                 $student,
-                $registration
+                $registration,
             );
 
             if ($existingEnrollment !== null) {
@@ -108,7 +110,8 @@ class StudentEnrollmentService
                     'existing_enrollment_id' => $existingEnrollment->getId(),
                     'existing_enrollment_status' => $existingEnrollment->getStatus(),
                 ]);
-                throw new \Exception('Student is already enrolled in this session');
+
+                throw new Exception('Student is already enrolled in this session');
             }
 
             // Create the enrollment
@@ -169,7 +172,7 @@ class StudentEnrollmentService
                     'student_email' => $student->getEmail(),
                 ]);
                 $this->sendEnrollmentNotification($enrollment);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Failed to send enrollment notification, but enrollment was successful', [
                     'enrollment_id' => $enrollment->getId(),
                     'student_email' => $student->getEmail(),
@@ -192,8 +195,7 @@ class StudentEnrollmentService
             ]);
 
             return $enrollment;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to link student to session registration', [
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
@@ -206,6 +208,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -232,14 +235,14 @@ class StudentEnrollmentService
             ]);
 
             $registrations = $this->sessionRegistrationRepository->findUnlinkedConfirmedByEmail(
-                $student->getEmail()
+                $student->getEmail(),
             );
 
             $this->logger->info('Found potential registrations for auto-linking', [
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
                 'found_registrations_count' => count($registrations),
-                'registration_ids' => array_map(fn($r) => $r->getId(), $registrations),
+                'registration_ids' => array_map(static fn ($r) => $r->getId(), $registrations),
             ]);
 
             foreach ($registrations as $registration) {
@@ -260,7 +263,7 @@ class StudentEnrollmentService
 
                     $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSession(
                         $student,
-                        $registration->getSession()
+                        $registration->getSession(),
                     );
 
                     if ($existingEnrollment !== null) {
@@ -271,6 +274,7 @@ class StudentEnrollmentService
                             'existing_enrollment_status' => $existingEnrollment->getStatus(),
                             'registration_id' => $registration->getId(),
                         ]);
+
                         continue;
                     }
 
@@ -283,6 +287,7 @@ class StudentEnrollmentService
                             'student_active' => $student->isActive(),
                             'session_end_date' => $registration->getSession()->getEndDate()?->format('Y-m-d H:i:s'),
                         ]);
+
                         continue;
                     }
 
@@ -340,8 +345,7 @@ class StudentEnrollmentService
                         'formation_title' => $registration->getSession()->getFormation()->getTitle(),
                         'enrollment_source' => 'auto_email_match',
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to auto-link student to session registration', [
                         'student_id' => $student->getId(),
                         'student_email' => $student->getEmail(),
@@ -362,7 +366,7 @@ class StudentEnrollmentService
                 $this->logger->info('Flushing auto-linked enrollments to database', [
                     'student_id' => $student->getId(),
                     'enrollments_count' => count($enrollments),
-                    'enrollment_ids' => array_map(fn($e) => $e->getId(), $enrollments),
+                    'enrollment_ids' => array_map(static fn ($e) => $e->getId(), $enrollments),
                 ]);
 
                 $this->entityManager->flush();
@@ -380,7 +384,7 @@ class StudentEnrollmentService
                             'student_email' => $student->getEmail(),
                         ]);
                         $this->sendEnrollmentNotification($enrollment);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to send notification for auto-linked enrollment', [
                             'enrollment_id' => $enrollment->getId(),
                             'student_email' => $student->getEmail(),
@@ -402,10 +406,9 @@ class StudentEnrollmentService
                 'student_email' => $student->getEmail(),
                 'total_registrations_found' => count($registrations),
                 'successful_enrollments' => count($enrollments),
-                'enrollment_ids' => array_map(fn($e) => $e->getId(), $enrollments),
+                'enrollment_ids' => array_map(static fn ($e) => $e->getId(), $enrollments),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during automatic email linking process', [
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
@@ -416,6 +419,7 @@ class StudentEnrollmentService
                 'trace' => $e->getTraceAsString(),
                 'enrollments_created_before_error' => count($enrollments),
             ]);
+
             throw $e;
         }
 
@@ -426,6 +430,7 @@ class StudentEnrollmentService
      * Bulk enroll students in a session.
      *
      * @param Student[] $students
+     *
      * @return array Array with 'success' and 'failed' counts and details
      */
     public function bulkEnrollStudents(Session $session, array $students, string $adminNotes = '', bool $notifyStudents = false): array
@@ -435,7 +440,7 @@ class StudentEnrollmentService
             'formation_id' => $session->getFormation()->getId(),
             'formation_title' => $session->getFormation()->getTitle(),
             'students_count' => count($students),
-            'student_ids' => array_map(fn($s) => $s->getId(), $students),
+            'student_ids' => array_map(static fn ($s) => $s->getId(), $students),
             'admin_notes' => $adminNotes,
             'notify_students' => $notifyStudents,
         ]);
@@ -466,7 +471,7 @@ class StudentEnrollmentService
 
                     $existingEnrollment = $this->enrollmentRepository->findEnrollmentByStudentAndSession(
                         $student,
-                        $session
+                        $session,
                     );
 
                     if ($existingEnrollment !== null) {
@@ -483,6 +488,7 @@ class StudentEnrollmentService
                             'student' => $student->getFullName(),
                             'error' => 'Already enrolled in this session',
                         ];
+
                         continue;
                     }
 
@@ -501,6 +507,7 @@ class StudentEnrollmentService
                             'student' => $student->getFullName(),
                             'error' => 'Student not eligible for enrollment',
                         ];
+
                         continue;
                     }
 
@@ -572,7 +579,7 @@ class StudentEnrollmentService
                                 'enrollment_id' => 'new',
                             ]);
                             $this->sendEnrollmentNotification($enrollment);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->logger->error('Failed to send notification for bulk enrolled student', [
                                 'student_id' => $student->getId(),
                                 'student_email' => $student->getEmail(),
@@ -592,8 +599,7 @@ class StudentEnrollmentService
                         'enrollment_source' => 'bulk_admin',
                         'notification_sent' => $notifyStudents,
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to bulk enroll individual student', [
                         'student_id' => $student->getId(),
                         'student_name' => $student->getFullName(),
@@ -632,8 +638,7 @@ class StudentEnrollmentService
                 'failed_enrollments' => $results['failed'],
                 'notifications_enabled' => $notifyStudents,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during bulk enrollment process', [
                 'session_id' => $session->getId(),
                 'formation_id' => $session->getFormation()->getId(),
@@ -645,6 +650,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
 
@@ -660,7 +666,7 @@ class StudentEnrollmentService
     {
         $this->logger->info('Starting bulk status update process', [
             'enrollments_count' => count($enrollments),
-            'enrollment_ids' => array_map(fn($e) => $e->getId(), $enrollments),
+            'enrollment_ids' => array_map(static fn ($e) => $e->getId(), $enrollments),
             'new_status' => $newStatus,
             'dropout_reason' => $dropoutReason,
             'admin_notes' => $adminNotes,
@@ -688,7 +694,7 @@ class StudentEnrollmentService
 
                 try {
                     $oldStatus = $enrollment->getStatus();
-                    
+
                     $this->logger->debug('Updating enrollment status', [
                         'enrollment_id' => $enrollment->getId(),
                         'old_status' => $oldStatus,
@@ -707,19 +713,19 @@ class StudentEnrollmentService
 
                     if ($adminNotes) {
                         $currentNotes = $enrollment->getAdminNotes() ?: '';
-                        $updatedNotes = $currentNotes . "\n[" . date('Y-m-d H:i') . "] " . $adminNotes;
-                        
+                        $updatedNotes = $currentNotes . "\n[" . date('Y-m-d H:i') . '] ' . $adminNotes;
+
                         $this->logger->debug('Updating admin notes for enrollment', [
                             'enrollment_id' => $enrollment->getId(),
                             'previous_notes_length' => strlen($currentNotes),
                             'new_notes_addition' => $adminNotes,
                         ]);
-                        
+
                         $enrollment->setAdminNotes($updatedNotes);
                     }
 
                     $this->entityManager->persist($enrollment);
-                    
+
                     $results['success']++;
                     $results['details'][] = [
                         'student' => $enrollment->getStudent()->getFullName(),
@@ -739,7 +745,7 @@ class StudentEnrollmentService
                                 'new_status' => $newStatus,
                             ]);
                             $this->sendStatusChangeNotification($enrollment, $oldStatus, $newStatus);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->logger->error('Failed to send status change notification', [
                                 'enrollment_id' => $enrollment->getId(),
                                 'student_email' => $enrollment->getStudent()->getEmail(),
@@ -760,8 +766,7 @@ class StudentEnrollmentService
                         'dropout_reason' => $dropoutReason,
                         'notification_sent' => $notifyStudents,
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to update individual enrollment status in bulk process', [
                         'enrollment_id' => $enrollment->getId(),
                         'student_id' => $enrollment->getStudent()->getId(),
@@ -802,8 +807,7 @@ class StudentEnrollmentService
                 'dropout_reason' => $dropoutReason,
                 'notifications_enabled' => $notifyStudents,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during bulk status update process', [
                 'total_enrollments' => count($enrollments),
                 'processed_before_error' => $results['success'] + $results['failed'],
@@ -814,6 +818,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
 
@@ -829,7 +834,7 @@ class StudentEnrollmentService
     {
         $this->logger->info('Starting bulk unenrollment process', [
             'enrollments_count' => count($enrollments),
-            'enrollment_ids' => array_map(fn($e) => $e->getId(), $enrollments),
+            'enrollment_ids' => array_map(static fn ($e) => $e->getId(), $enrollments),
             'reason' => $reason,
             'notify_students' => $notifyStudents,
         ]);
@@ -886,7 +891,7 @@ class StudentEnrollmentService
                                 'reason' => $reason,
                             ]);
                             $this->sendUnenrollmentNotification($enrollment, $reason);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->logger->error('Failed to send unenrollment notification', [
                                 'enrollment_id' => $enrollment->getId(),
                                 'student_email' => $student->getEmail(),
@@ -908,8 +913,7 @@ class StudentEnrollmentService
                         'dropout_reason' => $reason,
                         'notification_sent' => $notifyStudents,
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to unenroll individual student in bulk process', [
                         'enrollment_id' => $enrollment->getId(),
                         'student_id' => $enrollment->getStudent()->getId(),
@@ -949,8 +953,7 @@ class StudentEnrollmentService
                 'reason' => $reason,
                 'notifications_enabled' => $notifyStudents,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during bulk unenrollment process', [
                 'total_enrollments' => count($enrollments),
                 'processed_before_error' => $results['success'] + $results['failed'],
@@ -961,6 +964,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
 
@@ -977,7 +981,7 @@ class StudentEnrollmentService
             'formation_id' => $session->getFormation()->getId(),
             'formation_title' => $session->getFormation()->getTitle(),
             'students_count' => count($students),
-            'student_ids' => array_map(fn($s) => $s->getId(), $students),
+            'student_ids' => array_map(static fn ($s) => $s->getId(), $students),
             'session_max_capacity' => $session->getMaxCapacity(),
         ]);
 
@@ -998,13 +1002,13 @@ class StudentEnrollmentService
 
             $currentEnrollments = $this->enrollmentRepository->findBy(['sessionRegistration.session' => $session]);
             $validation['current_enrollments'] = count($currentEnrollments);
-            
+
             $this->logger->debug('Current enrollment count determined', [
                 'session_id' => $session->getId(),
                 'current_enrollments' => $validation['current_enrollments'],
                 'session_capacity' => $session->getMaxCapacity(),
             ]);
-            
+
             if ($session->getMaxCapacity() > 0) {
                 $validation['available_spots'] = $session->getMaxCapacity() - $validation['current_enrollments'];
                 $this->logger->debug('Available spots calculated', [
@@ -1101,8 +1105,7 @@ class StudentEnrollmentService
                             'validation_issues' => $issues,
                         ]);
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error during individual student validation', [
                         'student_id' => $student->getId(),
                         'student_name' => $student->getFullName(),
@@ -1131,8 +1134,7 @@ class StudentEnrollmentService
                 'available_spots' => $validation['available_spots'],
                 'validation_success_rate' => count($students) > 0 ? round((count($validation['valid']) / count($students)) * 100, 2) : 0,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during bulk enrollment validation', [
                 'session_id' => $session->getId(),
                 'formation_id' => $session->getFormation()->getId(),
@@ -1143,69 +1145,11 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
 
         return $validation;
-    }
-
-    /**
-     * Send status change notification email.
-     */
-    private function sendStatusChangeNotification(StudentEnrollment $enrollment, string $oldStatus, string $newStatus): void
-    {
-        try {
-            $student = $enrollment->getStudent();
-            $formation = $enrollment->getFormation();
-
-            $email = (new Email())
-                ->from('noreply@eprofos.com')
-                ->to($student->getEmail())
-                ->subject('Changement de statut d\'inscription - ' . $formation->getTitle())
-                ->html($this->twig->render('emails/enrollment_status_change.html.twig', [
-                    'student' => $student,
-                    'enrollment' => $enrollment,
-                    'formation' => $formation,
-                    'oldStatus' => $oldStatus,
-                    'newStatus' => $newStatus,
-                ]));
-
-            $this->mailer->send($email);
-        } catch (\Exception $e) {
-            $this->logger->error('Failed to send status change notification', [
-                'enrollment_id' => $enrollment->getId(),
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Send unenrollment notification email.
-     */
-    private function sendUnenrollmentNotification(StudentEnrollment $enrollment, string $reason): void
-    {
-        try {
-            $student = $enrollment->getStudent();
-            $formation = $enrollment->getFormation();
-
-            $email = (new Email())
-                ->from('noreply@eprofos.com')
-                ->to($student->getEmail())
-                ->subject('Désinscription - ' . $formation->getTitle())
-                ->html($this->twig->render('emails/enrollment_unenrollment.html.twig', [
-                    'student' => $student,
-                    'enrollment' => $enrollment,
-                    'formation' => $formation,
-                    'reason' => $reason,
-                ]));
-
-            $this->mailer->send($email);
-        } catch (\Exception $e) {
-            $this->logger->error('Failed to send unenrollment notification', [
-                'enrollment_id' => $enrollment->getId(),
-                'error' => $e->getMessage(),
-            ]);
-        }
     }
 
     /**
@@ -1235,13 +1179,14 @@ class StudentEnrollmentService
                     'student_email' => $student->getEmail(),
                     'session_id' => $session->getId(),
                 ]);
+
                 return false;
             }
 
             // Check if session is in the future or ongoing
             $now = new DateTimeImmutable();
             $sessionEndDate = $session->getEndDate();
-            
+
             $this->logger->debug('Checking session date validity', [
                 'session_id' => $session->getId(),
                 'session_end_date' => $sessionEndDate?->format('Y-m-d H:i:s'),
@@ -1256,12 +1201,13 @@ class StudentEnrollmentService
                     'session_end_date' => $sessionEndDate->format('Y-m-d H:i:s'),
                     'current_date' => $now->format('Y-m-d H:i:s'),
                 ]);
+
                 return false;
             }
 
             // Check if session has available spots
             $maxCapacity = $session->getMaxCapacity();
-            
+
             $this->logger->debug('Checking session capacity', [
                 'session_id' => $session->getId(),
                 'max_capacity' => $maxCapacity,
@@ -1271,7 +1217,7 @@ class StudentEnrollmentService
             if ($maxCapacity > 0) {
                 $confirmedRegistrations = $this->sessionRegistrationRepository->findConfirmedBySession($session);
                 $confirmedCount = count($confirmedRegistrations);
-                
+
                 $this->logger->debug('Session capacity details', [
                     'session_id' => $session->getId(),
                     'max_capacity' => $maxCapacity,
@@ -1287,6 +1233,7 @@ class StudentEnrollmentService
                         'max_capacity' => $maxCapacity,
                         'confirmed_registrations' => $confirmedCount,
                     ]);
+
                     return false;
                 }
             }
@@ -1302,8 +1249,7 @@ class StudentEnrollmentService
             ]);
 
             return true;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during enrollment eligibility validation', [
                 'student_id' => $student->getId(),
                 'student_email' => $student->getEmail(),
@@ -1315,6 +1261,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1355,7 +1302,8 @@ class StudentEnrollmentService
                     'enrollment' => $enrollment,
                     'formation' => $formation,
                     'session' => $session,
-                ]));
+                ]))
+            ;
 
             $this->logger->debug('Sending enrollment notification email', [
                 'enrollment_id' => $enrollment->getId(),
@@ -1376,8 +1324,7 @@ class StudentEnrollmentService
                 'session_id' => $session?->getId(),
                 'email_sent_at' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send enrollment notification email', [
                 'enrollment_id' => $enrollment->getId(),
                 'student_id' => $enrollment->getStudent()->getId(),
@@ -1391,6 +1338,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1442,7 +1390,7 @@ class StudentEnrollmentService
 
             $this->entityManager->remove($enrollment);
             $this->entityManager->persist($registration);
-            
+
             $this->logger->debug('Flushing unlinking changes to database', [
                 'enrollment_id' => $enrollment->getId(),
                 'registration_id' => $registration->getId(),
@@ -1462,8 +1410,7 @@ class StudentEnrollmentService
                 'formation_title' => $formation->getTitle(),
                 'unlinked_at' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to unlink student from session registration', [
                 'enrollment_id' => $enrollment->getId(),
                 'student_id' => $enrollment->getStudent()->getId(),
@@ -1477,6 +1424,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1491,7 +1439,7 @@ class StudentEnrollmentService
         try {
             $this->logger->debug('Counting total confirmed registrations');
             $totalConfirmedRegistrations = $this->sessionRegistrationRepository->count(['status' => 'confirmed']);
-            
+
             $this->logger->debug('Counting linked registrations');
             $linkedRegistrations = $this->sessionRegistrationRepository->createQueryBuilder('sr')
                 ->select('COUNT(sr.id)')
@@ -1499,11 +1447,12 @@ class StudentEnrollmentService
                 ->andWhere('sr.linkedStudent IS NOT NULL')
                 ->setParameter('status', 'confirmed')
                 ->getQuery()
-                ->getSingleScalarResult();
+                ->getSingleScalarResult()
+            ;
 
             $unlinkedRegistrations = $totalConfirmedRegistrations - $linkedRegistrations;
-            $linkingRate = $totalConfirmedRegistrations > 0 
-                ? round(($linkedRegistrations / $totalConfirmedRegistrations) * 100, 2) 
+            $linkingRate = $totalConfirmedRegistrations > 0
+                ? round(($linkedRegistrations / $totalConfirmedRegistrations) * 100, 2)
                 : 0;
 
             $stats = [
@@ -1522,8 +1471,7 @@ class StudentEnrollmentService
             ]);
 
             return $stats;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to calculate linking statistics', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -1531,6 +1479,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1547,10 +1496,10 @@ class StudentEnrollmentService
         try {
             $this->logger->debug('Fetching unlinked confirmed registrations');
             $unlinkedRegistrations = $this->sessionRegistrationRepository->findUnlinkedConfirmedRegistrations();
-            
+
             $this->logger->info('Found unlinked confirmed registrations', [
                 'unlinked_registrations_count' => count($unlinkedRegistrations),
-                'registration_ids' => array_map(fn($r) => $r->getId(), $unlinkedRegistrations),
+                'registration_ids' => array_map(static fn ($r) => $r->getId(), $unlinkedRegistrations),
             ]);
 
             $potentialMatches = [];
@@ -1598,8 +1547,7 @@ class StudentEnrollmentService
                             'registration_email' => $registration->getEmail(),
                         ]);
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error while searching for matching student', [
                         'registration_id' => $registration->getId(),
                         'registration_email' => $registration->getEmail(),
@@ -1613,10 +1561,10 @@ class StudentEnrollmentService
             $this->logger->info('Completed search for potential auto-links', [
                 'total_unlinked_registrations' => count($unlinkedRegistrations),
                 'potential_matches_found' => count($potentialMatches),
-                'match_rate_percentage' => count($unlinkedRegistrations) > 0 
-                    ? round((count($potentialMatches) / count($unlinkedRegistrations)) * 100, 2) 
+                'match_rate_percentage' => count($unlinkedRegistrations) > 0
+                    ? round((count($potentialMatches) / count($unlinkedRegistrations)) * 100, 2)
                     : 0,
-                'potential_match_details' => array_map(fn($match) => [
+                'potential_match_details' => array_map(static fn ($match) => [
                     'registration_id' => $match['registration']->getId(),
                     'student_id' => $match['student']->getId(),
                     'student_email' => $match['student']->getEmail(),
@@ -1625,8 +1573,7 @@ class StudentEnrollmentService
             ]);
 
             return $potentialMatches;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during potential auto-links search', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
@@ -1634,6 +1581,7 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -1657,10 +1605,10 @@ class StudentEnrollmentService
         try {
             $this->logger->debug('Finding potential auto-link matches');
             $potentialMatches = $this->findPotentialAutoLinks();
-            
+
             $this->logger->info('Found potential auto-link matches to process', [
                 'potential_matches_count' => count($potentialMatches),
-                'match_details' => array_map(fn($match) => [
+                'match_details' => array_map(static fn ($match) => [
                     'registration_id' => $match['registration']->getId(),
                     'student_id' => $match['student']->getId(),
                     'student_email' => $match['student']->getEmail(),
@@ -1670,7 +1618,7 @@ class StudentEnrollmentService
 
             foreach ($potentialMatches as $index => $match) {
                 $results['processed']++;
-                
+
                 $this->logger->debug('Processing auto-link match', [
                     'match_index' => $index + 1,
                     'total_matches' => count($potentialMatches),
@@ -1682,7 +1630,7 @@ class StudentEnrollmentService
                     'formation_title' => $match['formation']->getTitle(),
                     'session_id' => $match['session']->getId(),
                 ]);
-                
+
                 try {
                     $this->logger->debug('Attempting to link student to registration', [
                         'student_id' => $match['student']->getId(),
@@ -1692,9 +1640,9 @@ class StudentEnrollmentService
 
                     $enrollment = $this->linkStudentToSessionRegistration(
                         $match['student'],
-                        $match['registration']
+                        $match['registration'],
                     );
-                    
+
                     $results['success']++;
                     $results['details'][] = [
                         'student' => $match['student']->getFullName(),
@@ -1714,8 +1662,7 @@ class StudentEnrollmentService
                         'session_id' => $match['session']->getId(),
                         'processed_at' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ]);
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $results['failed']++;
                     $results['details'][] = [
                         'student' => $match['student']->getFullName(),
@@ -1745,13 +1692,12 @@ class StudentEnrollmentService
                 'total_processed' => $results['processed'],
                 'successful_links' => $results['success'],
                 'failed_links' => $results['failed'],
-                'success_rate_percentage' => $results['processed'] > 0 
-                    ? round(($results['success'] / $results['processed']) * 100, 2) 
+                'success_rate_percentage' => $results['processed'] > 0
+                    ? round(($results['success'] / $results['processed']) * 100, 2)
                     : 0,
                 'completed_at' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error during auto-links processing', [
                 'processed_before_error' => $results['processed'],
                 'success_before_error' => $results['success'],
@@ -1762,9 +1708,71 @@ class StudentEnrollmentService
                 'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
 
         return $results;
+    }
+
+    /**
+     * Send status change notification email.
+     */
+    private function sendStatusChangeNotification(StudentEnrollment $enrollment, string $oldStatus, string $newStatus): void
+    {
+        try {
+            $student = $enrollment->getStudent();
+            $formation = $enrollment->getFormation();
+
+            $email = (new Email())
+                ->from('noreply@eprofos.com')
+                ->to($student->getEmail())
+                ->subject('Changement de statut d\'inscription - ' . $formation->getTitle())
+                ->html($this->twig->render('emails/enrollment_status_change.html.twig', [
+                    'student' => $student,
+                    'enrollment' => $enrollment,
+                    'formation' => $formation,
+                    'oldStatus' => $oldStatus,
+                    'newStatus' => $newStatus,
+                ]))
+            ;
+
+            $this->mailer->send($email);
+        } catch (Exception $e) {
+            $this->logger->error('Failed to send status change notification', [
+                'enrollment_id' => $enrollment->getId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Send unenrollment notification email.
+     */
+    private function sendUnenrollmentNotification(StudentEnrollment $enrollment, string $reason): void
+    {
+        try {
+            $student = $enrollment->getStudent();
+            $formation = $enrollment->getFormation();
+
+            $email = (new Email())
+                ->from('noreply@eprofos.com')
+                ->to($student->getEmail())
+                ->subject('Désinscription - ' . $formation->getTitle())
+                ->html($this->twig->render('emails/enrollment_unenrollment.html.twig', [
+                    'student' => $student,
+                    'enrollment' => $enrollment,
+                    'formation' => $formation,
+                    'reason' => $reason,
+                ]))
+            ;
+
+            $this->mailer->send($email);
+        } catch (Exception $e) {
+            $this->logger->error('Failed to send unenrollment notification', [
+                'enrollment_id' => $enrollment->getId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

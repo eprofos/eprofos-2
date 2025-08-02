@@ -8,6 +8,10 @@ use App\Entity\Training\Chapter;
 use App\Entity\User\Student;
 use App\Repository\Training\ChapterRepository;
 use App\Service\Security\ContentAccessService;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,9 +31,8 @@ class ChapterController extends AbstractController
     public function __construct(
         private readonly ChapterRepository $chapterRepository,
         private readonly ContentAccessService $contentAccessService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * View a specific chapter with access control.
@@ -52,7 +55,7 @@ class ChapterController extends AbstractController
                 'formation_title' => $chapter->getModule()?->getFormation()?->getTitle(),
                 'ip_address' => $this->container->get('request_stack')->getCurrentRequest()?->getClientIp(),
                 'user_agent' => $this->container->get('request_stack')->getCurrentRequest()?->headers->get('User-Agent'),
-                'timestamp' => new \DateTime(),
+                'timestamp' => new DateTime(),
             ]);
 
             // Get student's enrollment for the formation containing this chapter
@@ -62,11 +65,11 @@ class ChapterController extends AbstractController
             ]);
 
             $enrollments = $this->contentAccessService->getStudentEnrollments($student);
-            
+
             $this->logger->debug('Student enrollments retrieved', [
                 'student_id' => $student->getId(),
                 'total_enrollments' => count($enrollments),
-                'enrollment_formations' => array_map(fn($e) => [
+                'enrollment_formations' => array_map(static fn ($e) => [
                     'enrollment_id' => $e->getId(),
                     'formation_id' => $e->getFormation()?->getId(),
                     'formation_title' => $e->getFormation()?->getTitle(),
@@ -77,7 +80,7 @@ class ChapterController extends AbstractController
 
             $enrollment = null;
             $targetFormationId = $chapter->getModule()?->getFormation()?->getId();
-            
+
             foreach ($enrollments as $e) {
                 if ($e->getFormation() && $e->getFormation()->getId() === $targetFormationId) {
                     $enrollment = $e;
@@ -97,7 +100,7 @@ class ChapterController extends AbstractController
                     'student_id' => $student->getId(),
                     'chapter_id' => $chapter->getId(),
                     'target_formation_id' => $targetFormationId,
-                    'available_formation_ids' => array_map(fn($e) => $e->getFormation()?->getId(), $enrollments),
+                    'available_formation_ids' => array_map(static fn ($e) => $e->getFormation()?->getId(), $enrollments),
                 ]);
             }
 
@@ -117,30 +120,29 @@ class ChapterController extends AbstractController
                 'student' => $student,
                 'page_title' => $chapter->getTitle(),
             ]);
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             $this->logger->error('Invalid argument provided for chapter view', [
                 'chapter_id' => $chapter->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Paramètres invalides pour l\'accès au chapitre.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\LogicException $e) {
+            $this->addFlash('error', 'Paramètres invalides pour l\'accès au chapitre.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (LogicException $e) {
             $this->logger->error('Logic error in chapter view process', [
                 'chapter_id' => $chapter->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
-            $this->addFlash('error', 'Erreur dans la logique d\'accès au chapitre.');
-            return $this->redirectToRoute('student_dashboard');
 
-        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur dans la logique d\'accès au chapitre.');
+
+            return $this->redirectToRoute('student_dashboard');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during chapter view', [
                 'chapter_id' => $chapter->getId(),
                 'student_id' => $this->getUser()?->getUserIdentifier(),
@@ -153,8 +155,9 @@ class ChapterController extends AbstractController
                 'request_uri' => $this->container->get('request_stack')->getCurrentRequest()?->getRequestUri(),
                 'request_method' => $this->container->get('request_stack')->getCurrentRequest()?->getMethod(),
             ]);
-            
+
             $this->addFlash('error', 'Une erreur inattendue s\'est produite lors de l\'accès au chapitre.');
+
             return $this->redirectToRoute('student_dashboard');
         }
     }

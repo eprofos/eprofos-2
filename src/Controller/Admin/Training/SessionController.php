@@ -41,7 +41,7 @@ class SessionController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin sessions list access started', [
             'user' => $userIdentifier,
             'ip_address' => $request->getClientIp(),
@@ -117,14 +117,14 @@ class SessionController extends AbstractController
 
             // Get statistics
             $stats = $sessionRepository->getSessionsStats();
-            
+
             $this->logger->debug('Sessions statistics retrieved', [
                 'user' => $userIdentifier,
                 'stats_keys' => array_keys($stats),
             ]);
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->info('Admin sessions list accessed successfully', [
                 'user' => $userIdentifier,
                 'sessions_displayed' => count($sessions),
@@ -142,7 +142,6 @@ class SessionController extends AbstractController
                 'total_pages' => $totalPages,
                 'total_sessions' => $totalSessions,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error occurred while listing admin sessions', [
                 'user' => $userIdentifier,
@@ -157,7 +156,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement de la liste des sessions.');
-            
+
             // Return a minimal view with error state
             return $this->render('admin/session/index.html.twig', [
                 'sessions' => [],
@@ -180,7 +179,7 @@ class SessionController extends AbstractController
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $sessionId = $session->getId();
-        
+
         $this->logger->info('Admin session details view started', [
             'user' => $userIdentifier,
             'session_id' => $sessionId,
@@ -195,7 +194,7 @@ class SessionController extends AbstractController
             // Log session statistics
             $registrationsCount = $session->getRegistrations()->count();
             $activeRegistrationsCount = $session->getRegistrations()->filter(
-                fn($reg) => in_array($reg->getStatus(), ['confirmed', 'pending'])
+                static fn ($reg) => in_array($reg->getStatus(), ['confirmed', 'pending'], true),
             )->count();
 
             $this->logger->debug('Session details loaded', [
@@ -206,8 +205,8 @@ class SessionController extends AbstractController
                 'session_capacity' => $session->getMaxCapacity(),
                 'start_date' => $session->getStartDate()?->format('Y-m-d'),
                 'end_date' => $session->getEndDate()?->format('Y-m-d'),
-                'is_session_full' => $session->getMaxCapacity() && 
-                                   $activeRegistrationsCount >= $session->getMaxCapacity(),
+                'is_session_full' => $session->getMaxCapacity()
+                                   && $activeRegistrationsCount >= $session->getMaxCapacity(),
             ]);
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -222,7 +221,6 @@ class SessionController extends AbstractController
             return $this->render('admin/session/show.html.twig', [
                 'session' => $session,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Error occurred while viewing session details', [
                 'user' => $userIdentifier,
@@ -236,7 +234,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails de la session.');
-            
+
             return $this->redirectToRoute('admin_session_index');
         }
     }
@@ -249,7 +247,7 @@ class SessionController extends AbstractController
     {
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('New session creation started', [
             'user' => $userIdentifier,
             'method' => $request->getMethod(),
@@ -275,7 +273,7 @@ class SessionController extends AbstractController
                     // Auto-generate session name
                     $generatedName = $formation->getTitle() . ' - ' . (new DateTime())->format('M Y');
                     $session->setName($generatedName);
-                    
+
                     $this->logger->debug('Formation pre-selected for new session', [
                         'user' => $userIdentifier,
                         'formation_id' => $formation->getId(),
@@ -291,7 +289,7 @@ class SessionController extends AbstractController
             }
 
             $form = $this->createForm(SessionType::class, $session);
-            
+
             $this->logger->debug('Session form created', [
                 'user' => $userIdentifier,
                 'form_class' => SessionType::class,
@@ -316,7 +314,7 @@ class SessionController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Session form validation failed', [
                         'user' => $userIdentifier,
                         'validation_errors' => $errors,
@@ -349,7 +347,7 @@ class SessionController extends AbstractController
                     $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
                     $this->addFlash('success', 'La session a été créée avec succès.');
-                    
+
                     $this->logger->info('New session created successfully', [
                         'user' => $userIdentifier,
                         'session_id' => $session->getId(),
@@ -361,7 +359,6 @@ class SessionController extends AbstractController
                     ]);
 
                     return $this->redirectToRoute('admin_session_show', ['id' => $session->getId()]);
-                    
                 } catch (Exception $e) {
                     $this->logger->error('Database error while creating session', [
                         'user' => $userIdentifier,
@@ -383,7 +380,7 @@ class SessionController extends AbstractController
             }
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->debug('Rendering new session form', [
                 'user' => $userIdentifier,
                 'is_form_submitted' => $form->isSubmitted(),
@@ -394,7 +391,6 @@ class SessionController extends AbstractController
                 'session' => $session,
                 'form' => $form,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error in new session creation', [
                 'user' => $userIdentifier,
@@ -408,7 +404,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue est survenue lors de la création de la session.');
-            
+
             return $this->redirectToRoute('admin_session_index');
         }
     }
@@ -422,7 +418,7 @@ class SessionController extends AbstractController
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $sessionId = $session->getId();
-        
+
         $this->logger->info('Session edit started', [
             'user' => $userIdentifier,
             'method' => $request->getMethod(),
@@ -456,7 +452,7 @@ class SessionController extends AbstractController
             ]);
 
             $form = $this->createForm(SessionType::class, $session);
-            
+
             $this->logger->debug('Session edit form created', [
                 'user' => $userIdentifier,
                 'session_id' => $sessionId,
@@ -483,7 +479,7 @@ class SessionController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Session edit form validation failed', [
                         'user' => $userIdentifier,
                         'session_id' => $sessionId,
@@ -503,34 +499,34 @@ class SessionController extends AbstractController
                     if ($originalData['name'] !== $session->getName()) {
                         $changes['name'] = ['from' => $originalData['name'], 'to' => $session->getName()];
                     }
-                    if ($originalData['start_date'] != $session->getStartDate()) {
+                    if ($originalData['start_date'] !== $session->getStartDate()) {
                         $changes['start_date'] = [
                             'from' => $originalData['start_date']?->format('Y-m-d H:i'),
-                            'to' => $session->getStartDate()?->format('Y-m-d H:i')
+                            'to' => $session->getStartDate()?->format('Y-m-d H:i'),
                         ];
                     }
-                    if ($originalData['end_date'] != $session->getEndDate()) {
+                    if ($originalData['end_date'] !== $session->getEndDate()) {
                         $changes['end_date'] = [
                             'from' => $originalData['end_date']?->format('Y-m-d H:i'),
-                            'to' => $session->getEndDate()?->format('Y-m-d H:i')
+                            'to' => $session->getEndDate()?->format('Y-m-d H:i'),
                         ];
                     }
                     if ($originalData['max_capacity'] !== $session->getMaxCapacity()) {
                         $changes['max_capacity'] = [
                             'from' => $originalData['max_capacity'],
-                            'to' => $session->getMaxCapacity()
+                            'to' => $session->getMaxCapacity(),
                         ];
                     }
                     if ($originalData['price'] !== $session->getPrice()) {
                         $changes['price'] = [
                             'from' => $originalData['price'],
-                            'to' => $session->getPrice()
+                            'to' => $session->getPrice(),
                         ];
                     }
                     if ($originalData['status'] !== $session->getStatus()) {
                         $changes['status'] = [
                             'from' => $originalData['status'],
-                            'to' => $session->getStatus()
+                            'to' => $session->getStatus(),
                         ];
                     }
 
@@ -546,7 +542,7 @@ class SessionController extends AbstractController
                     $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
                     $this->addFlash('success', 'La session a été modifiée avec succès.');
-                    
+
                     $this->logger->info('Session updated successfully', [
                         'user' => $userIdentifier,
                         'session_id' => $sessionId,
@@ -557,7 +553,6 @@ class SessionController extends AbstractController
                     ]);
 
                     return $this->redirectToRoute('admin_session_show', ['id' => $sessionId]);
-                    
                 } catch (Exception $e) {
                     $this->logger->error('Database error while updating session', [
                         'user' => $userIdentifier,
@@ -580,7 +575,7 @@ class SessionController extends AbstractController
             }
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             $this->logger->debug('Rendering session edit form', [
                 'user' => $userIdentifier,
                 'session_id' => $sessionId,
@@ -592,7 +587,6 @@ class SessionController extends AbstractController
                 'session' => $session,
                 'form' => $form,
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error in session edit', [
                 'user' => $userIdentifier,
@@ -606,7 +600,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue est survenue lors de la modification de la session.');
-            
+
             return $this->redirectToRoute('admin_session_show', ['id' => $sessionId]);
         }
     }
@@ -621,7 +615,7 @@ class SessionController extends AbstractController
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $sessionId = $session->getId();
         $sessionName = $session->getName();
-        
+
         $this->logger->info('Session deletion attempt started', [
             'user' => $userIdentifier,
             'session_id' => $sessionId,
@@ -636,7 +630,7 @@ class SessionController extends AbstractController
 
         try {
             $tokenValid = $this->isCsrfTokenValid('delete' . $sessionId, $request->request->get('_token'));
-            
+
             $this->logger->debug('CSRF token validation', [
                 'user' => $userIdentifier,
                 'session_id' => $sessionId,
@@ -673,14 +667,13 @@ class SessionController extends AbstractController
                     $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
                     $this->addFlash('success', 'La session a été supprimée avec succès.');
-                    
+
                     $this->logger->info('Session deleted successfully', [
                         'user' => $userIdentifier,
                         'deleted_session_data' => $sessionData,
                         'execution_time_ms' => $executionTime,
                         'memory_usage_mb' => round(memory_get_usage() / 1024 / 1024, 2),
                     ]);
-
                 } catch (Exception $e) {
                     $this->logger->error('Database error while deleting session', [
                         'user' => $userIdentifier,
@@ -696,10 +689,10 @@ class SessionController extends AbstractController
                     ]);
 
                     // Check if it's a foreign key constraint error
-                    if (str_contains($e->getMessage(), 'foreign key constraint') || 
-                        str_contains($e->getMessage(), 'FOREIGN KEY constraint')) {
+                    if (str_contains($e->getMessage(), 'foreign key constraint')
+                        || str_contains($e->getMessage(), 'FOREIGN KEY constraint')) {
                         $this->addFlash('error', 'Impossible de supprimer cette session car elle contient des inscriptions ou des données liées.');
-                        
+
                         $this->logger->warning('Session deletion failed due to foreign key constraints', [
                             'user' => $userIdentifier,
                             'session_id' => $sessionId,
@@ -719,7 +712,6 @@ class SessionController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error during session deletion', [
                 'user' => $userIdentifier,
@@ -749,7 +741,7 @@ class SessionController extends AbstractController
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $sessionId = $session->getId();
         $currentStatus = $session->getStatus();
-        
+
         $this->logger->info('Session status toggle started', [
             'user' => $userIdentifier,
             'session_id' => $sessionId,
@@ -762,7 +754,7 @@ class SessionController extends AbstractController
 
         try {
             $tokenValid = $this->isCsrfTokenValid('toggle_status' . $sessionId, $request->request->get('_token'));
-            
+
             $this->logger->debug('CSRF token validation for status toggle', [
                 'user' => $userIdentifier,
                 'session_id' => $sessionId,
@@ -788,7 +780,7 @@ class SessionController extends AbstractController
                         // Additional business logic validation
                         $registrationsCount = $session->getRegistrations()->count();
                         $activeRegistrationsCount = $session->getRegistrations()->filter(
-                            fn($reg) => in_array($reg->getStatus(), ['confirmed', 'pending'])
+                            static fn ($reg) => in_array($reg->getStatus(), ['confirmed', 'pending'], true),
                         )->count();
 
                         $this->logger->debug('Session context for status change', [
@@ -825,7 +817,7 @@ class SessionController extends AbstractController
                         $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
                         $this->addFlash('success', 'Le statut de la session a été modifié.');
-                        
+
                         $this->logger->info('Session status changed successfully', [
                             'user' => $userIdentifier,
                             'session_id' => $sessionId,
@@ -837,7 +829,6 @@ class SessionController extends AbstractController
                             'execution_time_ms' => $executionTime,
                             'memory_usage_mb' => round(memory_get_usage() / 1024 / 1024, 2),
                         ]);
-
                     } else {
                         $this->logger->warning('Invalid status requested for session', [
                             'user' => $userIdentifier,
@@ -849,7 +840,6 @@ class SessionController extends AbstractController
 
                         $this->addFlash('error', 'Statut invalide demandé.');
                     }
-
                 } catch (Exception $e) {
                     $this->logger->error('Database error while changing session status', [
                         'user' => $userIdentifier,
@@ -876,7 +866,6 @@ class SessionController extends AbstractController
 
                 $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Unexpected error during session status toggle', [
                 'user' => $userIdentifier,
@@ -906,7 +895,7 @@ class SessionController extends AbstractController
         $startTime = microtime(true);
         $userIdentifier = $this->getUser()?->getUserIdentifier();
         $sessionId = $session->getId();
-        
+
         $this->logger->info('Session export started', [
             'user' => $userIdentifier,
             'session_id' => $sessionId,
@@ -932,7 +921,7 @@ class SessionController extends AbstractController
             foreach ($registrations as $registration) {
                 $status = $registration->getStatus() ?? 'unknown';
                 $statusBreakdown[$status] = ($statusBreakdown[$status] ?? 0) + 1;
-                
+
                 $company = $registration->getCompany();
                 if ($company) {
                     $companiesCount[$company] = ($companiesCount[$company] ?? 0) + 1;
@@ -944,7 +933,7 @@ class SessionController extends AbstractController
                 'session_id' => $sessionId,
                 'status_breakdown' => $statusBreakdown,
                 'unique_companies' => count($companiesCount),
-                'companies_with_multiple_registrations' => array_filter($companiesCount, fn($count) => $count > 1),
+                'companies_with_multiple_registrations' => array_filter($companiesCount, static fn ($count) => $count > 1),
             ]);
 
             $response = new Response();
@@ -978,7 +967,7 @@ class SessionController extends AbstractController
                 'Date d\'inscription',
                 'Besoins spécifiques',
             ];
-            
+
             fputcsv($output, $headers, ';');
 
             $this->logger->debug('CSV headers written', [
@@ -1008,7 +997,7 @@ class SessionController extends AbstractController
 
             fclose($output);
             $csvContent = ob_get_clean();
-            
+
             $response->setContent($csvContent);
 
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -1027,7 +1016,6 @@ class SessionController extends AbstractController
             ]);
 
             return $response;
-
         } catch (Exception $e) {
             $this->logger->error('Error occurred while exporting session registrations', [
                 'user' => $userIdentifier,
@@ -1042,7 +1030,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'export des inscriptions.');
-            
+
             return $this->redirectToRoute('admin_session_show', ['id' => $sessionId]);
         }
     }

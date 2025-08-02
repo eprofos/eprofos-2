@@ -25,8 +25,11 @@ class ExerciseSubmission
 {
     // Constants for submission statuses
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_GRADED = 'graded';
+
     public const STATUS_REVIEWED = 'reviewed';
 
     public const STATUSES = [
@@ -38,7 +41,9 @@ class ExerciseSubmission
 
     // Constants for submission types
     public const TYPE_TEXT = 'text';
+
     public const TYPE_FILE = 'file';
+
     public const TYPE_PRACTICAL = 'practical';
 
     public const TYPES = [
@@ -65,7 +70,7 @@ class ExerciseSubmission
      * Structure varies based on exercise type:
      * - Text exercises: ['content' => string, 'word_count' => int]
      * - File exercises: ['files' => [array of file info], 'description' => string]
-     * - Practical exercises: ['checklist' => array, 'evidence' => array, 'self_assessment' => array]
+     * - Practical exercises: ['checklist' => array, 'evidence' => array, 'self_assessment' => array].
      */
     #[ORM\Column(type: Types::JSON)]
     #[Gedmo\Versioned]
@@ -168,10 +173,11 @@ class ExerciseSubmission
 
     public function __toString(): string
     {
-        return sprintf('%s - %s (#%d)', 
+        return sprintf(
+            '%s - %s (#%d)',
             $this->exercise?->getTitle() ?? 'Exercise',
             $this->student?->getFullName() ?? 'Student',
-            $this->attemptNumber
+            $this->attemptNumber,
         );
     }
 
@@ -471,7 +477,7 @@ class ExerciseSubmission
         $this->feedback = $feedback;
         $this->status = self::STATUS_GRADED;
         $this->gradedAt = new DateTimeImmutable();
-        
+
         // Check if passed
         $passingScore = $this->exercise?->getPassingPoints();
         if ($passingScore !== null) {

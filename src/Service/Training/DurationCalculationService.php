@@ -71,7 +71,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $courseId = $course->getId();
-        
+
         $this->logger->info('Starting course duration calculation', [
             'course_id' => $courseId,
             'course_title' => $course->getTitle(),
@@ -86,15 +86,15 @@ class DurationCalculationService
                 $this->logger->debug('Course not persisted, calculating duration directly', [
                     'course_title' => $course->getTitle(),
                 ]);
-                
+
                 $duration = $this->calculateCourseDurationDirect($course);
-                
+
                 $this->logger->info('Course duration calculated (direct)', [
                     'course_title' => $course->getTitle(),
                     'duration_minutes' => $duration,
                     'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 ]);
-                
+
                 return $duration;
             }
 
@@ -108,8 +108,9 @@ class DurationCalculationService
                     'course_id' => $courseId,
                     'cache_ttl' => self::CACHE_TTL,
                 ]);
-                
+
                 $item->expiresAfter(self::CACHE_TTL);
+
                 return $this->calculateCourseDurationDirect($course);
             });
 
@@ -121,7 +122,6 @@ class DurationCalculationService
             ]);
 
             return $duration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate course duration', [
                 'course_id' => $courseId,
@@ -132,7 +132,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return a fallback duration to prevent complete failure
             return $course->getDurationMinutes() ?? 0;
         }
@@ -145,7 +145,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $chapterId = $chapter->getId();
-        
+
         $this->logger->info('Starting chapter duration calculation', [
             'chapter_id' => $chapterId,
             'chapter_title' => $chapter->getTitle(),
@@ -160,15 +160,15 @@ class DurationCalculationService
                 $this->logger->debug('Chapter not persisted, calculating duration directly', [
                     'chapter_title' => $chapter->getTitle(),
                 ]);
-                
+
                 $duration = $this->calculateChapterDurationDirect($chapter);
-                
+
                 $this->logger->info('Chapter duration calculated (direct)', [
                     'chapter_title' => $chapter->getTitle(),
                     'duration_minutes' => $duration,
                     'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 ]);
-                
+
                 return $duration;
             }
 
@@ -182,8 +182,9 @@ class DurationCalculationService
                     'chapter_id' => $chapterId,
                     'cache_ttl' => self::CACHE_TTL,
                 ]);
-                
+
                 $item->expiresAfter(self::CACHE_TTL);
+
                 return $this->calculateChapterDurationDirect($chapter);
             });
 
@@ -195,7 +196,6 @@ class DurationCalculationService
             ]);
 
             return $duration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate chapter duration', [
                 'chapter_id' => $chapterId,
@@ -206,7 +206,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return a fallback duration to prevent complete failure
             return $chapter->getDurationMinutes() ?? 0;
         }
@@ -219,7 +219,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $moduleId = $module->getId();
-        
+
         $this->logger->info('Starting module duration calculation', [
             'module_id' => $moduleId,
             'module_title' => $module->getTitle(),
@@ -234,15 +234,15 @@ class DurationCalculationService
                 $this->logger->debug('Module not persisted, calculating duration directly', [
                     'module_title' => $module->getTitle(),
                 ]);
-                
+
                 $duration = $this->calculateModuleDurationDirect($module);
-                
+
                 $this->logger->info('Module duration calculated (direct)', [
                     'module_title' => $module->getTitle(),
                     'duration_hours' => $duration,
                     'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 ]);
-                
+
                 return $duration;
             }
 
@@ -256,8 +256,9 @@ class DurationCalculationService
                     'module_id' => $moduleId,
                     'cache_ttl' => self::CACHE_TTL,
                 ]);
-                
+
                 $item->expiresAfter(self::CACHE_TTL);
+
                 return $this->calculateModuleDurationDirect($module);
             });
 
@@ -269,7 +270,6 @@ class DurationCalculationService
             ]);
 
             return $duration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate module duration', [
                 'module_id' => $moduleId,
@@ -280,7 +280,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return a fallback duration to prevent complete failure
             return $module->getDurationHours() ?? 0;
         }
@@ -293,7 +293,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $formationId = $formation->getId();
-        
+
         $this->logger->info('Starting formation duration calculation', [
             'formation_id' => $formationId,
             'formation_title' => $formation->getTitle(),
@@ -308,15 +308,15 @@ class DurationCalculationService
                 $this->logger->debug('Formation not persisted, calculating duration directly', [
                     'formation_title' => $formation->getTitle(),
                 ]);
-                
+
                 $duration = $this->calculateFormationDurationDirect($formation);
-                
+
                 $this->logger->info('Formation duration calculated (direct)', [
                     'formation_title' => $formation->getTitle(),
                     'duration_hours' => $duration,
                     'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 ]);
-                
+
                 return $duration;
             }
 
@@ -330,8 +330,9 @@ class DurationCalculationService
                     'formation_id' => $formationId,
                     'cache_ttl' => self::CACHE_TTL,
                 ]);
-                
+
                 $item->expiresAfter(self::CACHE_TTL);
+
                 return $this->calculateFormationDurationDirect($formation);
             });
 
@@ -343,7 +344,6 @@ class DurationCalculationService
             ]);
 
             return $duration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate formation duration', [
                 'formation_id' => $formationId,
@@ -354,7 +354,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return a fallback duration to prevent complete failure
             return $formation->getDurationHours() ?? 0;
         }
@@ -384,6 +384,7 @@ class DurationCalculationService
                 'entity_id' => $entityId,
                 'entity_key' => $entityKey,
             ]);
+
             return;
         }
 
@@ -459,7 +460,6 @@ class DurationCalculationService
                 'entity_id' => $entityId,
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-
         } catch (Exception $e) {
             $this->logger->error('Failed to update entity duration', [
                 'entity_class' => $entityClass,
@@ -471,12 +471,12 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e; // Re-throw to maintain original behavior
         } finally {
             // Always remove from processing list
             unset($this->processingEntities[$entityKey]);
-            
+
             $this->logger->debug('Removed entity from processing list', [
                 'entity_class' => $entityClass,
                 'entity_id' => $entityId,
@@ -492,7 +492,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $entityCount = count($entities);
-        
+
         $this->logger->info('Starting batch duration update', [
             'entity_count' => $entityCount,
             'sync_mode' => $this->isSyncMode,
@@ -500,6 +500,7 @@ class DurationCalculationService
 
         if (empty($entities)) {
             $this->logger->warning('No entities provided for batch update');
+
             return;
         }
 
@@ -508,14 +509,14 @@ class DurationCalculationService
 
         try {
             $this->entityManager->beginTransaction();
-            
+
             $this->logger->debug('Database transaction started for batch update');
 
             foreach ($entities as $index => $entity) {
                 try {
                     $entityClass = get_class($entity);
                     $entityId = method_exists($entity, 'getId') ? $entity->getId() : null;
-                    
+
                     $this->logger->debug('Processing entity in batch', [
                         'index' => $index + 1,
                         'total' => $entityCount,
@@ -528,7 +529,6 @@ class DurationCalculationService
                         'class' => $entityClass,
                         'id' => $entityId,
                     ];
-                    
                 } catch (Exception $e) {
                     $failedEntities[] = [
                         'entity' => $entity,
@@ -536,7 +536,7 @@ class DurationCalculationService
                         'class' => get_class($entity),
                         'id' => method_exists($entity, 'getId') ? $entity->getId() : null,
                     ];
-                    
+
                     $this->logger->error('Failed to update entity in batch', [
                         'index' => $index + 1,
                         'entity_class' => get_class($entity),
@@ -548,7 +548,7 @@ class DurationCalculationService
 
             $this->logger->debug('Flushing entity manager changes');
             $this->entityManager->flush();
-            
+
             $this->logger->debug('Committing database transaction');
             $this->entityManager->commit();
 
@@ -563,16 +563,13 @@ class DurationCalculationService
             if (!empty($failedEntities)) {
                 $this->logger->warning('Some entities failed during batch update', [
                     'failed_count' => count($failedEntities),
-                    'failed_entities' => array_map(function($failed) {
-                        return [
-                            'class' => $failed['class'],
-                            'id' => $failed['id'],
-                            'error' => $failed['error'],
-                        ];
-                    }, $failedEntities),
+                    'failed_entities' => array_map(static fn ($failed) => [
+                        'class' => $failed['class'],
+                        'id' => $failed['id'],
+                        'error' => $failed['error'],
+                    ], $failedEntities),
                 ]);
             }
-
         } catch (Exception $e) {
             $this->logger->error('Batch duration update transaction failed', [
                 'entity_count' => $entityCount,
@@ -605,17 +602,16 @@ class DurationCalculationService
     public function clearDurationCaches(): void
     {
         $startTime = microtime(true);
-        
+
         $this->logger->info('Starting duration cache clearance');
 
         try {
             // This would need to be implemented based on your cache backend
             // For example, with Redis: $this->cache->clear();
-            
+
             $this->logger->info('Duration caches cleared successfully', [
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to clear duration caches', [
                 'error_message' => $e->getMessage(),
@@ -624,7 +620,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -637,7 +633,7 @@ class DurationCalculationService
         $startTime = microtime(true);
         $entityClass = get_class($entity);
         $entityId = method_exists($entity, 'getId') ? $entity->getId() : null;
-        
+
         $this->logger->info('Starting duration statistics calculation', [
             'entity_class' => $entityClass,
             'entity_id' => $entityId,
@@ -655,7 +651,7 @@ class DurationCalculationService
                         'formation_id' => $entityId,
                         'formation_title' => $entity->getTitle() ?? 'Unknown',
                     ]);
-                    
+
                     $stats['calculated_duration'] = $this->calculateFormationDuration($entity);
                     $stats['stored_duration'] = $entity->getDurationHours();
                     $stats['unit'] = 'hours';
@@ -667,7 +663,7 @@ class DurationCalculationService
                         'module_id' => $entityId,
                         'module_title' => $entity->getTitle() ?? 'Unknown',
                     ]);
-                    
+
                     $stats['calculated_duration'] = $this->calculateModuleDuration($entity);
                     $stats['stored_duration'] = $entity->getDurationHours();
                     $stats['unit'] = 'hours';
@@ -679,7 +675,7 @@ class DurationCalculationService
                         'chapter_id' => $entityId,
                         'chapter_title' => $entity->getTitle() ?? 'Unknown',
                     ]);
-                    
+
                     $stats['calculated_duration'] = $this->calculateChapterDuration($entity);
                     $stats['stored_duration'] = $entity->getDurationMinutes();
                     $stats['unit'] = 'minutes';
@@ -691,7 +687,7 @@ class DurationCalculationService
                         'course_id' => $entityId,
                         'course_title' => $entity->getTitle() ?? 'Unknown',
                     ]);
-                    
+
                     $stats['calculated_duration'] = $this->calculateCourseDuration($entity);
                     $stats['stored_duration'] = $entity->getDurationMinutes();
                     $stats['unit'] = 'minutes';
@@ -704,17 +700,17 @@ class DurationCalculationService
                         'entity_class' => $entityClass,
                         'entity_id' => $entityId,
                     ]);
-                    
+
                     $stats['needs_update'] = false;
                     $stats['difference'] = 0;
-                    
+
                     return $stats;
             }
 
             if (isset($stats['calculated_duration'], $stats['stored_duration'])) {
                 $stats['difference'] = $stats['calculated_duration'] - $stats['stored_duration'];
                 $stats['needs_update'] = abs($stats['difference']) > 0;
-                
+
                 $this->logger->debug('Duration comparison completed', [
                     'entity_class' => $entityClass,
                     'entity_id' => $entityId,
@@ -736,7 +732,6 @@ class DurationCalculationService
             ]);
 
             return $stats;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate duration statistics', [
                 'entity_class' => $entityClass,
@@ -747,7 +742,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return minimal stats on error
             return [
                 'entity_type' => $entityClass,
@@ -825,7 +820,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $courseId = $course->getId();
-        
+
         $this->logger->debug('Starting direct course duration calculation', [
             'course_id' => $courseId,
             'course_title' => $course->getTitle() ?? 'Unknown',
@@ -848,7 +843,7 @@ class DurationCalculationService
                 $exerciseTime = $exercise->getEstimatedDurationMinutes() ?? 0;
                 $exerciseDuration += $exerciseTime;
                 $exerciseCount++;
-                
+
                 $this->logger->debug('Adding exercise duration', [
                     'course_id' => $courseId,
                     'exercise_id' => $exercise->getId(),
@@ -864,7 +859,7 @@ class DurationCalculationService
                 $qcmTime = $qcm->getTimeLimitMinutes() ?? 0;
                 $qcmDuration += $qcmTime;
                 $qcmCount++;
-                
+
                 $this->logger->debug('Adding QCM duration', [
                     'course_id' => $courseId,
                     'qcm_id' => $qcm->getId(),
@@ -887,7 +882,6 @@ class DurationCalculationService
             ]);
 
             return $totalDuration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate course duration directly', [
                 'course_id' => $courseId,
@@ -898,7 +892,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return base duration as fallback
             return $course->getDurationMinutes() ?? 0;
         }
@@ -911,7 +905,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $chapterId = $chapter->getId();
-        
+
         $this->logger->debug('Starting direct chapter duration calculation', [
             'chapter_id' => $chapterId,
             'chapter_title' => $chapter->getTitle() ?? 'Unknown',
@@ -926,13 +920,13 @@ class DurationCalculationService
                 $courseDuration = $this->calculateCourseDuration($course);
                 $totalDuration += $courseDuration;
                 $courseCount++;
-                
+
                 $courseDetails[] = [
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle() ?? 'Unknown',
                     'duration_minutes' => $courseDuration,
                 ];
-                
+
                 $this->logger->debug('Adding course to chapter duration', [
                     'chapter_id' => $chapterId,
                     'course_id' => $course->getId(),
@@ -952,7 +946,6 @@ class DurationCalculationService
             ]);
 
             return $totalDuration;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate chapter duration directly', [
                 'chapter_id' => $chapterId,
@@ -963,7 +956,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return fallback duration
             return $chapter->getDurationMinutes() ?? 0;
         }
@@ -976,7 +969,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $moduleId = $module->getId();
-        
+
         $this->logger->debug('Starting direct module duration calculation', [
             'module_id' => $moduleId,
             'module_title' => $module->getTitle() ?? 'Unknown',
@@ -991,13 +984,13 @@ class DurationCalculationService
                 $chapterDuration = $this->calculateChapterDuration($chapter);
                 $totalMinutes += $chapterDuration;
                 $chapterCount++;
-                
+
                 $chapterDetails[] = [
                     'chapter_id' => $chapter->getId(),
                     'chapter_title' => $chapter->getTitle() ?? 'Unknown',
                     'duration_minutes' => $chapterDuration,
                 ];
-                
+
                 $this->logger->debug('Adding chapter to module duration', [
                     'module_id' => $moduleId,
                     'chapter_id' => $chapter->getId(),
@@ -1021,7 +1014,6 @@ class DurationCalculationService
             ]);
 
             return $totalHours;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate module duration directly', [
                 'module_id' => $moduleId,
@@ -1032,7 +1024,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return fallback duration
             return $module->getDurationHours() ?? 0;
         }
@@ -1045,7 +1037,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $formationId = $formation->getId();
-        
+
         $this->logger->debug('Starting direct formation duration calculation', [
             'formation_id' => $formationId,
             'formation_title' => $formation->getTitle() ?? 'Unknown',
@@ -1060,13 +1052,13 @@ class DurationCalculationService
                 $moduleDuration = $this->calculateModuleDuration($module);
                 $totalHours += $moduleDuration;
                 $moduleCount++;
-                
+
                 $moduleDetails[] = [
                     'module_id' => $module->getId(),
                     'module_title' => $module->getTitle() ?? 'Unknown',
                     'duration_hours' => $moduleDuration,
                 ];
-                
+
                 $this->logger->debug('Adding module to formation duration', [
                     'formation_id' => $formationId,
                     'module_id' => $module->getId(),
@@ -1086,7 +1078,6 @@ class DurationCalculationService
             ]);
 
             return $totalHours;
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to calculate formation duration directly', [
                 'formation_id' => $formationId,
@@ -1097,7 +1088,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Return fallback duration
             return $formation->getDurationHours() ?? 0;
         }
@@ -1110,7 +1101,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $courseId = $course->getId();
-        
+
         $this->logger->debug('Starting course duration update', [
             'course_id' => $courseId,
             'course_title' => $course->getTitle() ?? 'Unknown',
@@ -1142,7 +1133,7 @@ class DurationCalculationService
                     'new_duration' => $calculatedDuration,
                     'difference' => $calculatedDuration - $currentDuration,
                 ]);
-                
+
                 $course->setDurationMinutes($calculatedDuration);
                 $this->entityManager->persist($course);
             } else {
@@ -1161,7 +1152,7 @@ class DurationCalculationService
                     'chapter_id' => $chapter->getId(),
                     'chapter_title' => $chapter->getTitle() ?? 'Unknown',
                 ]);
-                
+
                 $this->updateChapterDuration($chapter);
             } else {
                 $this->logger->warning('Course has no parent chapter', [
@@ -1173,7 +1164,6 @@ class DurationCalculationService
                 'course_id' => $courseId,
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to update course duration', [
                 'course_id' => $courseId,
@@ -1184,7 +1174,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -1196,7 +1186,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $chapterId = $chapter->getId();
-        
+
         $this->logger->debug('Starting chapter duration update', [
             'chapter_id' => $chapterId,
             'chapter_title' => $chapter->getTitle() ?? 'Unknown',
@@ -1231,7 +1221,7 @@ class DurationCalculationService
                     'module_id' => $module->getId(),
                     'module_title' => $module->getTitle() ?? 'Unknown',
                 ]);
-                
+
                 $this->updateModuleDuration($module);
             } else {
                 $this->logger->warning('Chapter has no parent module', [
@@ -1243,7 +1233,6 @@ class DurationCalculationService
                 'chapter_id' => $chapterId,
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to update chapter duration', [
                 'chapter_id' => $chapterId,
@@ -1254,7 +1243,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -1266,7 +1255,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $moduleId = $module->getId();
-        
+
         $this->logger->debug('Starting module duration update', [
             'module_id' => $moduleId,
             'module_title' => $module->getTitle() ?? 'Unknown',
@@ -1301,7 +1290,7 @@ class DurationCalculationService
                     'formation_id' => $formation->getId(),
                     'formation_title' => $formation->getTitle() ?? 'Unknown',
                 ]);
-                
+
                 $this->updateFormationDuration($formation);
             } else {
                 $this->logger->warning('Module has no parent formation', [
@@ -1313,7 +1302,6 @@ class DurationCalculationService
                 'module_id' => $moduleId,
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to update module duration', [
                 'module_id' => $moduleId,
@@ -1324,7 +1312,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -1336,7 +1324,7 @@ class DurationCalculationService
     {
         $startTime = microtime(true);
         $formationId = $formation->getId();
-        
+
         $this->logger->debug('Starting formation duration update', [
             'formation_id' => $formationId,
             'formation_title' => $formation->getTitle() ?? 'Unknown',
@@ -1367,7 +1355,6 @@ class DurationCalculationService
                 'formation_id' => $formationId,
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ]);
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to update formation duration', [
                 'formation_id' => $formationId,
@@ -1378,7 +1365,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -1391,7 +1378,7 @@ class DurationCalculationService
         $startTime = microtime(true);
         $entityClass = get_class($entity);
         $entityId = method_exists($entity, 'getId') ? $entity->getId() : null;
-        
+
         $this->logger->debug('Starting course update from child entity', [
             'child_entity_class' => $entityClass,
             'child_entity_id' => $entityId,
@@ -1411,9 +1398,9 @@ class DurationCalculationService
                     'course_id' => $course->getId(),
                     'course_title' => $course->getTitle() ?? 'Unknown',
                 ]);
-                
+
                 $this->updateCourseDuration($course);
-                
+
                 $this->logger->debug('Course duration update from child completed', [
                     'child_entity_class' => $entityClass,
                     'child_entity_id' => $entityId,
@@ -1426,7 +1413,6 @@ class DurationCalculationService
                     'child_entity_id' => $entityId,
                 ]);
             }
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to update course from child entity', [
                 'child_entity_class' => $entityClass,
@@ -1437,7 +1423,7 @@ class DurationCalculationService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 2),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -1455,15 +1441,15 @@ class DurationCalculationService
         try {
             if ($entityId) {
                 $cacheKey = self::CACHE_PREFIX . $entityType . '_' . $entityId;
-                
+
                 $this->logger->debug('Invalidating cache key', [
                     'entity_type' => $entityType,
                     'entity_id' => $entityId,
                     'cache_key' => $cacheKey,
                 ]);
-                
+
                 $this->cache->delete($cacheKey);
-                
+
                 $this->logger->debug('Cache invalidation completed', [
                     'entity_type' => $entityType,
                     'entity_id' => $entityId,
@@ -1474,7 +1460,6 @@ class DurationCalculationService
                     'entity_type' => $entityType,
                 ]);
             }
-            
         } catch (Exception $e) {
             $this->logger->error('Failed to invalidate entity cache', [
                 'entity_type' => $entityType,
@@ -1484,7 +1469,7 @@ class DurationCalculationService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Don't re-throw as cache invalidation failure shouldn't stop the process
         }
     }

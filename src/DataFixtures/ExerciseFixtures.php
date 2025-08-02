@@ -118,14 +118,14 @@ class ExerciseFixtures extends Fixture implements DependentFixtureInterface
                             'name' => 'Document de référence',
                             'filename' => 'reference-' . $faker->uuid . '.pdf',
                             'type' => 'pdf',
-                            'size' => $faker->numberBetween(100000, 5000000)
+                            'size' => $faker->numberBetween(100000, 5000000),
                         ],
                         [
                             'name' => 'Template Excel',
                             'filename' => 'template-' . $faker->uuid . '.xlsx',
                             'type' => 'xlsx',
-                            'size' => $faker->numberBetween(50000, 1000000)
-                        ]
+                            'size' => $faker->numberBetween(50000, 1000000),
+                        ],
                     ]);
                 }
 

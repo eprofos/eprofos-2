@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,7 +26,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * Public Session Controller.
  *
  * Handles session display and registration for public users.
- * 
+ *
  * Enhanced with comprehensive logging for:
  * - Session access tracking with user context (IP, user agent)
  * - Registration process monitoring (form validation, database operations)
@@ -34,7 +35,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * - Error handling with detailed context and stack traces
  * - Database transaction monitoring
  * - Prospect creation integration logging
- * 
+ *
  * All operations include detailed context logging for debugging and audit purposes.
  */
 #[Route('/sessions')]
@@ -72,6 +73,7 @@ class SessionController extends AbstractController
                     'session_name' => $session->getName(),
                     'user_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 ]);
+
                 throw $this->createNotFoundException('Cette session n\'est pas disponible.');
             }
 
@@ -102,11 +104,11 @@ class SessionController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'user_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             ]);
-            
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
-            
+
             throw $this->createNotFoundException('Une erreur est survenue lors de l\'affichage de la session.');
         }
     }
@@ -323,7 +325,7 @@ class SessionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue est survenue. Veuillez réessayer plus tard.');
-            
+
             return $this->redirectToRoute('public_session_show', ['id' => $session->getId()]);
         }
     }
@@ -481,12 +483,12 @@ class SessionController extends AbstractController
                 'fatal_error' => true,
             ]);
 
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            if ($e instanceof NotFoundHttpException) {
                 throw $e;
             }
 
             $this->addFlash('error', 'Une erreur inattendue est survenue lors de l\'annulation.');
-            
+
             return $this->render('public/session/cancel_registration.html.twig', [
                 'registration' => $registration,
             ]);
@@ -559,7 +561,7 @@ class SessionController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'email_failed' => true,
             ]);
-            
+
             throw $e; // Re-throw to be handled by the calling method
         }
     }
@@ -619,7 +621,7 @@ class SessionController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'email_failed' => true,
             ]);
-            
+
             throw $e; // Re-throw to be handled by the calling method
         }
     }

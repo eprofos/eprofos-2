@@ -7,6 +7,7 @@ namespace App\Service\Training;
 use App\Entity\Training\Chapter;
 use App\Entity\Training\Formation;
 use App\Entity\Training\Module;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -30,9 +31,8 @@ class FormationScheduleService
     private const AFTERNOON_LABEL = 'Après-midi';
 
     public function __construct(
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     /**
      * Calculate the complete daily schedule for a formation.
@@ -142,8 +142,7 @@ class FormationScheduleService
                 'days' => $dailySchedule,
                 'summary' => $summary,
             ];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error calculating formation schedule', [
                 'formation_id' => $formationId,
                 'formation_title' => $formationTitle,
@@ -187,8 +186,7 @@ class FormationScheduleService
             }
 
             return $hours . 'h ' . $remainingMinutes . 'min';
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error formatting duration', [
                 'minutes' => $minutes,
                 'error_message' => $e->getMessage(),
@@ -329,8 +327,7 @@ class FormationScheduleService
             }
 
             return $cleanTitle;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error getting display title', [
                 'item_title' => $item['title'] ?? 'Unknown',
                 'error_message' => $e->getMessage(),
@@ -499,8 +496,7 @@ class FormationScheduleService
                                     'qcm_count' => $qcmCount,
                                 ]);
                             }
-
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->logger->error('Error processing chapter for scheduling', [
                                 'module_id' => $moduleId,
                                 'chapter_id' => $chapterId,
@@ -509,12 +505,12 @@ class FormationScheduleService
                                 'error_file' => $e->getFile(),
                                 'error_line' => $e->getLine(),
                             ]);
+
                             // Continue processing other chapters
                             continue;
                         }
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Error processing module for scheduling', [
                         'module_id' => $moduleId,
                         'module_title' => $moduleTitle,
@@ -522,6 +518,7 @@ class FormationScheduleService
                         'error_file' => $e->getFile(),
                         'error_line' => $e->getLine(),
                     ]);
+
                     // Continue processing other modules
                     continue;
                 }
@@ -533,8 +530,7 @@ class FormationScheduleService
             ]);
 
             return $items;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error while getting scheduled items', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -598,6 +594,7 @@ class FormationScheduleService
                         'item_title' => $itemTitle,
                         'item_type' => $itemType,
                     ]);
+
                     continue;
                 }
 
@@ -724,8 +721,7 @@ class FormationScheduleService
             ]);
 
             return $days;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error organizing daily schedule', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -766,12 +762,12 @@ class FormationScheduleService
             $this->logger->debug('Day initialized successfully', [
                 'day_number' => $dayNumber,
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error initializing day in schedule', [
                 'day_number' => $dayNumber,
                 'error_message' => $e->getMessage(),
             ]);
+
             throw $e;
         }
     }
@@ -814,6 +810,7 @@ class FormationScheduleService
                 $this->logger->debug('Moving from morning to afternoon', [
                     'day' => $currentDay,
                 ]);
+
                 return [$currentDay, 'afternoon', 0];
             }
 
@@ -832,13 +829,13 @@ class FormationScheduleService
             ]);
 
             return [$nextDay, 'morning', 0];
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error moving to next session', [
                 'current_day' => $currentDay,
                 'current_session' => $currentSession,
                 'error_message' => $e->getMessage(),
             ]);
+
             throw $e;
         }
     }
@@ -887,8 +884,7 @@ class FormationScheduleService
             ]);
 
             return $segment;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating item segment', [
                 'item_title' => $item['title'] ?? 'Unknown',
                 'duration' => $duration,
@@ -974,12 +970,12 @@ class FormationScheduleService
                             'original_duration' => $item['originalDuration'],
                         ]);
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->warning('Error processing item for summary', [
                         'item_title' => $item['title'] ?? 'Unknown',
                         'error_message' => $e->getMessage(),
                     ]);
+
                     // Continue with next item
                     continue;
                 }
@@ -1019,26 +1015,26 @@ class FormationScheduleService
                                             ]);
                                         }
                                     }
-
-                                } catch (\Exception $e) {
+                                } catch (Exception $e) {
                                     $this->logger->warning('Error processing segment for summary', [
                                         'day_number' => $dayNumber,
                                         'session' => $session,
                                         'item_title' => $item['title'] ?? 'Unknown',
                                         'error_message' => $e->getMessage(),
                                     ]);
+
                                     // Continue with next segment
                                     continue;
                                 }
                             }
                         }
                     }
-
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->warning('Error processing day for summary', [
                         'day_number' => $dayNumber,
                         'error_message' => $e->getMessage(),
                     ]);
+
                     // Continue with next day
                     continue;
                 }
@@ -1061,8 +1057,7 @@ class FormationScheduleService
             ]);
 
             return $summary;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Critical error calculating summary statistics', [
                 'error_message' => $e->getMessage(),
                 'error_file' => $e->getFile(),
@@ -1085,6 +1080,7 @@ class FormationScheduleService
             if ($entity && method_exists($entity, 'getId')) {
                 $entityId = $entity->getId();
                 $itemType = $item['type'] ?? 'unknown';
+
                 return $itemType . '_' . $entityId;
             }
 
@@ -1100,8 +1096,7 @@ class FormationScheduleService
             ]);
 
             return $fallbackId;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error generating item ID', [
                 'item_title' => $item['title'] ?? 'Unknown',
                 'item_type' => $item['type'] ?? 'unknown',
@@ -1177,8 +1172,7 @@ class FormationScheduleService
             $breakdown['average_duration'] = count($items) > 0 ? round($totalDuration / count($items), 2) : 0;
 
             return $breakdown;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error calculating items breakdown', [
                 'error_message' => $e->getMessage(),
             ]);
@@ -1248,8 +1242,7 @@ class FormationScheduleService
             }
 
             return $breakdown;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Error calculating schedule breakdown', [
                 'error_message' => $e->getMessage(),
             ]);

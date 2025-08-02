@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Certificate entity for managing completion certificates for students.
  *
- * Generates and manages completion certificates for students who successfully 
+ * Generates and manages completion certificates for students who successfully
  * finish formations, with Qualiopi-compliant documentation and automated delivery.
  */
 #[ORM\Entity(repositoryClass: CertificateRepository::class)]
@@ -35,7 +35,9 @@ class Certificate
      * Certificate status constants.
      */
     public const STATUS_ISSUED = 'issued';
+
     public const STATUS_REVOKED = 'revoked';
+
     public const STATUS_REISSUED = 'reissued';
 
     /**
@@ -51,9 +53,13 @@ class Certificate
      * Certificate grades for different performance levels.
      */
     public const GRADE_A = 'A';
+
     public const GRADE_B = 'B';
+
     public const GRADE_C = 'C';
+
     public const GRADE_D = 'D';
+
     public const GRADE_F = 'F';
 
     /**
@@ -153,6 +159,20 @@ class Certificate
         $this->issuedAt = new DateTimeImmutable();
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    /**
+     * String representation for debugging.
+     */
+    public function __toString(): string
+    {
+        return sprintf(
+            'Certificate %s for %s - %s (%s)',
+            $this->certificateNumber ?? 'N/A',
+            $this->student?->getFullName() ?? 'Unknown Student',
+            $this->formation?->getTitle() ?? 'Unknown Formation',
+            $this->getStatusLabel(),
+        );
     }
 
     public function getId(): ?int
@@ -357,22 +377,6 @@ class Certificate
     }
 
     /**
-     * Generate unique certificate number.
-     */
-    private function generateCertificateNumber(): void
-    {
-        $this->certificateNumber = 'CERT-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(6)));
-    }
-
-    /**
-     * Generate unique verification code for QR codes.
-     */
-    private function generateVerificationCode(): void
-    {
-        $this->verificationCode = bin2hex(random_bytes(32));
-    }
-
-    /**
      * Regenerate verification code (for security purposes).
      */
     public function regenerateVerificationCode(): static
@@ -489,7 +493,7 @@ class Certificate
     public function getCompletionDate(): ?DateTimeImmutable
     {
         $completionDate = $this->completionData['completion_date'] ?? null;
-        
+
         return $completionDate ? new DateTimeImmutable($completionDate) : null;
     }
 
@@ -518,16 +522,18 @@ class Certificate
     }
 
     /**
-     * String representation for debugging.
+     * Generate unique certificate number.
      */
-    public function __toString(): string
+    private function generateCertificateNumber(): void
     {
-        return sprintf(
-            'Certificate %s for %s - %s (%s)',
-            $this->certificateNumber ?? 'N/A',
-            $this->student?->getFullName() ?? 'Unknown Student',
-            $this->formation?->getTitle() ?? 'Unknown Formation',
-            $this->getStatusLabel()
-        );
+        $this->certificateNumber = 'CERT-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(6)));
+    }
+
+    /**
+     * Generate unique verification code for QR codes.
+     */
+    private function generateVerificationCode(): void
+    {
+        $this->verificationCode = bin2hex(random_bytes(32));
     }
 }

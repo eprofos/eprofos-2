@@ -7,6 +7,7 @@ namespace App\Repository\Student;
 use App\Entity\Student\QCMAttempt;
 use App\Entity\Training\QCM;
 use App\Entity\User\Student;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,7 +33,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('student', $student)
             ->orderBy('qa.createdAt', 'DESC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -50,7 +52,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->orderBy('qa.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
@@ -66,7 +69,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->orderBy('qa.attemptNumber', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 
     /**
@@ -83,7 +87,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('qcm', $qcm)
             ->orderBy('qa.attemptNumber', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -100,7 +105,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->orderBy('qa.attemptNumber', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $lastAttempt ? $lastAttempt['attemptNumber'] + 1 : 1;
     }
@@ -119,7 +125,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('qcm', $qcm)
             ->setParameter('status', QCMAttempt::STATUS_COMPLETED)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
@@ -129,12 +136,12 @@ class QCMAttemptRepository extends ServiceEntityRepository
     {
         $completedAttempts = $this->countCompletedAttempts($student, $qcm);
         $activeAttempt = $this->findActiveAttempt($student, $qcm);
-        
+
         // Check if active attempt has expired
         if ($activeAttempt && $activeAttempt->hasExpired()) {
             $activeAttempt = null; // Treat expired attempts as inactive
         }
-        
+
         return $completedAttempts < $qcm->getMaxAttempts() && $activeAttempt === null;
     }
 
@@ -152,7 +159,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('qcm', $qcm)
             ->setParameter('status', QCMAttempt::STATUS_COMPLETED)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $result['bestScore'] ?? null;
     }
@@ -171,7 +179,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('passed', true)
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
         return $passedAttempt !== null;
     }
@@ -183,8 +192,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
      */
     public function findExpiredAttempts(): array
     {
-        $now = new \DateTimeImmutable();
-        
+        $now = new DateTimeImmutable();
+
         return $this->createQueryBuilder('qa')
             ->andWhere('qa.status = :status')
             ->andWhere('qa.expiresAt IS NOT NULL')
@@ -192,7 +201,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('status', QCMAttempt::STATUS_IN_PROGRESS)
             ->setParameter('now', $now)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
@@ -208,12 +218,13 @@ class QCMAttemptRepository extends ServiceEntityRepository
                 'MAX(qa.score) as maxScore',
                 'MIN(qa.score) as minScore',
                 'AVG(qa.timeSpent) as averageTimeSpent',
-                'SUM(CASE WHEN qa.passed = true THEN 1 ELSE 0 END) as passedCount'
+                'SUM(CASE WHEN qa.passed = true THEN 1 ELSE 0 END) as passedCount',
             ])
             ->andWhere('qa.qcm = :qcm')
             ->andWhere('qa.status = :status')
             ->setParameter('qcm', $qcm)
-            ->setParameter('status', QCMAttempt::STATUS_COMPLETED);
+            ->setParameter('status', QCMAttempt::STATUS_COMPLETED)
+        ;
 
         return $qb->getQuery()->getOneOrNullResult();
     }
@@ -229,7 +240,8 @@ class QCMAttemptRepository extends ServiceEntityRepository
             ->setParameter('qcm', $qcm)
             ->setParameter('status', QCMAttempt::STATUS_COMPLETED)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         $questionCount = $qcm->getQuestionCount();
         $statistics = [];

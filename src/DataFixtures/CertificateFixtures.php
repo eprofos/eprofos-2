@@ -10,6 +10,7 @@ use App\Service\Student\CertificateService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Faker\Factory;
 
 /**
@@ -21,9 +22,8 @@ use Faker\Factory;
 class CertificateFixtures extends Fixture implements DependentFixtureInterface
 {
     public function __construct(
-        private readonly CertificateService $certificateService
-    ) {
-    }
+        private readonly CertificateService $certificateService,
+    ) {}
 
     public function load(ObjectManager $manager): void
     {
@@ -31,7 +31,8 @@ class CertificateFixtures extends Fixture implements DependentFixtureInterface
 
         // Get completed enrollments
         $completedEnrollments = $manager->getRepository(StudentEnrollment::class)
-            ->findBy(['status' => StudentEnrollment::STATUS_COMPLETED]);
+            ->findBy(['status' => StudentEnrollment::STATUS_COMPLETED])
+        ;
 
         if (empty($completedEnrollments)) {
             return;
@@ -47,7 +48,7 @@ class CertificateFixtures extends Fixture implements DependentFixtureInterface
                     // Check if certificate already exists
                     $student = $enrollment->getStudent();
                     $formation = $enrollment->getSessionRegistration()?->getSession()?->getFormation();
-                    
+
                     if (!$student || !$formation) {
                         continue;
                     }
@@ -56,7 +57,8 @@ class CertificateFixtures extends Fixture implements DependentFixtureInterface
                         ->findOneBy([
                             'student' => $student,
                             'formation' => $formation,
-                        ]);
+                        ])
+                    ;
 
                     if ($existingCertificate) {
                         continue;
@@ -115,7 +117,7 @@ class CertificateFixtures extends Fixture implements DependentFixtureInterface
                     if ($generatedCount >= 15) {
                         break;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Skip this enrollment and continue
                     continue;
                 }

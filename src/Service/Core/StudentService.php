@@ -54,6 +54,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -165,6 +166,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -176,7 +178,7 @@ class StudentService
 
             // Generate reset token
             $resetToken = $student->generatePasswordResetToken();
-            
+
             $this->logger->debug('Password reset token generated', [
                 'student_id' => $student->getId(),
                 'token_length' => strlen($resetToken),
@@ -280,10 +282,10 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
-                
+
                 $student->clearPasswordResetToken();
                 $this->entityManager->flush();
-                
+
                 $this->logger->debug('Password reset token rollback successful', [
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
@@ -322,6 +324,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -331,6 +334,7 @@ class StudentService
                     'email' => $student->getEmail(),
                     'method' => __METHOD__,
                 ]);
+
                 return true;
             }
 
@@ -348,7 +352,7 @@ class StudentService
                 ]);
 
                 $student->generateEmailVerificationToken();
-                
+
                 $this->logger->debug('Email verification token generated', [
                     'student_id' => $student->getId(),
                     'token_length' => strlen($student->getEmailVerificationToken() ?? ''),
@@ -472,6 +476,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -480,6 +485,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -706,6 +712,7 @@ class StudentService
                             'method' => __METHOD__,
                         ]);
                         $errorCount++;
+
                         continue;
                     }
 
@@ -968,6 +975,7 @@ class StudentService
                     'student_email' => $student->getEmail(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -976,6 +984,7 @@ class StudentService
                     'student_id' => $student->getId(),
                     'method' => __METHOD__,
                 ]);
+
                 return false;
             }
 
@@ -1193,6 +1202,7 @@ class StudentService
                     'from_email' => $fromEmail,
                     'method' => __METHOD__,
                 ]);
+
                 throw new Exception("Invalid from email format: {$fromEmail}");
             }
 
@@ -1201,6 +1211,7 @@ class StudentService
                     'admin_email' => $adminEmail,
                     'method' => __METHOD__,
                 ]);
+
                 throw new Exception("Invalid admin email format: {$adminEmail}");
             }
 

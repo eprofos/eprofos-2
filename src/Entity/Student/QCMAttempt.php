@@ -25,8 +25,11 @@ class QCMAttempt
 {
     // Constants for attempt statuses
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_ABANDONED = 'abandoned';
+
     public const STATUS_EXPIRED = 'expired';
 
     public const STATUSES = [
@@ -52,7 +55,7 @@ class QCMAttempt
     /**
      * Student's answers to the QCM questions.
      * Structure: [question_index => selected_answer_indices]
-     * Example: [0 => [1], 1 => [0, 2], 2 => [3]]
+     * Example: [0 => [1], 1 => [0, 2], 2 => [3]].
      */
     #[ORM\Column(type: Types::JSON)]
     #[Gedmo\Versioned]
@@ -102,7 +105,7 @@ class QCMAttempt
 
     /**
      * Detailed scoring information per question.
-     * Structure: [question_index => ['correct' => bool, 'points' => int, 'max_points' => int]]
+     * Structure: [question_index => ['correct' => bool, 'points' => int, 'max_points' => int]].
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Gedmo\Versioned]
@@ -143,10 +146,11 @@ class QCMAttempt
 
     public function __toString(): string
     {
-        return sprintf('%s - %s (#%d)', 
+        return sprintf(
+            '%s - %s (#%d)',
             $this->qcm?->getTitle() ?? 'QCM',
             $this->student?->getFullName() ?? 'Student',
-            $this->attemptNumber
+            $this->attemptNumber,
         );
     }
 
@@ -163,11 +167,11 @@ class QCMAttempt
     public function setQcm(?QCM $qcm): static
     {
         $this->qcm = $qcm;
-        
+
         // Set max score from QCM
         if ($qcm) {
             $this->maxScore = $qcm->getMaxScore();
-            
+
             // Set expiration time if QCM has time limit
             if ($qcm->getTimeLimitMinutes()) {
                 $this->expiresAt = $this->startedAt?->modify('+' . $qcm->getTimeLimitMinutes() . ' minutes');
@@ -433,7 +437,7 @@ class QCMAttempt
         if ($this->answers === null) {
             $this->answers = [];
         }
-        
+
         $this->answers[$questionIndex] = $answerIndices;
 
         return $this;
@@ -454,7 +458,7 @@ class QCMAttempt
     {
         $this->status = self::STATUS_COMPLETED;
         $this->completedAt = new DateTimeImmutable();
-        
+
         // Calculate final time spent
         if ($this->startedAt && $this->completedAt) {
             $this->timeSpent = $this->completedAt->getTimestamp() - $this->startedAt->getTimestamp();
@@ -475,7 +479,7 @@ class QCMAttempt
     public function abandon(): static
     {
         $this->status = self::STATUS_ABANDONED;
-        
+
         // Calculate time spent until abandonment
         $now = new DateTimeImmutable();
         if ($this->startedAt) {
@@ -491,7 +495,7 @@ class QCMAttempt
     public function expire(): static
     {
         $this->status = self::STATUS_EXPIRED;
-        
+
         // Calculate time spent until expiration
         if ($this->startedAt && $this->expiresAt) {
             $this->timeSpent = $this->expiresAt->getTimestamp() - $this->startedAt->getTimestamp();
@@ -507,6 +511,7 @@ class QCMAttempt
     {
         if (!$this->qcm || !$this->answers) {
             $this->score = 0;
+
             return $this;
         }
 
@@ -536,6 +541,12 @@ class QCMAttempt
         return $this;
     }
 
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
     /**
      * Calculate score for a single question.
      */
@@ -562,15 +573,10 @@ class QCMAttempt
 
             // Partial credit formula: (correct selections - incorrect selections) / total correct
             $partialScore = max(0, ($correctSelected - $incorrectSelected) / $totalCorrect);
+
             return (int) round($partialScore * $questionPoints);
         }
 
         return 0;
-    }
-
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updatedAt = new DateTimeImmutable();
     }
 }

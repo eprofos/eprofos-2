@@ -8,6 +8,8 @@ use App\Entity\Document\DocumentType;
 use App\Form\Document\DocumentTypeType;
 use App\Repository\Document\DocumentTypeRepository;
 use App\Service\Document\DocumentTypeService;
+use DateTimeImmutable;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,10 +39,10 @@ class DocumentTypeController extends AbstractController
     public function index(DocumentTypeRepository $documentTypeRepository): Response
     {
         $userId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin document types list accessed', [
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'index',
             'controller' => 'DocumentTypeController',
         ]);
@@ -68,7 +70,7 @@ class DocumentTypeController extends AbstractController
                     ['label' => 'Types de documents', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error retrieving document types list', [
                 'user' => $userId,
                 'error_message' => $e->getMessage(),
@@ -78,7 +80,7 @@ class DocumentTypeController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des types de documents.');
-            
+
             return $this->render('admin/document_type/index.html.twig', [
                 'types_with_stats' => [],
                 'page_title' => 'Types de documents',
@@ -98,13 +100,13 @@ class DocumentTypeController extends AbstractController
     {
         $userId = $this->getUser()?->getUserIdentifier();
         $typeId = $documentType->getId();
-        
+
         $this->logger->info('Admin document type details viewed', [
             'type_id' => $typeId,
             'type_name' => $documentType->getName(),
             'type_code' => $documentType->getCode(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'show',
         ]);
 
@@ -140,7 +142,7 @@ class DocumentTypeController extends AbstractController
                     ['label' => $documentType->getName(), 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error displaying document type details', [
                 'type_id' => $typeId,
                 'user' => $userId,
@@ -151,7 +153,7 @@ class DocumentTypeController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des détails du type de document.');
-            
+
             return $this->redirectToRoute('admin_document_type_index');
         }
     }
@@ -163,10 +165,10 @@ class DocumentTypeController extends AbstractController
     public function new(Request $request): Response
     {
         $userId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Starting new document type creation', [
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'new',
             'method' => $request->getMethod(),
         ]);
@@ -227,7 +229,7 @@ class DocumentTypeController extends AbstractController
 
                         return $this->redirectToRoute('admin_document_type_show', ['id' => $documentType->getId()]);
                     }
-                    
+
                     $this->logger->warning('Document type creation failed via service', [
                         'user' => $userId,
                         'error' => $result['error'],
@@ -236,7 +238,7 @@ class DocumentTypeController extends AbstractController
                             'code' => $documentType->getCode(),
                         ],
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 }
             }
@@ -251,7 +253,7 @@ class DocumentTypeController extends AbstractController
                     ['label' => 'Nouveau', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in document type creation process', [
                 'user' => $userId,
                 'error_message' => $e->getMessage(),
@@ -262,7 +264,7 @@ class DocumentTypeController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la création du type de document.');
-            
+
             return $this->redirectToRoute('admin_document_type_index');
         }
     }
@@ -275,13 +277,13 @@ class DocumentTypeController extends AbstractController
     {
         $userId = $this->getUser()?->getUserIdentifier();
         $typeId = $documentType->getId();
-        
+
         $this->logger->info('Starting document type edit', [
             'type_id' => $typeId,
             'type_name' => $documentType->getName(),
             'type_code' => $documentType->getCode(),
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'edit',
             'method' => $request->getMethod(),
         ]);
@@ -349,13 +351,13 @@ class DocumentTypeController extends AbstractController
 
                         return $this->redirectToRoute('admin_document_type_show', ['id' => $documentType->getId()]);
                     }
-                    
+
                     $this->logger->warning('Document type update failed via service', [
                         'type_id' => $typeId,
                         'user' => $userId,
                         'error' => $result['error'],
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 }
             }
@@ -371,7 +373,7 @@ class DocumentTypeController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error in document type edit process', [
                 'type_id' => $typeId,
                 'user' => $userId,
@@ -383,7 +385,7 @@ class DocumentTypeController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la modification du type de document.');
-            
+
             return $this->redirectToRoute('admin_document_type_show', ['id' => $typeId]);
         }
     }
@@ -398,20 +400,20 @@ class DocumentTypeController extends AbstractController
         $typeId = $documentType->getId();
         $typeName = $documentType->getName();
         $typeCode = $documentType->getCode();
-        
+
         $this->logger->info('Document type deletion attempt', [
             'type_id' => $typeId,
             'type_name' => $typeName,
             'type_code' => $typeCode,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'delete',
         ]);
 
         try {
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'delete' . $typeId;
-            
+
             $this->logger->debug('CSRF token validation for deletion', [
                 'type_id' => $typeId,
                 'user' => $userId,
@@ -438,7 +440,7 @@ class DocumentTypeController extends AbstractController
                         'type_code' => $typeCode,
                         'user' => $userId,
                     ]);
-                    
+
                     $this->addFlash('success', 'Le type de document a été supprimé avec succès.');
                 } else {
                     $this->logger->warning('Document type deletion failed via service', [
@@ -447,7 +449,7 @@ class DocumentTypeController extends AbstractController
                         'user' => $userId,
                         'error' => $result['error'],
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 }
             } else {
@@ -456,10 +458,10 @@ class DocumentTypeController extends AbstractController
                     'user' => $userId,
                     'token_provided' => !empty($token),
                 ]);
-                
+
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document type deletion', [
                 'type_id' => $typeId,
                 'type_name' => $typeName,
@@ -486,21 +488,21 @@ class DocumentTypeController extends AbstractController
         $typeId = $documentType->getId();
         $typeName = $documentType->getName();
         $currentStatus = $documentType->isActive();
-        
+
         $this->logger->info('Document type status toggle attempt', [
             'type_id' => $typeId,
             'type_name' => $typeName,
             'current_status' => $currentStatus,
             'target_status' => !$currentStatus,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'toggle_status',
         ]);
 
         try {
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'toggle' . $typeId;
-            
+
             $this->logger->debug('CSRF token validation for status toggle', [
                 'type_id' => $typeId,
                 'user' => $userId,
@@ -519,7 +521,7 @@ class DocumentTypeController extends AbstractController
 
                 if ($result['success']) {
                     $newStatus = $documentType->isActive();
-                    
+
                     $this->logger->info('Document type status toggled successfully', [
                         'type_id' => $typeId,
                         'type_name' => $typeName,
@@ -528,7 +530,7 @@ class DocumentTypeController extends AbstractController
                         'user' => $userId,
                         'result_message' => $result['message'],
                     ]);
-                    
+
                     $this->addFlash('success', $result['message']);
                 } else {
                     $this->logger->warning('Document type status toggle failed via service', [
@@ -537,7 +539,7 @@ class DocumentTypeController extends AbstractController
                         'user' => $userId,
                         'error' => $result['error'],
                     ]);
-                    
+
                     $this->addFlash('error', $result['error']);
                 }
             } else {
@@ -546,10 +548,10 @@ class DocumentTypeController extends AbstractController
                     'user' => $userId,
                     'token_provided' => !empty($token),
                 ]);
-                
+
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document type status toggle', [
                 'type_id' => $typeId,
                 'type_name' => $typeName,
@@ -577,20 +579,20 @@ class DocumentTypeController extends AbstractController
         $sourceTypeId = $documentType->getId();
         $sourceTypeName = $documentType->getName();
         $sourceTypeCode = $documentType->getCode();
-        
+
         $this->logger->info('Document type duplication attempt', [
             'source_type_id' => $sourceTypeId,
             'source_type_name' => $sourceTypeName,
             'source_type_code' => $sourceTypeCode,
             'user' => $userId,
-            'timestamp' => new \DateTimeImmutable(),
+            'timestamp' => new DateTimeImmutable(),
             'action' => 'duplicate',
         ]);
 
         try {
             $token = $request->getPayload()->get('_token');
             $expectedToken = 'duplicate' . $sourceTypeId;
-            
+
             $this->logger->debug('CSRF token validation for duplication', [
                 'source_type_id' => $sourceTypeId,
                 'user' => $userId,
@@ -617,7 +619,7 @@ class DocumentTypeController extends AbstractController
                 $newDocumentType = new DocumentType();
                 $newCode = $sourceTypeCode . '_copy';
                 $newName = $sourceTypeName . ' (Copie)';
-                
+
                 $newDocumentType->setCode($newCode)
                     ->setName($newName)
                     ->setDescription($documentType->getDescription())
@@ -649,7 +651,7 @@ class DocumentTypeController extends AbstractController
 
                 if ($result['success']) {
                     $newTypeId = $newDocumentType->getId();
-                    
+
                     $this->logger->info('Document type duplicated successfully', [
                         'source_type_id' => $sourceTypeId,
                         'source_type_name' => $sourceTypeName,
@@ -658,12 +660,12 @@ class DocumentTypeController extends AbstractController
                         'new_type_code' => $newCode,
                         'user' => $userId,
                     ]);
-                    
+
                     $this->addFlash('success', 'Le type de document a été dupliqué avec succès.');
 
                     return $this->redirectToRoute('admin_document_type_edit', ['id' => $newTypeId]);
                 }
-                
+
                 $this->logger->warning('Document type duplication failed via service', [
                     'source_type_id' => $sourceTypeId,
                     'user' => $userId,
@@ -671,7 +673,7 @@ class DocumentTypeController extends AbstractController
                     'attempted_name' => $newName,
                     'attempted_code' => $newCode,
                 ]);
-                
+
                 $this->addFlash('error', $result['error']);
             } else {
                 $this->logger->warning('Invalid CSRF token for document type duplication', [
@@ -679,10 +681,10 @@ class DocumentTypeController extends AbstractController
                     'user' => $userId,
                     'token_provided' => !empty($token),
                 ]);
-                
+
                 $this->addFlash('error', 'Token de sécurité invalide.');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error during document type duplication', [
                 'source_type_id' => $sourceTypeId,
                 'source_type_name' => $sourceTypeName,

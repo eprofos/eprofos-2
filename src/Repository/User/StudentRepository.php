@@ -500,33 +500,39 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
     {
         $qb = $this->createQueryBuilder('s')
             ->andWhere('s.isActive = :active')
-            ->setParameter('active', true);
+            ->setParameter('active', true)
+        ;
 
         if (!empty($criteria['education'])) {
             $qb->andWhere('s.education = :education')
-               ->setParameter('education', $criteria['education']);
+                ->setParameter('education', $criteria['education'])
+            ;
         }
 
         if (!empty($criteria['profession'])) {
             $qb->andWhere('s.profession = :profession')
-               ->setParameter('profession', $criteria['profession']);
+                ->setParameter('profession', $criteria['profession'])
+            ;
         }
 
         if (!empty($criteria['location'])) {
             $qb->andWhere('s.city = :location OR s.postalCode = :location')
-               ->setParameter('location', $criteria['location']);
+                ->setParameter('location', $criteria['location'])
+            ;
         }
 
         if (!empty($criteria['age_min'])) {
             $maxBirthDate = new DateTimeImmutable(sprintf('-%d years', $criteria['age_min']));
             $qb->andWhere('s.birthDate <= :max_birth_date')
-               ->setParameter('max_birth_date', $maxBirthDate);
+                ->setParameter('max_birth_date', $maxBirthDate)
+            ;
         }
 
         if (!empty($criteria['age_max'])) {
             $minBirthDate = new DateTimeImmutable(sprintf('-%d years', $criteria['age_max']));
             $qb->andWhere('s.birthDate >= :min_birth_date')
-               ->setParameter('min_birth_date', $minBirthDate);
+                ->setParameter('min_birth_date', $minBirthDate)
+            ;
         }
 
         if (isset($criteria['has_completed_formations'])) {
@@ -534,15 +540,17 @@ class StudentRepository extends ServiceEntityRepository implements PasswordUpgra
             // For now, we'll implement a basic version
             if ($criteria['has_completed_formations']) {
                 $qb->leftJoin('s.enrollments', 'se')
-                   ->andWhere('se.status = :completed')
-                   ->setParameter('completed', 'completed')
-                   ->groupBy('s.id')
-                   ->having('COUNT(se.id) > 0');
+                    ->andWhere('se.status = :completed')
+                    ->setParameter('completed', 'completed')
+                    ->groupBy('s.id')
+                    ->having('COUNT(se.id) > 0')
+                ;
             }
         }
 
         $qb->orderBy('s.lastName', 'ASC')
-           ->addOrderBy('s.firstName', 'ASC');
+            ->addOrderBy('s.firstName', 'ASC')
+        ;
 
         if ($limit) {
             $qb->setMaxResults($limit);

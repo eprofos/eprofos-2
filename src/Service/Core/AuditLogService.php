@@ -7,12 +7,14 @@ namespace App\Service\Core;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Exception;
 use Gedmo\Loggable\Entity\LogEntry;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 use Gedmo\Mapping\Annotation\Loggable;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 
 /**
  * Service for managing audit logs of loggable entities.
@@ -52,6 +54,7 @@ class AuditLogService
                     'entity_class' => $entityClass,
                     'entity_id' => $entityId,
                 ]);
+
                 return [];
             }
 
@@ -74,7 +77,6 @@ class AuditLogService
             ]);
 
             return $logEntries;
-
         } catch (ORMException $e) {
             $this->logger->error('Database error while retrieving entity history', [
                 'entity_class' => get_class($entity),
@@ -83,9 +85,9 @@ class AuditLogService
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
-            throw new \RuntimeException('Failed to retrieve entity history: ' . $e->getMessage(), 0, $e);
 
-        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to retrieve entity history: ' . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while retrieving entity history', [
                 'entity_class' => get_class($entity),
                 'entity_id' => $this->getEntityId($entity),
@@ -96,6 +98,7 @@ class AuditLogService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -156,8 +159,7 @@ class AuditLogService
             ]);
 
             return $formattedChanges;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while formatting entity changes', [
                 'entity_class' => get_class($entity),
                 'entity_id' => $this->getEntityId($entity),
@@ -168,6 +170,7 @@ class AuditLogService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -199,7 +202,7 @@ class AuditLogService
 
                 if ($oldValue !== $newValue) {
                     $changeType = $oldValue === null ? 'added' : 'modified';
-                    
+
                     $this->logger->debug('Field change detected', [
                         'field' => $field,
                         'change_type' => $changeType,
@@ -237,15 +240,14 @@ class AuditLogService
 
             $this->logger->info('Version comparison completed', [
                 'total_changes' => count($changes),
-                'added_fields' => count(array_filter($changes, fn($change) => $change['type'] === 'added')),
-                'modified_fields' => count(array_filter($changes, fn($change) => $change['type'] === 'modified')),
-                'removed_fields' => count(array_filter($changes, fn($change) => $change['type'] === 'removed')),
+                'added_fields' => count(array_filter($changes, static fn ($change) => $change['type'] === 'added')),
+                'modified_fields' => count(array_filter($changes, static fn ($change) => $change['type'] === 'modified')),
+                'removed_fields' => count(array_filter($changes, static fn ($change) => $change['type'] === 'removed')),
                 'changed_fields' => array_keys($changes),
             ]);
 
             return $changes;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while comparing entity versions', [
                 'old_data_fields' => count($oldData),
                 'new_data_fields' => count($newData),
@@ -255,6 +257,7 @@ class AuditLogService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -277,139 +280,139 @@ class AuditLogService
 
             // Define field mappings for common entities
             $fieldMappings = [
-            'Formation' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'objectives' => 'Objectifs',
-                'operationalObjectives' => 'Objectifs opérationnels',
-                'evaluableObjectives' => 'Objectifs évaluables',
-                'evaluationCriteria' => 'Critères d\'évaluation',
-                'successIndicators' => 'Indicateurs de réussite',
-                'prerequisites' => 'Prérequis',
-                'durationHours' => 'Durée (heures)',
-                'price' => 'Prix',
-                'level' => 'Niveau',
-                'format' => 'Format',
-                'isActive' => 'Actif',
-                'isFeatured' => 'Mis en avant',
-                'targetAudience' => 'Public cible',
-                'accessModalities' => 'Modalités d\'accès',
-                'handicapAccessibility' => 'Accessibilité handicap',
-                'teachingMethods' => 'Méthodes pédagogiques',
-                'evaluationMethods' => 'Méthodes d\'évaluation',
-                'contactInfo' => 'Informations de contact',
-                'trainingLocation' => 'Lieu de formation',
-                'fundingModalities' => 'Modalités de financement',
-            ],
-            'Category' => [
-                'name' => 'Nom',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'icon' => 'Icône',
-                'isActive' => 'Actif',
-            ],
-            'Module' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'learningObjectives' => 'Objectifs d\'apprentissage',
-                'prerequisites' => 'Prérequis',
-                'durationHours' => 'Durée (heures)',
-                'orderIndex' => 'Ordre',
-                'evaluationMethods' => 'Méthodes d\'évaluation',
-                'teachingMethods' => 'Méthodes pédagogiques',
-                'resources' => 'Ressources',
-                'successCriteria' => 'Critères de réussite',
-                'isActive' => 'Actif',
-            ],
-            'Chapter' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'learningObjectives' => 'Objectifs d\'apprentissage',
-                'contentOutline' => 'Plan du contenu',
-                'prerequisites' => 'Prérequis',
-                'learningOutcomes' => 'Résultats d\'apprentissage',
-                'teachingMethods' => 'Méthodes pédagogiques',
-                'resources' => 'Ressources',
-                'assessmentMethods' => 'Méthodes d\'évaluation',
-                'successCriteria' => 'Critères de réussite',
-                'durationMinutes' => 'Durée (minutes)',
-                'orderIndex' => 'Ordre',
-                'isActive' => 'Actif',
-            ],
-            'Course' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'content' => 'Contenu',
-                'type' => 'Type',
-                'learningObjectives' => 'Objectifs d\'apprentissage',
-                'contentOutline' => 'Plan du contenu',
-                'prerequisites' => 'Prérequis',
-                'learningOutcomes' => 'Résultats d\'apprentissage',
-                'teachingMethods' => 'Méthodes pédagogiques',
-                'resources' => 'Ressources',
-                'assessmentMethods' => 'Méthodes d\'évaluation',
-                'successCriteria' => 'Critères de réussite',
-                'durationMinutes' => 'Durée (minutes)',
-                'orderIndex' => 'Ordre',
-                'isActive' => 'Actif',
-            ],
-            'Session' => [
-                'name' => 'Nom',
-                'description' => 'Description',
-                'startDate' => 'Date de début',
-                'endDate' => 'Date de fin',
-                'registrationDeadline' => 'Date limite d\'inscription',
-                'location' => 'Lieu',
-                'address' => 'Adresse',
-                'maxCapacity' => 'Capacité maximale',
-                'minCapacity' => 'Capacité minimale',
-                'price' => 'Prix',
-                'status' => 'Statut',
-                'instructor' => 'Formateur',
-                'notes' => 'Notes',
-                'isActive' => 'Actif',
-            ],
-            'Exercise' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'instructions' => 'Instructions',
-                'expectedOutcomes' => 'Résultats attendus',
-                'evaluationCriteria' => 'Critères d\'évaluation',
-                'resources' => 'Ressources',
-                'prerequisites' => 'Prérequis',
-                'successCriteria' => 'Critères de réussite',
-                'type' => 'Type',
-                'difficulty' => 'Difficulté',
-                'estimatedDurationMinutes' => 'Durée estimée (minutes)',
-                'maxPoints' => 'Points maximum',
-                'passingPoints' => 'Points de réussite',
-                'orderIndex' => 'Ordre',
-                'isActive' => 'Actif',
-            ],
-            'QCM' => [
-                'title' => 'Titre',
-                'slug' => 'Slug',
-                'description' => 'Description',
-                'instructions' => 'Instructions',
-                'questions' => 'Questions',
-                'evaluationCriteria' => 'Critères d\'évaluation',
-                'successCriteria' => 'Critères de réussite',
-                'timeLimitMinutes' => 'Limite de temps (minutes)',
-                'maxScore' => 'Score maximum',
-                'passingScore' => 'Score de réussite',
-                'maxAttempts' => 'Tentatives autorisées',
-                'showCorrectAnswers' => 'Afficher les bonnes réponses',
-                'showExplanations' => 'Afficher les explications',
-                'randomizeQuestions' => 'Questions aléatoires',
-                'randomizeAnswers' => 'Réponses aléatoires',
-                'orderIndex' => 'Ordre',
-                'isActive' => 'Actif',
-            ],
+                'Formation' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'objectives' => 'Objectifs',
+                    'operationalObjectives' => 'Objectifs opérationnels',
+                    'evaluableObjectives' => 'Objectifs évaluables',
+                    'evaluationCriteria' => 'Critères d\'évaluation',
+                    'successIndicators' => 'Indicateurs de réussite',
+                    'prerequisites' => 'Prérequis',
+                    'durationHours' => 'Durée (heures)',
+                    'price' => 'Prix',
+                    'level' => 'Niveau',
+                    'format' => 'Format',
+                    'isActive' => 'Actif',
+                    'isFeatured' => 'Mis en avant',
+                    'targetAudience' => 'Public cible',
+                    'accessModalities' => 'Modalités d\'accès',
+                    'handicapAccessibility' => 'Accessibilité handicap',
+                    'teachingMethods' => 'Méthodes pédagogiques',
+                    'evaluationMethods' => 'Méthodes d\'évaluation',
+                    'contactInfo' => 'Informations de contact',
+                    'trainingLocation' => 'Lieu de formation',
+                    'fundingModalities' => 'Modalités de financement',
+                ],
+                'Category' => [
+                    'name' => 'Nom',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'icon' => 'Icône',
+                    'isActive' => 'Actif',
+                ],
+                'Module' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'learningObjectives' => 'Objectifs d\'apprentissage',
+                    'prerequisites' => 'Prérequis',
+                    'durationHours' => 'Durée (heures)',
+                    'orderIndex' => 'Ordre',
+                    'evaluationMethods' => 'Méthodes d\'évaluation',
+                    'teachingMethods' => 'Méthodes pédagogiques',
+                    'resources' => 'Ressources',
+                    'successCriteria' => 'Critères de réussite',
+                    'isActive' => 'Actif',
+                ],
+                'Chapter' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'learningObjectives' => 'Objectifs d\'apprentissage',
+                    'contentOutline' => 'Plan du contenu',
+                    'prerequisites' => 'Prérequis',
+                    'learningOutcomes' => 'Résultats d\'apprentissage',
+                    'teachingMethods' => 'Méthodes pédagogiques',
+                    'resources' => 'Ressources',
+                    'assessmentMethods' => 'Méthodes d\'évaluation',
+                    'successCriteria' => 'Critères de réussite',
+                    'durationMinutes' => 'Durée (minutes)',
+                    'orderIndex' => 'Ordre',
+                    'isActive' => 'Actif',
+                ],
+                'Course' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'content' => 'Contenu',
+                    'type' => 'Type',
+                    'learningObjectives' => 'Objectifs d\'apprentissage',
+                    'contentOutline' => 'Plan du contenu',
+                    'prerequisites' => 'Prérequis',
+                    'learningOutcomes' => 'Résultats d\'apprentissage',
+                    'teachingMethods' => 'Méthodes pédagogiques',
+                    'resources' => 'Ressources',
+                    'assessmentMethods' => 'Méthodes d\'évaluation',
+                    'successCriteria' => 'Critères de réussite',
+                    'durationMinutes' => 'Durée (minutes)',
+                    'orderIndex' => 'Ordre',
+                    'isActive' => 'Actif',
+                ],
+                'Session' => [
+                    'name' => 'Nom',
+                    'description' => 'Description',
+                    'startDate' => 'Date de début',
+                    'endDate' => 'Date de fin',
+                    'registrationDeadline' => 'Date limite d\'inscription',
+                    'location' => 'Lieu',
+                    'address' => 'Adresse',
+                    'maxCapacity' => 'Capacité maximale',
+                    'minCapacity' => 'Capacité minimale',
+                    'price' => 'Prix',
+                    'status' => 'Statut',
+                    'instructor' => 'Formateur',
+                    'notes' => 'Notes',
+                    'isActive' => 'Actif',
+                ],
+                'Exercise' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'instructions' => 'Instructions',
+                    'expectedOutcomes' => 'Résultats attendus',
+                    'evaluationCriteria' => 'Critères d\'évaluation',
+                    'resources' => 'Ressources',
+                    'prerequisites' => 'Prérequis',
+                    'successCriteria' => 'Critères de réussite',
+                    'type' => 'Type',
+                    'difficulty' => 'Difficulté',
+                    'estimatedDurationMinutes' => 'Durée estimée (minutes)',
+                    'maxPoints' => 'Points maximum',
+                    'passingPoints' => 'Points de réussite',
+                    'orderIndex' => 'Ordre',
+                    'isActive' => 'Actif',
+                ],
+                'QCM' => [
+                    'title' => 'Titre',
+                    'slug' => 'Slug',
+                    'description' => 'Description',
+                    'instructions' => 'Instructions',
+                    'questions' => 'Questions',
+                    'evaluationCriteria' => 'Critères d\'évaluation',
+                    'successCriteria' => 'Critères de réussite',
+                    'timeLimitMinutes' => 'Limite de temps (minutes)',
+                    'maxScore' => 'Score maximum',
+                    'passingScore' => 'Score de réussite',
+                    'maxAttempts' => 'Tentatives autorisées',
+                    'showCorrectAnswers' => 'Afficher les bonnes réponses',
+                    'showExplanations' => 'Afficher les explications',
+                    'randomizeQuestions' => 'Questions aléatoires',
+                    'randomizeAnswers' => 'Réponses aléatoires',
+                    'orderIndex' => 'Ordre',
+                    'isActive' => 'Actif',
+                ],
             ];
 
             $shortClassName = (new ReflectionClass($entityClass))->getShortName();
@@ -425,16 +428,15 @@ class AuditLogService
             ]);
 
             return $humanReadableName;
-
         } catch (ReflectionException $e) {
             $this->logger->error('Reflection error while getting human-readable field name', [
                 'field_name' => $fieldName,
                 'entity_class' => $entityClass,
                 'error_message' => $e->getMessage(),
             ]);
-            return ucfirst($fieldName);
 
-        } catch (\Exception $e) {
+            return ucfirst($fieldName);
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while getting human-readable field name', [
                 'field_name' => $fieldName,
                 'entity_class' => $entityClass,
@@ -442,9 +444,12 @@ class AuditLogService
                 'error_message' => $e->getMessage(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             return ucfirst($fieldName);
         }
-    }    /**
+    }
+
+    /**
      * Format a field value for display.
      *
      * @param mixed $value The field value
@@ -466,11 +471,13 @@ class AuditLogService
 
             if ($value === null) {
                 $this->logger->debug('Formatting null value');
+
                 return '<em class="text-muted">null</em>';
             }
 
             if (is_bool($value)) {
                 $this->logger->debug('Formatting boolean value', ['value' => $value]);
+
                 return $value ? '<span class="badge bg-success">Oui</span>' : '<span class="badge bg-danger">Non</span>';
             }
 
@@ -491,6 +498,7 @@ class AuditLogService
                 $this->logger->debug('Formatting DateTime value', [
                     'datetime' => $value->format('Y-m-d H:i:s'),
                 ]);
+
                 return $value->format('d/m/Y H:i:s');
             }
 
@@ -498,6 +506,7 @@ class AuditLogService
                 $this->logger->debug('Formatting long string value', [
                     'string_length' => strlen($value),
                 ]);
+
                 return '<details><summary>Afficher le contenu (' . strlen($value) . ' caractères)</summary><div class="mt-2">' . nl2br(htmlspecialchars($value)) . '</div></details>';
             }
 
@@ -506,8 +515,7 @@ class AuditLogService
             ]);
 
             return htmlspecialchars((string) $value);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while formatting field value', [
                 'field_name' => $fieldName,
                 'value_type' => gettype($value),
@@ -516,7 +524,7 @@ class AuditLogService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            
+
             // Return a safe fallback
             return '<em class="text-muted">Erreur de formatage</em>';
         }
@@ -548,7 +556,6 @@ class AuditLogService
             ]);
 
             return $isLoggable;
-
         } catch (ReflectionException $e) {
             $this->logger->error('Reflection error while checking if entity is loggable', [
                 'entity_class' => $entityClass,
@@ -556,9 +563,9 @@ class AuditLogService
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
             ]);
-            return false;
 
-        } catch (\Exception $e) {
+            return false;
+        } catch (Exception $e) {
             $this->logger->error('Unexpected error while checking if entity is loggable', [
                 'entity_class' => $entityClass,
                 'error_class' => get_class($e),
@@ -567,6 +574,7 @@ class AuditLogService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -590,14 +598,14 @@ class AuditLogService
 
             foreach ($metadata as $classMetadata) {
                 $className = $classMetadata->getName();
-                
+
                 $this->logger->debug('Checking entity for loggable attribute', [
                     'entity_class' => $className,
                 ]);
 
                 if ($this->isEntityLoggable($className)) {
                     $loggableEntities[] = $className;
-                    
+
                     $this->logger->debug('Found loggable entity', [
                         'entity_class' => $className,
                     ]);
@@ -611,8 +619,7 @@ class AuditLogService
             ]);
 
             return $loggableEntities;
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while retrieving loggable entities', [
                 'error_class' => get_class($e),
                 'error_message' => $e->getMessage(),
@@ -620,6 +627,7 @@ class AuditLogService
                 'error_line' => $e->getLine(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
+
             throw $e;
         }
     }
@@ -643,12 +651,12 @@ class AuditLogService
 
             // Return the first identifier value (most entities have single primary key)
             return reset($identifierValues);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->warning('Failed to get entity ID', [
                 'entity_class' => get_class($entity),
                 'error_message' => $e->getMessage(),
             ]);
+
             return null;
         }
     }

@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Throwable;
 use Twig\Environment;
 
 /**
@@ -27,9 +28,8 @@ class AccessDeniedListener
     public function __construct(
         private readonly Environment $twig,
         private readonly ContentAccessService $contentAccessService,
-        private readonly LoggerInterface $logger
-    ) {
-    }
+        private readonly LoggerInterface $logger,
+    ) {}
 
     public function onKernelException(ExceptionEvent $event): void
     {
@@ -53,8 +53,9 @@ class AccessDeniedListener
                 $this->logger->debug('AccessDeniedListener: Exception not handled by this listener', [
                     'exception_class' => get_class($exception),
                     'route' => $request->attributes->get('_route'),
-                    'reason' => 'Exception type or route pattern does not match criteria'
+                    'reason' => 'Exception type or route pattern does not match criteria',
                 ]);
+
                 return;
             }
 
@@ -72,8 +73,7 @@ class AccessDeniedListener
                 'response_status' => $response->getStatusCode(),
                 'route' => $request->attributes->get('_route'),
             ]);
-
-        } catch (\Throwable $handlingException) {
+        } catch (Throwable $handlingException) {
             $this->logger->error('AccessDeniedListener: Error while handling access denied exception', [
                 'original_exception' => [
                     'class' => get_class($event->getThrowable()),
@@ -97,7 +97,7 @@ class AccessDeniedListener
         }
     }
 
-    private function shouldHandle(\Throwable $exception, Request $request): bool
+    private function shouldHandle(Throwable $exception, Request $request): bool
     {
         try {
             $this->logger->debug('AccessDeniedListener: Checking if exception should be handled', [
@@ -108,24 +108,25 @@ class AccessDeniedListener
 
             // Check if it's an access denied exception
             $isAccessDeniedException = $exception instanceof AccessDeniedException || $exception instanceof AccessDeniedHttpException;
-            
+
             if (!$isAccessDeniedException) {
                 $this->logger->debug('AccessDeniedListener: Exception is not an access denied type', [
                     'exception_class' => get_class($exception),
                     'expected_types' => [AccessDeniedException::class, AccessDeniedHttpException::class],
                 ]);
+
                 return false;
             }
 
             // Only handle for student content routes
             $route = $request->attributes->get('_route', '');
             $isStudentRoute = str_starts_with($route, 'student_');
-            $isContentRoute = str_contains($route, '_formation_') || 
-                             str_contains($route, '_module_') || 
-                             str_contains($route, '_chapter_') || 
-                             str_contains($route, '_course_') || 
-                             str_contains($route, '_exercise_') || 
-                             str_contains($route, '_qcm_');
+            $isContentRoute = str_contains($route, '_formation_')
+                             || str_contains($route, '_module_')
+                             || str_contains($route, '_chapter_')
+                             || str_contains($route, '_course_')
+                             || str_contains($route, '_exercise_')
+                             || str_contains($route, '_qcm_');
 
             $shouldHandle = $isStudentRoute && $isContentRoute;
 
@@ -145,8 +146,7 @@ class AccessDeniedListener
             ]);
 
             return $shouldHandle;
-
-        } catch (\Throwable $checkException) {
+        } catch (Throwable $checkException) {
             $this->logger->error('AccessDeniedListener: Error while checking if exception should be handled', [
                 'check_exception' => [
                     'class' => get_class($checkException),
@@ -163,7 +163,7 @@ class AccessDeniedListener
         }
     }
 
-    private function createAccessDeniedResponse(Request $request, \Throwable $exception): Response
+    private function createAccessDeniedResponse(Request $request, Throwable $exception): Response
     {
         try {
             $this->logger->info('AccessDeniedListener: Creating access denied response', [
@@ -209,8 +209,7 @@ class AccessDeniedListener
             ]);
 
             return $response;
-
-        } catch (\Throwable $responseException) {
+        } catch (Throwable $responseException) {
             $this->logger->error('AccessDeniedListener: Error while creating access denied response', [
                 'response_exception' => [
                     'class' => get_class($responseException),
@@ -231,26 +230,25 @@ class AccessDeniedListener
             try {
                 $fallbackHtml = sprintf(
                     '<html><head><title>Access Denied</title></head><body><h1>Access Denied</h1><p>%s</p></body></html>',
-                    htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8')
+                    htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8'),
                 );
-                
+
                 $fallbackResponse = new Response($fallbackHtml, Response::HTTP_FORBIDDEN);
-                
+
                 $this->logger->info('AccessDeniedListener: Created fallback access denied response', [
                     'reason' => 'Template rendering failed',
                     'fallback_response_status' => $fallbackResponse->getStatusCode(),
                 ]);
-                
+
                 return $fallbackResponse;
-                
-            } catch (\Throwable $fallbackException) {
+            } catch (Throwable $fallbackException) {
                 $this->logger->critical('AccessDeniedListener: Failed to create even fallback response', [
                     'fallback_exception' => [
                         'class' => get_class($fallbackException),
                         'message' => $fallbackException->getMessage(),
                     ],
                 ]);
-                
+
                 // If even the fallback fails, rethrow the original response exception
                 throw $responseException;
             }
@@ -276,7 +274,7 @@ class AccessDeniedListener
                     'icon' => $data['icon'],
                     'route' => $route,
                 ]);
-                // Formation entity would be injected by param converter
+            // Formation entity would be injected by param converter
             } elseif (str_contains($route, '_module_')) {
                 $data['icon'] = 'folder-open';
                 $this->logger->debug('AccessDeniedListener: Detected module route', [
@@ -321,15 +319,14 @@ class AccessDeniedListener
             // TODO: Extract actual content entities from route parameters
             // This would require checking for specific parameter names like 'formation', 'module', etc.
             // and potentially querying the database to get related data
-            
+
             $this->logger->debug('AccessDeniedListener: Content data extraction completed', [
                 'extracted_data' => $data,
                 'route' => $route,
             ]);
 
             return $data;
-
-        } catch (\Throwable $extractException) {
+        } catch (Throwable $extractException) {
             $this->logger->error('AccessDeniedListener: Error while extracting content data', [
                 'extract_exception' => [
                     'class' => get_class($extractException),

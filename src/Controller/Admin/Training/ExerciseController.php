@@ -8,7 +8,10 @@ use App\Entity\Training\Course;
 use App\Entity\Training\Exercise;
 use App\Repository\Training\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,7 +71,7 @@ class ExerciseController extends AbstractController
             try {
                 $this->logger->info('Starting exercise creation process', [
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'request_data_keys' => array_keys($request->request->all())
+                    'request_data_keys' => array_keys($request->request->all()),
                 ]);
 
                 $data = $request->request->all();
@@ -79,9 +82,10 @@ class ExerciseController extends AbstractController
                     if (empty($data[$field])) {
                         $this->logger->warning('Missing required field during exercise creation', [
                             'field' => $field,
-                            'user_id' => $this->getUser()?->getUserIdentifier()
+                            'user_id' => $this->getUser()?->getUserIdentifier(),
                         ]);
-                        throw new \InvalidArgumentException("Le champ '{$field}' est requis");
+
+                        throw new InvalidArgumentException("Le champ '{$field}' est requis");
                     }
                 }
 
@@ -89,7 +93,7 @@ class ExerciseController extends AbstractController
                     'title' => $data['title'],
                     'type' => $data['type'],
                     'difficulty' => $data['difficulty'],
-                    'course_id' => $data['course_id']
+                    'course_id' => $data['course_id'],
                 ]);
 
                 $exercise->setTitle($data['title']);
@@ -103,24 +107,25 @@ class ExerciseController extends AbstractController
                     'exercise_title' => $data['title'],
                     'instructions_length' => strlen($data['instructions']),
                     'instructions_preview' => substr($data['instructions'], 0, 100) . '...',
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 try {
                     $exercise->setInstructions($data['instructions']);
                     $this->logger->debug('Instructions successfully set for exercise', [
                         'exercise_title' => $data['title'],
-                        'instructions_final_length' => strlen($exercise->getInstructions())
+                        'instructions_final_length' => strlen($exercise->getInstructions()),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to set instructions for exercise', [
                         'exercise_title' => $data['title'],
                         'error_message' => $e->getMessage(),
                         'error_code' => $e->getCode(),
                         'instructions_length' => strlen($data['instructions']),
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    throw new \RuntimeException('Erreur lors de la sauvegarde des instructions: ' . $e->getMessage());
+
+                    throw new RuntimeException('Erreur lors de la sauvegarde des instructions: ' . $e->getMessage());
                 }
 
                 $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
@@ -133,9 +138,10 @@ class ExerciseController extends AbstractController
                     $this->logger->error('Course not found during exercise creation', [
                         'course_id' => $data['course_id'],
                         'exercise_title' => $data['title'],
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    throw new \InvalidArgumentException('Le cours spécifié n\'existe pas');
+
+                    throw new InvalidArgumentException('Le cours spécifié n\'existe pas');
                 }
                 $exercise->setCourse($course);
 
@@ -145,7 +151,7 @@ class ExerciseController extends AbstractController
                     'has_expected_outcomes' => !empty($data['expected_outcomes']),
                     'has_evaluation_criteria' => !empty($data['evaluation_criteria']),
                     'has_resources' => !empty($data['resources']),
-                    'has_success_criteria' => !empty($data['success_criteria'])
+                    'has_success_criteria' => !empty($data['success_criteria']),
                 ]);
 
                 if (!empty($data['expected_outcomes'])) {
@@ -154,15 +160,16 @@ class ExerciseController extends AbstractController
                         $exercise->setExpectedOutcomes($expectedOutcomes);
                         $this->logger->debug('Expected outcomes processed successfully', [
                             'exercise_title' => $data['title'],
-                            'outcomes_count' => count($expectedOutcomes)
+                            'outcomes_count' => count($expectedOutcomes),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to process expected outcomes', [
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['expected_outcomes']
+                            'raw_data' => $data['expected_outcomes'],
                         ]);
-                        throw new \RuntimeException('Erreur lors du traitement des résultats attendus: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors du traitement des résultats attendus: ' . $e->getMessage());
                     }
                 }
 
@@ -172,15 +179,16 @@ class ExerciseController extends AbstractController
                         $exercise->setEvaluationCriteria($evaluationCriteria);
                         $this->logger->debug('Evaluation criteria processed successfully', [
                             'exercise_title' => $data['title'],
-                            'criteria_count' => count($evaluationCriteria)
+                            'criteria_count' => count($evaluationCriteria),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to process evaluation criteria', [
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['evaluation_criteria']
+                            'raw_data' => $data['evaluation_criteria'],
                         ]);
-                        throw new \RuntimeException('Erreur lors du traitement des critères d\'évaluation: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors du traitement des critères d\'évaluation: ' . $e->getMessage());
                     }
                 }
 
@@ -190,15 +198,16 @@ class ExerciseController extends AbstractController
                         $exercise->setResources($resources);
                         $this->logger->debug('Resources processed successfully', [
                             'exercise_title' => $data['title'],
-                            'resources_count' => count($resources)
+                            'resources_count' => count($resources),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to process resources', [
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['resources']
+                            'raw_data' => $data['resources'],
                         ]);
-                        throw new \RuntimeException('Erreur lors du traitement des ressources: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors du traitement des ressources: ' . $e->getMessage());
                     }
                 }
 
@@ -208,15 +217,16 @@ class ExerciseController extends AbstractController
                         $exercise->setSuccessCriteria($successCriteria);
                         $this->logger->debug('Success criteria processed successfully', [
                             'exercise_title' => $data['title'],
-                            'criteria_count' => count($successCriteria)
+                            'criteria_count' => count($successCriteria),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to process success criteria', [
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['success_criteria']
+                            'raw_data' => $data['success_criteria'],
                         ]);
-                        throw new \RuntimeException('Erreur lors du traitement des critères de succès: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors du traitement des critères de succès: ' . $e->getMessage());
                     }
                 }
 
@@ -227,7 +237,7 @@ class ExerciseController extends AbstractController
                     'exercise_title' => $exercise->getTitle(),
                     'exercise_slug' => $exercise->getSlug(),
                     'course_id' => $exercise->getCourse()->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->entityManager->persist($exercise);
@@ -237,35 +247,34 @@ class ExerciseController extends AbstractController
                     'exercise_id' => $exercise->getId(),
                     'exercise_title' => $exercise->getTitle(),
                     'course_id' => $exercise->getCourse()->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Exercice créé avec succès.');
 
                 return $this->redirectToRoute('admin_exercise_index');
-
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $this->logger->warning('Validation error during exercise creation', [
                     'error_message' => $e->getMessage(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'request_data' => $request->request->all()
+                    'request_data' => $request->request->all(),
                 ]);
                 $this->addFlash('error', $e->getMessage());
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $this->logger->error('Runtime error during exercise creation', [
                     'error_message' => $e->getMessage(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', $e->getMessage());
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->critical('Unexpected error during exercise creation', [
                     'error_message' => $e->getMessage(),
                     'error_class' => get_class($e),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer.');
             }
@@ -298,7 +307,7 @@ class ExerciseController extends AbstractController
                     'exercise_id' => $exercise->getId(),
                     'exercise_title' => $exercise->getTitle(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'request_data_keys' => array_keys($request->request->all())
+                    'request_data_keys' => array_keys($request->request->all()),
                 ]);
 
                 $data = $request->request->all();
@@ -310,9 +319,10 @@ class ExerciseController extends AbstractController
                         $this->logger->warning('Missing required field during exercise edit', [
                             'field' => $field,
                             'exercise_id' => $exercise->getId(),
-                            'user_id' => $this->getUser()?->getUserIdentifier()
+                            'user_id' => $this->getUser()?->getUserIdentifier(),
                         ]);
-                        throw new \InvalidArgumentException("Le champ '{$field}' est requis");
+
+                        throw new InvalidArgumentException("Le champ '{$field}' est requis");
                     }
                 }
 
@@ -322,7 +332,7 @@ class ExerciseController extends AbstractController
                     'new_title' => $data['title'],
                     'type' => $data['type'],
                     'difficulty' => $data['difficulty'],
-                    'course_id' => $data['course_id']
+                    'course_id' => $data['course_id'],
                 ]);
 
                 $exercise->setTitle($data['title']);
@@ -338,7 +348,7 @@ class ExerciseController extends AbstractController
                     'old_instructions_length' => strlen($exercise->getInstructions() ?? ''),
                     'new_instructions_length' => strlen($data['instructions']),
                     'instructions_preview' => substr($data['instructions'], 0, 100) . '...',
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 try {
@@ -346,18 +356,19 @@ class ExerciseController extends AbstractController
                     $this->logger->debug('Instructions successfully updated for exercise', [
                         'exercise_id' => $exercise->getId(),
                         'exercise_title' => $data['title'],
-                        'instructions_final_length' => strlen($exercise->getInstructions())
+                        'instructions_final_length' => strlen($exercise->getInstructions()),
                     ]);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to update instructions for exercise', [
                         'exercise_id' => $exercise->getId(),
                         'exercise_title' => $data['title'],
                         'error_message' => $e->getMessage(),
                         'error_code' => $e->getCode(),
                         'new_instructions_length' => strlen($data['instructions']),
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    throw new \RuntimeException('Erreur lors de la mise à jour des instructions: ' . $e->getMessage());
+
+                    throw new RuntimeException('Erreur lors de la mise à jour des instructions: ' . $e->getMessage());
                 }
 
                 $exercise->setEstimatedDurationMinutes((int) $data['estimated_duration_minutes']);
@@ -371,9 +382,10 @@ class ExerciseController extends AbstractController
                         'course_id' => $data['course_id'],
                         'exercise_id' => $exercise->getId(),
                         'exercise_title' => $data['title'],
-                        'user_id' => $this->getUser()?->getUserIdentifier()
+                        'user_id' => $this->getUser()?->getUserIdentifier(),
                     ]);
-                    throw new \InvalidArgumentException('Le cours spécifié n\'existe pas');
+
+                    throw new InvalidArgumentException('Le cours spécifié n\'existe pas');
                 }
                 $exercise->setCourse($course);
 
@@ -384,7 +396,7 @@ class ExerciseController extends AbstractController
                     'has_expected_outcomes' => !empty($data['expected_outcomes']),
                     'has_evaluation_criteria' => !empty($data['evaluation_criteria']),
                     'has_resources' => !empty($data['resources']),
-                    'has_success_criteria' => !empty($data['success_criteria'])
+                    'has_success_criteria' => !empty($data['success_criteria']),
                 ]);
 
                 if (!empty($data['expected_outcomes'])) {
@@ -394,16 +406,17 @@ class ExerciseController extends AbstractController
                         $this->logger->debug('Expected outcomes updated successfully', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
-                            'outcomes_count' => count($expectedOutcomes)
+                            'outcomes_count' => count($expectedOutcomes),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to update expected outcomes', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['expected_outcomes']
+                            'raw_data' => $data['expected_outcomes'],
                         ]);
-                        throw new \RuntimeException('Erreur lors de la mise à jour des résultats attendus: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors de la mise à jour des résultats attendus: ' . $e->getMessage());
                     }
                 }
 
@@ -414,16 +427,17 @@ class ExerciseController extends AbstractController
                         $this->logger->debug('Evaluation criteria updated successfully', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
-                            'criteria_count' => count($evaluationCriteria)
+                            'criteria_count' => count($evaluationCriteria),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to update evaluation criteria', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['evaluation_criteria']
+                            'raw_data' => $data['evaluation_criteria'],
                         ]);
-                        throw new \RuntimeException('Erreur lors de la mise à jour des critères d\'évaluation: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors de la mise à jour des critères d\'évaluation: ' . $e->getMessage());
                     }
                 }
 
@@ -434,16 +448,17 @@ class ExerciseController extends AbstractController
                         $this->logger->debug('Resources updated successfully', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
-                            'resources_count' => count($resources)
+                            'resources_count' => count($resources),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to update resources', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['resources']
+                            'raw_data' => $data['resources'],
                         ]);
-                        throw new \RuntimeException('Erreur lors de la mise à jour des ressources: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors de la mise à jour des ressources: ' . $e->getMessage());
                     }
                 }
 
@@ -454,16 +469,17 @@ class ExerciseController extends AbstractController
                         $this->logger->debug('Success criteria updated successfully', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
-                            'criteria_count' => count($successCriteria)
+                            'criteria_count' => count($successCriteria),
                         ]);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->logger->error('Failed to update success criteria', [
                             'exercise_id' => $exercise->getId(),
                             'exercise_title' => $data['title'],
                             'error_message' => $e->getMessage(),
-                            'raw_data' => $data['success_criteria']
+                            'raw_data' => $data['success_criteria'],
                         ]);
-                        throw new \RuntimeException('Erreur lors de la mise à jour des critères de succès: ' . $e->getMessage());
+
+                        throw new RuntimeException('Erreur lors de la mise à jour des critères de succès: ' . $e->getMessage());
                     }
                 }
 
@@ -475,7 +491,7 @@ class ExerciseController extends AbstractController
                     'exercise_title' => $exercise->getTitle(),
                     'exercise_slug' => $exercise->getSlug(),
                     'course_id' => $exercise->getCourse()->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->entityManager->flush();
@@ -484,30 +500,29 @@ class ExerciseController extends AbstractController
                     'exercise_id' => $exercise->getId(),
                     'exercise_title' => $exercise->getTitle(),
                     'course_id' => $exercise->getCourse()->getId(),
-                    'user_id' => $this->getUser()?->getUserIdentifier()
+                    'user_id' => $this->getUser()?->getUserIdentifier(),
                 ]);
 
                 $this->addFlash('success', 'Exercice modifié avec succès.');
 
                 return $this->redirectToRoute('admin_exercise_index');
-
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $this->logger->warning('Validation error during exercise edit', [
                     'exercise_id' => $exercise->getId(),
                     'error_message' => $e->getMessage(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'request_data' => $request->request->all()
+                    'request_data' => $request->request->all(),
                 ]);
                 $this->addFlash('error', $e->getMessage());
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $this->logger->error('Runtime error during exercise edit', [
                     'exercise_id' => $exercise->getId(),
                     'error_message' => $e->getMessage(),
                     'user_id' => $this->getUser()?->getUserIdentifier(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', $e->getMessage());
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->critical('Unexpected error during exercise edit', [
                     'exercise_id' => $exercise->getId(),
                     'error_message' => $e->getMessage(),
@@ -515,7 +530,7 @@ class ExerciseController extends AbstractController
                     'user_id' => $this->getUser()?->getUserIdentifier(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer.');
             }

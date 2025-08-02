@@ -33,7 +33,7 @@ class QuestionController extends AbstractController
     public function index(int $questionnaireId): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Accessing question index page', [
             'questionnaire_id' => $questionnaireId,
             'user_id' => $userId,
@@ -47,6 +47,7 @@ class QuestionController extends AbstractController
                     'questionnaire_id' => $questionnaireId,
                     'user_id' => $userId,
                 ]);
+
                 throw $this->createNotFoundException('Questionnaire not found');
             }
 
@@ -72,6 +73,7 @@ class QuestionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors du chargement des questions.');
+
             throw $e;
         }
     }
@@ -80,7 +82,7 @@ class QuestionController extends AbstractController
     public function new(Request $request, int $questionnaireId): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Accessing new question form', [
             'questionnaire_id' => $questionnaireId,
             'method' => $request->getMethod(),
@@ -95,16 +97,17 @@ class QuestionController extends AbstractController
                     'questionnaire_id' => $questionnaireId,
                     'user_id' => $userId,
                 ]);
+
                 throw $this->createNotFoundException('Questionnaire not found');
             }
 
             $question = new Question();
             $question->setQuestionnaire($questionnaire);
-            
+
             try {
                 $nextOrderIndex = $this->questionRepository->getNextOrderIndex($questionnaire);
                 $question->setOrderIndex($nextOrderIndex);
-                
+
                 $this->logger->debug('Set next order index for new question', [
                     'questionnaire_id' => $questionnaireId,
                     'next_order_index' => $nextOrderIndex,
@@ -178,6 +181,7 @@ class QuestionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'accès à la création de question.');
+
             throw $e;
         }
     }
@@ -186,7 +190,7 @@ class QuestionController extends AbstractController
     public function edit(Request $request, int $questionnaireId, Question $question): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Accessing edit question form', [
             'questionnaire_id' => $questionnaireId,
             'question_id' => $question->getId(),
@@ -204,6 +208,7 @@ class QuestionController extends AbstractController
                     'actual_questionnaire_id' => $questionnaire->getId(),
                     'user_id' => $userId,
                 ]);
+
                 throw $this->createNotFoundException('Question not found in this questionnaire');
             }
 
@@ -282,6 +287,7 @@ class QuestionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de l\'accès à la modification de question.');
+
             throw $e;
         }
     }
@@ -290,7 +296,7 @@ class QuestionController extends AbstractController
     public function delete(Request $request, int $questionnaireId, Question $question): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Attempting to delete question', [
             'questionnaire_id' => $questionnaireId,
             'question_id' => $question->getId(),
@@ -308,6 +314,7 @@ class QuestionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
             }
 
@@ -341,6 +348,7 @@ class QuestionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la suppression de la question: ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
     }
@@ -349,7 +357,7 @@ class QuestionController extends AbstractController
     public function duplicate(Request $request, int $questionnaireId, Question $question): Response
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Attempting to duplicate question', [
             'questionnaire_id' => $questionnaireId,
             'question_id' => $question->getId(),
@@ -367,6 +375,7 @@ class QuestionController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Token CSRF invalide.');
+
                 return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
             }
 
@@ -452,6 +461,7 @@ class QuestionController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur est survenue lors de la duplication de la question: ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_question_index', ['questionnaireId' => $questionnaireId]);
         }
     }
@@ -460,7 +470,7 @@ class QuestionController extends AbstractController
     public function reorder(Request $request, int $questionnaireId): JsonResponse
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Attempting to reorder questions', [
             'questionnaire_id' => $questionnaireId,
             'user_id' => $userId,
@@ -475,6 +485,7 @@ class QuestionController extends AbstractController
                     'provided_data' => $questionIds,
                     'user_id' => $userId,
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Invalid data']);
             }
 
@@ -485,6 +496,7 @@ class QuestionController extends AbstractController
                     'questionnaire_id' => $questionnaireId,
                     'user_id' => $userId,
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Questionnaire not found']);
             }
 
@@ -521,7 +533,7 @@ class QuestionController extends AbstractController
     public function toggleStatus(Request $request, int $questionnaireId, Question $question): JsonResponse
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->info('Attempting to toggle question status', [
             'questionnaire_id' => $questionnaireId,
             'question_id' => $question->getId(),
@@ -537,12 +549,13 @@ class QuestionController extends AbstractController
                     'provided_token' => $request->request->get('_token'),
                     'user_id' => $userId,
                 ]);
+
                 return new JsonResponse(['success' => false, 'message' => 'Token CSRF invalide']);
             }
 
             $previousStatus = $question->isActive();
             $question->setIsActive(!$question->isActive());
-            
+
             $this->entityManager->flush();
 
             $this->logger->info('Question status toggled successfully', [
@@ -567,8 +580,8 @@ class QuestionController extends AbstractController
             ]);
 
             return new JsonResponse([
-                'success' => false, 
-                'message' => 'Une erreur est survenue: ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Une erreur est survenue: ' . $e->getMessage(),
             ]);
         }
     }
@@ -576,7 +589,7 @@ class QuestionController extends AbstractController
     private function handleQuestionForm(Request $request, Question $question): void
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->debug('Starting question form handling', [
             'question_id' => $question->getId(),
             'question_text' => $question->getQuestionText(),
@@ -620,7 +633,7 @@ class QuestionController extends AbstractController
             if (!empty($data['allowedFileTypes'])) {
                 $allowedTypes = array_map('trim', explode(',', $data['allowedFileTypes']));
                 $question->setAllowedFileTypes($allowedTypes);
-                
+
                 $this->logger->debug('Allowed file types set', [
                     'question_id' => $question->getId(),
                     'allowed_types' => $allowedTypes,
@@ -698,7 +711,7 @@ class QuestionController extends AbstractController
     private function handleQuestionOptions(array $data, Question $question): void
     {
         $userId = $this->getUser() ? $this->getUser()->getUserIdentifier() : null;
-        
+
         $this->logger->debug('Starting question options handling', [
             'question_id' => $question->getId(),
             'existing_options_count' => $question->getOptions()->count(),
@@ -740,6 +753,7 @@ class QuestionController extends AbstractController
                                 'option_index' => $index,
                                 'user_id' => $userId,
                             ]);
+
                             continue;
                         }
 
@@ -787,6 +801,7 @@ class QuestionController extends AbstractController
                             'error' => $e->getMessage(),
                             'user_id' => $userId,
                         ]);
+
                         throw $e;
                     }
                 }

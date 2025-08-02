@@ -6,6 +6,7 @@ namespace App\Service\Document;
 
 use App\Entity\Document\DocumentType;
 use App\Repository\Document\DocumentTypeRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -48,6 +49,7 @@ class DocumentTypeService
 
             if (empty($documentType->getName())) {
                 $this->logger->warning('Document type creation failed: empty name');
+
                 return [
                     'success' => false,
                     'error' => 'Le nom du type de document est obligatoire.',
@@ -59,11 +61,11 @@ class DocumentTypeService
                 $this->logger->debug('Generating unique code for document type', [
                     'name' => $documentType->getName(),
                 ]);
-                
+
                 try {
                     $code = $this->generateUniqueCode($documentType->getName());
                     $documentType->setCode($code);
-                    
+
                     $this->logger->info('Generated unique code for document type', [
                         'name' => $documentType->getName(),
                         'generated_code' => $code,
@@ -74,7 +76,7 @@ class DocumentTypeService
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Erreur lors de la génération du code unique: ' . $e->getMessage(),
@@ -95,7 +97,7 @@ class DocumentTypeService
                         'existing_id' => $existing->getId(),
                         'existing_name' => $existing->getName(),
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Un type de document avec ce code existe déjà.',
@@ -107,7 +109,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la vérification de l\'unicité du code: ' . $e->getMessage(),
@@ -122,9 +124,9 @@ class DocumentTypeService
                     'enable_comments' => false,
                     'require_review' => false,
                 ];
-                
+
                 $documentType->setConfiguration($defaultConfig);
-                
+
                 $this->logger->debug('Applied default configuration', [
                     'code' => $documentType->getCode(),
                     'configuration' => $defaultConfig,
@@ -139,9 +141,9 @@ class DocumentTypeService
                     'published',
                     'archived',
                 ];
-                
+
                 $documentType->setAllowedStatuses($defaultStatuses);
-                
+
                 $this->logger->debug('Applied default allowed statuses', [
                     'code' => $documentType->getCode(),
                     'statuses' => $defaultStatuses,
@@ -153,7 +155,7 @@ class DocumentTypeService
                 try {
                     $sortOrder = $this->getNextSortOrder();
                     $documentType->setSortOrder($sortOrder);
-                    
+
                     $this->logger->debug('Set sort order for document type', [
                         'code' => $documentType->getCode(),
                         'sort_order' => $sortOrder,
@@ -176,7 +178,7 @@ class DocumentTypeService
             try {
                 $this->entityManager->persist($documentType);
                 $this->entityManager->flush();
-                
+
                 $this->logger->info('Document type successfully created', [
                     'type_id' => $documentType->getId(),
                     'code' => $documentType->getCode(),
@@ -192,7 +194,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la sauvegarde en base de données: ' . $e->getMessage(),
@@ -245,7 +247,7 @@ class DocumentTypeService
                 $this->logger->warning('Document type update failed: empty name', [
                     'type_id' => $documentType->getId(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Le nom du type de document est obligatoire.',
@@ -256,7 +258,7 @@ class DocumentTypeService
                 $this->logger->warning('Document type update failed: empty code', [
                     'type_id' => $documentType->getId(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Le code du type de document est obligatoire.',
@@ -278,7 +280,7 @@ class DocumentTypeService
                         'existing_id' => $existing->getId(),
                         'existing_name' => $existing->getName(),
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Un type de document avec ce code existe déjà.',
@@ -291,7 +293,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la vérification de l\'unicité du code: ' . $e->getMessage(),
@@ -310,7 +312,7 @@ class DocumentTypeService
                         'type_id' => $documentType->getId(),
                         'validation_issues' => $validation['issues'],
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Erreurs de validation: ' . implode(', ', $validation['issues']),
@@ -322,7 +324,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la validation: ' . $e->getMessage(),
@@ -330,7 +332,7 @@ class DocumentTypeService
             }
 
             // Update timestamp
-            $documentType->setUpdatedAt(new \DateTimeImmutable());
+            $documentType->setUpdatedAt(new DateTimeImmutable());
 
             // Flush changes to database
             $this->logger->debug('Flushing document type changes to database', [
@@ -340,7 +342,7 @@ class DocumentTypeService
 
             try {
                 $this->entityManager->flush();
-                
+
                 $this->logger->info('Document type successfully updated', [
                     'type_id' => $documentType->getId(),
                     'code' => $documentType->getCode(),
@@ -356,7 +358,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la sauvegarde en base de données: ' . $e->getMessage(),
@@ -405,7 +407,7 @@ class DocumentTypeService
 
             try {
                 $documentCount = $documentType->getDocuments()->count();
-                
+
                 $this->logger->debug('Document count check completed', [
                     'type_id' => $documentType->getId(),
                     'document_count' => $documentCount,
@@ -417,7 +419,7 @@ class DocumentTypeService
                         'code' => $documentType->getCode(),
                         'document_count' => $documentCount,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Impossible de supprimer ce type car il contient des documents.',
@@ -429,7 +431,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la vérification des documents associés: ' . $e->getMessage(),
@@ -444,7 +446,7 @@ class DocumentTypeService
 
             try {
                 $templateCount = $documentType->getTemplates()->count();
-                
+
                 $this->logger->debug('Template count check completed', [
                     'type_id' => $documentType->getId(),
                     'template_count' => $templateCount,
@@ -456,7 +458,7 @@ class DocumentTypeService
                         'code' => $documentType->getCode(),
                         'template_count' => $templateCount,
                     ]);
-                    
+
                     return [
                         'success' => false,
                         'error' => 'Impossible de supprimer ce type car il contient des modèles.',
@@ -468,7 +470,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la vérification des modèles associés: ' . $e->getMessage(),
@@ -490,7 +492,7 @@ class DocumentTypeService
             try {
                 $this->entityManager->remove($documentType);
                 $this->entityManager->flush();
-                
+
                 $this->logger->info('Document type successfully deleted', [
                     'type_id' => $typeId,
                     'code' => $typeCode,
@@ -503,7 +505,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 return [
                     'success' => false,
                     'error' => 'Erreur lors de la suppression en base de données: ' . $e->getMessage(),
@@ -540,10 +542,10 @@ class DocumentTypeService
 
         try {
             $this->logger->debug('Retrieving all active document types');
-            
+
             try {
                 $types = $this->documentTypeRepository->findAllActive();
-                
+
                 $this->logger->debug('Active document types retrieved', [
                     'count' => count($types),
                 ]);
@@ -552,7 +554,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 throw new Exception('Erreur lors de la récupération des types de documents: ' . $e->getMessage());
             }
 
@@ -570,7 +572,7 @@ class DocumentTypeService
                     $documentCount = $type->getDocuments()->count();
                     $templateCount = $type->getTemplates()->count();
                     $publishedCount = $type->getDocuments()->filter(
-                        static fn ($doc) => $doc->getStatus() === 'published'
+                        static fn ($doc) => $doc->getStatus() === 'published',
                     )->count();
 
                     $typeStats = [
@@ -675,7 +677,7 @@ class DocumentTypeService
             try {
                 if (!$documentType->isAllowMultiplePublished() && $documentType->getDocuments()->count() > 1) {
                     $publishedDocs = $documentType->getDocuments()->filter(
-                        static fn ($doc) => $doc->getStatus() === 'published'
+                        static fn ($doc) => $doc->getStatus() === 'published',
                     );
                     $publishedCount = $publishedDocs->count();
 
@@ -699,7 +701,7 @@ class DocumentTypeService
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 $issues[] = 'Erreur lors de la validation des règles métier: ' . $e->getMessage();
             }
 
@@ -801,7 +803,7 @@ class DocumentTypeService
 
                 try {
                     $activeDocumentCount = $documentType->getDocuments()->filter(
-                        static fn ($doc) => in_array($doc->getStatus(), ['published', 'under_review'], true)
+                        static fn ($doc) => in_array($doc->getStatus(), ['published', 'under_review'], true),
                     )->count();
 
                     if ($activeDocumentCount > 0) {
@@ -831,7 +833,7 @@ class DocumentTypeService
 
             // Update status
             $documentType->setIsActive($newStatus);
-            $documentType->setUpdatedAt(new \DateTimeImmutable());
+            $documentType->setUpdatedAt(new DateTimeImmutable());
 
             // Flush to database
             $this->logger->debug('Saving status change to database', [
@@ -927,66 +929,6 @@ class DocumentTypeService
     }
 
     /**
-     * Generate unique code from name.
-     */
-    private function generateUniqueCode(string $name): string
-    {
-        $this->logger->debug('Generating unique code from name', [
-            'name' => $name,
-        ]);
-
-        try {
-            $baseCode = (string) $this->slugger->slug($name)->lower();
-            $code = $baseCode;
-            $counter = 1;
-
-            $this->logger->debug('Base code generated', [
-                'name' => $name,
-                'base_code' => $baseCode,
-            ]);
-
-            while ($this->documentTypeRepository->findByCode($code)) {
-                $code = $baseCode . '_' . $counter;
-                $counter++;
-
-                $this->logger->debug('Code already exists, trying with counter', [
-                    'existing_code' => $baseCode,
-                    'new_code' => $code,
-                    'counter' => $counter - 1,
-                ]);
-
-                // Prevent infinite loop
-                if ($counter > 1000) {
-                    $this->logger->error('Too many attempts to generate unique code', [
-                        'name' => $name,
-                        'base_code' => $baseCode,
-                        'attempts' => $counter,
-                    ]);
-                    
-                    throw new Exception('Impossible de générer un code unique après 1000 tentatives');
-                }
-            }
-
-            $this->logger->info('Unique code successfully generated', [
-                'name' => $name,
-                'base_code' => $baseCode,
-                'final_code' => $code,
-                'attempts' => $counter - 1,
-            ]);
-
-            return $code;
-        } catch (Exception $e) {
-            $this->logger->error('Error generating unique code', [
-                'name' => $name,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            throw new Exception('Erreur lors de la génération du code unique: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Bulk update document types with detailed logging.
      */
     public function bulkUpdateDocumentTypes(array $documentTypes, array $updates): array
@@ -1026,16 +968,19 @@ class DocumentTypeService
                             case 'is_active':
                                 $documentType->setIsActive((bool) $value);
                                 break;
+
                             case 'configuration':
                                 if (is_array($value)) {
                                     $documentType->setConfiguration($value);
                                 }
                                 break;
+
                             case 'allowed_statuses':
                                 if (is_array($value)) {
                                     $documentType->setAllowedStatuses($value);
                                 }
                                 break;
+
                             default:
                                 $this->logger->warning('Unknown field in bulk update', [
                                     'field' => $field,
@@ -1050,7 +995,7 @@ class DocumentTypeService
                         throw new Exception('Validation échouée: ' . implode(', ', $validation['issues']));
                     }
 
-                    $documentType->setUpdatedAt(new \DateTimeImmutable());
+                    $documentType->setUpdatedAt(new DateTimeImmutable());
 
                     $results['success']++;
                     $results['processed'][] = [
@@ -1070,7 +1015,7 @@ class DocumentTypeService
                         'code' => $documentType->getCode(),
                         'error' => $e->getMessage(),
                     ];
-                    
+
                     $results['processed'][] = [
                         'type_id' => $documentType->getId(),
                         'code' => $documentType->getCode(),
@@ -1170,7 +1115,7 @@ class DocumentTypeService
                         if ($document->getStatus() !== 'archived') {
                             $oldStatus = $document->getStatus();
                             $document->setStatus('archived');
-                            $document->setUpdatedAt(new \DateTimeImmutable());
+                            $document->setUpdatedAt(new DateTimeImmutable());
 
                             $this->logger->debug('Document archived during type archival', [
                                 'document_id' => $document->getId(),
@@ -1199,11 +1144,11 @@ class DocumentTypeService
 
             // Deactivate the document type
             $documentType->setIsActive(false);
-            $documentType->setUpdatedAt(new \DateTimeImmutable());
+            $documentType->setUpdatedAt(new DateTimeImmutable());
 
             // Add archival metadata to configuration
             $config = $documentType->getConfiguration() ?? [];
-            $config['archived_at'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+            $config['archived_at'] = (new DateTimeImmutable())->format('Y-m-d H:i:s');
             $config['archived_documents_count'] = $archivedDocuments;
             $documentType->setConfiguration($config);
 
@@ -1245,6 +1190,66 @@ class DocumentTypeService
                 'success' => false,
                 'error' => 'Erreur lors de l\'archivage du type de document: ' . $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Generate unique code from name.
+     */
+    private function generateUniqueCode(string $name): string
+    {
+        $this->logger->debug('Generating unique code from name', [
+            'name' => $name,
+        ]);
+
+        try {
+            $baseCode = (string) $this->slugger->slug($name)->lower();
+            $code = $baseCode;
+            $counter = 1;
+
+            $this->logger->debug('Base code generated', [
+                'name' => $name,
+                'base_code' => $baseCode,
+            ]);
+
+            while ($this->documentTypeRepository->findByCode($code)) {
+                $code = $baseCode . '_' . $counter;
+                $counter++;
+
+                $this->logger->debug('Code already exists, trying with counter', [
+                    'existing_code' => $baseCode,
+                    'new_code' => $code,
+                    'counter' => $counter - 1,
+                ]);
+
+                // Prevent infinite loop
+                if ($counter > 1000) {
+                    $this->logger->error('Too many attempts to generate unique code', [
+                        'name' => $name,
+                        'base_code' => $baseCode,
+                        'attempts' => $counter,
+                    ]);
+
+                    throw new Exception('Impossible de générer un code unique après 1000 tentatives');
+                }
+            }
+
+            $this->logger->info('Unique code successfully generated', [
+                'name' => $name,
+                'base_code' => $baseCode,
+                'final_code' => $code,
+                'attempts' => $counter - 1,
+            ]);
+
+            return $code;
+        } catch (Exception $e) {
+            $this->logger->error('Error generating unique code', [
+                'name' => $name,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new Exception('Erreur lors de la génération du code unique: ' . $e->getMessage());
         }
     }
 }

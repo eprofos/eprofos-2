@@ -20,7 +20,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
@@ -44,7 +43,7 @@ class EvaluationController extends AbstractController
         $startTime = microtime(true);
         $user = $this->getUser();
         $userIdentifier = $user?->getUserIdentifier();
-        
+
         try {
             $page = $request->query->getInt('page', 1);
             $search = $request->query->get('search', '');
@@ -78,7 +77,7 @@ class EvaluationController extends AbstractController
             ]);
 
             $progressEvaluations = $this->progressRepository->findPaginatedAssessments($filters, $page, $perPage);
-            
+
             $this->logger->debug('Progress evaluations retrieved successfully', [
                 'user_id' => $userIdentifier,
                 'count' => count($progressEvaluations),
@@ -93,7 +92,7 @@ class EvaluationController extends AbstractController
             ]);
 
             $skillsEvaluations = $this->skillsRepository->findPaginatedAssessments($filters, $page, $perPage);
-            
+
             $this->logger->debug('Skills evaluations retrieved successfully', [
                 'user_id' => $userIdentifier,
                 'count' => count($skillsEvaluations),
@@ -117,7 +116,7 @@ class EvaluationController extends AbstractController
             ]);
 
             $statistics = $this->getEvaluationStatistics();
-            
+
             $this->logger->debug('Evaluation statistics retrieved successfully', [
                 'user_id' => $userIdentifier,
                 'statistics_keys' => array_keys($statistics),
@@ -143,7 +142,6 @@ class EvaluationController extends AbstractController
                 'filters' => $filters,
                 'statistics' => $statistics,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin alternance evaluation index', [
                 'user_id' => $userIdentifier,
@@ -230,7 +228,6 @@ class EvaluationController extends AbstractController
                 'total_pages' => $totalPages,
                 'filters' => $filters,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin progress evaluations', [
                 'user_id' => $userIdentifier,
@@ -316,7 +313,6 @@ class EvaluationController extends AbstractController
                 'total_pages' => $totalPages,
                 'filters' => $filters,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin skills evaluations', [
                 'user_id' => $userIdentifier,
@@ -382,7 +378,6 @@ class EvaluationController extends AbstractController
                 'evaluation' => $evaluation,
                 'analysis' => $analysis,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin progress evaluation detail', [
                 'user_id' => $userIdentifier,
@@ -442,7 +437,6 @@ class EvaluationController extends AbstractController
                 'evaluation' => $evaluation,
                 'analysis' => $analysis,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin skills evaluation detail', [
                 'user_id' => $userIdentifier,
@@ -493,6 +487,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Action invalide.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_progress_show', ['id' => $evaluation->getId()]);
             }
 
@@ -512,7 +507,6 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'Évaluation approuvée avec succès.');
-
             } elseif ($action === 'reject') {
                 $this->logger->debug('Processing progress evaluation rejection', [
                     'user_id' => $userIdentifier,
@@ -530,7 +524,6 @@ class EvaluationController extends AbstractController
 
                 $this->addFlash('success', 'Évaluation rejetée avec succès.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error in progress evaluation validation', [
                 'user_id' => $userIdentifier,
@@ -582,6 +575,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Action invalide.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_skills_show', ['id' => $evaluation->getId()]);
             }
 
@@ -601,7 +595,6 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('success', 'Évaluation approuvée avec succès.');
-
             } elseif ($action === 'reject') {
                 $this->logger->debug('Processing skills evaluation rejection', [
                     'user_id' => $userIdentifier,
@@ -619,7 +612,6 @@ class EvaluationController extends AbstractController
 
                 $this->addFlash('success', 'Évaluation rejetée avec succès.');
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error in skills evaluation validation', [
                 'user_id' => $userIdentifier,
@@ -672,6 +664,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Paramètres manquants pour l\'action groupée.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_index');
             }
 
@@ -683,6 +676,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Action invalide.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_index');
             }
 
@@ -694,6 +688,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Type d\'évaluation invalide.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_index');
             }
 
@@ -720,7 +715,6 @@ class EvaluationController extends AbstractController
                                 'evaluation_id' => $evaluation->getId(),
                                 'student_name' => $evaluation->getStudent()?->getFullName(),
                             ]);
-
                         } elseif ($action === 'archive') {
                             $evaluation->setIsArchived(true);
                             $processed++;
@@ -743,7 +737,6 @@ class EvaluationController extends AbstractController
                         ]);
                     }
                 }
-
             } elseif ($type === 'skills') {
                 $this->logger->debug('Processing bulk action for skills evaluations', [
                     'user_id' => $userIdentifier,
@@ -764,7 +757,6 @@ class EvaluationController extends AbstractController
                                 'evaluation_id' => $evaluation->getId(),
                                 'student_name' => $evaluation->getStudent()?->getFullName(),
                             ]);
-
                         } elseif ($action === 'archive') {
                             $evaluation->setIsArchived(true);
                             $processed++;
@@ -811,7 +803,6 @@ class EvaluationController extends AbstractController
                     $this->addFlash('warning', $error);
                 }
             }
-
         } catch (Exception $e) {
             $this->logger->error('Error in bulk evaluation actions', [
                 'user_id' => $userIdentifier,
@@ -875,7 +866,6 @@ class EvaluationController extends AbstractController
                 'period' => $period,
                 'formation' => $formation,
             ]);
-
         } catch (Throwable $e) {
             $this->logger->error('Error in admin evaluation analytics', [
                 'user_id' => $userIdentifier,
@@ -932,6 +922,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Format d\'export non supporté.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_index');
             }
 
@@ -943,6 +934,7 @@ class EvaluationController extends AbstractController
                 ]);
 
                 $this->addFlash('error', 'Type d\'évaluation invalide.');
+
                 return $this->redirectToRoute('admin_alternance_evaluation_index');
             }
 
@@ -969,7 +961,6 @@ class EvaluationController extends AbstractController
             $response->headers->set('Content-Disposition', 'attachment; filename="evaluations_export.' . $format . '"');
 
             return $response;
-
         } catch (Exception $e) {
             $this->logger->error('Error in evaluation export', [
                 'user_id' => $userIdentifier,
@@ -986,6 +977,7 @@ class EvaluationController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Erreur lors de l\'export : ' . $e->getMessage());
+
             return $this->redirectToRoute('admin_alternance_evaluation_index');
         }
     }
@@ -1034,7 +1026,6 @@ class EvaluationController extends AbstractController
             ]);
 
             return $statistics;
-
         } catch (Throwable $e) {
             $this->logger->error('Error in getEvaluationStatistics', [
                 'user_id' => $userIdentifier,
@@ -1108,7 +1099,6 @@ class EvaluationController extends AbstractController
             ]);
 
             return $activitySlice;
-
         } catch (Throwable $e) {
             $this->logger->error('Error in getRecentEvaluationActivity', [
                 'user_id' => $userIdentifier,
@@ -1213,7 +1203,6 @@ class EvaluationController extends AbstractController
             ]);
 
             return $analytics;
-
         } catch (Throwable $e) {
             $this->logger->error('Error in getEvaluationAnalytics', [
                 'user_id' => $userIdentifier,
@@ -1367,7 +1356,6 @@ class EvaluationController extends AbstractController
             }
 
             throw new InvalidArgumentException("Format d'export non supporté: {$format}");
-
         } catch (Throwable $e) {
             $this->logger->error('Error in exportEvaluations', [
                 'user_id' => $userIdentifier,

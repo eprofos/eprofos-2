@@ -12,6 +12,7 @@ use App\Repository\Student\CertificateRepository;
 use App\Service\Core\StudentEnrollmentService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -29,8 +30,9 @@ use Twig\Environment;
 class CertificateService
 {
     private const CERTIFICATE_UPLOAD_DIR = 'uploads/certificates';
+
     private const QR_CODE_UPLOAD_DIR = 'uploads/qr-codes';
-    
+
     private string $projectDir;
 
     public function __construct(
@@ -43,7 +45,7 @@ class CertificateService
         private readonly Environment $twig,
         private readonly Filesystem $filesystem,
         private readonly LoggerInterface $logger,
-        string $projectDir
+        string $projectDir,
     ) {
         $this->projectDir = $projectDir;
     }
@@ -147,7 +149,7 @@ class CertificateService
             $pdfPath = $this->createCertificatePDF($certificate);
             $certificate->setPdfPath($pdfPath);
             $this->entityManager->flush();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to generate certificate PDF', [
                 'certificate_id' => $certificate->getId(),
                 'error' => $e->getMessage(),
@@ -157,7 +159,7 @@ class CertificateService
         // Send certificate email
         try {
             $this->sendCertificateEmail($certificate);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Failed to send certificate email', [
                 'certificate_id' => $certificate->getId(),
                 'error' => $e->getMessage(),
@@ -180,7 +182,7 @@ class CertificateService
     public function createCertificatePDF(Certificate $certificate): string
     {
         $pdfContent = $this->pdfService->generateCertificatePDF($certificate);
-        
+
         // Create certificates directory if it doesn't exist
         $certificatesDir = $this->projectDir . '/public/' . self::CERTIFICATE_UPLOAD_DIR;
         if (!$this->filesystem->exists($certificatesDir)) {
@@ -191,7 +193,7 @@ class CertificateService
         $filename = sprintf(
             'certificate_%s_%s.pdf',
             $certificate->getCertificateNumber(),
-            date('Ymd_His')
+            date('Ymd_His'),
         );
 
         $filePath = $certificatesDir . '/' . $filename;
@@ -208,12 +210,12 @@ class CertificateService
     public function generateVerificationQRCode(Certificate $certificate): string
     {
         $verificationUrl = $this->urlGenerator->generate('certificate_verify', [
-            'code' => $certificate->getVerificationCode()
+            'code' => $certificate->getVerificationCode(),
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         // For now, return a placeholder. In a full implementation, use a QR code library
         // like endroid/qr-code-bundle
-        
+
         // Create QR codes directory if it doesn't exist
         $qrCodesDir = $this->projectDir . '/public/' . self::QR_CODE_UPLOAD_DIR;
         if (!$this->filesystem->exists($qrCodesDir)) {
@@ -223,7 +225,7 @@ class CertificateService
         // Generate unique filename
         $filename = sprintf(
             'qr_certificate_%s.txt',
-            $certificate->getVerificationCode()
+            $certificate->getVerificationCode(),
         );
 
         $filePath = $qrCodesDir . '/' . $filename;
@@ -288,7 +290,7 @@ class CertificateService
     public function reissueCertificate(Certificate $oldCertificate): Certificate
     {
         $enrollment = $oldCertificate->getEnrollment();
-        
+
         if (!$enrollment) {
             throw new InvalidArgumentException('Cannot reissue certificate: enrollment not found');
         }
@@ -321,7 +323,7 @@ class CertificateService
         }
 
         $verificationUrl = $this->urlGenerator->generate('certificate_verify', [
-            'code' => $certificate->getVerificationCode()
+            'code' => $certificate->getVerificationCode(),
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
@@ -333,15 +335,17 @@ class CertificateService
                 'certificate' => $certificate,
                 'formation' => $formation,
                 'verificationUrl' => $verificationUrl,
-            ]));
+            ]))
+        ;
 
         // Attach PDF if available
         if ($certificate->canBeDownloaded()) {
             $pdfPath = $this->projectDir . '/public/' . self::CERTIFICATE_UPLOAD_DIR . '/' . $certificate->getPdfPath();
             if (file_exists($pdfPath)) {
-                $email->attachFromPath($pdfPath, 
+                $email->attachFromPath(
+                    $pdfPath,
                     'Certificat_' . $certificate->getCertificateNumber() . '.pdf',
-                    'application/pdf'
+                    'application/pdf',
                 );
             }
         }
@@ -391,25 +395,26 @@ class CertificateService
 
             try {
                 $enrollment = $this->entityManager->getRepository(StudentEnrollment::class)->find($enrollmentId);
-                
+
                 if (!$enrollment) {
                     $results['errors']++;
                     $results['errors_details'][] = "Enrollment {$enrollmentId} not found";
+
                     continue;
                 }
 
                 if (!$this->checkCompletionEligibility($enrollment)) {
                     $results['skipped']++;
+
                     continue;
                 }
 
                 $this->generateCertificate($enrollment);
                 $results['generated']++;
-
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $results['errors']++;
                 $results['errors_details'][] = "Enrollment {$enrollmentId}: " . $e->getMessage();
-                
+
                 $this->logger->error('Bulk certificate generation error', [
                     'enrollment_id' => $enrollmentId,
                     'error' => $e->getMessage(),
@@ -423,48 +428,49 @@ class CertificateService
     }
 
     /**
-     * Regenerate a certificate with a new verification code
+     * Regenerate a certificate with a new verification code.
      */
     public function regenerateCertificate(Certificate $certificate): Certificate
     {
         // Generate new verification code
         $certificate->regenerateVerificationCode();
-        
+
         $this->entityManager->flush();
-        
+
         $this->logger->info('Certificate regenerated', [
             'certificate_id' => $certificate->getId(),
             'new_verification_code' => $certificate->getVerificationCode(),
         ]);
-        
+
         return $certificate;
     }
 
     /**
-     * Generate missing certificates for all eligible completed enrollments
+     * Generate missing certificates for all eligible completed enrollments.
      */
     public function generateMissingCertificates(): int
     {
         $enrollments = $this->entityManager->getRepository(StudentEnrollment::class)
-            ->findBy(['status' => StudentEnrollment::STATUS_COMPLETED]);
+            ->findBy(['status' => StudentEnrollment::STATUS_COMPLETED])
+        ;
         $count = 0;
-        
+
         foreach ($enrollments as $enrollment) {
             $student = $enrollment->getStudent();
             $formation = $enrollment->getSessionRegistration()?->getSession()?->getFormation();
-            
+
             if (!$student || !$formation) {
                 continue;
             }
-            
+
             // Check if certificate already exists
             $existingCertificate = $this->certificateRepository->findStudentCertificateForFormation($student, $formation);
-            
+
             if (!$existingCertificate && $this->checkCompletionEligibility($enrollment)) {
                 try {
                     $this->generateCertificate($enrollment);
                     $count++;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->error('Failed to generate missing certificate', [
                         'enrollment_id' => $enrollment->getId(),
                         'error' => $e->getMessage(),
@@ -472,25 +478,31 @@ class CertificateService
                 }
             }
         }
-        
+
         $this->entityManager->flush();
-        
+
         $this->logger->info('Generated missing certificates', ['count' => $count]);
-        
+
         return $count;
     }
 
     /**
      * Check if module is completed by student.
+     *
+     * @param mixed $progress
+     * @param mixed $module
      */
     private function isModuleCompleted($progress, $module): bool
     {
         $moduleProgress = $progress->getModuleProgress($module->getId());
+
         return $moduleProgress['completion_percentage'] >= 100;
     }
 
     /**
      * Validate minimum scores for QCMs.
+     *
+     * @param mixed $progress
      */
     private function validateMinimumScores($progress, Formation $formation): bool
     {
@@ -498,7 +510,7 @@ class CertificateService
 
         // Get all QCM scores from progress
         $qcmScores = $progress->getQCMProgress() ?? [];
-        
+
         if (empty($qcmScores)) {
             return true; // No QCMs to validate
         }
@@ -521,7 +533,7 @@ class CertificateService
 
         // Get attendance records for the enrollment
         $attendanceRecords = $enrollment->getAttendanceRecords();
-        
+
         if ($attendanceRecords->isEmpty()) {
             return true; // No attendance requirements
         }
@@ -554,7 +566,7 @@ class CertificateService
 
         // Calculate average score from all assessments
         $allScores = [];
-        
+
         // Add QCM scores
         $qcmScores = $progress->getQCMProgress() ?? [];
         foreach ($qcmScores as $qcmScore) {
@@ -576,7 +588,7 @@ class CertificateService
         // Calculate attendance rate
         $attendanceRecords = $enrollment->getAttendanceRecords();
         $attendanceRate = 0;
-        
+
         if (!$attendanceRecords->isEmpty()) {
             $totalSessions = $attendanceRecords->count();
             $attendedSessions = 0;
@@ -598,9 +610,9 @@ class CertificateService
             'modules_completed' => count($formation->getActiveModules()),
             'qcm_count' => count($qcmScores),
             'exercise_count' => count($exerciseScores),
-            'average_qcm_score' => !empty($qcmScores) ? 
+            'average_qcm_score' => !empty($qcmScores) ?
                 round(array_sum(array_column($qcmScores, 'score_percentage')) / count($qcmScores), 2) : 0,
-            'average_exercise_score' => !empty($exerciseScores) ? 
+            'average_exercise_score' => !empty($exerciseScores) ?
                 round(array_sum(array_column($exerciseScores, 'score_percentage')) / count($exerciseScores), 2) : 0,
         ];
     }

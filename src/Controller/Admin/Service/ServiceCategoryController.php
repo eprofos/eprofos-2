@@ -7,7 +7,11 @@ namespace App\Controller\Admin\Service;
 use App\Entity\Service\ServiceCategory;
 use App\Form\Service\ServiceCategoryType;
 use App\Repository\Service\ServiceCategoryRepository;
+use DateTime;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,10 +42,10 @@ class ServiceCategoryController extends AbstractController
     public function index(ServiceCategoryRepository $serviceCategoryRepository): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service categories list access started', [
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
         ]);
@@ -54,7 +58,7 @@ class ServiceCategoryController extends AbstractController
 
             $serviceCategories = $serviceCategoryRepository->findAllOrdered();
             $categoriesCount = count($serviceCategories);
-            
+
             $this->logger->info('Service categories list successfully retrieved', [
                 'admin' => $adminId,
                 'categories_count' => $categoriesCount,
@@ -62,9 +66,9 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             // Log detailed categories statistics
-            $categoriesWithServices = array_filter($serviceCategories, fn($category) => $category->getServices()->count() > 0);
-            $totalServices = array_sum(array_map(fn($category) => $category->getServices()->count(), $serviceCategories));
-            
+            $categoriesWithServices = array_filter($serviceCategories, static fn ($category) => $category->getServices()->count() > 0);
+            $totalServices = array_sum(array_map(static fn ($category) => $category->getServices()->count(), $serviceCategories));
+
             $this->logger->debug('Service categories statistics calculated', [
                 'admin' => $adminId,
                 'total_categories' => $categoriesCount,
@@ -81,7 +85,6 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Catégories de services', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error while retrieving service categories list', [
                 'admin' => $adminId,
@@ -93,7 +96,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors du chargement des catégories de services.');
-            
+
             return $this->render('admin/service_category/index.html.twig', [
                 'service_categories' => [],
                 'page_title' => 'Gestion des catégories de services',
@@ -102,8 +105,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Catégories de services', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error while accessing service categories list', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -116,7 +118,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->render('admin/service_category/index.html.twig', [
                 'service_categories' => [],
                 'page_title' => 'Gestion des catégories de services',
@@ -135,20 +137,20 @@ class ServiceCategoryController extends AbstractController
     public function show(ServiceCategory $serviceCategory): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service category details view started', [
             'service_category_id' => $serviceCategory->getId(),
             'service_category_name' => $serviceCategory->getName(),
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             // Log category details for audit
             $servicesCount = $serviceCategory->getServices()->count();
-            $activeServicesCount = $serviceCategory->getServices()->filter(fn($service) => $service->isActive())->count();
-            
+            $activeServicesCount = $serviceCategory->getServices()->filter(static fn ($service) => $service->isActive())->count();
+
             $this->logger->debug('Service category details being displayed', [
                 'service_category_id' => $serviceCategory->getId(),
                 'service_category_name' => $serviceCategory->getName(),
@@ -176,8 +178,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => $serviceCategory->getName(), 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error while displaying service category details', [
                 'service_category_id' => $serviceCategory->getId(),
                 'admin' => $adminId,
@@ -190,7 +191,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur s\'est produite lors de l\'affichage des détails de la catégorie de service.');
-            
+
             return $this->redirectToRoute('admin_service_category_index');
         }
     }
@@ -202,18 +203,18 @@ class ServiceCategoryController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service category creation started', [
             'admin' => $adminId,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             $serviceCategory = new ServiceCategory();
             $form = $this->createForm(ServiceCategoryType::class, $serviceCategory);
-            
+
             $this->logger->debug('Service category creation form initialized', [
                 'admin' => $adminId,
                 'form_type' => ServiceCategoryType::class,
@@ -236,7 +237,7 @@ class ServiceCategoryController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Service category creation form validation failed', [
                         'admin' => $adminId,
                         'validation_errors' => $errors,
@@ -265,7 +266,7 @@ class ServiceCategoryController extends AbstractController
                     'service_category_name' => $serviceCategory->getName(),
                     'service_category_slug' => $serviceCategory->getSlug(),
                     'admin' => $adminId,
-                    'creation_timestamp' => new \DateTime(),
+                    'creation_timestamp' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', 'La catégorie de service a été créée avec succès.');
@@ -283,8 +284,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Nouvelle catégorie', 'url' => null],
                 ],
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Service category creation failed: unique constraint violation', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -294,7 +294,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une catégorie avec ce nom existe déjà. Veuillez choisir un nom différent.');
-            
+
             return $this->render('admin/service_category/new.html.twig', [
                 'service_category' => $serviceCategory,
                 'form' => $form,
@@ -305,7 +305,6 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Nouvelle catégorie', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service category creation', [
                 'admin' => $adminId,
@@ -320,7 +319,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la création de la catégorie de service.');
-            
+
             return $this->render('admin/service_category/new.html.twig', [
                 'service_category' => $serviceCategory,
                 'form' => $form,
@@ -331,8 +330,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Nouvelle catégorie', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service category creation', [
                 'admin' => $adminId,
                 'error_message' => $e->getMessage(),
@@ -345,7 +343,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_category_index');
         }
     }
@@ -357,13 +355,13 @@ class ServiceCategoryController extends AbstractController
     public function edit(Request $request, ServiceCategory $serviceCategory, EntityManagerInterface $entityManager): Response
     {
         $adminId = $this->getUser()?->getUserIdentifier();
-        
+
         $this->logger->info('Admin service category edit started', [
             'service_category_id' => $serviceCategory->getId(),
             'service_category_name' => $serviceCategory->getName(),
             'admin' => $adminId,
             'method' => $request->getMethod(),
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
@@ -400,7 +398,7 @@ class ServiceCategoryController extends AbstractController
                     foreach ($form->getErrors(true) as $error) {
                         $errors[] = $error->getMessage();
                     }
-                    
+
                     $this->logger->warning('Service category edit form validation failed', [
                         'service_category_id' => $serviceCategory->getId(),
                         'admin' => $adminId,
@@ -444,7 +442,7 @@ class ServiceCategoryController extends AbstractController
                     'service_category_name' => $serviceCategory->getName(),
                     'admin' => $adminId,
                     'changes_made' => $changes,
-                    'update_timestamp' => new \DateTime(),
+                    'update_timestamp' => new DateTime(),
                 ]);
 
                 $this->addFlash('success', 'La catégorie de service a été modifiée avec succès.');
@@ -463,8 +461,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             $this->logger->error('Service category update failed: unique constraint violation', [
                 'service_category_id' => $serviceCategory->getId(),
                 'admin' => $adminId,
@@ -475,7 +472,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une catégorie avec ce nom existe déjà. Veuillez choisir un nom différent.');
-            
+
             return $this->render('admin/service_category/edit.html.twig', [
                 'service_category' => $serviceCategory,
                 'form' => $form,
@@ -487,7 +484,6 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service category update', [
                 'service_category_id' => $serviceCategory->getId(),
@@ -499,7 +495,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la modification de la catégorie de service.');
-            
+
             return $this->render('admin/service_category/edit.html.twig', [
                 'service_category' => $serviceCategory,
                 'form' => $form,
@@ -511,8 +507,7 @@ class ServiceCategoryController extends AbstractController
                     ['label' => 'Modifier', 'url' => null],
                 ],
             ]);
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service category update', [
                 'service_category_id' => $serviceCategory->getId(),
                 'admin' => $adminId,
@@ -525,7 +520,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_category_index');
         }
     }
@@ -539,19 +534,19 @@ class ServiceCategoryController extends AbstractController
         $adminId = $this->getUser()?->getUserIdentifier();
         $categoryId = $serviceCategory->getId();
         $categoryName = $serviceCategory->getName();
-        
+
         $this->logger->info('Admin service category deletion started', [
             'service_category_id' => $categoryId,
             'service_category_name' => $categoryName,
             'admin' => $adminId,
-            'timestamp' => new \DateTime(),
+            'timestamp' => new DateTime(),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         ]);
 
         try {
             $tokenValue = $request->getPayload()->get('_token');
             $expectedToken = 'delete' . $categoryId;
-            
+
             $this->logger->debug('CSRF token validation started for category deletion', [
                 'service_category_id' => $categoryId,
                 'admin' => $adminId,
@@ -567,8 +562,8 @@ class ServiceCategoryController extends AbstractController
 
                 // Check if category has services
                 $servicesCount = $serviceCategory->getServices()->count();
-                $activeServicesCount = $serviceCategory->getServices()->filter(fn($service) => $service->isActive())->count();
-                
+                $activeServicesCount = $serviceCategory->getServices()->filter(static fn ($service) => $service->isActive())->count();
+
                 $this->logger->debug('Checking category dependencies before deletion', [
                     'service_category_id' => $categoryId,
                     'admin' => $adminId,
@@ -583,7 +578,7 @@ class ServiceCategoryController extends AbstractController
                         'admin' => $adminId,
                         'total_services' => $servicesCount,
                         'active_services' => $activeServicesCount,
-                        'service_titles' => $serviceCategory->getServices()->map(fn($service) => $service->getTitle())->toArray(),
+                        'service_titles' => $serviceCategory->getServices()->map(static fn ($service) => $service->getTitle())->toArray(),
                     ]);
 
                     $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle contient des services.');
@@ -612,12 +607,11 @@ class ServiceCategoryController extends AbstractController
                     'service_category_id' => $categoryId,
                     'service_category_name' => $categoryName,
                     'admin' => $adminId,
-                    'deletion_timestamp' => new \DateTime(),
+                    'deletion_timestamp' => new DateTime(),
                     'deleted_category_details' => $categoryDetails,
                 ]);
 
                 $this->addFlash('success', 'La catégorie de service a été supprimée avec succès.');
-
             } else {
                 $this->logger->warning('Service category deletion failed: invalid CSRF token', [
                     'service_category_id' => $categoryId,
@@ -631,8 +625,7 @@ class ServiceCategoryController extends AbstractController
             }
 
             return $this->redirectToRoute('admin_service_category_index');
-
-        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException $e) {
+        } catch (ForeignKeyConstraintViolationException $e) {
             $this->logger->error('Service category deletion failed: foreign key constraint violation', [
                 'service_category_id' => $categoryId,
                 'service_category_name' => $categoryName,
@@ -644,9 +637,8 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Impossible de supprimer cette catégorie car elle est référencée par d\'autres éléments du système.');
-            
-            return $this->redirectToRoute('admin_service_category_index');
 
+            return $this->redirectToRoute('admin_service_category_index');
         } catch (\Doctrine\DBAL\Exception $e) {
             $this->logger->error('Database error during service category deletion', [
                 'service_category_id' => $categoryId,
@@ -659,10 +651,9 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur de base de données s\'est produite lors de la suppression de la catégorie de service.');
-            
-            return $this->redirectToRoute('admin_service_category_index');
 
-        } catch (\Exception $e) {
+            return $this->redirectToRoute('admin_service_category_index');
+        } catch (Exception $e) {
             $this->logger->critical('Unexpected error during service category deletion', [
                 'service_category_id' => $categoryId,
                 'service_category_name' => $categoryName,
@@ -676,7 +667,7 @@ class ServiceCategoryController extends AbstractController
             ]);
 
             $this->addFlash('error', 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter l\'administrateur.');
-            
+
             return $this->redirectToRoute('admin_service_category_index');
         }
     }
